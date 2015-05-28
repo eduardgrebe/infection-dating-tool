@@ -1,0 +1,184 @@
+.grid_11 ul {margin: 10px;}
+.grid_11 li {list-style-type: disc; margin: 0px 0px 0px 25px;}
+
+table.form-table th {vertical-align: top; text-align: right;}
+table.content-table td {padding: 5px}
+table.content-table th {vertical-align: top; text-align: left; padding: 5px}
+
+div.appMenu {position: relative; height: 3em; display:block;}
+div.appMenu ul {list-style: none}
+div.appMenu li {list-style: none; float: left; margin-right:10px;}
+
+div.htab {margin: 20px; padding: 0; font-size: 16px; position: relative;}
+div.htab ul {background: #990033; padding: 0px; margin: 0px; list-style: none; position: relative; display: inline-block; z-index: 4;}
+div.htab ul li{padding: 0px; margin: 0px; list-style: none}    
+div.htab ul li a {color: white; display: block; height: 25px; padding: 7px;}
+div.htab ul ul {display: none;}    
+div.htab ul li:hover > ul {display: block}
+div.htab > ul > li {float: left; position: relative;}    
+div.htab ul li { position: relative; width: 8em; border: 1px solid gray; border-left: none;}
+div.htab ul li:first-child {border-left: 1px solid gray;}
+div.htab ul ul li { position: relative; width: 12em; border: 1px solid gray; border-top: none;}
+div.htab ul ul li:first-child {border-top: 1px solid gray;}
+div.htab a:hover {background: #005091;}
+div.htab > ul > li > ul {position: absolute; top: 100%;}
+/*
+ * Tabmenu
+ */
+li.childItems a {
+    width: 150px
+}
+
+div#wrapper {
+    border-top: 10px solid #C90;
+    margin-left: auto;
+    margin-right: auto;
+    }
+
+/*
+#content ul {
+    padding: 0px;
+    margin: 10px;
+    list-style: none;
+}
+
+#content li {
+    list-style-type: disc;
+    margin: 0px 0px 0px 25px;
+}
+*/
+
+#leftmenu h1 {
+    text-align: center;
+    }
+
+#leftmenu li {
+    margin: 0px;
+    padding: 2px;
+}
+
+#leftmenu ul {
+    padding-left: 0px;
+}
+
+#reportContent {
+    padding: 10px;
+    background-color: white;
+    text-align: center;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#reportContent h2 {
+    margin: 0.8em 0.2em;
+}
+
+.leftLinks_text:hover {
+    color: #666666;
+    }
+
+
+#inputPanel {
+    padding: 10px;
+    }
+
+/*
+#content {
+    padding: 5px;
+    margin-bottom: 20px;
+}
+*/
+
+.outer {
+    width: 100%;
+    margin-top: 0px;
+    margin-bottom: 20px;
+    padding: 0px;
+}
+
+.errorlist {
+    color: red;
+    }
+
+div.activeReport {
+    background-color: #CCC;
+}
+
+div.help_text {
+    font-size: 12px;
+}
+.description_text {
+    font-family: Tahoma,Arial,Helvetica;
+    font-size: 14px;
+    font-weight: normal;
+    color: black;
+    text-align: left;
+    margin: 0px;
+    padding: 0px;
+    }
+
+.description_div {
+    border: 1px solid #3D4973;
+    padding: 10px;
+    background-color: #CCC;
+    }
+
+#inputPanel {
+    text-align: left;
+    padding: 10px;
+}
+
+table.content-table td {
+    border:1px solid #888888;
+    color: black;
+    padding: 3px;
+    text-align: center;
+}
+
+table.content-table th {
+    border:1px solid #888888;
+}
+
+table.content-table {
+    display: inline-block;
+    border-collapse: collapse;
+    font-size:14px;
+}
+
+div#reportContent td {
+    border:1px solid #888888;
+    color: black;
+    padding: 3px;
+    text-align: center;
+}
+
+div#reportContent th {
+    border:1px solid #888888;
+    color: black;
+    padding: 5px;
+}
+
+#reportContent table {
+    display: inline-block;
+    border-collapse: collapse;
+    font-size:14px;
+}
+
+table.sortable th.header { 
+    background-image: url(/cephiaqueries/static/jquery/themes/blue/bg.gif);     
+    cursor: pointer; 
+    font-weight: bold; 
+    background-repeat: no-repeat; 
+    background-position: center left; 
+    padding-left: 20px !important; 
+} 
+
+table.sortable th.headerSortUp { 
+    background-image: url(/cephiaqueries/static/jquery/themes/blue/asc.gif); 
+    background-color: #3399FF; 
+}
+
+table.sortable th.headerSortDown { 
+    background-image: url(/cephiaqueries/static/jquery/themes/blue/desc.gif); 
+    background-color: #3399FF; 
+} 

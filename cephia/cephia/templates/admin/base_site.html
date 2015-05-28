@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans 'Cephia' %}{% endblock %}
+
+{% block branding %}
+
+<div class="branding_title">
+  <h1 id="site-name">{% trans 'Cephia' %}</h1>
+  <img class="logo" width="100px" src="{{STATIC_URL}}images/logo.png"/>
+  <div style="clear:both"></div>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

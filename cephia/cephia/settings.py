@@ -14,7 +14,6 @@ LOG_FILENAME="cephia.log"
 LOG_LEVEL="INFO"
 
 LOGIN_REDIRECT_URL = "/"
-LOGIN_URL = "/users/login"
 REVISION = git.Repo(os.path.join(PROJECT_HOME, "..", "..")).head.commit.hexsha
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -74,6 +73,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'paranoidsessions',
 
+    'bootstrap3',
+    'endless_pagination',
+
     'cephia',
 )
 
@@ -110,19 +112,7 @@ TEMPLATES = [
     },
 ]
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.core.context_processors.tz",
-    "django.contrib.messages.context_processors.messages",
-    'django.core.context_processors.request',
-)
-
 WSGI_APPLICATION = 'cephia.wsgi.application'
-
 
 DATABASES = {
     'default': {
