@@ -1,0 +1,11 @@
+venv
+static_collected
+*pyc
+*~
+*#
+media
+cephia/cephia/local_settings.py
+logs
+tmp/
+db_backups/
+*.mo
