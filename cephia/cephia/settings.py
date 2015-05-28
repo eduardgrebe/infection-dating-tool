@@ -8,12 +8,13 @@ from django.conf import global_settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-LOG_FOLDER=os.path.join(PROJECT_HOME, "..", "..", 'logs')
+LOG_FOLDER=os.path.join(BASE_DIR, "..", "..", 'logs')
 LOG_FILENAME="cephia.log"
 LOG_LEVEL="INFO"
 
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/users/login"
+REVISION = git.Repo(BASE_DIR).head.commit.hexsha
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '%ikqh(&mt)5&$t^h19eb2o5g^^hbrx2i(_cby$(48xcd00_61v'
@@ -30,7 +31,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_HOME, "templates"),
+    os.path.join(BASE_DIR, "templates"),
 )
 
 ENDLESS_PAGINATION_PER_PAGE=20
@@ -140,10 +141,10 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'+REVISION+'/'
-STATIC_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'static_collected', REVISION)
+STATIC_ROOT = os.path.join(BASE_DIR, '..', '..', 'static_collected', REVISION)
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, '..', '..', 'media')
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(LOG_FOLDER, "email")
@@ -201,7 +202,7 @@ LOGGING = {
     }
     }
 
-if os.path.exists(os.path.join(PROJECT_HOME,"local_settings.py")):
+if os.path.exists(os.path.join(BASE_DIR,"local_settings.py")):
     from local_settings import *
 
 
