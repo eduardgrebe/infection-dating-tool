@@ -1,0 +1,33 @@
+Some helpers for security in Django.
+
+Based on the django project paranoid-sessions, but with lots of tweaks and changes
+
+INSTALLED_APPS = (
+  ...
+  'paranoidsessions',
+  ...
+)
+
+MIDDLEWARE_CLASSES = (
+  ...
+  'paranoidsessions.ParanoidSessionMiddleware',
+  'csrf_middleware.HttpOnlyCsrf',
+  ...
+)
+
+PSESSION_NONCE_TIMEOUT = None
+PSESSION_SESSION_KEY = "PARANOID_SESSION_DATA"
+PSESSION_CHECK_HEADERS = ("REMOTE_ADDR","HTTP_X_FORWARDED_FOR","HTTP_USER_AGENT",)
+PSESSION_NONCE_WINDOW = 1
+PSESSION_NONCE_WINDOW_TIMEOUT = 1
+PSESSION_KEY_TIMEOUT = None
+PSESSION_SESSION_KEY = "PARANOID_SESSION_DATA"
+PSESSION_COOKIE_NAME = "sessionnonce"
+PSESSION_HEADER_HASH_SESSION_NAME = "psessionheaderhash"
+PSESSION_SECURE_COOKIE_NAME = "sessionid_https"
+PSESSION_COOKIE_HTTPONLY = True
+PSESSION_REQUEST_FILTER_FUNCTION = lambda req: True
+PSESSION_CLEAR_SESSION_FUNCTION = lambda req: req.session.flush()
+
+
+

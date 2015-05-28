@@ -43,6 +43,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_TIMEOUT_MINUTES = 999999
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
+# used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
+URL_PREFIX = ''
+
 PSESSION_NONCE_TIMEOUT = None
 PSESSION_SESSION_KEY = "PARANOID_SESSION_DATA"
 PSESSION_CHECK_HEADERS = ("REMOTE_ADDR","HTTP_X_FORWARDED_FOR","HTTP_USER_AGENT",)
@@ -57,6 +60,9 @@ PSESSION_COOKIE_HTTPONLY = True
 PSESSION_REQUEST_FILTER_FUNCTION = lambda req: True
 PSESSION_CLEAR_SESSION_FUNCTION = lambda req: req.session.flush()
 
+XS_SHARING_ALLOWED_ORIGINS = '*'
+XS_SHARING_ALLOWED_METHODS = ['GET','OPTIONS']
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -67,6 +73,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'paranoidsessions',
+
+    'cephia',
 )
 
 MIDDLEWARE_CLASSES = (
