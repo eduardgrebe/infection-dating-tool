@@ -1,0 +1,30 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block site-title %} Countries {% endblock %}
+
+{% block page_content %}
+
+{% paginate countries %}
+{% show_pages %}
+
+<table class="table-striped table table-hover">
+
+  <thead>
+    <th>Name</th>
+    <th>Code</th>
+  </thead>
+
+  <tbody>
+    {% for country in countries %}
+    <tr>
+      <td>{{country.name}}</td>
+      <td>{{country.code}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+
+.navigation {
+    width: 100%;
+}
+
+.navigation ul {
+    float: right;
+    list-style : none;
+}
+
+.navigation li {
+    float: left;
+    padding-left: 10px;
+}
+
+#wrapper .container {
+    width: 960px;
+    margin: auto;
+}

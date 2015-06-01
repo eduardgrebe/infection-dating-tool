@@ -1,5 +1,9 @@
-<ul>
-  {% if user.id %}
-  <li><a href="{% url 'auth_logout' %}">Logout</a></li>
-  {% endif %}
-</ul>
+<div id="nav">
+  <ul class="sf-menu sf-js-enabled">
+
+    {% if user.id %}
+    <li><a href="{% url 'countries' %}">Countries</a></li>
+    {% endif %}
+
+  </ul>
+</div>
