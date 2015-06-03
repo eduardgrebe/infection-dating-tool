@@ -1,0 +1,38 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block site-title %} File Information {% endblock %}
+
+{% block page_content %}
+
+{% paginate files %}
+{% show_pages %}
+
+<table class="table-striped table table-hover">
+
+  <thead>
+    <th>Name</th>
+    <th>Created</th>
+    <th>State</th>
+    <th>Download</th>
+    <th>Message</th>
+  </thead>
+
+  <tbody>
+    {% for file in files %}
+    <tr>
+      <td>{{file.filename}}</td>
+      <td>{{file.created}}</td>
+      <td>{{file.state}}</td>
+      <td><a href="{% url 'download_file' file.id %}" class="btn btn-info btn-sm">Download</a></td>
+      <td data-toggle="tooltip" title="{{file.message}}">{{file.message}}</td>
+      {% if file.state == 'PE' %}<td><span class="btn btn-success btn-sm">Reprocess</span></td>{% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include 'cephia/upload_file.html' with form=form %}
+
+{% endblock %}
