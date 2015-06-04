@@ -24,8 +24,10 @@ urlpatterns = [
 
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^file_info/$', views.file_info, name='file_info'),
+    url(r'^row_info/(?P<file_id>\d+)/$', views.row_info, name='row_info'),
     url(r'^upload_file/$', views.upload_file, name='upload_file'),
     url(r'^download_file/(?P<file_id>\d+)/$', views.download_file, name='download_file'),
+    url(r'^process_file/(?P<file_id>\d+)/$', views.process_file, name='process_file'),
 
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}, name='auth_login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),

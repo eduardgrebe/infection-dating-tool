@@ -2,6 +2,7 @@
 {% load bootstrap3 %}
 {% load endless %}
 
+
 {% block site-title %} File Information {% endblock %}
 
 {% block page_content %}
@@ -11,28 +12,52 @@
 
 <table class="table-striped table table-hover">
 
-  <thead>
-    <th>Name</th>
-    <th>Created</th>
-    <th>State</th>
-    <th>Download</th>
-    <th>Message</th>
-  </thead>
+    <thead>
+	<th></th>
+	<th>Name</th>
+	<th>Created</th>
+	<th>State</th>
+	<th>Download</th>
+	<th>Message</th>
+    </thead>
 
-  <tbody>
-    {% for file in files %}
-    <tr>
-      <td>{{file.filename}}</td>
-      <td>{{file.created}}</td>
-      <td>{{file.state}}</td>
-      <td><a href="{% url 'download_file' file.id %}" class="btn btn-info btn-sm">Download</a></td>
-      <td data-toggle="tooltip" title="{{file.message}}">{{file.message}}</td>
-      {% if file.state == 'PE' %}<td><span class="btn btn-success btn-sm">Reprocess</span></td>{% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
+    <tbody>
+	{% for file in files %}
+	<tr>
+	    <td><a href="{% url 'row_info' file.id %}">Detail</a></td>
+	    <td>{{file.filename}}</td>
+	    <td>{{file.created}}</td>
+	    <td>{{file.state}}</td>
+	    <td><a href="{% url 'download_file' file.id %}">Download</a></td>
+	    <td data-toggle="tooltip" title="{{file.message}}">{{file.message}}</td>
+	    <td>
+		{% if file.state == 'pending' %}
+		<a href="{% url 'process_file' file.id %}" class="btn btn-success btn-sm">Import</a>
+		{% elif file.state == 'imported' %}
+		<a href="{% url 'process_file' file.id %}" class="btn btn-success btn-sm">Process</a>
+		{% endif %}
+	    </td>
+	</tr>
+	{% endfor %}
+    </tbody>
 </table>
 
 {% include 'cephia/upload_file.html' with form=form %}
 
+<div class="container">
+    <div class="modal fade" id="rowModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+		{% block modal_header %}{% endblock %}
+		{% block modal_body %}{% endblock %}
+		{% block modal_footer %}{% endblock %}
+            </div>
+	</div>
+    </div>
+</div>
+
 {% endblock %}
+
+
+
+

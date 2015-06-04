@@ -1,0 +1,27 @@
+{% load endless %}
+
+{% paginate rows %}
+{% for row in rows %}
+<tr>
+    <td>{{row.patient_label}}</td>
+    <td>{{row.entry_date}}</td>
+    <td>{{row.entry_status}}</td>
+    <td>{{row.country}}</td>
+    <td>{{row.last_negative_date}}</td>
+    <td>{{row.last_positive_date}}</td>
+    <td>{{row.ars_onset}}</td>
+    <td>{{row.fiebig}}</td>
+    <td>{{row.dob}}</td>
+    <td>{{row.gender}}</td>
+    <td>{{row.ethnicity}}</td>
+    <td>{{row.sex_with_men}}</td>
+    <td>{{row.sex_with_women}}</td>
+    <td>{{row.iv_drug_user}}</td>
+    <td>{{row.subtype_confirmed}}</td>
+    <td>{{row.subtype}}</td>
+    <td>{{row.anti_retroviral_initiation_date}}</td>
+    <td>{{row.aids_diagnosis_date}}</td>
+    <td>{{row.treatment_interruption_date}}</td>
+    <td>{{row.treatment_resumption_date}}</td>
+</tr>
+{% endfor %}

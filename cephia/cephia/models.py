@@ -25,6 +25,7 @@ class CephiaUser(AbstractUser):
     def __unicode__(self):
         return "%s %s" % (self.first_name, self.last_name)
 
+
 class Region(models.Model):
     
     class Meta:
@@ -51,6 +52,7 @@ class Country(models.Model):
     def __unicode__(self):
         return self.code
 
+
 class FileInfo(models.Model):
 
     class Meta:
@@ -64,7 +66,7 @@ class FileInfo(models.Model):
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
-    state = models.CharField(choices=STATE_CHOICES, max_length=8, null=False, blank=False, default='PE')
+    state = models.CharField(choices=STATE_CHOICES, max_length=8, null=False, blank=False, default='pending')
     message = models.TextField(blank=True)
 
     def __unicode__(self):
@@ -72,6 +74,7 @@ class FileInfo(models.Model):
 
     def filename(self):
         return os.path.basename(self.data_file.name)
+
 
 class ImportedRow(models.Model):
 
@@ -87,3 +90,64 @@ class ImportedRow(models.Model):
     state = models.CharField(max_length=9, choices=STATE_CHOICES, null=False, blank=False)
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
+    fileinfo = models.ForeignKey(FileInfo)
+
+
+class SubjectRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_subjectrow"
+
+    patient_label = models.CharField(max_length=255, null=False, blank=True)
+    entry_date = models.CharField(max_length=255, null=False, blank=True)
+    entry_status = models.CharField(max_length=255, null=False, blank=True)
+    country = models.CharField(max_length=255, null=False, blank=True)
+    last_negative_date = models.CharField(max_length=255, null=False, blank=True)
+    last_positive_date = models.CharField(max_length=255, null=False, blank=True)
+    ars_onset = models.CharField(max_length=255, null=False, blank=True)
+    fiebig = models.CharField(max_length=255, null=False, blank=True)
+    dob = models.CharField(max_length=255, null=False, blank=True)
+    gender = models.CharField(max_length=255, null=False, blank=True)
+    ethnicity = models.CharField(max_length=255, null=False, blank=True)
+    sex_with_men = models.CharField(max_length=255, null=False, blank=True)
+    sex_with_women = models.CharField(max_length=255, null=False, blank=True)
+    iv_drug_user = models.CharField(max_length=255, null=False, blank=True)
+    subtype_confirmed = models.CharField(max_length=255, null=False, blank=True)
+    subtype = models.CharField(max_length=255, null=False, blank=True)
+    anti_retroviral_initiation_date = models.CharField(max_length=255, null=False, blank=True)
+    aids_diagnosis_date = models.CharField(max_length=255, null=False, blank=True)
+    treatment_interruption_date = models.CharField(max_length=255, null=False, blank=True)
+    treatment_resumption_date = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.patient_label
+
+
+class Subject(models.Model):
+    #TODO - give columns correct data types
+    class Meta:
+        db_table = "cephia_subject"
+
+    patient_label = models.CharField(max_length=255, null=False, blank=False)
+    entry_date = models.CharField(max_length=255, null=False, blank=False)
+    entry_status = models.CharField(max_length=255, null=False, blank=False)
+    country = models.CharField(max_length=255, null=False, blank=False)
+    last_negative_date = models.CharField(max_length=255, null=False, blank=False)
+    last_positive_date = models.CharField(max_length=255, null=False, blank=False)
+    ars_onset = models.CharField(max_length=255, null=False, blank=False)
+    fiebig = models.CharField(max_length=255, null=False, blank=False)
+    dob = models.CharField(max_length=255, null=False, blank=False)
+    gender = models.CharField(max_length=255, null=False, blank=False)
+    ethnicity = models.CharField(max_length=255, null=False, blank=False)
+    sex_with_men = models.CharField(max_length=255, null=False, blank=False)
+    sex_with_women = models.CharField(max_length=255, null=False, blank=False)
+    iv_drug_user = models.CharField(max_length=255, null=False, blank=False)
+    subtype_confirmed = models.CharField(max_length=255, null=False, blank=False)
+    subtype = models.CharField(max_length=255, null=False, blank=False)
+    anti_retroviral_initiation_date = models.CharField(max_length=255, null=False, blank=False)
+    aids_diagnosis_date = models.CharField(max_length=255, null=False, blank=False)
+    treatment_interruption_date = models.CharField(max_length=255, null=False, blank=False)
+    treatment_resumption_date = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.patient_label

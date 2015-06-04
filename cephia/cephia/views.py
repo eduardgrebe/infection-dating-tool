@@ -6,8 +6,10 @@ from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 logger = logging.getLogger(__name__)
-from models import Country, FileInfo
+from models import Country, FileInfo, SubjectRow
 from forms import FileInfoForm
+from subject_file_handler import SubjectFileHandler
+from endless_pagination.decorators import page_template
 
 @login_required
 def home(request, template="cephia/home.html"):
@@ -32,6 +34,15 @@ def file_info(request, template="cephia/file_info.html"):
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+def row_info(request, file_id, template="cephia/row_info_table.html"):
+    context = {}
+    fileinfo = FileInfo.objects.get(pk=file_id)
+    rows = SubjectRow.objects.filter(fileinfo=fileinfo)
+    context['rows'] = rows
+
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@login_required
 def download_file(request, file_id):
     try:
         if request.method == "GET":
@@ -54,14 +65,17 @@ def upload_file(request):
         return HttpResponse({'success':False, 'message':'Failed to upload file'})
 
 @login_required
-def manually_parse_file(request):
-    if request.method == "POST":
-        try:
-            file_id = request.POST['file_id']
-            file = FileInfo.objects.get(pk=file_id)
-            file.state = 'IM'
-            file.save()
-            return HttpResponse({'success':True, 'message':'Successfully updated file to status - imported'})
-        except Exception, e:
-            return HttpResponse({'success':False, 'message':'Failed to update file to status - imported'})
+def process_file(request, file_id):
+    try:
+        subject_file = FileInfo.objects.get(pk=file_id)
+        subject_file_handler = SubjectFileHandler(subject_file)
+        success = subject_file_handler.parse()
+
+        if success:
+            subject_file.state = 'imported'
+            subject_file.save()
+
+        return HttpResponse({'success':True, 'message':'Successfully updated file to status - imported'})
+    except Exception, e:
+        return HttpResponse({'success':False, 'message':'Failed to update file to status - imported'})
 
