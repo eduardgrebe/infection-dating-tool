@@ -67,8 +67,6 @@ class Subtype(models.Model):
     name = models.CharField(max_length=30, null=False, blank=False)
 
 
-
-
 class FileInfo(models.Model):
 
     class Meta:
@@ -144,32 +142,33 @@ class Subject(models.Model):
     class Meta:
         db_table = "cephia_subject"
 
+    #add to gender field after testing
     GENDER_CHOICES = (
-        ('pending','Pending'),
-        ('processed','Processed'),
-        ('error','Error')
+        ('male','Male'),
+        ('female','Female'),
+        ('unkown','Unkown')
     )
     
     patient_label = models.CharField(max_length=255, null=False, blank=False)
-    entry_date = models.DateField(max_length=255, null=False, blank=True)
+    entry_date = models.DateField(null=True, blank=True)
     entry_status = models.CharField(max_length=255, null=False, blank=False)
     country = models.CharField(max_length=255, null=False, blank=False)
-    last_negative_date = models.DateField(null=False, blank=True)
-    last_positive_date = models.DateField(null=False, blank=True)
-    ars_onset = models.DateField(null=False, blank=False)
+    last_negative_date = models.DateField(null=True, blank=True)
+    last_positive_date = models.DateField(null=True, blank=True)
+    ars_onset = models.DateField(null=True, blank=True)
     fiebig = models.CharField(max_length=10, null=False, blank=False)
-    dob = models.DateField(null=False, blank=True)
-    gender = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
-    ethnicity = models.CharField(max_length=50, null=False, blank=False)
+    dob = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=6, null=False, blank=True)
+    ethnicity = models.ForeignKey(Ethnicity)
     sex_with_men = models.NullBooleanField()
     sex_with_women = models.NullBooleanField()
     iv_drug_user = models.NullBooleanField()
     subtype_confirmed = models.NullBooleanField()
-    subtype = models.CharField(max_length=255, null=False, blank=False)
-    anti_retroviral_initiation_date = models.DateField(null=False, blank=False)
-    aids_diagnosis_date = models.DateField(null=False, blank=False)
-    treatment_interruption_date = models.DateField(null=False, blank=False)
-    treatment_resumption_date = models.DateField(null=False, blank=False)
+    subtype = models.ForeignKey(Subtype)
+    anti_retroviral_initiation_date = models.DateField(null=True, blank=True)
+    aids_diagnosis_date = models.DateField(null=True, blank=True)
+    treatment_interruption_date = models.DateField(null=True, blank=True)
+    treatment_resumption_date = models.DateField(null=True, blank=True)
 
     def __unicode__(self):
         return self.patient_label

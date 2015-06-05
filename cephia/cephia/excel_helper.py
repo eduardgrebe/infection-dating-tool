@@ -15,6 +15,9 @@ class ExcelHelper(object):
     def __init__(self, f=None, sheet_number=0, sheet_name=None, write=False):
         """ different arguments are required depending on the value of 'write' """
         super(ExcelHelper, self).__init__()
+
+        self.wb = None
+
         if write:
             self._open_for_write(sheet_name)
         else:
@@ -88,8 +91,8 @@ class ExcelHelper(object):
         f.seek(0)
         return f
 
-    def read_row(self, row):
-        return [ self._excel_unicode(self.sheet.cell_value(row,col)).strip() for col in range(self.sheet.ncols) ]
+    def read_row(self, row, date_cols=[]):
+        return [ self._excel_unicode(self.as_date(self.sheet.cell_value(row, col))).strip() if col in date_cols else self._excel_unicode(self.sheet.cell_value(row,col)).strip() for col in range(self.sheet.ncols) ]
 
     def read_header(self):
         return [ v.lower() for v in self.read_row(0) ]
@@ -130,5 +133,11 @@ class ExcelHelper(object):
     @classmethod
     def as_bool(self, value):
         return value==TICK or value=='R' or value.upper()=='X' # 'R' is the checkbox wingding, X is just the letter X
+
+    def as_date(self, value):
+        if value:
+            return datetime.datetime(*xlrd.xldate_as_tuple(value, self.wb.datemode))
+        else:
+            return ''
     
     

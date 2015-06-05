@@ -6,7 +6,7 @@ from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 logger = logging.getLogger(__name__)
-from models import Country, FileInfo, SubjectRow
+from models import Country, FileInfo, SubjectRow, Subject
 from forms import FileInfoForm
 from subject_file_handler import SubjectFileHandler
 from django.contrib import messages
@@ -21,6 +21,14 @@ def countries(request, template="cephia/countries.html"):
     context = {}
     countries = Country.objects.all().order_by("name")
     context['countries'] = countries
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@login_required
+def subjects(request, template="cephia/subjects.html"):
+    context = {}
+    subjects = Subject.objects.all()
+    context['subjects'] = subjects
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -69,6 +77,25 @@ def upload_file(request):
         messages.add_message(request, messages.ERROR, 'Failed to upload file')
         return HttpResponseRedirect(reverse('file_info'))
 
+
+@login_required
+def parse_file(request, file_id):
+    try:
+        subject_file = FileInfo.objects.get(pk=file_id)
+        subject_file_handler = SubjectFileHandler(subject_file)
+        success = subject_file_handler.parse()
+
+        if success:
+            subject_file.state = 'imported'
+            subject_file.save()
+            messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - imported')
+
+        return HttpResponseRedirect(reverse('file_info'))
+    except Exception, e:
+        messages.add_message(request, messages.ERROR, 'Failed to update file to status - imported')
+        return HttpResponseRedirect(reverse('file_info'))
+
+
 @login_required
 def process_file(request, file_id):
     try:
@@ -88,19 +115,16 @@ def process_file(request, file_id):
 
 
 @login_required
-def parse_file(request, file_id):
+def delete_row(request, row_id):
     try:
-        subject_file = FileInfo.objects.get(pk=file_id)
-        subject_file_handler = SubjectFileHandler(subject_file)
-        success = subject_file_handler.parse()
-
-        if success:
-            subject_file.state = 'imported'
-            subject_file.save()
-            messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - imported')
+        import pdb; pdb.set_trace()
+        subject_row = SubjectRow.objects.get(pk=row_id)
+        messages.add_message(request, messages.SUCCESS, 'Row successfully deleted')
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        messages.add_message(request, messages.ERROR, 'Failed to update file to status - imported')
+        messages.add_message(request, messages.ERROR, 'Could not delete row')
         return HttpResponseRedirect(reverse('file_info'))
+
+
 

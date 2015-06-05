@@ -60,7 +60,10 @@
 	    <td>{{row.treatment_interruption_date}}</td>
 	    <td>{{row.treatment_resumption_date}}</td>
 	    <td>{{row.state}}</td>
-	    <td>{{row.message}}</td>
+	    <td>{{row.error_message}}</td>
+	    {% if row.state == 'error' %}
+	    <td><a href="{% url 'delete_row' row.id %}" class="btn btn-default btn-sm">Delete</a><td>
+	    {% endif %}
 	</tr>
 	{% endfor %}
     </tbody>
