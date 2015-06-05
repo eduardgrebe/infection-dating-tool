@@ -10,6 +10,21 @@ class SubjectFileHandler(object):
         self.subject_file = subject_file
         self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
 
+    def get_date(self, date_string):
+        if date_string:
+            return datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S").date()
+        else:
+            return None
+
+    def get_bool(self, bool_string):
+        if bool_string:
+            if bool_string == '0':
+                return False
+            else if bool_string == '1':
+                return True
+        else:
+            return False
+
     def parse(self):
         header = self.excel_subject_file.read_header()
         date_cols = [1,4,5,8,16,17,18,19]
@@ -60,10 +75,6 @@ class SubjectFileHandler(object):
                 country = Country.objects.get(code=subject_row.country)
                 
                 #process dates correctly
-                if subject_row.entry_date:
-                    ed = datetime.strptime(subject_row.entry_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    ed = None
 
                 if subject_row.last_negative_date:
                     lnd = datetime.strptime(subject_row.last_negative_date, "%Y-%m-%d %H:%M:%S").date()
@@ -107,7 +118,7 @@ class SubjectFileHandler(object):
                 #
 
                 subject, subject_created = Subject.objects.get_or_create(patient_label=subject_row.patient_label,
-                                                        entry_date = ed,
+                                                        entry_date = self.get_date(subject_row.entry_date),
                                                         entry_status = subject_row.entry_status,
                                                         country = country,
                                                         last_negative_date = lnd,
@@ -117,10 +128,10 @@ class SubjectFileHandler(object):
                                                         dob = dob,
                                                         gender = subject_row.gender,
                                                         ethnicity = ethnicity,
-                                                        sex_with_men = subject_row.sex_with_men,
-                                                        sex_with_women = subject_row.sex_with_women,
-                                                        iv_drug_user = subject_row.iv_drug_user,
-                                                        subtype_confirmed = subject_row.subtype_confirmed,
+                                                        sex_with_men = self.get_bool(subject_row.sex_with_men),
+                                                        sex_with_women = self.get_bool(subject_row.sex_with_women),
+                                                        iv_drug_user = self.get_bool(subject_row.iv_drug_user),
+                                                        subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                                         subtype = subtype,
                                                         anti_retroviral_initiation_date = arid,
                                                         aids_diagnosis_date = add,
