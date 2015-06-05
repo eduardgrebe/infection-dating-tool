@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^$', views.home, name='home'),
 
     url(r'^countries/$', views.countries, name='countries'),
+    url(r'^ethnicity/$', views.ethnicity, name='ethnicity'),
     url(r'^subjects/$', views.subjects, name='subjects'),
     url(r'^file_info/$', views.file_info, name='file_info'),
     url(r'^row_info/(?P<file_id>\d+)/$', views.row_info, name='row_info'),
