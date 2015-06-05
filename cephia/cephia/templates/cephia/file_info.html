@@ -32,9 +32,9 @@
 	    <td data-toggle="tooltip" title="{{file.message}}">{{file.message}}</td>
 	    <td>
 		{% if file.state == 'pending' %}
-		<a href="{% url 'process_file' file.id %}" class="btn btn-success btn-sm">Import</a>
+		<a href="{% url 'parse_file' file.id %}" class="btn btn-default btn-sm">Import</a>
 		{% elif file.state == 'imported' %}
-		<a href="{% url 'process_file' file.id %}" class="btn btn-success btn-sm">Process</a>
+		<a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Process</a>
 		{% endif %}
 	    </td>
 	</tr>
@@ -43,6 +43,8 @@
 </table>
 
 {% include 'cephia/upload_file.html' with form=form %}
+
+{% include 'cephia/message_modal.html'%}
 
 <div class="container">
     <div class="modal fade" id="rowModal">

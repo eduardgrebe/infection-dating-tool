@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 from models import Country, FileInfo, SubjectRow
 from forms import FileInfoForm
 from subject_file_handler import SubjectFileHandler
-from endless_pagination.decorators import page_template
+from django.contrib import messages
 
 @login_required
 def home(request, template="cephia/home.html"):
@@ -21,6 +21,7 @@ def countries(request, template="cephia/countries.html"):
     context = {}
     countries = Country.objects.all().order_by("name")
     context['countries'] = countries
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -31,6 +32,7 @@ def file_info(request, template="cephia/file_info.html"):
         form = FileInfoForm()
         context['files'] = files
         context['form'] = form
+        
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -51,7 +53,8 @@ def download_file(request, file_id):
             response['Content-Disposition'] = 'attachment; filename="%s"' % (download_file.filename())
             return response
     except Exception, e:
-        return HttpResponse({'success':False, 'message':'Failed to download file'})
+        message.error(request, 'Failed to download file')
+        return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
 def upload_file(request):
@@ -60,12 +63,32 @@ def upload_file(request):
             form = FileInfoForm(request.POST, request.FILES)
             if form.is_valid():
                 form.save();
+                messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
                 return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        return HttpResponse({'success':False, 'message':'Failed to upload file'})
+        messages.add_message(request, messages.ERROR, 'Failed to upload file')
+        return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
 def process_file(request, file_id):
+    try:
+        subject_file = FileInfo.objects.get(pk=file_id)
+        subject_file_handler = SubjectFileHandler(subject_file)
+        success = subject_file_handler.process()
+
+        if success:
+            subject_file.state = 'processed'
+            subject_file.save()
+
+        messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - processed')
+        return HttpResponseRedirect(reverse('file_info'))
+    except Exception, e:
+        messages.add_message(request, messages.ERROR, 'Failed to update file to status - processed')
+        return HttpResponseRedirect(reverse('file_info'))
+
+
+@login_required
+def parse_file(request, file_id):
     try:
         subject_file = FileInfo.objects.get(pk=file_id)
         subject_file_handler = SubjectFileHandler(subject_file)
@@ -74,8 +97,10 @@ def process_file(request, file_id):
         if success:
             subject_file.state = 'imported'
             subject_file.save()
+            messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - imported')
 
-        return HttpResponse({'success':True, 'message':'Successfully updated file to status - imported'})
+        return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        return HttpResponse({'success':False, 'message':'Failed to update file to status - imported'})
+        messages.add_message(request, messages.ERROR, 'Failed to update file to status - imported')
+        return HttpResponseRedirect(reverse('file_info'))
 

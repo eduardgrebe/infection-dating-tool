@@ -1,0 +1,67 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Subjects {% endblock %}
+
+{% block page_content %}
+
+{% paginate subjects %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>Patient Label</th>
+	<th>Entry Date</th>
+	<th>Entry Status</th>
+	<th>Country</th>
+	<th>Last Negative Date</th>
+	<th>Last Positive Date</th>
+	<th>ARS Onset</th>
+	<th>Fiebig</th>
+	<th>DOB</th>
+	<th>Gender</th>
+	<th>Ethnicity</th>
+	<th>Sex with men</th>
+	<th>Sex with women</th>
+	<th>iv_drug_user</th>
+	<th>Subtype Confirmed</th>
+	<th>Subtype</th>
+	<th>Anti Retroviral Init Date</th>
+	<th>AIDS Diagnosis Date</th>
+	<th>Treatment Interruption Date</th>
+	<th>Treatment Resumption Date</th>
+    </thead>
+
+    <tbody>
+	{% for subject in subjects %}
+	<tr>
+	    <td>{{subject.patient_label}}</td>
+	    <td>{{subject.entry_date}}</td>
+	    <td>{{subject.entry_status}}</td>
+	    <td>{{subject.country}}</td>
+	    <td>{{subject.last_negative_date}}</td>
+	    <td>{{subject.last_positive_date}}</td>
+	    <td>{{subject.ars_onset}}</td>
+	    <td>{{subject.fiebig}}</td>
+	    <td>{{subject.dob}}</td>
+	    <td>{{subject.gender}}</td>
+	    <td>{{subject.ethnicity}}</td>
+	    <td>{{subject.sex_with_men}}</td>
+	    <td>{{subject.sex_with_women}}</td>
+	    <td>{{subject.iv_drug_user}}</td>
+	    <td>{{subject.subtype_confirmed}}</td>
+	    <td>{{subject.subtype}}</td>
+	    <td>{{subject.anti_retroviral_initiation_date}}</td>
+	    <td>{{subject.aids_diagnosis_date}}</td>
+	    <td>{{subject.treatment_interruption_date}}</td>
+	    <td>{{subject.treatment_resumption_date}}</td>
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+

@@ -1,5 +1,5 @@
 from excel_helper import ExcelHelper
-from models import SubjectRow, Subject
+from models import SubjectRow, Subject, Ethnicity, Country, Subtype
 from datetime import datetime
 
 
@@ -11,34 +11,39 @@ class SubjectFileHandler(object):
         self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
 
     def parse(self):
+        import pdb; pdb.set_trace()
+        header = self.excel_subject_file.read_header()
+        
         for row_num in range(self.excel_subject_file.nrows):
-            row = self.excel_subject_file.read_row(row_num)
-
             try:
-                if row_num > 1:
-                    subject_row, created = SubjectRow.objects.get_or_create(patient_label=row[0], fileinfo=self.subject_file)
+                if row_num >= 1:
+                    row = self.excel_subject_file.read_row(row_num)
+                    row_dict = dict(zip(header, row))
                     
-                    subject_row.patient_label = row[0]
-                    subject_row.entry_date = row[1]
-                    subject_row.entry_status = row[2]
-                    subject_row.country = row[3]
-                    subject_row.last_negative_date = row[4]
-                    subject_row.last_positive_date = row[5]
-                    subject_row.ars_onset = row[6]
-                    subject_row.fiebig = row[7]
-                    subject_row.dob = row[8]
-                    subject_row.gender = row[9]
-                    subject_row.ethnicity = row[10]
-                    subject_row.sex_with_men = row[11]
-                    subject_row.sex_with_women = row[12]
-                    subject_row.iv_drug_user = row[13]
-                    subject_row.subtype_confirmed = row[14]
-                    subject_row.subtype = row[15]
-                    subject_row.anti_retroviral_initiation_date = row[16]
-                    subject_row.aids_diagnosis_date = row[17]
-                    subject_row.treatment_interruption_date = row[18]
-                    subject_row.treatment_resumption_date = row[19]
+                    subject_row, created = SubjectRow.objects.get_or_create(patient_label=row_dict['pt_id'], fileinfo=self.subject_file)
+
+                    subject_row.patient_label = row_dict['pt_id']
+                    subject_row.entry_date = row_dict['pt_entrydt']
+                    subject_row.entry_status = row_dict['pt_entrystat']
+                    subject_row.country = row_dict['pt_country']
+                    subject_row.last_negative_date = row_dict['pt_lastnegdate']
+                    subject_row.last_positive_date = row_dict['pt_firstpozdate']
+                    subject_row.ars_onset = row_dict['pt_arsonset']
+                    subject_row.fiebig = row_dict['pt_fiebig']
+                    subject_row.dob = row_dict['pt_yob']
+                    subject_row.gender = row_dict['pt_sex']
+                    subject_row.ethnicity = row_dict['pt_ethnicity']
+                    subject_row.sex_with_men = row_dict['pt_sexwithmen']
+                    subject_row.sex_with_women = row_dict['pt_sexwithwomen']
+                    subject_row.iv_drug_user = row_dict['pt_ivdu']
+                    subject_row.subtype_confirmed = row_dict['pt_subconf']
+                    subject_row.subtype = row_dict['pt_subtype']
+                    subject_row.anti_retroviral_initiation_date = row_dict['pt_arvdate']
+                    subject_row.aids_diagnosis_date = row_dict['pt_aidsdx']
+                    subject_row.treatment_interruption_date = row_dict['pt_txintdate']
+                    subject_row.treatment_resumption_date = row_dict['pt_txresdate']
                     subject_row.fileinfo = self.subject_file
+                    subject_row.state = 'pending'
                     subject_row.save()
             except Exception, e:
                 logger.exception(e)
@@ -47,37 +52,39 @@ class SubjectFileHandler(object):
         return True
 
 
-    def copy_to_subject_table(self):
-        
-        for subject_row in SubjectRow.objects.filter(state='pending'):
-            subject = Subject.objects.get_or_create(patient_label=subject_row.patient_label)
-
+    def process(self):
+        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending'):
             try:
-                subject.patient_label = subject_row.patient_label
-                subject.entry_date = subject_row.entry_date
-                subject.entry_status = subject_row.entry_status
-                subject.country = subject_row.country
-                subject.last_negative_date = subject_row.last_negative_date
-                subject.last_positive_date = subject_row.last_positive_date
-                subject.ars_onset = subject_row.ars_onset
-                subject.fiebig = subject_row.fiebig
-                subject.dob = subject_row.dob
-                subject.gender = subject_row.gender
-                subject.ethnicity = subject_row.ethnicity
-                subject.sex_with_men = subject_row.sex_with_men
-                subject.sex_with_women = subject_row.sex_with_women
-                subject.iv_drug_user = subject_row.iv_drug_user
-                subject.subtype_confirmed = subject_row.subtype_confirmed
-                subject.subtype = subject_row.subtype
-                subject.anti_retroviral_initiation_date = subject_row.anti_retroviral_initiation_date
-                subject.aids_diagnosis_date = subject_row.aids_diagnosis_date
-                subject.treatment_interruption_date = subject_row.treatment_interruption_date
-                subject.treatment_resumption_date = subject_row.treatment_resumption_date
-
-                subject.state = 'processed'
-                subject.date_processed = datetime.now()
+                ethnicity, ethnicity_created = Ethnicity.objects.get_or_create(name=subject_row.ethnicity)
+                subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
+                country, country_created = Country.objects.get_or_create(name=subject_row.country)
+                
+                subject, subject_created = Subject.objects.get_or_create(patient_label=subject_row.patient_label,
+                                                        entry_date = subject_row.entry_date,
+                                                        entry_status = subject_row.entry_status,
+                                                        country = country,
+                                                        last_negative_date = subject_row.last_negative_date,
+                                                        last_positive_date = subject_row.last_positive_date,
+                                                        ars_onset = subject_row.ars_onset,
+                                                        fiebig = subject_row.fiebig,
+                                                        dob = subject_row.dob,
+                                                        gender = subject_row.gender,
+                                                        ethnicity = ethnicity,
+                                                        sex_with_men = subject_row.sex_with_men,
+                                                        sex_with_women = subject_row.sex_with_women,
+                                                        iv_drug_user = subject_row.iv_drug_user,
+                                                        subtype_confirmed = subject_row.subtype_confirmed,
+                                                        subtype = subtype,
+                                                        anti_retroviral_initiation_date = subject_row.anti_retroviral_initiation_date,
+                                                        aids_diagnosis_date = subject_row.aids_diagnosis_date,
+                                                        treatment_interruption_date = subject_row.treatment_interruption_date,
+                                                        treatment_resumption_date = subject_row.treatment_resumption_date)
+                if subject_created:
+                    subject_row.state = 'processed'
+                    subject_row.date_processed = datetime.now()
 
             except Exception, e:
+                import pdb; pdb.set_trace()
                 subject_row.state = 'error'
                 subject_row.message = e
                 subject_row.save()
