@@ -20,7 +20,7 @@ class SubjectFileHandler(object):
         if bool_string:
             if bool_string == '0':
                 return False
-            else if bool_string == '1':
+            elif bool_string == '1':
                 return True
         else:
             return False
