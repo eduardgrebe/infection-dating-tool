@@ -139,8 +139,8 @@ class VisitFileHandler(FileHandler):
 
                     visit_row.visit_label = row_dict['visit_pt_id']
                     visit_row.visit_date = row_dict['visit_date']
-                    visit_row.visit_status = row_dict['visit_status']
-                    visit_row.visit_source = row_dict['visit_source']
+                    visit_row.status = row_dict['visit_status']
+                    visit_row.source = row_dict['visit_source']
                     visit_row.visit_cd4 = row_dict['visit_cd4']
                     visit_row.visit_vl = row_dict['visit_vl']
                     visit_row.sopevisit_ec = row_dict['scopevisit_ec']
@@ -161,9 +161,10 @@ class VisitFileHandler(FileHandler):
 
 
     def process(self):
+        rows_inserted = 0
+
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
             try:
-                subject = Subject.objects.get(patient_label=visit_row.visit_label)
                 source,  source_create = Source.objects.get_or_create(code=visit_row.source)
 
                 visit = Visit.objects.create(visit_date = self.get_date(visit_row.visit_date),
@@ -174,7 +175,7 @@ class VisitFileHandler(FileHandler):
                                              scope_visit_ec = visit_row.scope_visit_ec,
                                              visit_pregnant = self.get_bool(visit_row.visit_pregnant),
                                              visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
-                                             subject = subject)
+                                             visit_label = visit_row.visit_label)
 
                 visit_row.state = 'processed'
                 visit_row.date_processed = datetime.now()

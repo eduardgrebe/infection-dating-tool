@@ -224,7 +224,7 @@ class Visit(models.Model):
     )
     
 
-    subject = models.ForeignKey(Subject)
+    visit_label = models.CharField(max_length=255, null=False, blank=False)
     visit_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     source = models.ForeignKey(Source)
@@ -233,6 +233,7 @@ class Visit(models.Model):
     scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
     visit_pregnant = models.NullBooleanField()
     visit_hepatitis = models.NullBooleanField()
+    subject = models.ForeignKey(Subject)
 
 
     def __unicode__(self):

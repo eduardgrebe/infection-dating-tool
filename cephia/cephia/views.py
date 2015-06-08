@@ -129,7 +129,6 @@ def parse_file(request, file_id):
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        import pdb; pdb.set_trace()
         messages.add_message(request, messages.ERROR, 'Import failed!')
         return HttpResponseRedirect(reverse('file_info'))
 
@@ -146,12 +145,13 @@ def process_file(request, file_id):
         
         num_rows_processed = file_handler.process()
 
-        subject_file.state = 'processed'
-        subject_file.save()
-        messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - processed')
+        file_to_parse.state = 'processed'
+        file_to_parse.save()
+        messages.add_message(request, messages.SUCCESS, 'Successfully processed ' + str(num_rows_processed) + ' rows ')
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
+        import pdb; pdb.set_trace()
         messages.add_message(request, messages.ERROR, 'Failed to update file to status - processed')
         return HttpResponseRedirect(reverse('file_info'))
 
