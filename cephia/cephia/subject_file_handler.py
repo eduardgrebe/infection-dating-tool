@@ -2,14 +2,7 @@ from excel_helper import ExcelHelper
 from models import SubjectRow, Subject, Ethnicity, Country, Subtype
 from datetime import datetime
 
-
-class SubjectFileHandler(object):
-    subject_file = None
-    
-    def __init__(self, subject_file):
-        self.subject_file = subject_file
-        self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
-
+class FileHandler(object):
     def get_date(self, date_string):
         if date_string:
             return datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S").date()
@@ -24,11 +17,19 @@ class SubjectFileHandler(object):
                 return True
         else:
             return False
+        
+class SubjectFileHandler(FileHandler):
+    subject_file = None
+    
+    def __init__(self, subject_file):
+        self.subject_file = subject_file
+        self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
 
     def parse(self):
         header = self.excel_subject_file.read_header()
         date_cols = [1,4,5,8,16,17,18,19]
-
+        rows_inserted = 0
+        
         for row_num in range(self.excel_subject_file.nrows):
             try:
                 if row_num >= 1:
@@ -60,11 +61,13 @@ class SubjectFileHandler(object):
                     subject_row.fileinfo = self.subject_file
                     subject_row.state = 'pending'
                     subject_row.save()
+
+                    rows_inserted = rows_inserted + 1
             except Exception, e:
                 logger.exception(e)
-                return False
+                return 0
 
-        return True
+        return rows_inserted
 
 
     def process(self):
@@ -73,59 +76,16 @@ class SubjectFileHandler(object):
                 ethnicity, ethnicity_created = Ethnicity.objects.get_or_create(name=subject_row.ethnicity)
                 subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
                 country = Country.objects.get(code=subject_row.country)
-                
-                #process dates correctly
 
-                if subject_row.last_negative_date:
-                    lnd = datetime.strptime(subject_row.last_negative_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    lnd = None
-
-                if subject_row.last_positive_date:
-                    lpd = datetime.strptime(subject_row.last_positive_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    lpd = None
-
-                if subject_row.dob:
-                    dob = datetime.strptime(subject_row.dob, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    dob = None
-
-                if subject_row.ars_onset:
-                    ars = datetime.strptime(subject_row.ars_onset, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    ars = None
-                    
-                if subject_row.anti_retroviral_initiation_date:
-                    arid = datetime.strptime(subject_row.anti_retroviral_initiation_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    arid = None
-
-                if subject_row.aids_diagnosis_date:
-                    add = datetime.strptime(subject_row.aids_diagnosis_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    add = None
-
-                if subject_row.treatment_interruption_date:
-                    tid = datetime.strptime(subject_row.treatment_interruption_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    tid = None
-
-                if subject_row.treatment_resumption_date:
-                    tsd = datetime.strptime(subject_row.treatment_resumption_date, "%Y-%m-%d %H:%M:%S").date()
-                else:
-                    tsd = None
-                #
-
-                subject, subject_created = Subject.objects.get_or_create(patient_label=subject_row.patient_label,
+                subject = Subject.objects.create(patient_label=subject_row.patient_label,
                                                         entry_date = self.get_date(subject_row.entry_date),
                                                         entry_status = subject_row.entry_status,
                                                         country = country,
-                                                        last_negative_date = lnd,
-                                                        last_positive_date = lpd,
-                                                        ars_onset = ars,
+                                                        last_negative_date = self.get_date(subject_row.last_negative_date),
+                                                        last_positive_date = self.get_date(subject_row.last_positive_date),
+                                                        ars_onset = self.get_date(subject_row.ars_onset),
                                                         fiebig = subject_row.fiebig,
-                                                        dob = dob,
+                                                        dob = self.get_date(subject_row.dob),
                                                         gender = subject_row.gender,
                                                         ethnicity = ethnicity,
                                                         sex_with_men = self.get_bool(subject_row.sex_with_men),
@@ -133,21 +93,18 @@ class SubjectFileHandler(object):
                                                         iv_drug_user = self.get_bool(subject_row.iv_drug_user),
                                                         subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                                         subtype = subtype,
-                                                        anti_retroviral_initiation_date = arid,
-                                                        aids_diagnosis_date = add,
-                                                        treatment_interruption_date = tid,
-                                                        treatment_resumption_date = tsd)
+                                                        anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
+                                                        aids_diagnosis_date = self.get_date(subject_row.aids_diagnosis_date),
+                                                        treatment_interruption_date = self.get_date(subject_row.treatment_interruption_date),
+                                                        treatment_resumption_date = self.get_date(subject_row.treatment_resumption_date))
 
-                if subject_created:
-                    subject_row.state = 'processed'
-                    subject_row.date_processed = datetime.now()
+                subject_row.state = 'processed'
+                subject_row.date_processed = datetime.now()
+                subject_row.save()
 
             except Exception, e:
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
-                subject_row.save()
-                subject_row.fileinfo.state = 'error'
-                subject_row.fileinfo.message = e.message
                 subject_row.save()
                 continue
                 

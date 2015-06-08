@@ -142,23 +142,27 @@ class Subject(models.Model):
     class Meta:
         db_table = "cephia_subject"
 
-    #add to gender field after testing
     GENDER_CHOICES = (
         ('male','Male'),
         ('female','Female'),
         ('unkown','Unkown')
     )
+
+    STATUS_CHOICES = (
+        ('negative','Negative'),
+        ('positive','Positive'),
+    )
     
     patient_label = models.CharField(max_length=255, null=False, blank=False)
     entry_date = models.DateField(null=True, blank=True)
-    entry_status = models.CharField(max_length=255, null=False, blank=False)
-    country = models.CharField(max_length=255, null=False, blank=False)
+    entry_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
+    country = models.ForeignKey(Country)
     last_negative_date = models.DateField(null=True, blank=True)
     last_positive_date = models.DateField(null=True, blank=True)
     ars_onset = models.DateField(null=True, blank=True)
     fiebig = models.CharField(max_length=10, null=False, blank=False)
     dob = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=6, null=False, blank=True)
+    gender = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
     ethnicity = models.ForeignKey(Ethnicity)
     sex_with_men = models.NullBooleanField()
     sex_with_women = models.NullBooleanField()
