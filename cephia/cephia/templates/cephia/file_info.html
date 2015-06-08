@@ -15,6 +15,7 @@
     <thead>
 	<th></th>
 	<th>Name</th>
+	<th>Type</th>
 	<th>Created</th>
 	<th>State</th>
 	<th>Download</th>
@@ -26,6 +27,7 @@
 	<tr>
 	    <td><a href="{% url 'row_info' file.id %}">Detail</a></td>
 	    <td>{{file.filename}}</td>
+	    <td>{{file.file_type}}</td>
 	    <td>{{file.created}}</td>
 	    <td>{{file.state}}</td>
 	    <td><a href="{% url 'download_file' file.id %}">Download</a></td>

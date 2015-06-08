@@ -25,7 +25,7 @@
 	<th>Ethnicity</th>
 	<th>Sex with men</th>
 	<th>Sex with women</th>
-	<th>iv_drug_user</th>
+	<th>IV Drug User</th>
 	<th>Subtype Confirmed</th>
 	<th>Subtype</th>
 	<th>Anti Retroviral Init Date</th>
@@ -48,10 +48,10 @@
 	    <td>{{subject.dob}}</td>
 	    <td>{{subject.gender}}</td>
 	    <td>{{subject.ethnicity.name}}</td>
-	    <td>{{subject.sex_with_men}}</td>
-	    <td>{{subject.sex_with_women}}</td>
-	    <td>{{subject.iv_drug_user}}</td>
-	    <td>{{subject.subtype_confirmed}}</td>
+	    <td>{% if subject.sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.sex_with_women %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.iv_drug_user %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.subtype_confirmed %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	    <td>{{subject.subtype.name}}</td>
 	    <td>{{subject.anti_retroviral_initiation_date}}</td>
 	    <td>{{subject.aids_diagnosis_date}}</td>

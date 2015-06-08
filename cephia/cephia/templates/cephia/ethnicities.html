@@ -3,11 +3,11 @@
 {% load endless %}
 
 
-{% block site-title %} Ethnicity {% endblock %}
+{% block site-title %} Ethnicities {% endblock %}
 
 {% block page_content %}
 
-{% paginate ethnicity %}
+{% paginate ethnicities %}
 {% show_pages %}
 
 <table class="table-striped table table-hover" style="overflow:auto;">
@@ -17,10 +17,10 @@
     </thead>
 
     <tbody>
-	{% for eth in ethnicity %}
+	{% for ethnicity in ethnicities %}
 	<tr>
-	    <td>{{eth.id}}</td>
-	    <td>{{eth.name}}</td>
+	    <td>{{ethnicity.id}}</td>
+	    <td>{{ethnicity.name}}</td>
 	</tr>
 	{% endfor %}
     </tbody>

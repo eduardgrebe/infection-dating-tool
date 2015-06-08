@@ -5,11 +5,13 @@ from django.core.urlresolvers import reverse
 from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
-logger = logging.getLogger(__name__)
-from models import Country, FileInfo, SubjectRow, Subject, Ethnicity
+from file_handlers import SubjectFileHandler, VisitFileHandler
+from models import Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit, VisitRow
 from forms import FileInfoForm
-from subject_file_handler import SubjectFileHandler
 from django.contrib import messages
+
+logger = logging.getLogger(__name__)
+
 
 @login_required
 def home(request, template="cephia/home.html"):
@@ -25,10 +27,18 @@ def countries(request, template="cephia/countries.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
-def ethnicity(request, template="cephia/ethnicity.html"):
+def ethnicities(request, template="cephia/ethnicities.html"):
     context = {}
-    ethnicity = Ethnicity.objects.all()
-    context['ethnicity'] = ethnicity
+    ethnicities = Ethnicity.objects.all()
+    context['ethnicities'] = ethnicities
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@login_required
+def sources(request, template="cephia/sources.html"):
+    context = {}
+    sources = Source.objects.all()
+    context['sources'] = sources
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -37,6 +47,14 @@ def subjects(request, template="cephia/subjects.html"):
     context = {}
     subjects = Subject.objects.all()
     context['subjects'] = subjects
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@login_required
+def visits(request, template="cephia/visits.html"):
+    context = {}
+    visits = Visit.objects.all()
+    context['visits'] = visits
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -52,12 +70,18 @@ def file_info(request, template="cephia/file_info.html"):
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
-def row_info(request, file_id, template="cephia/row_info_table.html"):
+def row_info(request, file_id, template=None):
     context = {}
     fileinfo = FileInfo.objects.get(pk=file_id)
-    rows = SubjectRow.objects.filter(fileinfo=fileinfo)
-    context['rows'] = rows
 
+    if fileinfo.file_type == 'subject':
+        rows = SubjectRow.objects.filter(fileinfo=fileinfo)
+        template = 'cephia/subject_row_info.html'
+    elif fileinfo.file_type == 'visit':
+        rows = VisitRow.objects.filter(fileinfo=fileinfo)
+        template = 'cephia/visit_row_info.html'
+
+    context['rows'] = rows
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -81,6 +105,7 @@ def upload_file(request):
                 form.save();
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
                 return HttpResponseRedirect(reverse('file_info'))
+
     except Exception, e:
         messages.add_message(request, messages.ERROR, 'Failed to upload file')
         return HttpResponseRedirect(reverse('file_info'))
@@ -89,33 +114,42 @@ def upload_file(request):
 @login_required
 def parse_file(request, file_id):
     try:
-        subject_file = FileInfo.objects.get(pk=file_id)
-        subject_file_handler = SubjectFileHandler(subject_file)
-        success = subject_file_handler.parse()
+        file_to_parse = FileInfo.objects.get(pk=file_id)
 
-        if success:
-            subject_file.state = 'imported'
-            subject_file.save()
-            messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - imported')
+        if file_to_parse.file_type == 'subject':
+            file_handler = SubjectFileHandler(file_to_parse)
+        elif file_to_parse.file_type == 'visit':
+            file_handler = VisitFileHandler(file_to_parse)
+
+        num_rows_parsed = file_handler.parse()
+
+        file_to_parse.state = 'imported'
+        file_to_parse.save()
+        messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_rows_parsed) + ' rows ')
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        messages.add_message(request, messages.ERROR, 'Failed to update file to status - imported')
+        import pdb; pdb.set_trace()
+        messages.add_message(request, messages.ERROR, 'Import failed!')
         return HttpResponseRedirect(reverse('file_info'))
 
 
 @login_required
 def process_file(request, file_id):
     try:
-        subject_file = FileInfo.objects.get(pk=file_id)
-        subject_file_handler = SubjectFileHandler(subject_file)
-        success = subject_file_handler.process()
+        file_to_parse = FileInfo.objects.get(pk=file_id)
 
-        if success:
-            subject_file.state = 'processed'
-            subject_file.save()
+        if file_to_parse.file_type == 'subject':
+            file_handler = SubjectFileHandler(file_to_parse)
+        elif file_to_parse.file_type == 'visit':
+            file_handler = SubjectFileHandler(file_to_parse)
+        
+        num_rows_processed = file_handler.process()
 
+        subject_file.state = 'processed'
+        subject_file.save()
         messages.add_message(request, messages.SUCCESS, 'Successfully updated file to status - processed')
+
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
         messages.add_message(request, messages.ERROR, 'Failed to update file to status - processed')
@@ -125,7 +159,6 @@ def process_file(request, file_id):
 @login_required
 def delete_row(request, row_id):
     try:
-        import pdb; pdb.set_trace()
         subject_row = SubjectRow.objects.get(pk=row_id)
         messages.add_message(request, messages.SUCCESS, 'Row successfully deleted')
 

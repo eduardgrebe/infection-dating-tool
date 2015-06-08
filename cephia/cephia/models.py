@@ -66,6 +66,13 @@ class Subtype(models.Model):
 
     name = models.CharField(max_length=30, null=False, blank=False)
 
+class Source(models.Model):
+
+    class Meta:
+        db_table = "cephia_source"
+
+    name = models.CharField(max_length=30, null=False, blank=False)
+
 
 class FileInfo(models.Model):
 
@@ -78,7 +85,13 @@ class FileInfo(models.Model):
         ('error','Error')
     )
 
+    FILE_TYPE_CHOICES = (
+        ('subject','Subject'),
+        ('visit','Visit')
+    )
+
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
+    file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=8, null=False, blank=False, default='pending')
     message = models.TextField(blank=True)
@@ -176,3 +189,51 @@ class Subject(models.Model):
 
     def __unicode__(self):
         return self.patient_label
+
+
+class VisitRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_visitrow"
+
+    visit_label = models.CharField(max_length=255, null=False, blank=True)
+    visit_date = models.CharField(max_length=255, null=False, blank=True)
+    status = models.CharField(max_length=255, null=False, blank=True)
+    source = models.CharField(max_length=255, null=False, blank=True)
+    visit_cd4 = models.CharField(max_length=255, null=False, blank=True)
+    visit_vl = models.CharField(max_length=255, null=False, blank=True)
+    scope_visit_ec = models.CharField(max_length=255, null=False, blank=True)
+    visit_pregnant = models.CharField(max_length=255, null=False, blank=True)
+    visit_hepatitis = models.CharField(max_length=255, null=False, blank=True)
+
+
+    def __unicode__(self):
+        return self.visit_label
+
+
+class Visit(models.Model):
+
+    class Meta:
+        db_table = "cephia_visit"
+
+
+    STATUS_CHOICES = (
+        ('negative','Negative'),
+        ('positive','Positive'),
+        ('unknown','Unkown'),
+    )
+    
+
+    subject = models.ForeignKey(Subject)
+    visit_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
+    source = models.ForeignKey(Source)
+    visit_cd4 = models.IntegerField(null=False, blank=False)
+    visit_vl = models.CharField(max_length=10, null=False, blank=True)
+    scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
+    visit_pregnant = models.NullBooleanField()
+    visit_hepatitis = models.NullBooleanField()
+
+
+    def __unicode__(self):
+        return self.subject.patient_label

@@ -1,0 +1,46 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Visits {% endblock %}
+
+{% block page_content %}
+
+{% paginate visits %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>Subject</th>
+	<th>Visit Date</th>
+	<th>Status</th>
+	<th>Source</th>
+	<th>CD4</th>
+	<th>VL</th>
+	<th>Scope Visit EC</th>
+	<th>Pregnant</th>
+	<th>Hepatitis</th>
+    </thead>
+
+    <tbody>
+	{% for visit in visits %}
+	<tr>
+	    {{visit}}
+	    <td>{{visit.subect.patient_label}}</td>
+	    <td>{{visit.visit_date}}</td>
+	    <td>{{visit.status}}</td>
+	    <td>{{visit.source.name}}</td>
+	    <td>{{visit.visit_cd4}}</td>
+	    <td>{{visit.visit_vl}}</td>
+	    <td>{{visit.scope_visit_ec}}</td>
+	    <td>{{visit.visit_pregnant}}</td>
+	    <td>{{visit.visit_hepatitis}}</td>
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+
