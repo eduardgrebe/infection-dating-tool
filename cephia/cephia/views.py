@@ -6,7 +6,7 @@ from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from file_handlers import SubjectFileHandler, VisitFileHandler, TransferInFileHandler
-from models import Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit, VisitRow, Source, Specimen, SpecimenType, TransferInRow
+from models import Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit, VisitRow, Source, Specimen, SpecimenType, TransferInRow, Study
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
@@ -43,6 +43,14 @@ def sources(request, template="cephia/sources.html"):
     context = {}
     sources = Source.objects.all()
     context['sources'] = sources
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@login_required
+def studies(request, template="cephia/studies.html"):
+    context = {}
+    studies = Study.objects.all()
+    context['studies'] = studies
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 

@@ -1,0 +1,31 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Studies {% endblock %}
+
+{% block page_content %}
+
+{% paginate studies %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>ID</th>
+	<th>Name</th>
+    </thead>
+
+    <tbody>
+	{% for study in studies %}
+	<tr>
+	    <td>{{study.id}}</td>
+	    <td>{{study.name}}</td>
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+

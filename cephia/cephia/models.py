@@ -249,7 +249,7 @@ class SpecimenType(models.Model):
 
     name = models.CharField(max_length=255, null=False, blank=False)
     spec_type = models.IntegerField(null=False, blank=False)
-    spec_group = models.IntegerField(null=False, blank=False)
+    spec_group = models.IntegerField(null=True, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -297,13 +297,13 @@ class Specimen(models.Model):
     label = models.CharField(max_length=255, null=False, blank=False) 
     num_containers = models.IntegerField(null=False, blank=False, default=1)
     reported_draw_date = models.DateField()
-    transfer_in_date = models.DateField()
-    to_location = models.ForeignKey(Location)
+    transfer_in_date = models.DateField(null=True, blank=True)
     reason = models.ForeignKey(Reason)
+    subject = models.ForeignKey(Subject, null=True, blank=True)
     spec_type = models.ForeignKey(SpecimenType)
     volume = models.IntegerField()
     initial_claimed_volume = models.IntegerField()
-    other_ref = models.IntegerField()
+    other_ref = models.IntegerField(null=True, blank=False)
     source_study = models.ForeignKey(Study)
     site = models.CharField(max_length=5, null=False, blank=False, choices=SITE_CHOICES)
 

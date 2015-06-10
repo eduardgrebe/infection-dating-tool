@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
     url(r'^sources/$', views.sources, name='sources'),
     url(r'^specimen_type/$', views.specimen_type, name='specimen_type'),
+    url(r'^studies/$', views.studies, name='studies'),
     url(r'^subjects/$', views.subjects, name='subjects'),
     url(r'^visits/$', views.visits, name='visits'),
     url(r'^specimen/$', views.specimen, name='specimen'),

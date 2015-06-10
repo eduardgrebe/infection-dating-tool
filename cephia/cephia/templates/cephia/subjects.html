@@ -43,7 +43,7 @@
 	    <td>{{subject.country.name}}</td>
 	    <td>{{subject.last_negative_date}}</td>
 	    <td>{{subject.last_positive_date}}</td>
-	    <td>{{subject.ars_onset}}</td>
+	    <td>{% if subject.ars_onset %} {{subject.ars_onset}} {% else %} &nbsp; {% endif %}</td>
 	    <td>{{subject.fiebig}}</td>
 	    <td>{{subject.dob}}</td>
 	    <td>{{subject.gender}}</td>
@@ -53,10 +53,10 @@
 	    <td>{% if subject.iv_drug_user %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	    <td>{% if subject.subtype_confirmed %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	    <td>{{subject.subtype.name}}</td>
-	    <td>{{subject.anti_retroviral_initiation_date}}</td>
-	    <td>{{subject.aids_diagnosis_date}}</td>
-	    <td>{{subject.treatment_interruption_date}}</td>
-	    <td>{{subject.treatment_resumption_date}}</td>
+	    <td>{% if subject.anti_retroviral_initiation_date %} {{subject.anti_retroviral_initiation_date}} {% else %} &nbsp; {% endif %}</td>
+	    <td>{% if subject.aids_diagnosis_date %} {{subject.aids_diagnosis_date}} {% else %} &nbsp; {% endif %}</td>
+	    <td>{% if subject.treatment_interruption_date %} {{subject.treatment_interruption_date }} {% else %} &nbsp; {% endif %}</td>
+	    <td>{% if subject.treatment_resumption_date %} {{subject.treatment_resumption_date}} {% else %} &nbsp; {% endif %}</td>
 	</tr>
 	{% endfor %}
     </tbody>

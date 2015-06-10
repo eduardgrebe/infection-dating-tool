@@ -1,5 +1,5 @@
 from excel_helper import ExcelHelper
-from models import SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit, Source, TransferInRow, Specimen, SpecimenType
+from models import SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit, Source, TransferInRow, Specimen, SpecimenType, Study, Reason
 from datetime import datetime
 from django.db import transaction
 import logging
@@ -40,8 +40,8 @@ class SubjectFileHandler(FileHandler):
                 if row_num >= 1:
                     row = self.excel_subject_file.read_row(row_num, date_cols)
                     row_dict = dict(zip(header, row))
-                    
-                    subject_row, created = SubjectRow.objects.get_or_create(patient_label=row_dict['pt_id'], fileinfo=self.subject_file)
+
+                    subject_row = SubjectRow.objects.create(patient_label=row_dict['pt_id'], fileinfo=self.subject_file)
 
                     subject_row.patient_label = row_dict['pt_id']
                     subject_row.entry_date = row_dict['pt_entrydt']
@@ -69,6 +69,7 @@ class SubjectFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
+                import pdb; pdb.set_trace()
                 rows_failed = rows_failed + 1
                 continue
 
@@ -91,26 +92,26 @@ class SubjectFileHandler(FileHandler):
                     subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
                     country = Country.objects.get(code=subject_row.country)
 
-                    subject = Subject.objects.get_or_create(patient_label=subject_row.patient_label,
-                                                    entry_date = self.get_date(subject_row.entry_date),
-                                                    entry_status = subject_row.entry_status,
-                                                    country = country,
-                                                    last_negative_date = self.get_date(subject_row.last_negative_date),
-                                                    last_positive_date = self.get_date(subject_row.last_positive_date),
-                                                    ars_onset = self.get_date(subject_row.ars_onset),
-                                                    fiebig = subject_row.fiebig,
-                                                    dob = self.get_date(subject_row.dob),
-                                                    gender = subject_row.gender,
-                                                    ethnicity = ethnicity_object,
-                                                    sex_with_men = self.get_bool(subject_row.sex_with_men),
-                                                    sex_with_women = self.get_bool(subject_row.sex_with_women),
-                                                    iv_drug_user = self.get_bool(subject_row.iv_drug_user),
-                                                    subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
-                                                    subtype = subtype,
-                                                    anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
-                                                    aids_diagnosis_date = self.get_date(subject_row.aids_diagnosis_date),
-                                                    treatment_interruption_date = self.get_date(subject_row.treatment_interruption_date),
-                                                    treatment_resumption_date = self.get_date(subject_row.treatment_resumption_date))
+                    subject = Subject.objects.update_or_create(patient_label=subject_row.patient_label,
+                                                                entry_date = self.get_date(subject_row.entry_date),
+                                                                entry_status = subject_row.entry_status,
+                                                                country = country,
+                                                                last_negative_date = self.get_date(subject_row.last_negative_date),
+                                                                last_positive_date = self.get_date(subject_row.last_positive_date),
+                                                                ars_onset = self.get_date(subject_row.ars_onset),
+                                                                fiebig = subject_row.fiebig,
+                                                                dob = self.get_date(subject_row.dob),
+                                                                gender = subject_row.gender,
+                                                                ethnicity = ethnicity_object,
+                                                                sex_with_men = self.get_bool(subject_row.sex_with_men),
+                                                                sex_with_women = self.get_bool(subject_row.sex_with_women),
+                                                                iv_drug_user = self.get_bool(subject_row.iv_drug_user),
+                                                                subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
+                                                                subtype = subtype,
+                                                                anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
+                                                                aids_diagnosis_date = self.get_date(subject_row.aids_diagnosis_date),
+                                                                treatment_interruption_date = self.get_date(subject_row.treatment_interruption_date),
+                                                                treatment_resumption_date = self.get_date(subject_row.treatment_resumption_date))
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
@@ -146,9 +147,9 @@ class VisitFileHandler(FileHandler):
                     row = self.excel_visit_file.read_row(row_num, date_cols)
                     row_dict = dict(zip(header, row))
 
-                    visit_row, created = VisitRow.objects.get_or_create(visit_label=row_dict['visit_pt_id'],
-                                                                        visit_date=row_dict['visit_date'],
-                                                                        fileinfo=self.visit_file)
+                    visit_row = VisitRow.objects.create(visit_label=row_dict['visit_pt_id'],
+                                                        visit_date=row_dict['visit_date'],
+                                                        fileinfo=self.visit_file)
 
                     visit_row.visit_label = row_dict['visit_pt_id']
                     visit_row.visit_date = row_dict['visit_date']
@@ -186,18 +187,19 @@ class VisitFileHandler(FileHandler):
                     else:
                         cd4 = visit_row.visit_cd4
 
-                    visit = Visit.objects.create(visit_date = self.get_date(visit_row.visit_date),
-                                                 status = visit_row.status,
-                                                 source = source,
-                                                 visit_cd4 = cd4,
-                                                 visit_vl = visit_row.visit_vl,
-                                                 scope_visit_ec = visit_row.scope_visit_ec,
-                                                 visit_pregnant = self.get_bool(visit_row.visit_pregnant),
-                                                 visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
-                                                 visit_label = visit_row.visit_label)
+                    visit = Visit.objects.update_or_create(visit_date = self.get_date(visit_row.visit_date),
+                                                           status = visit_row.status,
+                                                           source = source,
+                                                           visit_cd4 = cd4,
+                                                           visit_vl = visit_row.visit_vl,
+                                                           scope_visit_ec = visit_row.scope_visit_ec,
+                                                           visit_pregnant = self.get_bool(visit_row.visit_pregnant),
+                                                           visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
+                                                           visit_label = visit_row.visit_label)
 
                     visit_row.state = 'processed'
                     visit_row.date_processed = datetime.now()
+                    visit_row.error_message = ''
                     visit_row.save()
                     rows_inserted = rows_inserted + 1
             except Exception, e:
@@ -230,10 +232,10 @@ class TransferInFileHandler(FileHandler):
                     row = self.excel_transfer_in_file.read_row(row_num, date_cols)
                     row_dict = dict(zip(header, row))
 
-                    transfer_in_row, created = TransferInRow.objects.get_or_create(specimen_label=row_dict['specimen id'],
-                                                                                   patient_label=row_dict['subject_id'],
-                                                                                   draw_date=row_dict['draw_date'],
-                                                                                   fileinfo=self.transfer_in_file)
+                    transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen id'],
+                                                                   patient_label=row_dict['subject_id'],
+                                                                   draw_date=row_dict['draw_date'],
+                                                                   fileinfo=self.transfer_in_file)
 
                     transfer_in_row.specimen_label = row_dict['specimen id']
                     transfer_in_row.patient_label = row_dict['subject_id']
@@ -267,20 +269,31 @@ class TransferInFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
+                    reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
 
-                    spec_type_group = transfer_in_row.spec_type.split()
-                    spec_type = SpecimenType.objects.get_or_create(spec_type=spec_type_group[0],
-                                                                   spec_group=spec_type_group[1],
-                                                                   name='')
+                    if '.' in transfer_in_row.spec_type:
+                        spec_type_list = transfer_in_row.spec_type.split()
+                        spec_type = spec_type_list[0]
+                        spec_group = spec_type_list[1]
 
-                    specimen = Specimen.objects.create(label = self.get_date(transfer_in_row.specimen_label),
-                                                       subject = subject,
-                                                       draw_date = transfer_in_row.draw_date,
-                                                       num_containers = transfer_in_row.num_containers,
-                                                       transfer_in_date = transfer_in_row.transfer_in_date,
-                                                       souce_study = transfer_in_row.sites,
-                                                       spec_type = spec_type,
-                                                       volume = transfer_in_row.volume)
+                        spec_type_object = SpecimenType.objects.get(spec_type=spec_type,
+                                                                    spec_group=spec_group)
+                    else:
+                        spec_type = transfer_in_row.spec_type
+                        spec_type_object = SpecimenType.objects.get(spec_type=spec_type)
+
+
+                    specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
+                                                                 subject = subject,
+                                                                 reported_draw_date = self.get_date(transfer_in_row.draw_date),
+                                                                 num_containers = transfer_in_row.num_containers,
+                                                                 transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
+                                                                 source_study = study,
+                                                                 reason = reason,
+                                                                 spec_type = spec_type_object,
+                                                                 volume = transfer_in_row.volume,
+                                                                 initial_claimed_volume = transfer_in_row.volume)
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = datetime.now()
