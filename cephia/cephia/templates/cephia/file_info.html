@@ -40,6 +40,8 @@
 		{% elif file.state == 'proc' or file.state == 'error' %}
 		<a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Reprocess</a>
 		{% endif %}
+	    </td>
+	    <td>
 		<a href="{% url 'delete_file' file.id %}" class="btn btn-default btn-sm">Delete File</a>
 	    </td>
 	</tr>

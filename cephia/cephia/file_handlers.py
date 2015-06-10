@@ -181,10 +181,15 @@ class VisitFileHandler(FileHandler):
                 with transaction.atomic():
                     source,  source_create = Source.objects.get_or_create(name=visit_row.source)
 
+                    if not visit_row.visit_cd4:
+                        cd4 = 0
+                    else:
+                        cd4 = visit_row.visit_cd4
+
                     visit = Visit.objects.create(visit_date = self.get_date(visit_row.visit_date),
                                                  status = visit_row.status,
                                                  source = source,
-                                                 visit_cd4 = visit_row.visit_cd4,
+                                                 visit_cd4 = cd4,
                                                  visit_vl = visit_row.visit_vl,
                                                  scope_visit_ec = visit_row.scope_visit_ec,
                                                  visit_pregnant = self.get_bool(visit_row.visit_pregnant),
