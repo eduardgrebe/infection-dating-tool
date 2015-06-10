@@ -3,38 +3,44 @@
 {% load endless %}
 
 
-{% block site-title %} Visits {% endblock %}
+{% block site-title %} Specimen {% endblock %}
 
 {% block page_content %}
 
-{% paginate visits %}
+{% paginate specimen %}
 {% show_pages %}
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>Subject</th>
-	<th>Visit Date</th>
-	<th>Status</th>
-	<th>Source</th>
-	<th>CD4</th>
-	<th>VL</th>
-	<th>Scope Visit EC</th>
-	<th>Pregnant</th>
-	<th>Hepatitis</th>
+	<th></th>
+	<th>Label</th>
+	<th>Number of Containers</th>
+	<th>Draw Date</th>
+	<th>Transfer in Date</th>
+	<th>To Location</th>
+	<th>Reason</th>
+	<th>Specimen Type</th>
+	<th>Initial Claimed Volume</th>
+	<th>Other Ref</th>
+	<th>Source Study</th>
+	<th>Site</th>
     </thead>
 
     <tbody>
-	{% for visit in visits %}
+	{% for spec in specimen %}
 	<tr>
-	    <td>{{visit.visit_label}}</td>
-	    <td>{{visit.visit_date}}</td>
-	    <td>{{visit.status}}</td>
-	    <td>{{visit.source.name}}</td>
-	    <td>{{visit.visit_cd4}}</td>
-	    <td>{{visit.visit_vl}}</td>
-	    <td>{{visit.scope_visit_ec}}</td>
-	    <td>{{visit.visit_pregnant}}</td>
-	    <td>{{visit.visit_hepatitis}}</td>
+	    <td>{{visit.label}}</td>
+	    <td>{{visit.num_containers}}</td>
+	    <td>{{visit.reported_draw_date}}</td>
+	    <td>{{visit.transfer_in_date}}</td>
+	    <td>{{visit.to_location}}</td>
+	    <td>{{visit.reason}}</td>
+	    <td>{{visit.spec_type}}</td>
+	    <td>{{visit.volume}}</td>
+	    <td>{{visit.initial_claimed_volume}}</td>
+	    <td>{{visit.other_ref}}</td>
+	    <td>{{visit.source_study}}</td>
+	    <td>{{visit.site}}</td>
 	</tr>
 	{% endfor %}
     </tbody>

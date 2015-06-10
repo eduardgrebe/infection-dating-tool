@@ -94,7 +94,7 @@ class FileInfo(models.Model):
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
     created = models.DateTimeField(auto_now_add=True)
-    state = models.CharField(choices=STATE_CHOICES, max_length=8, null=False, blank=False, default='pending')
+    state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     message = models.TextField(blank=True)
 
     def __unicode__(self):
@@ -229,7 +229,7 @@ class Visit(models.Model):
     visit_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     source = models.ForeignKey(Source)
-    visit_cd4 = models.IntegerField(null=False, blank=False)
+    visit_cd4 = models.IntegerField(null=True, blank=True)
     visit_vl = models.CharField(max_length=10, null=False, blank=True)
     scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
     visit_pregnant = models.NullBooleanField()
@@ -310,20 +310,21 @@ class Specimen(models.Model):
     def __unicode__(self):
         return self.name
 
-class TransferInRow(models.Model):
+
+class TransferInRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_transfer_in_row"
     
-    specimen_label = models.CharField(max_length=255, null=False, blank=False) 
-    patient_label = models.CharField(max_length=255, null=False, blank=False)
-    draw_date = models.CharField(max_length=255, null=False, blank=False)
-    num_containers = models.CharField(max_length=255, null=False, blank=False)
-    transfer_in_date = models.CharField(max_length=255, null=False, blank=False)
-    sites = models.CharField(max_length=255, null=False, blank=False)
-    transfer_reason = models.CharField(max_length=255, null=False, blank=False)
-    spec_type = models.CharField(max_length=255, null=False, blank=False)
-    volume = models.CharField(max_length=255, null=False, blank=False)
+    specimen_label = models.CharField(max_length=255, null=False, blank=True) 
+    patient_label = models.CharField(max_length=255, null=True, blank=True)
+    draw_date = models.CharField(max_length=255, null=True, blank=True)
+    num_containers = models.CharField(max_length=255, null=False, blank=True)
+    transfer_in_date = models.CharField(max_length=255, null=True, blank=True)
+    sites = models.CharField(max_length=255, null=False, blank=True)
+    transfer_reason = models.CharField(max_length=255, null=False, blank=True)
+    spec_type = models.CharField(max_length=255, null=False, blank=True)
+    volume = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.name

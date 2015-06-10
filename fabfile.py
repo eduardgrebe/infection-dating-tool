@@ -35,7 +35,8 @@ def deploy_staging(branch_name="master"):
 
     with cd(imp_remote_code_staging_dir):
         run("git reset --hard HEAD")
-        run("git checkout %s" % branch_name)
+        run("git fetch origin")
+        run("git checkout origin/%s" % branch_name)
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_impd.sh")
         
