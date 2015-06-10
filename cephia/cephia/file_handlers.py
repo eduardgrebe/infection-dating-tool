@@ -1,6 +1,7 @@
 from excel_helper import ExcelHelper
-from models import SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit
+from models import SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit, Source
 from datetime import datetime
+from django.db import transaction
 import logging
 
 class FileHandler(object):
@@ -116,8 +117,168 @@ class SubjectFileHandler(FileHandler):
                 subject_row.save()
                 continue
                 
-
+#################################################################################################################
 class VisitFileHandler(FileHandler):
+    visit_file = None
+    
+    def __init__(self, visit_file):
+        self.visit_file = visit_file
+        self.excel_visit_file = ExcelHelper(f=visit_file.data_file.url)
+
+    def parse(self):
+        header = self.excel_visit_file.read_header()
+        date_cols = [1]
+        rows_inserted = 0
+        rows_failed = 0
+
+        for row_num in range(self.excel_visit_file.nrows):
+            try:
+                if row_num >= 1:
+                    row = self.excel_visit_file.read_row(row_num, date_cols)
+                    row_dict = dict(zip(header, row))
+
+                    visit_row, created = VisitRow.objects.get_or_create(visit_label=row_dict['visit_pt_id'],
+                                                                        visit_date=row_dict['visit_date'],
+                                                                        fileinfo=self.visit_file)
+
+                    visit_row.visit_label = row_dict['visit_pt_id']
+                    visit_row.visit_date = row_dict['visit_date']
+                    visit_row.status = row_dict['visit_status']
+                    visit_row.source = row_dict['visit_source']
+                    visit_row.visit_cd4 = row_dict['visit_cd4']
+                    visit_row.visit_vl = row_dict['visit_vl']
+                    visit_row.sopevisit_ec = row_dict['scopevisit_ec']
+                    visit_row.visit_pregnant = row_dict['visit_pregnant']
+                    visit_row.visit_hepatitis = row_dict['visit_hepatitis']
+
+                    visit_row.fileinfo = self.visit_file
+                    visit_row.state = 'pending'
+                    visit_row.save()
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+    def process(self):
+        rows_inserted = 0
+        rows_failed = 0
+
+        for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
+            try:
+                with transaction.atomic():
+                    source,  source_create = Source.objects.get_or_create(name=visit_row.source)
+
+                    visit = Visit.objects.create(visit_date = self.get_date(visit_row.visit_date),
+                                                 status = visit_row.status,
+                                                 source = source,
+                                                 visit_cd4 = visit_row.visit_cd4,
+                                                 visit_vl = visit_row.visit_vl,
+                                                 scope_visit_ec = visit_row.scope_visit_ec,
+                                                 visit_pregnant = self.get_bool(visit_row.visit_pregnant),
+                                                 visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
+                                                 visit_label = visit_row.visit_label)
+
+                    visit_row.state = 'processed'
+                    visit_row.date_processed = datetime.now()
+                    visit_row.save()
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                visit_row.state = 'error'
+                visit_row.error_message = e.message
+                visit_row.save()
+                rows_failed = rows_failed + 1
+                continue
+            
+        return rows_inserted, rows_failed
+################################################################################################    
+
+class TrasnferInFileHandler(FileHandler):
+    visit_file = None
+    
+    def __init__(self, visit_file):
+        self.visit_file = visit_file
+        self.excel_visit_file = ExcelHelper(f=visit_file.data_file.url)
+
+    def parse(self):
+        header = self.excel_visit_file.read_header()
+        date_cols = [1]
+        rows_inserted = 0
+
+        for row_num in range(self.excel_visit_file.nrows):
+            try:
+                if row_num >= 1:
+                    row = self.excel_visit_file.read_row(row_num, date_cols)
+                    row_dict = dict(zip(header, row))
+
+                    visit_row, created = VisitRow.objects.get_or_create(visit_label=row_dict['visit_pt_id'],
+                                                                        visit_date=row_dict['visit_date'],
+                                                                        fileinfo=self.visit_file)
+
+                    visit_row.visit_label = row_dict['visit_pt_id']
+                    visit_row.visit_date = row_dict['visit_date']
+                    visit_row.status = row_dict['visit_status']
+                    visit_row.source = row_dict['visit_source']
+                    visit_row.visit_cd4 = row_dict['visit_cd4']
+                    visit_row.visit_vl = row_dict['visit_vl']
+                    visit_row.sopevisit_ec = row_dict['scopevisit_ec']
+                    visit_row.visit_pregnant = row_dict['visit_pregnant']
+                    visit_row.visit_hepatitis = row_dict['visit_hepatitis']
+
+                    Specimen ID = label
+                    subject_id = lookup the subject based on the patient_label field
+                    draw_date = reported_draw_date
+                    Number of Containers = num_containers
+                    Transfer Date = transfer_in_date
+                    Sites = source_study
+                    Transfer Reason = reason
+                    Spec Type = spec_type_primary + spec_type_secondary (split on the decimal point)
+                    Volume = volume. And also set initial_claimed volume
+
+                    visit_row.fileinfo = self.visit_file
+                    visit_row.state = 'pending'
+                    visit_row.save()
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+    def process(self):
+        rows_inserted = 0
+
+        for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
+            try:
+                source,  source_create = Source.objects.get_or_create(code=visit_row.source)
+
+                visit = Visit.objects.create(visit_date = self.get_date(visit_row.visit_date),
+                                             status = visit_row.status,
+                                             source = source,
+                                             visit_cd4 = visit_row.visit_cd4,
+                                             visit_vl = visit_row.visit_vl,
+                                             scope_visit_ec = visit_row.scope_visit_ec,
+                                             visit_pregnant = self.get_bool(visit_row.visit_pregnant),
+                                             visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
+                                             visit_label = visit_row.visit_label)
+
+                visit_row.state = 'processed'
+                visit_row.date_processed = datetime.now()
+                visit_row.save()
+
+            except Exception, e:
+                visit_row.state = 'error'
+                visit_row.error_message = e.message
+                visit_row.save()
+                continue
+
+
+class TransferOutFileHandler(FileHandler):
     visit_file = None
     
     def __init__(self, visit_file):
@@ -153,7 +314,6 @@ class VisitFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                import pdb; pdb.set_trace()
                 #logger.exception(e)
                 return 0
 
@@ -186,5 +346,3 @@ class VisitFileHandler(FileHandler):
                 visit_row.error_message = e.message
                 visit_row.save()
                 continue
-                
-

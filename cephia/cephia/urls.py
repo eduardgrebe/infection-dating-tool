@@ -24,6 +24,7 @@ urlpatterns = [
 
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
+    url(r'^sources/$', views.sources, name='sources'),
     url(r'^subjects/$', views.subjects, name='subjects'),
     url(r'^visits/$', views.visits, name='visits'),
     url(r'^file_info/$', views.file_info, name='file_info'),

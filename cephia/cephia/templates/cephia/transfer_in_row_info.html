@@ -1,0 +1,52 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Row Information {% endblock %}
+
+{% block page_content %}
+
+{% paginate rows %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>Specimen Label</th>
+	<th>Patient Label</th>
+	<th>Draw Date</th>
+	<th>Number of Containers</th>
+	<th>Transfer Date</th>
+	<th>Sites</th>
+	<th>Transfer Reason</th>
+	<th>Specimen Type</th>
+	<th>Volume</th>
+	<th>State</th>
+	<th>Message</th>
+    </thead>
+
+    <tbody>
+	{% for row in rows %}
+	<tr>
+	    <td>{{row.specimen_label}}</td>
+	    <td>{{row.patient_label}}</td>
+	    <td>{{row.draw_date}}</td>
+	    <td>{{row.num_containers}}</td>
+	    <td>{{row.transfer_in_date}}</td>
+	    <td>{{row.sites}}</td>
+	    <td>{{row.transfer_reason}}</td>
+	    <td>{{row.spec_type}}</td>
+	    <td>{{row.volume}}</td>
+	    <td>{{row.state}}</td>
+	    <td>{{row.error_message}}</td>
+	    {% if row.state == 'error' %}
+	    <td><a href="{% url 'delete_row' row.id %}" class="btn btn-default btn-sm">Delete</a><td>
+	    {% endif %}
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+

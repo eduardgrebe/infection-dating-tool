@@ -1,0 +1,31 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Sources {% endblock %}
+
+{% block page_content %}
+
+{% paginate sources %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>ID</th>
+	<th>Name</th>
+    </thead>
+
+    <tbody>
+	{% for source in sources %}
+	<tr>
+	    <td>{{source.id}}</td>
+	    <td>{{source.name}}</td>
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+

@@ -87,7 +87,8 @@ class FileInfo(models.Model):
 
     FILE_TYPE_CHOICES = (
         ('subject','Subject'),
-        ('visit','Visit')
+        ('visit','Visit'),
+        ('transfer_in','Transfer In')
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -114,7 +115,7 @@ class ImportedRow(models.Model):
         ('error','Error')
     )
 
-    state = models.CharField(max_length=9, choices=STATE_CHOICES, null=False, blank=False)
+    state = models.CharField(max_length=10, choices=STATE_CHOICES, null=False, blank=False)
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
     fileinfo = models.ForeignKey(FileInfo)
@@ -233,8 +234,96 @@ class Visit(models.Model):
     scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
     visit_pregnant = models.NullBooleanField()
     visit_hepatitis = models.NullBooleanField()
-    subject = models.ForeignKey(Subject)
+    subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
 
 
     def __unicode__(self):
-        return self.subject.patient_label
+        return self.visit_label
+
+    
+class SpecimenType(models.Model):
+
+    class Meta:
+        db_table = "cephia_specimen_type"
+    
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+    spec_type = models.IntegerField(null=False, blank=False)
+    spec_group = models.IntegerField(null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name
+
+class Study(models.Model):
+    class Meta:
+        db_table = "cephia_study"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name
+
+class Location(models.Model):
+    class Meta:
+        db_table = "cephia_location"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name
+
+
+class Reason(models.Model):
+    class Meta:
+        db_table = "cephia_reason"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name
+
+    
+class Specimen(models.Model):
+
+    class Meta:
+        db_table = "cephia_specimen"
+    
+    SITE_CHOICES = (
+        ('BSRI', 'BSRI'),
+        ('PHE', 'PHE')
+    )
+    
+        
+    label = models.CharField(max_length=255, null=False, blank=False) 
+    num_containers = models.IntegerField(null=False, blank=False, default=1)
+    reported_draw_date = models.DateField()
+    transfer_in_date = models.DateField()
+    to_location = models.ForeignKey(Location)
+    reason = models.ForeignKey(Reason)
+    spec_type = models.ForeignKey(SpecimenType)
+    volume = models.IntegerField()
+    initial_claimed_volume = models.IntegerField()
+    other_ref = models.IntegerField()
+    source_study = models.ForeignKey(Study)
+    site = models.CharField(max_length=5, null=False, blank=False, choices=SITE_CHOICES)
+
+    def __unicode__(self):
+        return self.name
+
+class TransferInRow(models.Model):
+
+    class Meta:
+        db_table = "cephia_transfer_in_row"
+    
+    specimen_label = models.CharField(max_length=255, null=False, blank=False) 
+    patient_label = models.CharField(max_length=255, null=False, blank=False)
+    draw_date = models.CharField(max_length=255, null=False, blank=False)
+    num_containers = models.CharField(max_length=255, null=False, blank=False)
+    transfer_in_date = models.CharField(max_length=255, null=False, blank=False)
+    sites = models.CharField(max_length=255, null=False, blank=False)
+    transfer_reason = models.CharField(max_length=255, null=False, blank=False)
+    spec_type = models.CharField(max_length=255, null=False, blank=False)
+    volume = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name

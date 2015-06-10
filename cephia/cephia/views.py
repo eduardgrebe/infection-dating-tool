@@ -6,7 +6,7 @@ from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from file_handlers import SubjectFileHandler, VisitFileHandler
-from models import Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit, VisitRow
+from models import Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit, VisitRow, Source
 from forms import FileInfoForm
 from django.contrib import messages
 
@@ -59,6 +59,14 @@ def visits(request, template="cephia/visits.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+def specimen_type(request, template="cephia/specimen_type.html"):
+    context = {}
+    spec_type = SpecimenType.objects.all()
+    context['spec_type'] = spec_type
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@login_required
 def file_info(request, template="cephia/file_info.html"):
     if request.method == "GET":
         context = {}
@@ -80,6 +88,9 @@ def row_info(request, file_id, template=None):
     elif fileinfo.file_type == 'visit':
         rows = VisitRow.objects.filter(fileinfo=fileinfo)
         template = 'cephia/visit_row_info.html'
+    elif fileinfo.file_type == 'transfer_in':
+        rows = TransferInRow.objects.filter(fileinfo=fileinfo)
+        template = 'cephia/transfer_in_row_info.html'
 
     context['rows'] = rows
     return render_to_response(template, context, context_instance=RequestContext(request))
@@ -121,15 +132,21 @@ def parse_file(request, file_id):
         elif file_to_parse.file_type == 'visit':
             file_handler = VisitFileHandler(file_to_parse)
 
-        num_rows_parsed = file_handler.parse()
+        num_success, num_fail = file_handler.parse()
 
-        file_to_parse.state = 'imported'
-        file_to_parse.save()
-        messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_rows_parsed) + ' rows ')
-
+        if num_fail > 0:
+            messages.add_message(request, messages.WARNING, 'Failed to import ' + str(num_fail) + ' rows ')
+            file_to_parse.state = 'error'
+            file_to_parse.save()
+        else:
+            file_to_parse.state = 'imported'
+            file_to_parse.save()
+            
+        messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
+        
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        messages.add_message(request, messages.ERROR, 'Import failed!')
+        messages.add_message(request, messages.ERROR, 'Import failed: ' + e.message)
         return HttpResponseRedirect(reverse('file_info'))
 
 
@@ -141,18 +158,23 @@ def process_file(request, file_id):
         if file_to_parse.file_type == 'subject':
             file_handler = SubjectFileHandler(file_to_parse)
         elif file_to_parse.file_type == 'visit':
-            file_handler = SubjectFileHandler(file_to_parse)
+            file_handler = VisitFileHandler(file_to_parse)
         
-        num_rows_processed = file_handler.process()
+        num_success, num_fail = file_handler.process()
 
-        file_to_parse.state = 'processed'
-        file_to_parse.save()
-        messages.add_message(request, messages.SUCCESS, 'Successfully processed ' + str(num_rows_processed) + ' rows ')
+        if num_fail > 0:
+            messages.add_message(request, messages.WARNING, 'Failed to process ' + str(num_fail) + ' rows ')
+            file_to_parse.state = 'error'
+            file_to_parse.save()
+        else:
+            file_to_parse.state = 'processed'
+            file_to_parse.save()
+            
+        messages.add_message(request, messages.SUCCESS, 'Successfully processed ' + str(num_success) + ' rows ')
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
-        import pdb; pdb.set_trace()
-        messages.add_message(request, messages.ERROR, 'Failed to update file to status - processed')
+        messages.add_message(request, messages.ERROR, 'Failed to process: ' + e.message)
         return HttpResponseRedirect(reverse('file_info'))
 
 
