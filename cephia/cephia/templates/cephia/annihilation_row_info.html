@@ -1,0 +1,47 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Row Information {% endblock %}
+
+{% block page_content %}
+
+{% paginate rows %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>Parent ID</th>
+	<th>Child ID</th>
+	<th>Child Volume</th>
+	<th>Number of Aliquot</th>
+	<th>Annihilation Date</th>
+	<th>Reason</th>
+	<th>Panel Type</th>
+	<th>Panel Inclusion Criteria</th>
+	<th>State</th>
+	<th>Message</th>
+    </thead>
+
+    <tbody>
+	{% for row in rows %}
+	<tr>
+	    <td>{{row.parent_id}}</td>
+	    <td>{{row.child_id}}</td>
+	    <td>{{row.child_volume}}</td>
+	    <td>{{row.number_of_aliquot}}</td>
+	    <td>{{row.annihilation_date}}</td>
+	    <td>{{row.reason}}</td>
+	    <td>{{row.panel_type}}</td>
+	    <td>{{row.panel_inclusion_criteria}}</td>
+	    <td>{{row.state}}</td>
+	    <td>{{row.error_message}}</td>
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+

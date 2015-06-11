@@ -1,5 +1,6 @@
 from excel_helper import ExcelHelper
-from models import SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit, Source, TransferInRow, Specimen, SpecimenType, Study, Reason
+from models import (SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit, Source,
+                    TransferInRow, Specimen, SpecimenType, Study, Reason, TransferOutRow, AnnihilationRow)
 from datetime import datetime
 from django.db import transaction
 import logging
@@ -304,6 +305,186 @@ class TransferInFileHandler(FileHandler):
                 transfer_in_row.state = 'error'
                 transfer_in_row.error_message = e.message
                 transfer_in_row.save()
+
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+class TransferOutFileHandler(FileHandler):
+    transfer_out_file = None
+    
+    def __init__(self, transfer_out_file):
+        self.transfer_out_file = transfer_out_file
+        self.excel_transfer_out_file = ExcelHelper(f=transfer_out_file.data_file.url)
+
+    def parse(self):
+        header = self.excel_transfer_out_file.read_header()
+        date_cols = [2]
+        rows_inserted = 0
+        rows_failed = 0
+
+        for row_num in range(self.excel_transfer_out_file.nrows):
+            try:
+                if row_num >= 1:
+                    row = self.excel_transfer_out_file.read_row(row_num, date_cols)
+                    row_dict = dict(zip(header, row))
+
+                    transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['spec_id'],
+                                                                     fileinfo=self.transfer_out_file,
+                                                                     num_containers=row_dict['#_ containers'],
+                                                                     transfer_out_date=row_dict['transfer date'],
+                                                                     to_location=row_dict['to location'],
+                                                                     transfer_reason=row_dict['reason'],
+                                                                     spec_type=row_dict['spec type'],
+                                                                     volume=row_dict['vol'],
+                                                                     other_ref=row_dict['other id'],
+                                                                     state='pending')
+
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+    def process(self):
+        rows_inserted = 0
+        rows_failed = 0
+
+        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state__in=['pending', 'error']):
+
+            try:
+                with transaction.atomic():
+                    # subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    # study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
+                    # reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
+
+                    # if '.' in transfer_in_row.spec_type:
+                    #     spec_type_list = transfer_in_row.spec_type.split()
+                    #     spec_type = spec_type_list[0]
+                    #     spec_group = spec_type_list[1]
+
+                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type,
+                    #                                                 spec_group=spec_group)
+                    # else:
+                    #     spec_type = transfer_in_row.spec_type
+                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type)
+
+
+                    # specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
+                    #                                              subject = subject,
+                    #                                              reported_draw_date = self.get_date(transfer_in_row.draw_date),
+                    #                                              num_containers = transfer_in_row.num_containers,
+                    #                                              transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
+                    #                                              source_study = study,
+                    #                                              reason = reason,
+                    #                                              spec_type = spec_type_object,
+                    #                                              volume = transfer_in_row.volume,
+                    #                                              initial_claimed_volume = transfer_in_row.volume)
+
+                    # transfer_in_row.state = 'processed'
+                    # transfer_in_row.date_processed = datetime.now()
+                    # transfer_in_row.save()
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                transfer_in_row.state = 'error'
+                transfer_in_row.error_message = e.message
+                transfer_in_row.save()
+
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+class AnnihilationFileHandler(FileHandler):
+    annihilation_file = None
+    
+    def __init__(self, annihilation_file):
+        self.annihilation_file = annihilation_file
+        self.excel_annihilation_file = ExcelHelper(f=annihilation_file.data_file.url)
+
+    def parse(self):
+        header = self.excel_annihilation_file.read_header()
+        date_cols = [2]
+        rows_inserted = 0
+        rows_failed = 0
+
+        for row_num in range(self.excel_annihilation_file.nrows):
+            try:
+                if row_num >= 1:
+                    row = self.excel_annihilation_file.read_row(row_num, date_cols)
+                    row_dict = dict(zip(header, row))
+
+                    annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
+                                                                      fileinfo=self.annihilation_file,
+                                                                      child_id=row_dict['child id'],
+                                                                      child_volume=row_dict['child volume'],
+                                                                      number_of_aliquot=row_dict['number of aliquot'],
+                                                                      annihilation_date=row_dict['annihilation date'],
+                                                                      reason=row_dict['reason'],
+                                                                      panel_type=row_dict['panel type'],
+                                                                      panel_inclusion_criteria=row_dict['panel inclusion criteria'],
+                                                                      state='pending')
+
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+    def process(self):
+        rows_inserted = 0
+        rows_failed = 0
+
+        for annihilation_row in AnnihilationRow.objects.filter(fileinfo=self.annihilation_file, state__in=['pending', 'error']):
+
+            try:
+                with transaction.atomic():
+                    # subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    # study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
+                    # reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
+
+                    # if '.' in transfer_in_row.spec_type:
+                    #     spec_type_list = transfer_in_row.spec_type.split()
+                    #     spec_type = spec_type_list[0]
+                    #     spec_group = spec_type_list[1]
+
+                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type,
+                    #                                                 spec_group=spec_group)
+                    # else:
+                    #     spec_type = transfer_in_row.spec_type
+                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type)
+
+
+                    # specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
+                    #                                              subject = subject,
+                    #                                              reported_draw_date = self.get_date(transfer_in_row.draw_date),
+                    #                                              num_containers = transfer_in_row.num_containers,
+                    #                                              transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
+                    #                                              source_study = study,
+                    #                                              reason = reason,
+                    #                                              spec_type = spec_type_object,
+                    #                                              volume = transfer_in_row.volume,
+                    #                                              initial_claimed_volume = transfer_in_row.volume)
+
+                    # transfer_in_row.state = 'processed'
+                    # transfer_in_row.date_processed = datetime.now()
+                    # transfer_in_row.save()
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                annihilation_row.state = 'error'
+                annihilation_row.error_message = e.message
+                annihilation_row.save()
 
                 rows_failed = rows_failed + 1
                 continue

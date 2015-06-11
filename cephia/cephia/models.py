@@ -88,7 +88,11 @@ class FileInfo(models.Model):
     FILE_TYPE_CHOICES = (
         ('subject','Subject'),
         ('visit','Visit'),
-        ('transfer_in','Transfer In')
+        ('transfer_in','Transfer In'),
+        ('transfer_out','Transfer Out'),
+        ('missing_transfer_out','Missing Transfer Out'),
+        ('annihilation','Annihaltion'),
+        ('inventory','Inventory')
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -308,7 +312,7 @@ class Specimen(models.Model):
     site = models.CharField(max_length=5, null=False, blank=False, choices=SITE_CHOICES)
 
     def __unicode__(self):
-        return self.name
+        return self.label
 
 
 class TransferInRow(ImportedRow):
@@ -316,15 +320,66 @@ class TransferInRow(ImportedRow):
     class Meta:
         db_table = "cephia_transfer_in_row"
     
-    specimen_label = models.CharField(max_length=255, null=False, blank=True) 
+    specimen_label = models.CharField(max_length=255, null=True, blank=True) 
     patient_label = models.CharField(max_length=255, null=True, blank=True)
     draw_date = models.CharField(max_length=255, null=True, blank=True)
-    num_containers = models.CharField(max_length=255, null=False, blank=True)
+    num_containers = models.CharField(max_length=255, null=True, blank=True)
     transfer_in_date = models.CharField(max_length=255, null=True, blank=True)
-    sites = models.CharField(max_length=255, null=False, blank=True)
-    transfer_reason = models.CharField(max_length=255, null=False, blank=True)
-    spec_type = models.CharField(max_length=255, null=False, blank=True)
-    volume = models.CharField(max_length=255, null=False, blank=True)
+    sites = models.CharField(max_length=255, null=True, blank=True)
+    transfer_reason = models.CharField(max_length=255, null=True, blank=True)
+    spec_type = models.CharField(max_length=255, null=True, blank=True)
+    volume = models.CharField(max_length=255, null=True, blank=True)
 
     def __unicode__(self):
-        return self.name
+        return self.specimen_label
+
+class TransferOutRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_transfer_out_row"
+    
+    specimen_label = models.CharField(max_length=255, null=True, blank=True) 
+    num_containers = models.CharField(max_length=255, null=True, blank=True)
+    transfer_out_date = models.CharField(max_length=255, null=True, blank=True)
+    to_location = models.CharField(max_length=255, null=True, blank=True)
+    transfer_reason = models.CharField(max_length=255, null=True, blank=True)
+    spec_type = models.CharField(max_length=255, null=True, blank=True)
+    volume = models.CharField(max_length=255, null=True, blank=True)
+    other_ref = models.CharField(max_length=255, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.specimen_label
+
+class AnnihilationRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_annihilation_row"
+    
+    parent_id = models.CharField(max_length=255, null=True, blank=True) 
+    child_id = models.CharField(max_length=255, null=True, blank=True)
+    child_volume = models.CharField(max_length=255, null=True, blank=True)
+    number_of_aliquot = models.CharField(max_length=255, null=True, blank=True)
+    annihilation_date = models.CharField(max_length=255, null=True, blank=True)
+    reason = models.CharField(max_length=255, null=True, blank=True)
+    panel_type = models.CharField(max_length=255, null=True, blank=True)
+    panel_inclusion_criteria = models.CharField(max_length=255, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.parent_id
+
+class InventoryRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_inventory_row"
+    
+    original_box_name = models.CharField(max_length=255, null=True, blank=True) 
+    sample_id = models.CharField(max_length=255, null=True, blank=True)
+    draw_date = models.CharField(max_length=255, null=True, blank=True)
+    volume = models.CharField(max_length=255, null=True, blank=True)
+    box = models.CharField(max_length=255, null=True, blank=True)
+    row = models.CharField(max_length=255, null=True, blank=True)
+    column = models.CharField(max_length=255, null=True, blank=True)
+    comments = models.CharField(max_length=255, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.sample_id

@@ -5,8 +5,10 @@ from django.core.urlresolvers import reverse
 from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
-from file_handlers import SubjectFileHandler, VisitFileHandler, TransferInFileHandler
-from models import Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit, VisitRow, Source, Specimen, SpecimenType, TransferInRow, Study
+from file_handlers import SubjectFileHandler, VisitFileHandler, TransferInFileHandler, TransferOutFileHandler, AnnihilationFileHandler
+from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
+                    VisitRow, Source, Specimen, SpecimenType, TransferInRow,
+                    Study, TransferOutRow, AnnihilationRow, InventoryRow)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
@@ -124,6 +126,15 @@ def row_info(request, file_id, template=None):
         elif fileinfo.file_type == 'transfer_in':
             rows = TransferInRow.objects.filter(fileinfo=fileinfo, state__in=states)
             template = 'cephia/transfer_in_row_info.html'
+        elif fileinfo.file_type == 'transfer_out':
+            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
+            template = 'cephia/transfer_out_row_info.html'
+        elif fileinfo.file_type == 'annihilation':
+            rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state__in=states)
+            template = 'cephia/annihilation_row_info.html'
+        elif fileinfo.file_type == 'inventory':
+            rows = InventoryRow.objects.filter(fileinfo=fileinfo, state__in=states)
+            template = 'cephia/inventory_row_info.html'
 
         context['rows'] = rows
         return render_to_response(template, context, context_instance=RequestContext(request))
@@ -167,6 +178,10 @@ def parse_file(request, file_id):
             file_handler = VisitFileHandler(file_to_parse)
         elif file_to_parse.file_type == 'transfer_in':
             file_handler = TransferInFileHandler(file_to_parse)
+        elif file_to_parse.file_type == 'transfer_out':
+            file_handler = TransferOutFileHandler(file_to_parse)
+        elif file_to_parse.file_type == 'annihilation':
+            file_handler = AnnihilationFileHandler(file_to_parse)
 
         num_success, num_fail = file_handler.parse()
 
@@ -197,6 +212,10 @@ def process_file(request, file_id):
             file_handler = VisitFileHandler(file_to_process)
         elif file_to_process.file_type == 'transfer_in':
             file_handler = TransferInFileHandler(file_to_process)
+        elif file_to_process.file_type == 'transfer_out':
+            file_handler = TransferOutFileHandler(file_to_process)
+        elif file_to_parse.file_type == 'annihilation':
+            file_handler = AnnihilationFileHandler(file_to_parse)
         
         num_success, num_fail = file_handler.process()
 

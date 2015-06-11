@@ -12,15 +12,14 @@
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>Specimen Label</th>
-	<th>Patient Label</th>
-	<th>Draw Date</th>
+	<th>Specimen ID</th>
 	<th>Number of Containers</th>
 	<th>Transfer Date</th>
-	<th>Sites</th>
-	<th>Transfer Reason</th>
+	<th>To Location</th>
+	<th>Reason</th>
 	<th>Specimen Type</th>
 	<th>Volume</th>
+	<th>Other Ref</th>
 	<th>State</th>
 	<th>Message</th>
     </thead>
@@ -29,14 +28,13 @@
 	{% for row in rows %}
 	<tr>
 	    <td>{{row.specimen_label}}</td>
-	    <td>{{row.patient_label}}</td>
-	    <td>{{row.draw_date}}</td>
 	    <td>{{row.num_containers}}</td>
-	    <td>{{row.transfer_in_date}}</td>
-	    <td>{{row.sites}}</td>
+	    <td>{{row.transfer_out_date}}</td>
+	    <td>{{row.to_location}}</td>
 	    <td>{{row.transfer_reason}}</td>
 	    <td>{{row.spec_type}}</td>
 	    <td>{{row.volume}}</td>
+	    <td>{{row.other_ref}}</td>
 	    <td>{{row.state}}</td>
 	    <td>{{row.error_message}}</td>
 	    {% if row.state == 'error' %}
