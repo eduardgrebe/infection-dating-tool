@@ -9,7 +9,7 @@ class FileInfoForm(forms.ModelForm):
         ('transfer_in','Transfer In'),
         ('transfer_out','Transfer Out'),
         ('missing_transfer_out','Missing Transfer Out'),
-        ('annihilation','Annihaltion'),
+        ('annihilation','Annihilation'),
         ('inventory','Inventory')
     )
 

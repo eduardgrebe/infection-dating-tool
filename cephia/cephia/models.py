@@ -11,6 +11,9 @@ import pytz
 import time
 import os
 from django.utils import html
+# from file_handlers import (SubjectFileHandler, VisitFileHandler, TransferInFileHandler, TransferOutFileHandler,
+#                            AnnihilationFileHandler, InventoryFileHandler, get_file_handler_for_type)
+from file_handlers import get_file_handler_for_type
 
 import logging
 logger = logging.getLogger(__name__)
@@ -91,7 +94,7 @@ class FileInfo(models.Model):
         ('transfer_in','Transfer In'),
         ('transfer_out','Transfer Out'),
         ('missing_transfer_out','Missing Transfer Out'),
-        ('annihilation','Annihaltion'),
+        ('annihilation','Annihilation'),
         ('inventory','Inventory')
     )
 
@@ -106,6 +109,9 @@ class FileInfo(models.Model):
 
     def filename(self):
         return os.path.basename(self.data_file.name)
+
+    def get_handler(self):
+        return get_file_handler_for_type(self.file_type)(self)
 
 
 class ImportedRow(models.Model):

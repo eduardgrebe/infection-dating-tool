@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse
 from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
-from file_handlers import SubjectFileHandler, VisitFileHandler, TransferInFileHandler, TransferOutFileHandler, AnnihilationFileHandler
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Source, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AnnihilationRow, InventoryRow)
@@ -171,29 +170,16 @@ def upload_file(request):
 def parse_file(request, file_id):
     try:
         file_to_parse = FileInfo.objects.get(pk=file_id)
-
-        if file_to_parse.file_type == 'subject':
-            file_handler = SubjectFileHandler(file_to_parse)
-        elif file_to_parse.file_type == 'visit':
-            file_handler = VisitFileHandler(file_to_parse)
-        elif file_to_parse.file_type == 'transfer_in':
-            file_handler = TransferInFileHandler(file_to_parse)
-        elif file_to_parse.file_type == 'transfer_out':
-            file_handler = TransferOutFileHandler(file_to_parse)
-        elif file_to_parse.file_type == 'annihilation':
-            file_handler = AnnihilationFileHandler(file_to_parse)
+        file_handler = file_to_parse.get_handler()
 
         num_success, num_fail = file_handler.parse()
 
         if num_fail > 0:
-            messages.add_message(request, messages.WARNING, 'Failed to import ' + str(num_fail) + ' rows ')
-            file_to_parse.state = 'error'
-            file_to_parse.save()
+            messages.add_message(request, messages.ERROR, 'Import failed')
         else:
             file_to_parse.state = 'imported'
             file_to_parse.save()
-            
-        messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
+            messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
@@ -205,17 +191,7 @@ def parse_file(request, file_id):
 def process_file(request, file_id):
     try:
         file_to_process = FileInfo.objects.get(pk=file_id)
-
-        if file_to_process.file_type == 'subject':
-            file_handler = SubjectFileHandler(file_to_process)
-        elif file_to_process.file_type == 'visit':
-            file_handler = VisitFileHandler(file_to_process)
-        elif file_to_process.file_type == 'transfer_in':
-            file_handler = TransferInFileHandler(file_to_process)
-        elif file_to_process.file_type == 'transfer_out':
-            file_handler = TransferOutFileHandler(file_to_process)
-        elif file_to_parse.file_type == 'annihilation':
-            file_handler = AnnihilationFileHandler(file_to_parse)
+        file_handler = file_to_process.get_handler()
         
         num_success, num_fail = file_handler.process()
 

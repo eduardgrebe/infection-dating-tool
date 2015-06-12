@@ -1,9 +1,19 @@
 from excel_helper import ExcelHelper
-from models import (SubjectRow, VisitRow, Subject, Ethnicity, Country, Subtype, Visit, Source,
-                    TransferInRow, Specimen, SpecimenType, Study, Reason, TransferOutRow, AnnihilationRow)
 from datetime import datetime
 from django.db import transaction
 import logging
+
+registered_file_handlers = []
+def register_file_handler(file_type, cls):
+    registered_file_handlers.append( (file_type, cls) )
+
+def get_file_handler_for_type(file_type):
+    for registered_file_type, registered_file_handler in registered_file_handlers:
+        if file_type == registered_file_type:
+            return registered_file_handler
+    raise Exception("Unknown file type: %s" % file_type)
+
+
 
 class FileHandler(object):
     logger = logging.getLogger(__name__)
@@ -20,13 +30,15 @@ class FileHandler(object):
                 return False
             elif bool_string == '1':
                 return True
-        else:
-            return False
-        
+            else:
+                return False
+
+                
 class SubjectFileHandler(FileHandler):
     subject_file = None
     
-    def __init__(self, subject_file):
+    def __init__(self, subject_file, *args, **kwargs):
+        super(SubjectFileHandler, self).__init__()
         self.subject_file = subject_file
         self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
 
@@ -70,14 +82,15 @@ class SubjectFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                import pdb; pdb.set_trace()
-                rows_failed = rows_failed + 1
-                continue
+                self.subject_file.message = e.message
+                self.subject_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -133,10 +146,12 @@ class VisitFileHandler(FileHandler):
     visit_file = None
     
     def __init__(self, visit_file):
+        super(VisitFileHandler, self).__init__()
         self.visit_file = visit_file
         self.excel_visit_file = ExcelHelper(f=visit_file.data_file.url)
 
     def parse(self):
+
         header = self.excel_visit_file.read_header()
         date_cols = [1]
         rows_inserted = 0
@@ -168,13 +183,15 @@ class VisitFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                rows_failed = rows_failed + 1
-                continue
+                self.visit_file.message = e.message
+                self.visit_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -212,16 +229,16 @@ class VisitFileHandler(FileHandler):
             
         return rows_inserted, rows_failed
 
-
-
 class TransferInFileHandler(FileHandler):
     transfer_in_file = None
     
     def __init__(self, transfer_in_file):
+        super(TransferInFileHandler, self).__init__()
         self.transfer_in_file = transfer_in_file
         self.excel_transfer_in_file = ExcelHelper(f=transfer_in_file.data_file.url)
 
     def parse(self):
+
         header = self.excel_transfer_in_file.read_header()
         date_cols = [2,4]
         rows_inserted = 0
@@ -255,13 +272,16 @@ class TransferInFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                rows_failed = rows_failed + 1
-                continue
+                import pdb; pdb.set_trace()
+                self.transfer_in_file.message = e.message
+                self.transfer_in_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -316,10 +336,12 @@ class TransferOutFileHandler(FileHandler):
     transfer_out_file = None
     
     def __init__(self, transfer_out_file):
+        super(TransferOutFileHandler, self).__init__()
         self.transfer_out_file = transfer_out_file
         self.excel_transfer_out_file = ExcelHelper(f=transfer_out_file.data_file.url)
 
     def parse(self):
+
         header = self.excel_transfer_out_file.read_header()
         date_cols = [2]
         rows_inserted = 0
@@ -345,13 +367,16 @@ class TransferOutFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                rows_failed = rows_failed + 1
-                continue
+                import pdb; pdb.set_trace()
+                self.transfer_out_file.message = e.message
+                self.transfer_out_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -359,23 +384,7 @@ class TransferOutFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    # subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    # study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
-                    # reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
-
-                    # if '.' in transfer_in_row.spec_type:
-                    #     spec_type_list = transfer_in_row.spec_type.split()
-                    #     spec_type = spec_type_list[0]
-                    #     spec_group = spec_type_list[1]
-
-                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type,
-                    #                                                 spec_group=spec_group)
-                    # else:
-                    #     spec_type = transfer_in_row.spec_type
-                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type)
-
-
-                    # specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
+                    # specimen = Specimen.objects.update(label = transfer_in_row.specimen_label,
                     #                                              subject = subject,
                     #                                              reported_draw_date = self.get_date(transfer_in_row.draw_date),
                     #                                              num_containers = transfer_in_row.num_containers,
@@ -403,15 +412,18 @@ class TransferOutFileHandler(FileHandler):
 
 
 class AnnihilationFileHandler(FileHandler):
-    annihilation_file = None
-    
+
     def __init__(self, annihilation_file):
+        super(AnnihilationFileHandler, self).__init__()
         self.annihilation_file = annihilation_file
         self.excel_annihilation_file = ExcelHelper(f=annihilation_file.data_file.url)
+        self.annihilation_row = None
 
     def parse(self):
+        from models import AnnihilationRow
+
         header = self.excel_annihilation_file.read_header()
-        date_cols = [2]
+        date_cols = [4]
         rows_inserted = 0
         rows_failed = 0
 
@@ -421,27 +433,30 @@ class AnnihilationFileHandler(FileHandler):
                     row = self.excel_annihilation_file.read_row(row_num, date_cols)
                     row_dict = dict(zip(header, row))
 
-                    annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
-                                                                      fileinfo=self.annihilation_file,
-                                                                      child_id=row_dict['child id'],
-                                                                      child_volume=row_dict['child volume'],
-                                                                      number_of_aliquot=row_dict['number of aliquot'],
-                                                                      annihilation_date=row_dict['annihilation date'],
-                                                                      reason=row_dict['reason'],
-                                                                      panel_type=row_dict['panel type'],
-                                                                      panel_inclusion_criteria=row_dict['panel inclusion criteria'],
-                                                                      state='pending')
+                    self.annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
+                                                                           fileinfo=self.annihilation_file,
+                                                                           child_id=row_dict['child id'],
+                                                                           child_volume=row_dict['child volume'],
+                                                                           number_of_aliquot=row_dict['number of aliquot'],
+                                                                           annihilation_date=row_dict['annihilation date'],
+                                                                           reason=row_dict['reason'],
+                                                                           panel_type=row_dict['panel type'],
+                                                                           panel_inclusion_criteria=row_dict['panel inclusion criteria'],
+                                                                           state='pending')
 
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                rows_failed = rows_failed + 1
-                continue
+                import pdb; pdb.set_trace()
+                self.annihilation_file.message = e.message
+                self.annihilation_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -449,23 +464,7 @@ class AnnihilationFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    # subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    # study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
-                    # reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
-
-                    # if '.' in transfer_in_row.spec_type:
-                    #     spec_type_list = transfer_in_row.spec_type.split()
-                    #     spec_type = spec_type_list[0]
-                    #     spec_group = spec_type_list[1]
-
-                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type,
-                    #                                                 spec_group=spec_group)
-                    # else:
-                    #     spec_type = transfer_in_row.spec_type
-                    #     spec_type_object = SpecimenType.objects.get(spec_type=spec_type)
-
-
-                    # specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
+                    # specimen = Specimen.objects.update(label = transfer_in_row.specimen_label,
                     #                                              subject = subject,
                     #                                              reported_draw_date = self.get_date(transfer_in_row.draw_date),
                     #                                              num_containers = transfer_in_row.num_containers,
@@ -476,9 +475,9 @@ class AnnihilationFileHandler(FileHandler):
                     #                                              volume = transfer_in_row.volume,
                     #                                              initial_claimed_volume = transfer_in_row.volume)
 
-                    # transfer_in_row.state = 'processed'
-                    # transfer_in_row.date_processed = datetime.now()
-                    # transfer_in_row.save()
+                    # annihilation_row.state = 'processed'
+                    # annihilation_row.date_processed = datetime.now()
+                    # annihilation_row.save()
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
@@ -490,3 +489,91 @@ class AnnihilationFileHandler(FileHandler):
                 continue
 
         return rows_inserted, rows_failed
+
+
+class InventoryFileHandler(FileHandler):
+    inventory_file = None
+    
+
+    def __init__(self, inventory_file):
+        super(InventoryFileHandler, self).__init__()
+        self.inventory_file = inventory_file
+        self.excel_inventory_file = ExcelHelper(f=inventory_file.data_file.url)
+
+    def parse(self):
+
+        header = self.excel_inventory_file.read_header()
+        date_cols = [2]
+        rows_inserted = 0
+        rows_failed = 0
+
+        for row_num in range(self.excel_inventory_file.nrows):
+            try:
+                if row_num >= 1:
+                    row = self.excel_inventory_file.read_row(row_num, date_cols)
+                    row_dict = dict(zip(header, row))
+
+                    inventory_row = InventoryRow.objects.create(original_box_name=row_dict['original box name'],
+                                                                fileinfo=self.inventory_file,
+                                                                sample_id=row_dict['sample id'],
+                                                                draw_date=row_dict['draw date'],
+                                                                volume=row_dict['volume'],
+                                                                box=row_dict['box'],
+                                                                row=row_dict['row'],
+                                                                column=row_dict['column'],
+                                                                comments=row_dict['comments'],
+                                                                state='pending')
+
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                import pdb; pdb.set_trace()
+                self.annihilation_file.message = e.message
+                self.annihilation_file.save()
+                return 0, 1
+
+        return rows_inserted, rows_failed
+
+
+    def process(self):
+
+        rows_inserted = 0
+        rows_failed = 0
+
+        for inventory_row in InventoryRow.objects.filter(fileinfo=self.inventory_file, state__in=['pending', 'error']):
+
+            try:
+                with transaction.atomic():
+                    # specimen = Specimen.objects.update(label = inventory_row.specimen_label,
+                    #                                              subject = subject,
+                    #                                              reported_draw_date = self.get_date(inventory_row.draw_date),
+                    #                                              num_containers = inventory_row.num_containers,
+                    #                                              transfer_in_date = self.get_date(inventory_row.transfer_in_date),
+                    #                                              source_study = study,
+                    #                                              reason = reason,
+                    #                                              spec_type = spec_type_object,
+                    #                                              volume = inventory_row.volume,
+                    #                                              initial_claimed_volume = inventory_row.volume)
+
+                    # inventory_row.state = 'processed'
+                    # inventory_row.date_processed = datetime.now()
+                    # inventory_row.save()
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                inventory_row.state = 'error'
+                inventory_row.error_message = e.message
+                inventory_row.save()
+
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
+
+
+register_file_handler("subject", SubjectFileHandler)
+register_file_handler("visit", VisitFileHandler)
+register_file_handler("inventory", InventoryFileHandler)
+register_file_handler("annihilation", AnnihilationFileHandler)
+register_file_handler("transfer_out", TransferOutFileHandler)
+register_file_handler("transfer_in", TransferInFileHandler)
