@@ -177,22 +177,22 @@ class Subject(models.Model):
         ('positive','Positive'),
     )
     
-    patient_label = models.CharField(max_length=255, null=False, blank=False)
+    patient_label = models.CharField(max_length=255, null=True, blank=True)
     entry_date = models.DateField(null=True, blank=True)
     entry_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
-    country = models.ForeignKey(Country)
+    country = models.ForeignKey(Country, null=True, blank=True)
     last_negative_date = models.DateField(null=True, blank=True)
     last_positive_date = models.DateField(null=True, blank=True)
     ars_onset = models.DateField(null=True, blank=True)
     fiebig = models.CharField(max_length=10, null=False, blank=False)
     dob = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
-    ethnicity = models.ForeignKey(Ethnicity)
+    ethnicity = models.ForeignKey(Ethnicity, null=True, blank=True)
     sex_with_men = models.NullBooleanField()
     sex_with_women = models.NullBooleanField()
     iv_drug_user = models.NullBooleanField()
     subtype_confirmed = models.NullBooleanField()
-    subtype = models.ForeignKey(Subtype)
+    subtype = models.ForeignKey(Subtype, null=True, blank=True)
     anti_retroviral_initiation_date = models.DateField(null=True, blank=True)
     aids_diagnosis_date = models.DateField(null=True, blank=True)
     treatment_interruption_date = models.DateField(null=True, blank=True)
@@ -256,9 +256,8 @@ class SpecimenType(models.Model):
     class Meta:
         db_table = "cephia_specimen_type"
     
-
     name = models.CharField(max_length=255, null=False, blank=False)
-    spec_type = models.IntegerField(null=False, blank=False)
+    spec_type = models.CharField(max_length=10, null=False, blank=False)
     spec_group = models.IntegerField(null=True, blank=True)
 
     def __unicode__(self):
@@ -306,15 +305,17 @@ class Specimen(models.Model):
         
     label = models.CharField(max_length=255, null=False, blank=False) 
     num_containers = models.IntegerField(null=False, blank=False, default=1)
-    reported_draw_date = models.DateField()
+    reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
-    reason = models.ForeignKey(Reason)
+    transfer_out_date = models.DateField(null=True, blank=True)
+    reason = models.ForeignKey(Reason, null=True, blank=True)
     subject = models.ForeignKey(Subject, null=True, blank=True)
-    spec_type = models.ForeignKey(SpecimenType)
-    volume = models.IntegerField()
-    initial_claimed_volume = models.IntegerField()
+    spec_type = models.ForeignKey(SpecimenType, null=True, blank=True)
+    volume = models.IntegerField(null=True, blank=True)
+    initial_claimed_volume = models.IntegerField(null=True, blank=True)
     other_ref = models.IntegerField(null=True, blank=False)
-    source_study = models.ForeignKey(Study)
+    source_study = models.ForeignKey(Study, null=True, blank=True)
+    to_location = models.ForeignKey(Location, null=True, blank=True)
     site = models.CharField(max_length=5, null=False, blank=False, choices=SITE_CHOICES)
 
     def __unicode__(self):

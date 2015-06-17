@@ -43,6 +43,9 @@ class SubjectFileHandler(FileHandler):
         self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
 
     def parse(self):
+
+        from models import SubjectRow
+        
         header = self.excel_subject_file.read_header()
         date_cols = [1,4,5,6,8,16,17,18,19]
         rows_inserted = 0
@@ -91,6 +94,8 @@ class SubjectFileHandler(FileHandler):
 
     def process(self):
 
+        from models import Ethnicity, Subtype, Country, Subject, SubjectRow
+        
         rows_inserted = 0
         rows_failed = 0
 
@@ -152,6 +157,8 @@ class VisitFileHandler(FileHandler):
 
     def parse(self):
 
+        from models import VisitRow
+        
         header = self.excel_visit_file.read_header()
         date_cols = [1]
         rows_inserted = 0
@@ -191,7 +198,9 @@ class VisitFileHandler(FileHandler):
 
 
     def process(self):
-
+        
+        from models import VisitRow, Visit, Source
+        
         rows_inserted = 0
         rows_failed = 0
 
@@ -238,7 +247,9 @@ class TransferInFileHandler(FileHandler):
         self.excel_transfer_in_file = ExcelHelper(f=transfer_in_file.data_file.url)
 
     def parse(self):
-
+        
+        from models import TransferInRow
+        
         header = self.excel_transfer_in_file.read_header()
         date_cols = [2,4]
         rows_inserted = 0
@@ -272,16 +283,18 @@ class TransferInFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                import pdb; pdb.set_trace()
-                self.transfer_in_file.message = e.message
-                self.transfer_in_file.save()
-                return 0, 1
+                continue
+                # self.transfer_in_file.message = e.message
+                # self.transfer_in_file.save()
+                # return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
-
+        
+        from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen
+        
         rows_inserted = 0
         rows_failed = 0
 
@@ -289,21 +302,16 @@ class TransferInFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    try:
+                        subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    except Subject.DoesNotExist:
+                        subject = Subject.objects.create(patient_label=transfer_in_row.patient_label,
+                                                         entry_date = datetime.now())
+                        subject.patient_label = 'dummy_subject_' + str(subject.pk)
+                    
                     study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
-
-                    if '.' in transfer_in_row.spec_type:
-                        spec_type_list = transfer_in_row.spec_type.split()
-                        spec_type = spec_type_list[0]
-                        spec_group = spec_type_list[1]
-
-                        spec_type_object = SpecimenType.objects.get(spec_type=spec_type,
-                                                                    spec_group=spec_group)
-                    else:
-                        spec_type = transfer_in_row.spec_type
-                        spec_type_object = SpecimenType.objects.get(spec_type=spec_type)
-
+                    spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
                     specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
                                                                  subject = subject,
@@ -312,7 +320,7 @@ class TransferInFileHandler(FileHandler):
                                                                  transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
                                                                  source_study = study,
                                                                  reason = reason,
-                                                                 spec_type = spec_type_object,
+                                                                 spec_type = spec_type,
                                                                  volume = transfer_in_row.volume,
                                                                  initial_claimed_volume = transfer_in_row.volume)
 
@@ -341,7 +349,9 @@ class TransferOutFileHandler(FileHandler):
         self.excel_transfer_out_file = ExcelHelper(f=transfer_out_file.data_file.url)
 
     def parse(self):
-
+        
+        from models import TransferOutRow
+        
         header = self.excel_transfer_out_file.read_header()
         date_cols = [2]
         rows_inserted = 0
@@ -367,7 +377,6 @@ class TransferOutFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                import pdb; pdb.set_trace()
                 self.transfer_out_file.message = e.message
                 self.transfer_out_file.save()
                 return 0, 1
@@ -376,34 +385,36 @@ class TransferOutFileHandler(FileHandler):
 
 
     def process(self):
-
+        
+        from models import TransferOutRow, Specimen, Location, SpecimenType
+        
         rows_inserted = 0
         rows_failed = 0
 
-        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state__in=['pending', 'error']):
+        for transfer_out_row in TransferOutRow.objects.filter(fileinfo=self.transfer_out_file, state__in=['pending', 'error']):
 
             try:
                 with transaction.atomic():
-                    # specimen = Specimen.objects.update(label = transfer_in_row.specimen_label,
-                    #                                              subject = subject,
-                    #                                              reported_draw_date = self.get_date(transfer_in_row.draw_date),
-                    #                                              num_containers = transfer_in_row.num_containers,
-                    #                                              transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
-                    #                                              source_study = study,
-                    #                                              reason = reason,
-                    #                                              spec_type = spec_type_object,
-                    #                                              volume = transfer_in_row.volume,
-                    #                                              initial_claimed_volume = transfer_in_row.volume)
+                    to_location, location_created = Location.objects.get_or_create(name=transfer_out_row.to_location)
+                    spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
+                    
+                    specimen = Specimen.objects.create(label=transfer_out_row.specimen_label,
+                                                       num_containers=transfer_out_row.num_containers,
+                                                       transfer_out_date = self.get_date(transfer_out_row.transfer_out_date),
+                                                       to_location = to_location,
+                                                       spec_type = spec_type,
+                                                       volume = transfer_out_row.volume,
+                                                       other_ref = transfer_out_row.other_ref)
 
-                    # transfer_in_row.state = 'processed'
-                    # transfer_in_row.date_processed = datetime.now()
-                    # transfer_in_row.save()
+                    transfer_out_row.state = 'processed'
+                    transfer_out_row.date_processed = datetime.now()
+                    transfer_out_row.save()
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                transfer_in_row.state = 'error'
-                transfer_in_row.error_message = e.message
-                transfer_in_row.save()
+                transfer_out_row.state = 'error'
+                transfer_out_row.error_message = e.message
+                transfer_out_row.save()
 
                 rows_failed = rows_failed + 1
                 continue
@@ -420,6 +431,7 @@ class AnnihilationFileHandler(FileHandler):
         self.annihilation_row = None
 
     def parse(self):
+        
         from models import AnnihilationRow
 
         header = self.excel_annihilation_file.read_header()
@@ -447,7 +459,6 @@ class AnnihilationFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                import pdb; pdb.set_trace()
                 self.annihilation_file.message = e.message
                 self.annihilation_file.save()
                 return 0, 1
@@ -456,7 +467,9 @@ class AnnihilationFileHandler(FileHandler):
 
 
     def process(self):
-
+        
+        from models import AnnihilationRow, Specimen
+        
         rows_inserted = 0
         rows_failed = 0
 
@@ -494,7 +507,6 @@ class AnnihilationFileHandler(FileHandler):
 class InventoryFileHandler(FileHandler):
     inventory_file = None
     
-
     def __init__(self, inventory_file):
         super(InventoryFileHandler, self).__init__()
         self.inventory_file = inventory_file
@@ -502,6 +514,8 @@ class InventoryFileHandler(FileHandler):
 
     def parse(self):
 
+        from models import InventoryRow
+        
         header = self.excel_inventory_file.read_header()
         date_cols = [2]
         rows_inserted = 0
@@ -527,7 +541,6 @@ class InventoryFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                import pdb; pdb.set_trace()
                 self.annihilation_file.message = e.message
                 self.annihilation_file.save()
                 return 0, 1
@@ -536,7 +549,9 @@ class InventoryFileHandler(FileHandler):
 
 
     def process(self):
-
+        
+        from models import InventoryRow, Specimen
+        
         rows_inserted = 0
         rows_failed = 0
 

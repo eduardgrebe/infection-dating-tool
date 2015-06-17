@@ -16,13 +16,11 @@
 	<th>Number of Containers</th>
 	<th>Draw Date</th>
 	<th>Transfer in Date</th>
-	<th>To Location</th>
 	<th>Reason</th>
 	<th>Specimen Type</th>
+	<th>Volume</th>
 	<th>Initial Claimed Volume</th>
-	<th>Other Ref</th>
 	<th>Source Study</th>
-	<th>Site</th>
     </thead>
 
     <tbody>
@@ -32,14 +30,11 @@
 	    <td>{{spec.num_containers}}</td>
 	    <td>{{spec.reported_draw_date}}</td>
 	    <td>{{spec.transfer_in_date}}</td>
-	    <td>{{spec.to_location}}</td>
 	    <td>{{spec.reason}}</td>
 	    <td>{{spec.spec_type.name}}</td>
 	    <td>{{spec.volume}}</td>
 	    <td>{{spec.initial_claimed_volume}}</td>
-	    <td>{{spec.other_ref}}</td>
 	    <td>{{spec.source_study}}</td>
-	    <td>{{spec.site}}</td>
 	</tr>
 	{% endfor %}
     </tbody>
