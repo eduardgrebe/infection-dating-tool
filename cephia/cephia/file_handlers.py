@@ -427,6 +427,7 @@ class TransferOutFileHandler(FileHandler):
                     specimen.save()
 
                     transfer_out_row.state = 'processed'
+                    transfer_out_row.error_message = ''
                     transfer_out_row.date_processed = timezone.now()
                     transfer_out_row.save()
 
@@ -516,7 +517,7 @@ class AnnihilationFileHandler(FileHandler):
                         parent_specimen.save()
 
                     else:
-                        parent_specimen = Specimen.objects.get(parent_label=annihilation_row.parent_id, child_label=None) #GETTING THE FIRST IS A HACK
+                        parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None)[0] #GETTING THE FIRST IS A HACK
                         parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
 
                         child_specimen = Specimen.objects.create(child_label=annihilation_row.child_id,
@@ -529,6 +530,7 @@ class AnnihilationFileHandler(FileHandler):
                                                                  panel_inclusion_criteria=panel_inclusion_criteria)
 
                     annihilation_row.state = 'processed'
+                    annihilation_row.error_message = ''
                     annihilation_row.date_processed = timezone.now()
                     annihilation_row.save()
 
