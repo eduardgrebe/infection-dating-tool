@@ -91,7 +91,7 @@ def specimen(request, template="cephia/specimen.html"):
     if parent_label:
         specimen = Specimen.objects.filter(parent_label=parent_label)
     else:
-        specimen = Specimen.objects.all().order_by('parent_label')
+        specimen = Specimen.objects.all().order_by('parent_label', 'child_label')
 
     context['specimen'] = specimen
     return render_to_response(template, context, context_instance=RequestContext(request))
