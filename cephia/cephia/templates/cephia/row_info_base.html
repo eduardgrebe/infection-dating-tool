@@ -1,0 +1,13 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Row Information {% endblock %}
+
+{% block button_content %}
+<a href="{% url 'export_as_csv' file_id %}" class="btn btn-primary" style="float:right">Export errors as CSV</a>
+{% endblock %}
+
+{% block page_content %}{% endblock %}
+

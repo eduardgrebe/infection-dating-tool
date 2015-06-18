@@ -1,7 +1,6 @@
-{% extends "cephia/base.html" %}
+{% extends "cephia/row_info_base.html" %}
 {% load bootstrap3 %}
 {% load endless %}
-
 
 {% block site-title %} Row Information {% endblock %}
 
@@ -9,7 +8,6 @@
 
 {% paginate rows %}
 {% show_pages %}
-<a href="{% url 'export_as_csv' file_id %}" class="btn btn-primary" style="float:right">Export errors as CSV</a>
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
