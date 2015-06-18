@@ -505,7 +505,7 @@ class AnnihilationFileHandler(FileHandler):
                     panel_inclusion_criteria, panel_inclusion_criteria_created = PanelInclusionCriteria.objects.get_or_create(name=annihilation_row.panel_inclusion_criteria)
 
                     if annihilation_row.parent_id == annihilation_row.child_id:
-                        parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None).first() #GETTING THE FIRST IS A HACK
+                        parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None)[0] #GETTING THE FIRST IS A HACK
                         
                         parent_specimen.num_containers = annihilation_row.number_of_aliquot
                         parent_specimen.volume = annihilation_row.child_volume
@@ -516,7 +516,7 @@ class AnnihilationFileHandler(FileHandler):
                         parent_specimen.save()
 
                     else:
-                        parent_specimen = Specimen.objects.get(parent_label=annihilation_row.parent_id, child_label=None).first() #GETTING THE FIRST IS A HACK
+                        parent_specimen = Specimen.objects.get(parent_label=annihilation_row.parent_id, child_label=None) #GETTING THE FIRST IS A HACK
                         parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
 
                         child_specimen = Specimen.objects.create(child_label=annihilation_row.child_id,

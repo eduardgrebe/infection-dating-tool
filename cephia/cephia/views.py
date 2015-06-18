@@ -84,10 +84,16 @@ def visits(request, template="cephia/visits.html"):
 
 @login_required
 def specimen(request, template="cephia/specimen.html"):
+
+    parent_label = request.GET.get('parent_label')
     context = {}
-    specimen = Specimen.objects.all()
+
+    if parent_label:
+        specimen = Specimen.objects.filter(parent_label=parent_label)
+    else:
+        specimen = Specimen.objects.all()
+
     context['specimen'] = specimen
-    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required

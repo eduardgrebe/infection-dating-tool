@@ -18,11 +18,16 @@
     <th>Draw Date</th>
     <th>Transfer in Date</th>
     <th>Transfer out Date</th>
+    <th>Modified Date</th>
+    <th>Created Date</th>
     <th>Reason</th>
     <th>Specimen Type</th>
     <th>Volume</th>
     <th>Initial Claimed Volume</th>
+    <th>To Location</th>
     <th>Source Study</th>
+    <th>Aliquoting Reason</th>
+    <th>Panel Inclusion Criteria</th>
   </thead>
 
   <tbody>
@@ -34,11 +39,16 @@
       <td>{{spec.reported_draw_date}}</td>
       <td>{{spec.transfer_in_date}}</td>
       <td>{{spec.transfer_out_date}}</td>
+      <td>{{spec.modified_date}}</td>
+      <td>{{spec.created_date}}</td>
       <td>{{spec.reason}}</td>
       <td>{{spec.spec_type.name}}</td>
       <td>{{spec.volume}}</td>
       <td>{{spec.initial_claimed_volume}}</td>
+      <td>{{spec.to_location.name}}</td>
       <td>{{spec.source_study}}</td>
+      <td>{{spec.aliquoting_reason.name}}</td>
+      <td>{{spec.panel_inclusion_criteria.name}}</td>
     </tr>
     {% endfor %}
   </tbody>
