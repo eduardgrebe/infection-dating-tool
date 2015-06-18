@@ -11,8 +11,6 @@ import pytz
 import time
 import os
 from django.utils import html
-# from file_handlers import (SubjectFileHandler, VisitFileHandler, TransferInFileHandler, TransferOutFileHandler,
-#                            AnnihilationFileHandler, InventoryFileHandler, get_file_handler_for_type)
 from file_handlers import get_file_handler_for_type
 
 import logging
@@ -400,6 +398,20 @@ class AnnihilationRow(ImportedRow):
     def __unicode__(self):
         return self.parent_id
 
+
+class MissingTransferOutRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_missing_transfer_out_row"
+    
+    first_aliquot = models.CharField(max_length=255, null=True, blank=True)
+    last_aliquot = models.CharField(max_length=255, null=True, blank=True)    
+    volume = models.CharField(max_length=255, null=True, blank=True)
+    aliquots_created = models.CharField(max_length=255, null=True, blank=True)
+    panels_used = models.CharField(max_length=255, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.parent_id
 
 
 class InventoryRow(ImportedRow):

@@ -490,7 +490,7 @@ class AnnihilationFileHandler(FileHandler):
 
     def process(self):
         
-        from models import AnnihilationRow, Specimen
+        from models import AnnihilationRow, Specimen, Reason, AliquotingReason, PanelInclusionCriteria
         
         rows_inserted = 0
         rows_failed = 0
@@ -499,27 +499,34 @@ class AnnihilationFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
+
+                    reason, reason_created = Reason.objects.get_or_create(name=annihilation_row.reason)
+                    aliquoting_reason, aliquoting_reason_created = AliquotingReason.objects.get_or_create(name=annihilation_row.panel_type)
+                    panel_inclusion_criteria, panel_inclusion_criteria_created = PanelInclusionCriteria.objects.get_or_create(name=annihilation_row.panel_inclusion_criteria)
+
                     if annihilation_row.parent_id == annihilation_row.child_id:
-                        parent_specimen = Specimen.objects.get(annihilation_row.parent_id)
+                        parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None).first()
                         
-                        reason, reason_created = Reason.objects.get_or_create(name=annihilation_row_row.transfer_reason)
-                        parent_specimen = Specimen.objects.create(num_containers=annihilation_row.number_of_aliquot,
-                                                                 volume=annihilation_row.child_volume,
-                                                                 modified_date=annihilation_row.annihilation_date,
-                                                                 reason=reason,
-                                                                 aliquoting_reason=annihilation_row.panel_type,
-                                                                 panel_inclusion_criteria=annihilation_row.panel_inclusion_criteria)
+                        parent_specimen.num_containers = annihilation_row.number_of_aliquot
+                        parent_specimen.volume = annihilation_row.child_volume
+                        parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
+                        parent_specimen.reason = reason
+                        parent_specimen.aliquoting_reason = aliquoting_reason
+                        parent_specimen.panel_inclusion_criteria = panel_inclusion_criteria
+                        parent_specimen.save()
+
                     else:
-                        parent_specimen = Specimen.objects.get(annihilation_row.parent_id).update(modified_date = self.get_date(annihilation_row.annihilation_date))
-                        reason, reason_created = Reason.objects.get_or_create(name=annihilation_row_row.transfer_reason)
+                        parent_specimen = Specimen.objects.get(parent_label=annihilation_row.parent_id, child_label=None).first()
+                        parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
+
                         child_specimen = Specimen.objects.create(child_label=annihilation_row.child_id,
                                                                  parent_label=annihilation_row.parent_id,
                                                                  num_containers=annihilation_row.number_of_aliquot,
                                                                  volume=annihilation_row.child_volume,
-                                                                 created_date=annihilation_row.annihilation_date,
+                                                                 created_date=self.get_date(annihilation_row.annihilation_date),
                                                                  reason=reason,
-                                                                 aliquoting_reason=annihilation_row.panel_type,
-                                                                 panel_inclusion_criteria=annihilation_row.panel_inclusion_criteria)
+                                                                 aliquoting_reason=aliquoting_reason,
+                                                                 panel_inclusion_criteria=panel_inclusion_criteria)
 
                     annihilation_row.state = 'processed'
                     annihilation_row.date_processed = timezone.now()
@@ -536,6 +543,88 @@ class AnnihilationFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
+
+class MissingTransferOutFileHandler(FileHandler):
+    missing_transfer_out_file = None
+
+    def __init__(self, missing_transfer_out_file):
+        super(MissingTransferOutFileHandler, self).__init__()
+        self.missing_transfer_out_file = missing_transfer_out_file
+        self.excel_missing_transfer_out_file = ExcelHelper(f=missing_transfer_out_file.data_file.url)
+        self.missing_transfer_out_row = None
+
+    def parse(self):
+        
+        from models import MissingTransferOutRow
+
+        header = self.excel_missing_transfer_out_file.read_header()
+        date_cols = [4]
+        rows_inserted = 0
+        rows_failed = 0
+
+        for row_num in range(self.excel_missing_transfer_out_file.nrows):
+            try:
+                if row_num >= 1:
+                    row = self.excel_missing_transfer_out_file.read_row(row_num, date_cols)
+                    row_dict = dict(zip(header, row))
+
+                    missing_transfer_out_row = MissingTransferOutRow.objects.create(first_aliquot=row_dict['first aliquot'],
+                                                                                    fileinfo=self.missing_transfer_out_file,
+                                                                                    last_aliquot=row_dict['last aliquot'],
+                                                                                    aliquots_created=row_dict['aliquots created'],
+                                                                                    volume=row_dict['volume'],
+                                                                                    panels_used=row_dict['panels used'],
+                                                                                    state='pending')
+
+
+                    rows_inserted = rows_inserted + 1
+            except Exception, e:
+                rows_failed = rows_failed + 1
+                continue
+                # self.missing_transfer_out_file.message = e.message
+                # self.missing_transfer_out_file.save()
+                # return 0, 1
+
+        return rows_inserted, rows_failed
+
+
+    def process(self):
+        
+        from models import MissingTransferOutRow, Specimen
+        
+        rows_inserted = 0
+        rows_failed = 0
+
+        for missing_transfer_out_row in MissingTransferOutRow.objects.filter(fileinfo=self.missing_transfer_out_file, state__in=['pending', 'error']):
+
+            try:
+                with transaction.atomic():
+
+                        parent_specimen = Specimen.objects.get(parent_label=missing_transfer_out_row.parent_id, child_label=None)
+
+                        child_specimen = Specimen.objects.create(child_label=missing_transfer_out_row.child_id,
+                                                                 parent_label=missing_transfer_out_row.parent_id,
+                                                                 num_containers=missing_transfer_out_row.number_of_aliquot,
+                                                                 volume=missing_transfer_out_row.child_volume,
+                                                                 created_date=missing_transfer_out_row.annihilation_date,
+                                                                 reason=reason,
+                                                                 aliquoting_reason=aliquoting_reason,
+                                                                 panel_inclusion_criteria=panel_inclusion_criteria)
+
+                        missing_transfer_out_row.state = 'processed'
+                        missing_transfer_out_row.date_processed = timezone.now()
+                        missing_transfer_out_row.save()
+
+                        rows_inserted = rows_inserted + 1
+            except Exception, e:
+                missing_transfer_out_row.state = 'error'
+                missing_transfer_out_row.error_message = e.message
+                missing_transfer_out_row.save()
+                
+                rows_failed = rows_failed + 1
+                continue
+
+        return rows_inserted, rows_failed
 
 class InventoryFileHandler(FileHandler):
     inventory_file = None
@@ -625,3 +714,4 @@ register_file_handler("inventory", InventoryFileHandler)
 register_file_handler("annihilation", AnnihilationFileHandler)
 register_file_handler("transfer_out", TransferOutFileHandler)
 register_file_handler("transfer_in", TransferInFileHandler)
+register_file_handler("missing_transfer_out", MissingTransferOutFileHandler)

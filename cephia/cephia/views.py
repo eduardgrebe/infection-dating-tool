@@ -7,10 +7,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Source, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AnnihilationRow, InventoryRow)
+                    Study, TransferOutRow, AnnihilationRow, InventoryRow, MissingTransferOutRow)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
+import csv
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +136,9 @@ def row_info(request, file_id, template=None):
         elif fileinfo.file_type == 'annihilation':
             rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state__in=states)
             template = 'cephia/annihilation_row_info.html'
+        elif fileinfo.file_type == 'missing_transfer_out':
+            rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
+            template = 'cephia/missing_transfer_out_row_info.html'
         elif fileinfo.file_type == 'inventory':
             rows = InventoryRow.objects.filter(fileinfo=fileinfo, state__in=states)
             template = 'cephia/inventory_row_info.html'
@@ -246,3 +250,38 @@ def delete_row(request, row_id):
 
 
 
+@login_required
+def export_error_csv(request, file_id):
+    try:
+        fileinfo = FileInfo.objects.get(pk=file_id)
+        state = 'error'
+
+        if fileinfo.file_type == 'subject':
+            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'visit':
+            rows = VisitRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'transfer_in':
+            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'transfer_out':
+            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'annihilation':
+            rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'missing_transfer_out':
+            rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'inventory':
+            rows = InventoryRow.objects.filter(fileinfo=fileinfo, state=state)
+
+
+        with open('errors.csv','w') as error_file:
+            file_writer = csv.writer(error_file, delimiter=',')
+            for row in rows:
+                file_writer.writerow(row)
+            
+
+        response = HttpResponse(download_file.data_file, content_type='application/octet-stream')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % ('errors.csv')
+
+        return response
+    except Exception, e:
+        message.error(request, 'Failed to download file')
+        return HttpResponseRedirect(reverse('file_info'))
