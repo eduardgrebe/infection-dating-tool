@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^parse_file/(?P<file_id>\d+)/$', views.parse_file, name='parse_file'),
     url(r'^delete_file/(?P<file_id>\d+)/$', views.delete_file, name='delete_file'),
     url(r'^delete_row/(?P<row_id>\d+)/$', views.delete_row, name='delete_row'),
+    url(r'^export_as_csv/(?P<file_id>\d+)/$', views.export_as_csv, name='export_as_csv'),
 
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}, name='auth_login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),

@@ -11,7 +11,10 @@ from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
+from django.forms.models import model_to_dict
 import csv
+import os
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +147,7 @@ def row_info(request, file_id, template=None):
             template = 'cephia/inventory_row_info.html'
 
         context['rows'] = rows
+        context['file_id'] = fileinfo.id
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -155,6 +159,7 @@ def download_file(request, file_id):
             response['Content-Disposition'] = 'attachment; filename="%s"' % (download_file.filename())
             return response
     except Exception, e:
+        logger.exception(e)
         message.error(request, 'Failed to download file')
         return HttpResponseRedirect(reverse('file_info'))
 
@@ -170,6 +175,7 @@ def upload_file(request):
                 return HttpResponseRedirect(reverse('file_info'))
 
     except Exception, e:
+        logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed to upload file')
         return HttpResponseRedirect(reverse('file_info'))
 
@@ -191,6 +197,7 @@ def parse_file(request, file_id):
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
+        logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Import failed: ' + e.message)
         return HttpResponseRedirect(reverse('file_info'))
 
@@ -219,6 +226,7 @@ def process_file(request, file_id):
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
+        logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed to process: ' + e.message)
         return HttpResponseRedirect(reverse('file_info'))
 
@@ -233,6 +241,7 @@ def delete_file(request, file_id):
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
+        logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Could not delete file')
         return HttpResponseRedirect(reverse('file_info'))
 
@@ -245,13 +254,14 @@ def delete_row(request, row_id):
 
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
+        logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Could not delete row')
         return HttpResponseRedirect(reverse('file_info'))
 
 
 
 @login_required
-def export_error_csv(request, file_id):
+def export_as_csv(request, file_id):
     try:
         fileinfo = FileInfo.objects.get(pk=file_id)
         state = 'error'
@@ -272,16 +282,25 @@ def export_error_csv(request, file_id):
             rows = InventoryRow.objects.filter(fileinfo=fileinfo, state=state)
 
 
-        with open('errors.csv','w') as error_file:
+        if rows.count() == 0:
+            return HttpResponse("No rows")
+        filename = os.path.join(settings.LOG_FOLDER, 'errors.csv')
+        with open(filename,'w') as error_file:
             file_writer = csv.writer(error_file, delimiter=',')
+            headers = model_to_dict(rows[0]).keys()
+            file_writer.writerow(headers)
             for row in rows:
-                file_writer.writerow(row)
+                d = model_to_dict(row)
+                content = [ d[x] for x in headers ]
+                file_writer.writerow(content)
             
 
-        response = HttpResponse(download_file.data_file, content_type='application/octet-stream')
+        response = HttpResponse(open(filename).read(), content_type='application/octet-stream')
         response['Content-Disposition'] = 'attachment; filename="%s"' % ('errors.csv')
 
         return response
     except Exception, e:
-        message.error(request, 'Failed to download file')
+        logger.exception(e)
+        import pdb; pdb.set_trace()
+        messages.error(request, 'Failed to download file')
         return HttpResponseRedirect(reverse('file_info'))
