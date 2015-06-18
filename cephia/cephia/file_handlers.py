@@ -1,6 +1,7 @@
 from excel_helper import ExcelHelper
 from datetime import datetime
 from django.db import transaction
+from django.utils import timezone
 import logging
 
 registered_file_handlers = []
@@ -134,7 +135,7 @@ class SubjectFileHandler(FileHandler):
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
-                    subject_row.date_processed = datetime.now()
+                    subject_row.date_processed = timezone.now()
                     rows_inserted = rows_inserted + 1
                     subject_row.save()
             except Exception, e:
@@ -225,7 +226,7 @@ class VisitFileHandler(FileHandler):
                                                            visit_label = visit_row.visit_label)
 
                     visit_row.state = 'processed'
-                    visit_row.date_processed = datetime.now()
+                    visit_row.date_processed = timezone.now()
                     visit_row.error_message = ''
                     visit_row.save()
                     rows_inserted = rows_inserted + 1
@@ -306,26 +307,37 @@ class TransferInFileHandler(FileHandler):
                         subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
                     except Subject.DoesNotExist:
                         subject = Subject.objects.create(patient_label=transfer_in_row.patient_label,
-                                                         entry_date = datetime.now())
+                                                         entry_date = timezone.now())
                         subject.patient_label = 'dummy_subject_' + str(subject.pk)
                     
                     study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
-                    specimen = Specimen.objects.update_or_create(label = transfer_in_row.specimen_label,
-                                                                 subject = subject,
-                                                                 reported_draw_date = self.get_date(transfer_in_row.draw_date),
-                                                                 num_containers = transfer_in_row.num_containers,
-                                                                 transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
-                                                                 source_study = study,
-                                                                 reason = reason,
-                                                                 spec_type = spec_type,
-                                                                 volume = transfer_in_row.volume,
-                                                                 initial_claimed_volume = transfer_in_row.volume)
+                    specimen, specimen_created = Specimen.objects.update_or_create(parent_label = transfer_in_row.specimen_label,
+                                                                                   subject = subject,
+                                                                                   reported_draw_date = self.get_date(transfer_in_row.draw_date),
+                                                                                   transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
+                                                                                   source_study = study,
+                                                                                   reason = reason,
+                                                                                   spec_type = spec_type)
+
+                    if transfer_in_row.num_containers:
+                        specimen.num_containers = transfer_in_row.num_containers
+                    else:
+                        specimen.num_containers = None
+
+                    if transfer_in_row.volume:
+                        specimen.volume = transfer_in_row.volume
+                        specimen.initial_claimed_volume = transfer_in_row.volume
+                    else:
+                        specimen.volume = None
+                        specimen.initial_claimed_volume = None
+
+                    specimen.save()
 
                     transfer_in_row.state = 'processed'
-                    transfer_in_row.date_processed = datetime.now()
+                    transfer_in_row.date_processed = timezone.now()
                     transfer_in_row.save()
 
                     rows_inserted = rows_inserted + 1
@@ -397,17 +409,25 @@ class TransferOutFileHandler(FileHandler):
                 with transaction.atomic():
                     to_location, location_created = Location.objects.get_or_create(name=transfer_out_row.to_location)
                     spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
-                    
-                    specimen = Specimen.objects.create(label=transfer_out_row.specimen_label,
+
+                    specimen = Specimen.objects.create(parent_label=transfer_out_row.specimen_label,
                                                        num_containers=transfer_out_row.num_containers,
                                                        transfer_out_date = self.get_date(transfer_out_row.transfer_out_date),
                                                        to_location = to_location,
                                                        spec_type = spec_type,
-                                                       volume = transfer_out_row.volume,
                                                        other_ref = transfer_out_row.other_ref)
 
+                    if transfer_out_row.volume:
+                        specimen.volume = transfer_out_row.volume
+                        specimen.initial_claimed_volume = transfer_out_row.volume
+                    else:
+                        specimen.volume = None
+                        specimen.initial_claimed_volume = None
+
+                    specimen.save()
+
                     transfer_out_row.state = 'processed'
-                    transfer_out_row.date_processed = datetime.now()
+                    transfer_out_row.date_processed = timezone.now()
                     transfer_out_row.save()
 
                     rows_inserted = rows_inserted + 1
@@ -445,23 +465,25 @@ class AnnihilationFileHandler(FileHandler):
                     row = self.excel_annihilation_file.read_row(row_num, date_cols)
                     row_dict = dict(zip(header, row))
 
-                    self.annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
-                                                                           fileinfo=self.annihilation_file,
-                                                                           child_id=row_dict['child id'],
-                                                                           child_volume=row_dict['child volume'],
-                                                                           number_of_aliquot=row_dict['number of aliquot'],
-                                                                           annihilation_date=row_dict['annihilation date'],
-                                                                           reason=row_dict['reason'],
-                                                                           panel_type=row_dict['panel type'],
-                                                                           panel_inclusion_criteria=row_dict['panel inclusion criteria'],
-                                                                           state='pending')
+                    annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
+                                                                      fileinfo=self.annihilation_file,
+                                                                      child_id=row_dict['child id'],
+                                                                      child_volume=row_dict['child volume'],
+                                                                      number_of_aliquot=row_dict['number of aliquot'],
+                                                                      annihilation_date=row_dict['annihilation date'],
+                                                                      reason=row_dict['reason'],
+                                                                      panel_type=row_dict['panel type'],
+                                                                      panel_inclusion_criteria=row_dict['panel inclusion criteria'],
+                                                                      state='pending')
 
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                self.annihilation_file.message = e.message
-                self.annihilation_file.save()
-                return 0, 1
+                rows_failed = rows_failed + 1
+                continue
+                # self.annihilation_file.message = e.message
+                # self.annihilation_file.save()
+                # return 0, 1
 
         return rows_inserted, rows_failed
 
@@ -477,20 +499,31 @@ class AnnihilationFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    # specimen = Specimen.objects.update(label = transfer_in_row.specimen_label,
-                    #                                              subject = subject,
-                    #                                              reported_draw_date = self.get_date(transfer_in_row.draw_date),
-                    #                                              num_containers = transfer_in_row.num_containers,
-                    #                                              transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
-                    #                                              source_study = study,
-                    #                                              reason = reason,
-                    #                                              spec_type = spec_type_object,
-                    #                                              volume = transfer_in_row.volume,
-                    #                                              initial_claimed_volume = transfer_in_row.volume)
+                    if annihilation_row.parent_id == annihilation_row.child_id:
+                        parent_specimen = Specimen.objects.get(annihilation_row.parent_id)
+                        
+                        reason, reason_created = Reason.objects.get_or_create(name=annihilation_row_row.transfer_reason)
+                        parent_specimen = Specimen.objects.create(num_containers=annihilation_row.number_of_aliquot,
+                                                                 volume=annihilation_row.child_volume,
+                                                                 modified_date=annihilation_row.annihilation_date,
+                                                                 reason=reason,
+                                                                 aliquoting_reason=annihilation_row.panel_type,
+                                                                 panel_inclusion_criteria=annihilation_row.panel_inclusion_criteria)
+                    else:
+                        parent_specimen = Specimen.objects.get(annihilation_row.parent_id).update(modified_date = self.get_date(annihilation_row.annihilation_date))
+                        reason, reason_created = Reason.objects.get_or_create(name=annihilation_row_row.transfer_reason)
+                        child_specimen = Specimen.objects.create(child_label=annihilation_row.child_id,
+                                                                 parent_label=annihilation_row.parent_id,
+                                                                 num_containers=annihilation_row.number_of_aliquot,
+                                                                 volume=annihilation_row.child_volume,
+                                                                 created_date=annihilation_row.annihilation_date,
+                                                                 reason=reason,
+                                                                 aliquoting_reason=annihilation_row.panel_type,
+                                                                 panel_inclusion_criteria=annihilation_row.panel_inclusion_criteria)
 
-                    # annihilation_row.state = 'processed'
-                    # annihilation_row.date_processed = datetime.now()
-                    # annihilation_row.save()
+                    annihilation_row.state = 'processed'
+                    annihilation_row.date_processed = timezone.now()
+                    annihilation_row.save()
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
@@ -571,7 +604,7 @@ class InventoryFileHandler(FileHandler):
                     #                                              initial_claimed_volume = inventory_row.volume)
 
                     # inventory_row.state = 'processed'
-                    # inventory_row.date_processed = datetime.now()
+                    # inventory_row.date_processed = timezone.now()
                     # inventory_row.save()
 
                     rows_inserted = rows_inserted + 1

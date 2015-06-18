@@ -21,7 +21,8 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^$', views.home, name='home'),
-
+    url(r'^tms/$', views.table_management, name='table_management'),
+    
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
     url(r'^sources/$', views.sources, name='sources'),

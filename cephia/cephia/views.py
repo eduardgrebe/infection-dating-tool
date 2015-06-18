@@ -20,6 +20,10 @@ def home(request, template="cephia/home.html"):
     context = {}
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+@login_required
+def table_management(request, template="cephia/tms_home.html"):
+    context = {}
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def countries(request, template="cephia/countries.html"):
@@ -173,13 +177,13 @@ def parse_file(request, file_id):
         file_handler = file_to_parse.get_handler()
 
         num_success, num_fail = file_handler.parse()
-
+        
         if num_fail > 0:
-            messages.add_message(request, messages.ERROR, 'Import failed')
-        else:
-            file_to_parse.state = 'imported'
-            file_to_parse.save()
-            messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
+            messages.add_message(request, messages.ERROR, 'Failed to import ' + str(num_fail) + ' rows ')
+
+        file_to_parse.state = 'imported'
+        file_to_parse.save()
+        messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:

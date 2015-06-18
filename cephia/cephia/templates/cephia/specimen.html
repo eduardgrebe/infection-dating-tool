@@ -11,33 +11,37 @@
 {% show_pages %}
 
 <table class="table-striped table table-hover" style="overflow:auto;">
-    <thead>
-	<th>Label</th>
-	<th>Number of Containers</th>
-	<th>Draw Date</th>
-	<th>Transfer in Date</th>
-	<th>Reason</th>
-	<th>Specimen Type</th>
-	<th>Volume</th>
-	<th>Initial Claimed Volume</th>
-	<th>Source Study</th>
-    </thead>
+  <thead>
+    <th>Parent Label</th>
+    <th>Child Label</th>
+    <th>Number of Containers</th>
+    <th>Draw Date</th>
+    <th>Transfer in Date</th>
+    <th>Transfer out Date</th>
+    <th>Reason</th>
+    <th>Specimen Type</th>
+    <th>Volume</th>
+    <th>Initial Claimed Volume</th>
+    <th>Source Study</th>
+  </thead>
 
-    <tbody>
-	{% for spec in specimen %}
-	<tr>
-	    <td>{{spec.label}}</td>
-	    <td>{{spec.num_containers}}</td>
-	    <td>{{spec.reported_draw_date}}</td>
-	    <td>{{spec.transfer_in_date}}</td>
-	    <td>{{spec.reason}}</td>
-	    <td>{{spec.spec_type.name}}</td>
-	    <td>{{spec.volume}}</td>
-	    <td>{{spec.initial_claimed_volume}}</td>
-	    <td>{{spec.source_study}}</td>
-	</tr>
-	{% endfor %}
-    </tbody>
+  <tbody>
+    {% for spec in specimen %}
+    <tr>
+      <td>{{spec.parent_label}}</td>
+      <td>{{spec.child_label}}</td>
+      <td>{{spec.num_containers}}</td>
+      <td>{{spec.reported_draw_date}}</td>
+      <td>{{spec.transfer_in_date}}</td>
+      <td>{{spec.transfer_out_date}}</td>
+      <td>{{spec.reason}}</td>
+      <td>{{spec.spec_type.name}}</td>
+      <td>{{spec.volume}}</td>
+      <td>{{spec.initial_claimed_volume}}</td>
+      <td>{{spec.source_study}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 
 {% endblock %}

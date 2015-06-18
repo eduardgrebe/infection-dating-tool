@@ -17,7 +17,7 @@ from file_handlers import get_file_handler_for_type
 
 import logging
 logger = logging.getLogger(__name__)
-    
+
 class CephiaUser(AbstractUser):
     class Meta:
         db_table = "cephia_user"
@@ -255,7 +255,7 @@ class SpecimenType(models.Model):
 
     class Meta:
         db_table = "cephia_specimen_type"
-    
+        
     name = models.CharField(max_length=255, null=False, blank=False)
     spec_type = models.CharField(max_length=10, null=False, blank=False)
     spec_group = models.IntegerField(null=True, blank=True)
@@ -291,32 +291,58 @@ class Reason(models.Model):
     def __unicode__(self):
         return self.name
 
+class AliquotingReason(models.Model):
+
+    class Meta:
+        db_table = "cephia_aliquoting_reason"
+        
+    name = models.CharField(max_length=255, null=False, blank=False) 
+
+    def __unicode__(self):
+        return self.name
+
+class PanelInclusionCriteria(models.Model):
+
+    class Meta:
+        db_table = "cephia_panel_incl_criteria"
+        
+    name = models.CharField(max_length=255, null=False, blank=False) 
+
+    def __unicode__(self):
+        return self.name
+
     
 class Specimen(models.Model):
 
     class Meta:
         db_table = "cephia_specimen"
-    
+        
     SITE_CHOICES = (
         ('BSRI', 'BSRI'),
         ('PHE', 'PHE')
     )
     
         
-    label = models.CharField(max_length=255, null=False, blank=False) 
-    num_containers = models.IntegerField(null=False, blank=False, default=1)
+    parent_label = models.CharField(max_length=255, null=True, blank=True)
+    child_label = models.CharField(max_length=255, null=True, blank=True) 
+    num_containers = models.IntegerField(null=True, blank=True)
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
     transfer_out_date = models.DateField(null=True, blank=True)
+    created_date = models.DateField(null=True, blank=True)
+    modified_date = models.DateField(null=True, blank=True)
     reason = models.ForeignKey(Reason, null=True, blank=True)
     subject = models.ForeignKey(Subject, null=True, blank=True)
     spec_type = models.ForeignKey(SpecimenType, null=True, blank=True)
-    volume = models.IntegerField(null=True, blank=True)
-    initial_claimed_volume = models.IntegerField(null=True, blank=True)
-    other_ref = models.IntegerField(null=True, blank=False)
+    volume = models.FloatField(null=True, blank=True)
+    initial_claimed_volume = models.FloatField(null=True, blank=True)
+    other_ref = models.CharField(max_length=10, null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
     to_location = models.ForeignKey(Location, null=True, blank=True)
     site = models.CharField(max_length=5, null=False, blank=False, choices=SITE_CHOICES)
+    aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
+    panel_inclusion_criteria = models.ForeignKey(PanelInclusionCriteria, null=True, blank=True)
+
 
     def __unicode__(self):
         return self.label
@@ -326,7 +352,7 @@ class TransferInRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_transfer_in_row"
-    
+        
     specimen_label = models.CharField(max_length=255, null=True, blank=True) 
     patient_label = models.CharField(max_length=255, null=True, blank=True)
     draw_date = models.CharField(max_length=255, null=True, blank=True)
@@ -344,7 +370,7 @@ class TransferOutRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_transfer_out_row"
-    
+        
     specimen_label = models.CharField(max_length=255, null=True, blank=True) 
     num_containers = models.CharField(max_length=255, null=True, blank=True)
     transfer_out_date = models.CharField(max_length=255, null=True, blank=True)
@@ -361,7 +387,7 @@ class AnnihilationRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_annihilation_row"
-    
+        
     parent_id = models.CharField(max_length=255, null=True, blank=True) 
     child_id = models.CharField(max_length=255, null=True, blank=True)
     child_volume = models.CharField(max_length=255, null=True, blank=True)
@@ -374,11 +400,13 @@ class AnnihilationRow(ImportedRow):
     def __unicode__(self):
         return self.parent_id
 
+
+
 class InventoryRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_inventory_row"
-    
+        
     original_box_name = models.CharField(max_length=255, null=True, blank=True) 
     sample_id = models.CharField(max_length=255, null=True, blank=True)
     draw_date = models.CharField(max_length=255, null=True, blank=True)
