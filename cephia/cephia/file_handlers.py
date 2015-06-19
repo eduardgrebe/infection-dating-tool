@@ -308,13 +308,12 @@ class TransferInFileHandler(FileHandler):
                     except Subject.DoesNotExist:
                         subject = Subject.objects.create(patient_label=transfer_in_row.patient_label,
                                                          entry_date = timezone.now())
-                        subject.patient_label = 'dummy_subject_' + str(subject.pk)
                     
                     study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
-                    specimen, specimen_created = Specimen.objects.update_or_create(parent_label = transfer_in_row.specimen_label,
+                    specimen, specimen_created = Specimen.objects.update_or_create(specimen_label = transfer_in_row.specimen_label,
                                                                                    subject = subject,
                                                                                    reported_draw_date = self.get_date(transfer_in_row.draw_date),
                                                                                    transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
@@ -328,10 +327,8 @@ class TransferInFileHandler(FileHandler):
                         specimen.num_containers = None
 
                     if transfer_in_row.volume:
-                        specimen.volume = transfer_in_row.volume
                         specimen.initial_claimed_volume = transfer_in_row.volume
                     else:
-                        specimen.volume = None
                         specimen.initial_claimed_volume = None
 
                     specimen.save()

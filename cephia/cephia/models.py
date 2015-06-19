@@ -321,8 +321,8 @@ class Specimen(models.Model):
     )
     
         
-    parent_label = models.CharField(max_length=255, null=True, blank=True)
-    child_label = models.CharField(max_length=255, null=True, blank=True) 
+    specimen_label = models.CharField(max_length=255, null=True, blank=True)
+    parent_label = models.CharField(max_length=255, null=True, blank=True) 
     num_containers = models.IntegerField(null=True, blank=True)
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
@@ -331,6 +331,7 @@ class Specimen(models.Model):
     modified_date = models.DateField(null=True, blank=True)
     reason = models.ForeignKey(Reason, null=True, blank=True)
     subject = models.ForeignKey(Subject, null=True, blank=True)
+    visit = models.ForeignKey(Visit, null=True, blank=True)
     spec_type = models.ForeignKey(SpecimenType, null=True, blank=True)
     volume = models.FloatField(null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)

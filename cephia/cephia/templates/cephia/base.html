@@ -20,6 +20,18 @@
       {% block left_menu %}
       {% endblock %}
 
+      {% block filter_content %}
+	<div class="btn-group" style="float:right;">
+	    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		Filter <span class="caret"></span>
+	    </button>
+	    <ul class="dropdown-menu pull-right">
+		<li><a href="{% url 'visits' %}?associated=false">No associated subjects</a></li>
+		<li><a href="{% url 'visits' %}?associated=true">Associated with subjects</a></li>
+	    </ul>
+	</div>
+      {% endblock %}
+
       {% block button_content %}
       {% endblock %}
 

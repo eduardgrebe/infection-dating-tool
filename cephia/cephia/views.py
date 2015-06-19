@@ -66,32 +66,51 @@ def studies(request, template="cephia/studies.html"):
 
 @login_required
 def subjects(request, template="cephia/subjects.html"):
+
+    patient_label = request.GET.get('patient_label')    
     context = {}
-    subjects = Subject.objects.all()
+
+    if patient_label:
+        subjects = Subject.objects.filter(patient_label=patient_label)
+    else:
+        subjects = Subject.objects.all()
+
     context['subjects'] = subjects
-    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required
 def visits(request, template="cephia/visits.html"):
+
+    patient_label = request.GET.get('patient_label')
+    associated = request.GET.get('associated')
     context = {}
-    visits = Visit.objects.all()
+    visits = None
+
+    if patient_label:
+        visits = Visit.objects.filter(subject__patient_label=patient_label)
+    else:
+        visits = Visit.objects.all()
+
+    if associated == 'true':
+        visits = visits.exclude(subject__isnull=True)
+    elif associated == 'false':
+        visits = visits.exclude(subject__isnull=False)
+
     context['visits'] = visits
-    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required
 def specimen(request, template="cephia/specimen.html"):
 
-    parent_label = request.GET.get('parent_label')
+    specimen_label = request.GET.get('specimen_label')
     context = {}
 
-    if parent_label:
-        specimen = Specimen.objects.filter(parent_label=parent_label)
+    if specimen_label:
+        specimen = Specimen.objects.filter(specimen_label=specimen_label)
     else:
-        specimen = Specimen.objects.all().order_by('parent_label', 'child_label')
+        specimen = Specimen.objects.all().order_by('specimen_label', 'parent_label')
 
     context['specimen'] = specimen
     return render_to_response(template, context, context_instance=RequestContext(request))

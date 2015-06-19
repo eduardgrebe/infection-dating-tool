@@ -12,8 +12,8 @@
 
 <table class="table-striped table table-hover" style="overflow:auto;">
   <thead>
+    <th>Specimen Label</th>
     <th>Parent Label</th>
-    <th>Child Label</th>
     <th>Number of Containers</th>
     <th>Draw Date</th>
     <th>Transfer in Date</th>
@@ -33,17 +33,25 @@
   <tbody>
     {% for spec in specimen %}
     <tr>
-      <td>{{spec.parent_label}}</td>
-      <td>{% if spec.child_label %}{{spec.child_label}} {% endif %}</td>
+      <td>{{spec.specimen_label}}</td>
+      <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
       <td>{{spec.num_containers}}</td>
-      <td>{% if spec.reported_draw_date %}{{spec.reported_draw_date}}{% endif %}</td>
+      <td>
+	  {% if spec.reported_draw_date %}
+	  {% if spec.visit %}
+	  <a href="#">{{spec.reported_draw_date}}</a>
+	  {% else %}
+	  {{spec.reported_draw_date}}
+	  {% endif %}
+	  {% endif %}
+      </td>
       <td>{% if spec.transfer_in_date %}{{spec.transfer_in_date}}{% endif %}</td>
       <td>{% if spec.transfer_out_date %}{{spec.transfer_out_date}}{% endif %}</td>
       <td>{% if spec.modified_date %}{{spec.modified_date}}{% endif %}</td>
       <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
       <td>{% if spec.reason %}{{spec.reason}}{% endif %}</td>
       <td>{{spec.spec_type.name}}</td>
-      <td>{{spec.volume}}</td>
+      <td>{% if spec.volumen %}{{spec.volume}}{% endif %}</td>
       <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
       <td>{{spec.to_location.name}}</td>
       <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
