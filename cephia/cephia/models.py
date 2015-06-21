@@ -93,7 +93,6 @@ class FileInfo(models.Model):
         ('transfer_out','Transfer Out'),
         ('missing_transfer_out','Missing Transfer Out'),
         ('annihilation','Annihilation'),
-        ('inventory','Inventory')
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -414,20 +413,3 @@ class MissingTransferOutRow(ImportedRow):
     def __unicode__(self):
         return self.parent_id
 
-
-class InventoryRow(ImportedRow):
-
-    class Meta:
-        db_table = "cephia_inventory_row"
-        
-    original_box_name = models.CharField(max_length=255, null=True, blank=True) 
-    sample_id = models.CharField(max_length=255, null=True, blank=True)
-    draw_date = models.CharField(max_length=255, null=True, blank=True)
-    volume = models.CharField(max_length=255, null=True, blank=True)
-    box = models.CharField(max_length=255, null=True, blank=True)
-    row = models.CharField(max_length=255, null=True, blank=True)
-    column = models.CharField(max_length=255, null=True, blank=True)
-    comments = models.CharField(max_length=255, null=True, blank=True)
-
-    def __unicode__(self):
-        return self.sample_id
