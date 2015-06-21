@@ -38,9 +38,6 @@
 	    <td>{{row.volume}}</td>
 	    <td>{{row.state}}</td>
 	    <td>{{row.error_message}}</td>
-	    {% if row.state == 'error' %}
-	    <td><a href="{% url 'delete_row' row.id %}" class="btn btn-default btn-sm">Delete</a><td>
-	    {% endif %}
 	</tr>
 	{% endfor %}
     </tbody>
