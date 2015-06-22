@@ -100,7 +100,7 @@ class SubjectFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending', 'error']):
+        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending']):
             try:
                 with transaction.atomic():
                     if subject_row.ethnicity:
@@ -108,8 +108,8 @@ class SubjectFileHandler(FileHandler):
                     else:
                         ethnicity = 'Unknown'
 
-                    ethnicity_object, ethnicity_created = Ethnicity.objects.get_or_create(name=ethnicity)
-                    subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
+                    ethnicity_object = Ethnicity.objects.get(name=ethnicity)
+                    subtype, subtype_created = Subtype.objects.get(name=subject_row.subtype)
                     country = Country.objects.get(code=subject_row.country)
 
                     subject = Subject.objects.update_or_create(patient_label=subject_row.patient_label,
@@ -208,17 +208,12 @@ class VisitFileHandler(FileHandler):
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
             try:
                 with transaction.atomic():
-                    source,  source_create = Source.objects.get_or_create(name=visit_row.source)
-
-                    if not visit_row.visit_cd4:
-                        cd4 = 0
-                    else:
-                        cd4 = visit_row.visit_cd4
+                    source = Source.objects.get(name=visit_row.source)
 
                     visit = Visit.objects.update_or_create(visit_date = self.get_date(visit_row.visit_date),
                                                            status = visit_row.status,
                                                            source = source,
-                                                           visit_cd4 = cd4,
+                                                           visit_cd4 = visit_row.visit_cd4,
                                                            visit_vl = visit_row.visit_vl,
                                                            scope_visit_ec = visit_row.scope_visit_ec,
                                                            visit_pregnant = self.get_bool(visit_row.visit_pregnant),
@@ -299,17 +294,13 @@ class TransferInFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state__in=['pending', 'error']):
+        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state__in=['pending']):
 
             try:
                 with transaction.atomic():
-                    try:
-                        subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    except Subject.DoesNotExist:
-                        subject = Subject.objects.create(patient_label=transfer_in_row.patient_label,
-                                                         entry_date = timezone.now())
+                    subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
                     
-                    study, study_created = Study.objects.get_or_create(name=transfer_in_row.sites)
+                    study = Study.objects.get(name=transfer_in_row.sites)
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
@@ -400,19 +391,20 @@ class TransferOutFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for transfer_out_row in TransferOutRow.objects.filter(fileinfo=self.transfer_out_file, state__in=['pending', 'error']):
+        for transfer_out_row in TransferOutRow.objects.filter(fileinfo=self.transfer_out_file, state__in=['pending']):
 
             try:
                 with transaction.atomic():
-                    to_location, location_created = Location.objects.get_or_create(name=transfer_out_row.to_location)
+                    to_location = Location.objects.get(name=transfer_out_row.to_location)
                     spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
 
-                    specimen = Specimen.objects.create(parent_label=transfer_out_row.specimen_label,
-                                                       num_containers=transfer_out_row.num_containers,
-                                                       transfer_out_date = self.get_date(transfer_out_row.transfer_out_date),
-                                                       to_location = to_location,
-                                                       spec_type = spec_type,
-                                                       other_ref = transfer_out_row.other_ref)
+                    specimen = Specimen.objects.get(parent_label=transfer_out_row.specimen_label)
+
+                    specimen.num_containers=transfer_out_row.num_containers
+                    specimen.transfer_out_date = self.get_date(transfer_out_row.transfer_out_date)
+                    specimen.to_location = to_location
+                    specimen.spec_type = spec_type
+                    specimen.other_ref = transfer_out_row.other_ref
 
                     if transfer_out_row.volume:
                         specimen.volume = transfer_out_row.volume
@@ -493,7 +485,7 @@ class AnnihilationFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for annihilation_row in AnnihilationRow.objects.filter(fileinfo=self.annihilation_file, state__in=['pending', 'error']):
+        for annihilation_row in AnnihilationRow.objects.filter(fileinfo=self.annihilation_file, state__in=['pending']):
 
             try:
                 with transaction.atomic():
@@ -516,6 +508,7 @@ class AnnihilationFileHandler(FileHandler):
                     else:
                         parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None)[0] #GETTING THE FIRST IS A HACK
                         parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
+                        parent_specimen.save()
 
                         child_specimen = Specimen.objects.create(child_label=annihilation_row.child_id,
                                                                  parent_label=annihilation_row.parent_id,
@@ -564,7 +557,9 @@ class MissingTransferOutFileHandler(FileHandler):
 
             current_sheet = self.excel_missing_transfer_out_file.wb.sheet_by_name(sheet)
             header = current_sheet.row(0)
+            
             import pdb; pdb.set_trace()
+            
             for row_num in range(current_sheet.nrows):
                 try:
                     if row_num >= 1:
@@ -584,9 +579,6 @@ class MissingTransferOutFileHandler(FileHandler):
                 except Exception, e:
                     rows_failed = rows_failed + 1
                     continue
-                # self.missing_transfer_out_file.message = e.message
-                # self.missing_transfer_out_file.save()
-                # return 0, 1
 
         return rows_inserted, rows_failed
 

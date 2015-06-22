@@ -3,11 +3,11 @@
 {% load endless %}
 
 
-{% block site-title %} Sources {% endblock %}
+{% block site-title %} Locations {% endblock %}
 
 {% block page_content %}
 
-{% paginate sources %}
+{% paginate locations %}
 {% show_pages %}
 
 <table class="table-striped table table-hover" style="overflow:auto;">
@@ -17,10 +17,10 @@
     </thead>
 
     <tbody>
-	{% for source in sources %}
+	{% for location in locations %}
 	<tr>
-	    <td>{{source.id}}</td>
-	    <td>{{source.name}}</td>
+	    <td>{{location.id}}</td>
+	    <td>{{location.name}}</td>
 	</tr>
 	{% endfor %}
     </tbody>

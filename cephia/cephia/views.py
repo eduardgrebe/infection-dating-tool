@@ -6,7 +6,7 @@ from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
-                    VisitRow, Source, Specimen, SpecimenType, TransferInRow,
+                    VisitRow, Location, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow)
 from forms import FileInfoForm
 from django.contrib import messages
@@ -48,10 +48,10 @@ def ethnicities(request, template="cephia/ethnicities.html"):
 
 
 @login_required
-def sources(request, template="cephia/sources.html"):
+def locations(request, template="cephia/locations.html"):
     context = {}
-    sources = Source.objects.all()
-    context['sources'] = sources
+    locations = Location.objects.all()
+    context['locations'] = locations
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -302,25 +302,33 @@ def export_as_csv(request, file_id):
             rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
 
 
-        if rows.count() == 0:
-            return HttpResponse("No rows")
-        filename = os.path.join(settings.LOG_FOLDER, 'errors.csv')
-        with open(filename,'w') as error_file:
-            file_writer = csv.writer(error_file, delimiter=',')
-            headers = model_to_dict(rows[0]).keys()
-            file_writer.writerow(headers)
-            for row in rows:
-                d = model_to_dict(row)
-                content = [ d[x] for x in headers ]
-                file_writer.writerow(content)
+        # if rows.count() == 0:
+        #     return HttpResponse("No rows")
+        # filename = os.path.join(settings.LOG_FOLDER, 'errors.csv')
+        # with open(filename,'w') as error_file:
+        #     file_writer = csv.writer(error_file, delimiter=',')
+        #     headers = model_to_dict(rows[0]).keys()
+        #     file_writer.writerow(headers)
+        #     for row in rows:
+        #         d = model_to_dict(row)
+        #         content = [ d[x] for x in headers ]
+        #         file_writer.writerow(content)
             
 
-        response = HttpResponse(open(filename).read(), content_type='application/octet-stream')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % ('errors.csv')
+        # response = HttpResponse(open(filename).read(), content_type='application/octet-stream')
+        # response['Content-Disposition'] = 'attachment; filename="%s"' % ('errors.csv')
+
+        response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+        headers = model_to_dict(rows[0]).keys()
+
+        file_writer.writerow(headers)
+        for row in rows:
+            d = model_to_dict(row)
+            content = [ d[x] for x in headers ]
+            writer.writerow(content)
 
         return response
     except Exception, e:
         logger.exception(e)
-        import pdb; pdb.set_trace()
         messages.error(request, 'Failed to download file')
         return HttpResponseRedirect(reverse('file_info'))

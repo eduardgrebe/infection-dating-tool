@@ -53,6 +53,17 @@ class Country(models.Model):
     def __unicode__(self):
         return self.code
 
+
+class Study(models.Model):
+    class Meta:
+        db_table = "cephia_study"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name
+
+
 class Ethnicity(models.Model):
 
     class Meta:
@@ -64,13 +75,6 @@ class Subtype(models.Model):
 
     class Meta:
         db_table = "cephia_subtype"
-
-    name = models.CharField(max_length=30, null=False, blank=False)
-
-class Source(models.Model):
-
-    class Meta:
-        db_table = "cephia_source"
 
     name = models.CharField(max_length=30, null=False, blank=False)
 
@@ -235,7 +239,7 @@ class Visit(models.Model):
     visit_label = models.CharField(max_length=255, null=False, blank=False)
     visit_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
-    source = models.ForeignKey(Source)
+    study = models.ForeignKey(Study, null=True, blank=True)
     visit_cd4 = models.IntegerField(null=True, blank=True)
     visit_vl = models.CharField(max_length=10, null=False, blank=True)
     scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
@@ -260,14 +264,7 @@ class SpecimenType(models.Model):
     def __unicode__(self):
         return self.name
 
-class Study(models.Model):
-    class Meta:
-        db_table = "cephia_study"
 
-    name = models.CharField(max_length=255, null=False, blank=False)
-
-    def __unicode__(self):
-        return self.name
 
 class Location(models.Model):
     class Meta:
