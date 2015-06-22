@@ -35,7 +35,7 @@
     <tr>
       <td>{{spec.specimen_label}}</td>
       <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
-      <td>{{spec.num_containers}}</td>
+      <td>{% if spec.num_containers %}{{spec.num_containers}}{% endif %}</td>
       <td>
 	  {% if spec.reported_draw_date %}
 	  {% if spec.visit %}

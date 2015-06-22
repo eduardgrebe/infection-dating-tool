@@ -104,11 +104,10 @@ class SubjectFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     if subject_row.ethnicity:
-                        ethnicity = subject_row.ethnicity
+                        ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
                     else:
-                        ethnicity = 'Unknown'
+                        ethnicity = Ethnicity.objects.get(name='Unknown')
 
-                    ethnicity_object = Ethnicity.objects.get(name=ethnicity)
                     subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
                     country = Country.objects.get(code=subject_row.country)
 
@@ -122,7 +121,7 @@ class SubjectFileHandler(FileHandler):
                                                                 fiebig = subject_row.fiebig,
                                                                 dob = self.get_date(subject_row.dob),
                                                                 gender = subject_row.gender,
-                                                                ethnicity = ethnicity_object,
+                                                                ethnicity = ethnicity,
                                                                 sex_with_men = self.get_bool(subject_row.sex_with_men),
                                                                 sex_with_women = self.get_bool(subject_row.sex_with_women),
                                                                 iv_drug_user = self.get_bool(subject_row.iv_drug_user),
@@ -593,24 +592,26 @@ class MissingTransferOutFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for missing_transfer_out_row in MissingTransferOutRow.objects.filter(fileinfo=self.missing_transfer_out_file, state__in=['pending', 'error']):
-
+        for missing_transfer_out_row in MissingTransferOutRow.objects.filter(fileinfo=self.missing_transfer_out_file, state__in=['pending']):
             try:
-                with transaction.atomic():
-                        specimen = Specimen.objects.create(specimen_label=missing_transfer_out_row.child_id,
-                                                           parent_label=missing_transfer_out_row.parent_id,
-                                                           num_containers=missing_transfer_out_row.number_of_aliquot,
-                                                           volume=missing_transfer_out_row.child_volume,
-                                                           created_date=missing_transfer_out_row.annihilation_date,
-                                                           reason=reason,
-                                                           aliquoting_reason=aliquoting_reason,
-                                                           panel_inclusion_criteria=panel_inclusion_criteria)
+                first_aliquot = missing_transfer_out_row.first_aliquot.split('-')
+                last_aliquot = missing_transfer_out_row.last_aliquot.split('-')
+                
+                if first_aliquot[0] == last_aliquot[0]:
+                    with transaction.atomic():
+                        for aliquot_number in range(int(first_aliquot[1]), int(last_aliquot[1]) + 1):
+                            specimen = Specimen.objects.create(specimen_label=first_aliquot[0] + '-' + str(aliquot_number),
+                                                               created_at = timezone.now(),
+                                                               volume=missing_transfer_out_row.volume)
 
-                        missing_transfer_out_row.state = 'processed'
-                        missing_transfer_out_row.date_processed = timezone.now()
-                        missing_transfer_out_row.save()
+                            missing_transfer_out_row.state = 'processed'
+                            missing_transfer_out_row.date_processed = timezone.now()
+                            missing_transfer_out_row.save()
 
-                        rows_inserted = rows_inserted + 1
+                            rows_inserted = rows_inserted + 1
+                else:
+                    raise Exception("Aliquot range does not match")
+
             except Exception, e:
                 missing_transfer_out_row.state = 'error'
                 missing_transfer_out_row.error_message = e.message
