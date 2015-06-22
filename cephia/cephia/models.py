@@ -39,6 +39,7 @@ class Region(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Country(models.Model):
     
     class Meta:
@@ -52,6 +53,16 @@ class Country(models.Model):
     
     def __unicode__(self):
         return self.code
+
+
+class Site(models.Model):
+    class Meta:
+        db_table = "cephia_site"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Study(models.Model):
@@ -310,11 +321,6 @@ class Specimen(models.Model):
 
     class Meta:
         db_table = "cephia_specimen"
-        
-    SITE_CHOICES = (
-        ('BSRI', 'BSRI'),
-        ('PHE', 'PHE')
-    )
     
         
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
@@ -332,9 +338,8 @@ class Specimen(models.Model):
     volume = models.FloatField(null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     other_ref = models.CharField(max_length=10, null=True, blank=True)
-    source_study = models.ForeignKey(Study, null=True, blank=True)
+    source_study = models.ForeignKey(Site, null=True, blank=True)
     to_location = models.ForeignKey(Location, null=True, blank=True)
-    site = models.CharField(max_length=5, null=False, blank=False, choices=SITE_CHOICES)
     aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
     panel_inclusion_criteria = models.ForeignKey(PanelInclusionCriteria, null=True, blank=True)
 

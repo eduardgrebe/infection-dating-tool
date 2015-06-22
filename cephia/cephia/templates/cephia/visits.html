@@ -27,7 +27,7 @@
 	<th>Subject</th>
 	<th>Visit Date</th>
 	<th>Status</th>
-	<th>Source</th>
+	<th>Study</th>
 	<th>CD4</th>
 	<th>VL</th>
 	<th>Scope Visit EC</th>
@@ -41,7 +41,7 @@
 	    <td>{% if visit.subject %}<a href="{% url 'subjects' %}?patient_label={{visit.visit_label}}">{{visit.visit_label}}</a>{% else %}{{visit.visit_label}}{% endif %}</td>
 	    <td>{{visit.visit_date}}</td>
 	    <td>{{visit.status}}</td>
-	    <td>{{visit.source.name}}</td>
+	    <td>{{visit.study.name}}</td>
 	    <td>{{visit.visit_cd4}}</td>
 	    <td>{{visit.visit_vl}}</td>
 	    <td>{{visit.scope_visit_ec}}</td>

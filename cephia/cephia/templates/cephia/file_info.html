@@ -37,8 +37,6 @@
 		<a href="{% url 'parse_file' file.id %}" class="btn btn-default btn-sm">Import</a>
 		{% elif file.state == 'imported' %}
 		<a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Process</a>
-		{% elif file.state == 'proc' or file.state == 'error' %}
-		<a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Reprocess</a>
 		{% endif %}
 	    </td>
 	    <td>

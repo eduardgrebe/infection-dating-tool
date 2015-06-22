@@ -109,7 +109,7 @@ class SubjectFileHandler(FileHandler):
                         ethnicity = 'Unknown'
 
                     ethnicity_object = Ethnicity.objects.get(name=ethnicity)
-                    subtype, subtype_created = Subtype.objects.get(name=subject_row.subtype)
+                    subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
                     country = Country.objects.get(code=subject_row.country)
 
                     subject = Subject.objects.update_or_create(patient_label=subject_row.patient_label,
@@ -200,7 +200,7 @@ class VisitFileHandler(FileHandler):
 
     def process(self):
         
-        from models import VisitRow, Visit, Source
+        from models import VisitRow, Visit, Study
         
         rows_inserted = 0
         rows_failed = 0
@@ -208,11 +208,11 @@ class VisitFileHandler(FileHandler):
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
             try:
                 with transaction.atomic():
-                    source = Source.objects.get(name=visit_row.source)
+                    study = Study.objects.get(name=visit_row.source)
 
                     visit = Visit.objects.update_or_create(visit_date = self.get_date(visit_row.visit_date),
                                                            status = visit_row.status,
-                                                           source = source,
+                                                           study = study,
                                                            visit_cd4 = visit_row.visit_cd4,
                                                            visit_vl = visit_row.visit_vl,
                                                            scope_visit_ec = visit_row.scope_visit_ec,
@@ -279,17 +279,16 @@ class TransferInFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                continue
-                # self.transfer_in_file.message = e.message
-                # self.transfer_in_file.save()
-                # return 0, 1
+                self.transfer_in_file.message = e.message
+                self.transfer_in_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
 
     def process(self):
         
-        from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen
+        from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen, Site
         
         rows_inserted = 0
         rows_failed = 0
@@ -299,16 +298,16 @@ class TransferInFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    
-                    study = Study.objects.get(name=transfer_in_row.sites)
+                    site = Site.objects.get(name=transfer_in_row.sites)
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
+
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
                     specimen, specimen_created = Specimen.objects.update_or_create(specimen_label = transfer_in_row.specimen_label,
                                                                                    subject = subject,
                                                                                    reported_draw_date = self.get_date(transfer_in_row.draw_date),
                                                                                    transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
-                                                                                   source_study = study,
+                                                                                   source_study = site,
                                                                                    reason = reason,
                                                                                    spec_type = spec_type)
 
@@ -398,7 +397,7 @@ class TransferOutFileHandler(FileHandler):
                     to_location = Location.objects.get(name=transfer_out_row.to_location)
                     spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
 
-                    specimen = Specimen.objects.get(parent_label=transfer_out_row.specimen_label)
+                    specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, spec_type=spec_type)
 
                     specimen.num_containers=transfer_out_row.num_containers
                     specimen.transfer_out_date = self.get_date(transfer_out_row.transfer_out_date)
@@ -469,11 +468,9 @@ class AnnihilationFileHandler(FileHandler):
 
                     rows_inserted = rows_inserted + 1
             except Exception, e:
-                rows_failed = rows_failed + 1
-                continue
-                # self.annihilation_file.message = e.message
-                # self.annihilation_file.save()
-                # return 0, 1
+                self.annihilation_file.message = e.message
+                self.annihilation_file.save()
+                return 0, 1
 
         return rows_inserted, rows_failed
 
@@ -495,7 +492,7 @@ class AnnihilationFileHandler(FileHandler):
                     panel_inclusion_criteria, panel_inclusion_criteria_created = PanelInclusionCriteria.objects.get_or_create(name=annihilation_row.panel_inclusion_criteria)
 
                     if annihilation_row.parent_id == annihilation_row.child_id:
-                        parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None)[0] #GETTING THE FIRST IS A HACK
+                        parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
                         
                         parent_specimen.num_containers = annihilation_row.number_of_aliquot
                         parent_specimen.volume = annihilation_row.child_volume
@@ -506,18 +503,22 @@ class AnnihilationFileHandler(FileHandler):
                         parent_specimen.save()
 
                     else:
-                        parent_specimen = Specimen.objects.filter(parent_label=annihilation_row.parent_id, child_label=None)[0] #GETTING THE FIRST IS A HACK
+                        parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
+
                         parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
                         parent_specimen.save()
 
-                        child_specimen = Specimen.objects.create(child_label=annihilation_row.child_id,
-                                                                 parent_label=annihilation_row.parent_id,
-                                                                 num_containers=annihilation_row.number_of_aliquot,
-                                                                 volume=annihilation_row.child_volume,
-                                                                 created_date=self.get_date(annihilation_row.annihilation_date),
-                                                                 reason=reason,
-                                                                 aliquoting_reason=aliquoting_reason,
-                                                                 panel_inclusion_criteria=panel_inclusion_criteria)
+                        child_specimen = Specimen.objects.update_or_create(specimen_label=annihilation_row.child_id,
+                                                                           parent_label=annihilation_row.parent_id,
+                                                                           num_containers=annihilation_row.number_of_aliquot,
+                                                                           volume=annihilation_row.child_volume,
+                                                                           spec_type=parent_specimen.spec_type,
+                                                                           reported_draw_date=parent_specimen.reported_draw_date,
+                                                                           source_study=parent_specimen.source_study,
+                                                                           created_date=self.get_date(annihilation_row.annihilation_date),
+                                                                           reason=reason,
+                                                                           aliquoting_reason=aliquoting_reason,
+                                                                           panel_inclusion_criteria=panel_inclusion_criteria)
 
                     annihilation_row.state = 'processed'
                     annihilation_row.error_message = ''
@@ -552,33 +553,35 @@ class MissingTransferOutFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
         sheets = self.excel_missing_transfer_out_file.wb.sheet_names()
+        allowed_sheets = ['evaluation panel','development panel 100ul','development panel 500ul']
 
         for sheet in sheets:
 
             current_sheet = self.excel_missing_transfer_out_file.wb.sheet_by_name(sheet)
-            header = current_sheet.row(0)
-            
-            import pdb; pdb.set_trace()
-            
-            for row_num in range(current_sheet.nrows):
-                try:
-                    if row_num >= 1:
-                        row = current_sheet.row(row_num)
-                        row_dict = dict(zip(header, row))
+            header = current_sheet.row_values(0)
+            header = [x.lower() for x in header]
 
-                        missing_transfer_out_row = MissingTransferOutRow.objects.create(first_aliquot=row_dict['first aliquot'],
-                                                                                        fileinfo=self.missing_transfer_out_file,
-                                                                                        last_aliquot=row_dict['last aliquot'],
-                                                                                        aliquots_created=row_dict['aliquots created'],
-                                                                                        volume=row_dict['volume'],
-                                                                                        panels_used=row_dict['panels used'],
-                                                                                        state='pending')
+            if current_sheet.name.lower() in allowed_sheets:
+                for row_num in range(current_sheet.nrows):
+                    try:
+                        if row_num >= 1:
+                            row = current_sheet.row_values(row_num)
+                            row_dict = dict(zip(header, row))
+
+                            missing_transfer_out_row = MissingTransferOutRow.objects.create(first_aliquot=row_dict['first aliquot'],
+                                                                                            last_aliquot=row_dict['last aliquot'],
+                                                                                            aliquots_created=row_dict['aliquots created'],
+                                                                                            volume=row_dict['volume'],
+                                                                                            panels_used=row_dict['panels used'],
+                                                                                            fileinfo=self.missing_transfer_out_file,
+                                                                                            state='pending')
 
 
-                        rows_inserted = rows_inserted + 1
-                except Exception, e:
-                    rows_failed = rows_failed + 1
-                    continue
+                            rows_inserted = rows_inserted + 1
+                    except Exception, e:
+                        self.missing_transfer_out_file.message = e.message
+                        self.missing_transfer_out_file.save()
+                        return 0, 1
 
         return rows_inserted, rows_failed
 
@@ -594,17 +597,14 @@ class MissingTransferOutFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-
-                        parent_specimen = Specimen.objects.get(parent_label=missing_transfer_out_row.parent_id, child_label=None)
-
-                        child_specimen = Specimen.objects.create(child_label=missing_transfer_out_row.child_id,
-                                                                 parent_label=missing_transfer_out_row.parent_id,
-                                                                 num_containers=missing_transfer_out_row.number_of_aliquot,
-                                                                 volume=missing_transfer_out_row.child_volume,
-                                                                 created_date=missing_transfer_out_row.annihilation_date,
-                                                                 reason=reason,
-                                                                 aliquoting_reason=aliquoting_reason,
-                                                                 panel_inclusion_criteria=panel_inclusion_criteria)
+                        specimen = Specimen.objects.create(specimen_label=missing_transfer_out_row.child_id,
+                                                           parent_label=missing_transfer_out_row.parent_id,
+                                                           num_containers=missing_transfer_out_row.number_of_aliquot,
+                                                           volume=missing_transfer_out_row.child_volume,
+                                                           created_date=missing_transfer_out_row.annihilation_date,
+                                                           reason=reason,
+                                                           aliquoting_reason=aliquoting_reason,
+                                                           panel_inclusion_criteria=panel_inclusion_criteria)
 
                         missing_transfer_out_row.state = 'processed'
                         missing_transfer_out_row.date_processed = timezone.now()
@@ -621,6 +621,7 @@ class MissingTransferOutFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
+register_file_handler("subject", SubjectFileHandler)
 register_file_handler("visit", VisitFileHandler)
 register_file_handler("annihilation", AnnihilationFileHandler)
 register_file_handler("transfer_out", TransferOutFileHandler)
