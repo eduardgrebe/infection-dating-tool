@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Source, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AnnihilationRow, InventoryRow, MissingTransferOutRow)
+                    Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
@@ -167,9 +167,6 @@ def row_info(request, file_id, template=None):
         elif fileinfo.file_type == 'missing_transfer_out':
             rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
             template = 'cephia/missing_transfer_out_row_info.html'
-        elif fileinfo.file_type == 'inventory':
-            rows = InventoryRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/inventory_row_info.html'
 
         context['rows'] = rows
         context['file_id'] = fileinfo.id
@@ -303,8 +300,6 @@ def export_as_csv(request, file_id):
             rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'missing_transfer_out':
             rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
-        elif fileinfo.file_type == 'inventory':
-            rows = InventoryRow.objects.filter(fileinfo=fileinfo, state=state)
 
 
         if rows.count() == 0:

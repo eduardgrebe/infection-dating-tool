@@ -555,31 +555,35 @@ class MissingTransferOutFileHandler(FileHandler):
     def parse(self):
         
         from models import MissingTransferOutRow
-
-        header = self.excel_missing_transfer_out_file.read_header()
-        date_cols = [4]
+        
         rows_inserted = 0
         rows_failed = 0
+        sheets = self.excel_missing_transfer_out_file.wb.sheet_names()
 
-        for row_num in range(self.excel_missing_transfer_out_file.nrows):
-            try:
-                if row_num >= 1:
-                    row = self.excel_missing_transfer_out_file.read_row(row_num, date_cols)
-                    row_dict = dict(zip(header, row))
+        for sheet in sheets:
 
-                    missing_transfer_out_row = MissingTransferOutRow.objects.create(first_aliquot=row_dict['first aliquot'],
-                                                                                    fileinfo=self.missing_transfer_out_file,
-                                                                                    last_aliquot=row_dict['last aliquot'],
-                                                                                    aliquots_created=row_dict['aliquots created'],
-                                                                                    volume=row_dict['volume'],
-                                                                                    panels_used=row_dict['panels used'],
-                                                                                    state='pending')
+            current_sheet = self.excel_missing_transfer_out_file.wb.sheet_by_name(sheet)
+            header = current_sheet.row(0)
+            import pdb; pdb.set_trace()
+            for row_num in range(current_sheet.nrows):
+                try:
+                    if row_num >= 1:
+                        row = current_sheet.row(row_num)
+                        row_dict = dict(zip(header, row))
+
+                        missing_transfer_out_row = MissingTransferOutRow.objects.create(first_aliquot=row_dict['first aliquot'],
+                                                                                        fileinfo=self.missing_transfer_out_file,
+                                                                                        last_aliquot=row_dict['last aliquot'],
+                                                                                        aliquots_created=row_dict['aliquots created'],
+                                                                                        volume=row_dict['volume'],
+                                                                                        panels_used=row_dict['panels used'],
+                                                                                        state='pending')
 
 
-                    rows_inserted = rows_inserted + 1
-            except Exception, e:
-                rows_failed = rows_failed + 1
-                continue
+                        rows_inserted = rows_inserted + 1
+                except Exception, e:
+                    rows_failed = rows_failed + 1
+                    continue
                 # self.missing_transfer_out_file.message = e.message
                 # self.missing_transfer_out_file.save()
                 # return 0, 1
