@@ -103,13 +103,20 @@ class SubjectFileHandler(FileHandler):
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending']):
             try:
                 with transaction.atomic():
-                    if subject_row.ethnicity:
-                        ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
-                    else:
-                        ethnicity = Ethnicity.objects.get(name='Unknown')
+                    try:
+                        if subject_row.ethnicity:
+                            ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
+                        else:
+                            ethnicity = Ethnicity.objects.get(name='Unknown')
+                    except Ethnicity.DoesNotExist:
+                        raise Exception("Ethnicity does not exist")
 
                     subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
-                    country = Country.objects.get(code=subject_row.country)
+
+                    try:
+                        country = Country.objects.get(code=subject_row.country)
+                    except Country.DoesNotExist:
+                        raise Exception("Country does not exist")
 
                     subject = Subject.objects.update_or_create(patient_label=subject_row.patient_label,
                                                                 entry_date = self.get_date(subject_row.entry_date),
@@ -207,7 +214,10 @@ class VisitFileHandler(FileHandler):
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
             try:
                 with transaction.atomic():
-                    study = Study.objects.get(name=visit_row.source)
+                    try:
+                        study = Study.objects.get(name=visit_row.source)
+                    except Study.DoesNotExist:
+                        raise Exception("Study does not exist")
 
                     visit = Visit.objects.update_or_create(visit_date = self.get_date(visit_row.visit_date),
                                                            status = visit_row.status,
@@ -296,8 +306,16 @@ class TransferInFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    site = Site.objects.get(name=transfer_in_row.sites)
+                    try:
+                        subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    except Subject.DoesNotExist:
+                        raise Exception("Subject does not exist")
+
+                    try:
+                        site = Site.objects.get(name=transfer_in_row.sites)
+                    except Site.DoesNotExist:
+                        raise Exception("Site does not exist")
+
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
 
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
@@ -393,10 +411,21 @@ class TransferOutFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    to_location = Location.objects.get(name=transfer_out_row.to_location)
-                    spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
+                    try:
+                        to_location = Location.objects.get(name=transfer_out_row.to_location)
+                    except Location.DoesNotExist:
+                        raise Exception("Location does not exist")
 
-                    specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, spec_type=spec_type)
+                    try:
+                        spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
+                    except SpecimenType.DoesNotExist:
+                        raise Exception("Specimen Type does not exist")
+
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, spec_type=spec_type)
+                    except Specimen.DoesNotExist:
+                        raise Exception("Specimen Type does not exist")
+                    
 
                     specimen.num_containers=transfer_out_row.num_containers
                     specimen.transfer_out_date = self.get_date(transfer_out_row.transfer_out_date)
@@ -485,13 +514,16 @@ class AnnihilationFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-
+                    
                     reason, reason_created = Reason.objects.get_or_create(name=annihilation_row.reason)
                     aliquoting_reason, aliquoting_reason_created = AliquotingReason.objects.get_or_create(name=annihilation_row.panel_type)
                     panel_inclusion_criteria, panel_inclusion_criteria_created = PanelInclusionCriteria.objects.get_or_create(name=annihilation_row.panel_inclusion_criteria)
 
                     if annihilation_row.parent_id == annihilation_row.child_id:
-                        parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
+                        try:
+                            parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
+                        except Specimen.DoesNotExist:
+                            raise Exception("Specimen does not exist")
                         
                         parent_specimen.num_containers = annihilation_row.number_of_aliquot
                         parent_specimen.volume = annihilation_row.child_volume
@@ -502,7 +534,10 @@ class AnnihilationFileHandler(FileHandler):
                         parent_specimen.save()
 
                     else:
-                        parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
+                        try:
+                            parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
+                        except Specimen.DoesNotExist:
+                            raise Exception("Specimen does not exist")
 
                         parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
                         parent_specimen.save()
@@ -622,6 +657,8 @@ class MissingTransferOutFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
+
+#ALL HANDLERS MUST BE REGISTERED HERE
 register_file_handler("subject", SubjectFileHandler)
 register_file_handler("visit", VisitFileHandler)
 register_file_handler("annihilation", AnnihilationFileHandler)
