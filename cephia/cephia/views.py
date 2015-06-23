@@ -69,9 +69,11 @@ def studies(request, template="cephia/studies.html"):
 @login_required
 def subjects(request, template="cephia/subjects.html"):
 
-    patient_label = request.GET.get('patient_label')    
+    patient_label = request.GET.get('patient_label')
+    associated = request.GET.get('associated')
     context = {}
-
+    subjects = None
+    
     if patient_label:
         subjects = Subject.objects.filter(patient_label=patient_label)
     else:
