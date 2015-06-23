@@ -17,6 +17,10 @@
 </div>
 {% endblock %}
 
+{% block button_content %}
+<a href="{% url 'download_subjects_no_visits' %}" class="btn btn-primary" style="float:right">Export as CSV</a>
+{% endblock %}
+
 {% block page_content %}
 
 {% paginate subjects %}

@@ -15,6 +15,8 @@ from django.forms.models import model_to_dict
 import csv
 import os
 from django.conf import settings
+from csv_helper import get_csv_response
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +76,11 @@ def subjects(request, template="cephia/subjects.html"):
         subjects = Subject.objects.filter(patient_label=patient_label)
     else:
         subjects = Subject.objects.all()
+
+    if associated == 'true':
+        subjects = subjects.exclude(visit__isnull=True)
+    elif associated == 'false':
+        subjects = subjects.exclude(visit__isnull=False)
 
     context['subjects'] = subjects
     return render_to_response(template, context, context_instance=RequestContext(request))
@@ -212,10 +219,10 @@ def parse_file(request, file_id):
         
         if num_fail > 0:
             messages.add_message(request, messages.ERROR, 'Failed to import ' + str(num_fail) + ' rows ')
-
-        file_to_parse.state = 'imported'
-        file_to_parse.save()
-        messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
+        else:
+            file_to_parse.state = 'imported'
+            file_to_parse.save()
+            messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
@@ -302,26 +309,51 @@ def export_as_csv(request, file_id):
             rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
 
 
-        # if rows.count() == 0:
-        #     return HttpResponse("No rows")
-        # filename = os.path.join(settings.LOG_FOLDER, 'errors.csv')
-        # with open(filename,'w') as error_file:
-        #     file_writer = csv.writer(error_file, delimiter=',')
-        #     headers = model_to_dict(rows[0]).keys()
-        #     file_writer.writerow(headers)
-        #     for row in rows:
-        #         d = model_to_dict(row)
-        #         content = [ d[x] for x in headers ]
-        #         file_writer.writerow(content)
-            
-
-        # response = HttpResponse(open(filename).read(), content_type='application/octet-stream')
-        # response['Content-Disposition'] = 'attachment; filename="%s"' % ('errors.csv')
-
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = model_to_dict(rows[0]).keys()
 
-        file_writer.writerow(headers)
+        writer.writerow(headers)
+        
+        for row in rows:
+            d = model_to_dict(row)
+            content = [ d[x] for x in headers ]
+            writer.writerow(content)
+
+        return response
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to download file')
+        return HttpResponseRedirect(reverse('file_info'))
+
+@login_required
+def download_visits_no_subjects(request):
+    try:
+        rows = Visit.objects.all().exclude(subject__isnull=True)
+        response, writer = get_csv_response('visits_no_subjects_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+        headers = model_to_dict(rows[0]).keys()
+
+        writer.writerow(headers)
+        
+        for row in rows:
+            d = model_to_dict(row)
+            content = [ d[x] for x in headers ]
+            writer.writerow(content)
+
+        return response
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to download file')
+        return HttpResponseRedirect(reverse('file_info'))
+
+@login_required
+def download_subjects_no_visits(request):
+    try:
+        rows = Subject.objects.filter(visit=None)
+        response, writer = get_csv_response('subjects_no_visits_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+        headers = model_to_dict(rows[0]).keys()
+
+        writer.writerow(headers)
+        
         for row in rows:
             d = model_to_dict(row)
             content = [ d[x] for x in headers ]
