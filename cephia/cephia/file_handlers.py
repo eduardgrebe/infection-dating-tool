@@ -1,8 +1,10 @@
 from excel_helper import ExcelHelper
-from datetime import datetime
+from datetime import datetime, date
 from django.db import transaction
 from django.utils import timezone
 import logging
+import xlrd
+
 logger = logging.getLogger(__name__)
 
 registered_file_handlers = []
@@ -25,8 +27,20 @@ class FileHandler(object):
         else:
             return None
 
+    def get_year(self, year_string):
+        if year_string:
+            return date(int(year_string), 1, 1)
+        else:
+            return None
+
     def get_bool(self, bool_string):
         return bool_string == '1'
+
+    def float_to_date(self, value):
+        if value:
+            return datetime(*xlrd.xldate_as_tuple(float(value), 0)).date()
+        else:
+            return None
                 
 class SubjectFileHandler(FileHandler):
     subject_file = None
@@ -41,14 +55,13 @@ class SubjectFileHandler(FileHandler):
         from models import SubjectRow
         
         header = self.excel_subject_file.read_header()
-        date_cols = [1,4,5,6,8,16,17,18,19]
         rows_inserted = 0
         rows_failed = 0
         
         for row_num in range(self.excel_subject_file.nrows):
             try:
                 if row_num >= 1:
-                    row = self.excel_subject_file.read_row(row_num, date_cols)
+                    row = self.excel_subject_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
                     subject_row = SubjectRow.objects.create(patient_label=row_dict['pt_id'], fileinfo=self.subject_file)
@@ -80,7 +93,7 @@ class SubjectFileHandler(FileHandler):
                     rows_inserted = rows_inserted + 1
             except Exception, e:
                 logger.exception(e)
-                self.subject_file.message = e.message
+                self.subject_file.message = "row " + str(row_num) + ": " + e.message
                 self.subject_file.save()
                 return 0, 1
 
@@ -113,14 +126,14 @@ class SubjectFileHandler(FileHandler):
                         raise Exception("Country does not exist")
 
                     Subject.objects.update_or_create(patient_label=subject_row.patient_label,
-                                                     entry_date = self.get_date(subject_row.entry_date),
+                                                     entry_date = self.float_to_date(subject_row.entry_date),
                                                      entry_status = subject_row.entry_status,
                                                      country = country,
-                                                     last_negative_date = self.get_date(subject_row.last_negative_date),
-                                                     last_positive_date = self.get_date(subject_row.last_positive_date),
-                                                     ars_onset = self.get_date(subject_row.ars_onset),
+                                                     last_negative_date = self.float_to_date(subject_row.last_negative_date),
+                                                     last_positive_date = self.float_to_date(subject_row.last_positive_date),
+                                                     ars_onset = self.float_to_date(subject_row.ars_onset),
                                                      fiebig = subject_row.fiebig,
-                                                     dob = self.get_date(subject_row.dob),
+                                                     dob = self.get_year(subject_row.dob),
                                                      gender = subject_row.gender,
                                                      ethnicity = ethnicity,
                                                      sex_with_men = self.get_bool(subject_row.sex_with_men),
@@ -128,10 +141,10 @@ class SubjectFileHandler(FileHandler):
                                                      iv_drug_user = self.get_bool(subject_row.iv_drug_user),
                                                      subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                                      subtype = subtype,
-                                                     anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
-                                                     aids_diagnosis_date = self.get_date(subject_row.aids_diagnosis_date),
-                                                     treatment_interruption_date = self.get_date(subject_row.treatment_interruption_date),
-                                                     treatment_resumption_date = self.get_date(subject_row.treatment_resumption_date))
+                                                     anti_retroviral_initiation_date = self.float_to_date(subject_row.anti_retroviral_initiation_date),
+                                                     aids_diagnosis_date = self.float_to_date(subject_row.aids_diagnosis_date),
+                                                     treatment_interruption_date = self.float_to_date(subject_row.treatment_interruption_date),
+                                                     treatment_resumption_date = self.float_to_date(subject_row.treatment_resumption_date))
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
@@ -162,14 +175,13 @@ class VisitFileHandler(FileHandler):
         from models import VisitRow
         
         header = self.excel_visit_file.read_header()
-        date_cols = [1]
         rows_inserted = 0
         rows_failed = 0
 
         for row_num in range(self.excel_visit_file.nrows):
             try:
                 if row_num >= 1:
-                    row = self.excel_visit_file.read_row(row_num, date_cols)
+                    row = self.excel_visit_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
                     visit_row = VisitRow.objects.create(visit_label=row_dict['visit_pt_id'],
@@ -193,7 +205,7 @@ class VisitFileHandler(FileHandler):
                     rows_inserted = rows_inserted + 1
             except Exception, e:
                 logger.exception(e)
-                self.visit_file.message = e.message
+                self.visit_file.message = "row " + str(row_num) + ": " + e.message
                 self.visit_file.save()
                 return 0, 1
 
@@ -215,11 +227,21 @@ class VisitFileHandler(FileHandler):
                     except Study.DoesNotExist:
                         raise Exception("Study does not exist")
 
-                    Visit.objects.update_or_create(visit_date = self.get_date(visit_row.visit_date),
+                    if visit_row.visit_cd4:
+                        cd4 = visit_row.visit_cd4
+                    else:
+                        cd4 = None
+
+                    if visit_row.visit_vl:
+                        vl = visit_row.visit_vl
+                    else:
+                        vl = None
+
+                    Visit.objects.update_or_create(visit_date = self.float_to_date(visit_row.visit_date),
                                                    status = visit_row.status,
                                                    study = study,
-                                                   visit_cd4 = visit_row.visit_cd4,
-                                                   visit_vl = visit_row.visit_vl,
+                                                   visit_cd4 = cd4,
+                                                   visit_vl = vl,
                                                    scope_visit_ec = visit_row.scope_visit_ec,
                                                    visit_pregnant = self.get_bool(visit_row.visit_pregnant),
                                                    visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
@@ -253,16 +275,16 @@ class TransferInFileHandler(FileHandler):
         from models import TransferInRow
         
         header = self.excel_transfer_in_file.read_header()
-        date_cols = [2,4]
         rows_inserted = 0
         rows_failed = 0
 
         for row_num in range(self.excel_transfer_in_file.nrows):
             try:
                 if row_num >= 1:
-                    row = self.excel_transfer_in_file.read_row(row_num, date_cols)
+                        
+                    row = self.excel_transfer_in_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
-
+                    
                     transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen id'],
                                                                    patient_label=row_dict['subject_id'],
                                                                    draw_date=row_dict['draw_date'],
@@ -283,10 +305,10 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.state = 'pending'
                     transfer_in_row.save()
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.transfer_in_file.message = e.message
+                self.transfer_in_file.message = "row " + str(row_num) + ": " + e.message
                 self.transfer_in_file.save()
                 return 0, 1
 
@@ -320,8 +342,8 @@ class TransferInFileHandler(FileHandler):
 
                     specimen, specimen_created = Specimen.objects.update_or_create(specimen_label = transfer_in_row.specimen_label,
                                                                                    subject = subject,
-                                                                                   reported_draw_date = self.get_date(transfer_in_row.draw_date),
-                                                                                   transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
+                                                                                   reported_draw_date = self.float_to_date(transfer_in_row.draw_date),
+                                                                                   transfer_in_date = self.float_to_date(transfer_in_row.transfer_in_date),
                                                                                    source_study = site,
                                                                                    reason = reason,
                                                                                    spec_type = spec_type)
@@ -368,14 +390,13 @@ class TransferOutFileHandler(FileHandler):
         from models import TransferOutRow
         
         header = self.excel_transfer_out_file.read_header()
-        date_cols = [2]
         rows_inserted = 0
         rows_failed = 0
 
         for row_num in range(self.excel_transfer_out_file.nrows):
             try:
                 if row_num >= 1:
-                    row = self.excel_transfer_out_file.read_row(row_num, date_cols)
+                    row = self.excel_transfer_out_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
                     transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['spec_id'],
@@ -393,7 +414,7 @@ class TransferOutFileHandler(FileHandler):
                     rows_inserted = rows_inserted + 1
             except Exception, e:
                 logger.exception(e)
-                self.transfer_out_file.message = e.message
+                self.transfer_out_file.message = "row " + str(row_num) + ": " + e.message
                 self.transfer_out_file.save()
                 return 0, 1
 
@@ -424,11 +445,11 @@ class TransferOutFileHandler(FileHandler):
                     try:
                         specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, spec_type=spec_type)
                     except Specimen.DoesNotExist:
-                        raise Exception("Specimen Type does not exist")
+                        raise Exception("Specimen does not exist")
                     
 
                     specimen.num_containers=transfer_out_row.num_containers
-                    specimen.transfer_out_date = self.get_date(transfer_out_row.transfer_out_date)
+                    specimen.transfer_out_date = self.float_to_date(transfer_out_row.transfer_out_date)
                     specimen.to_location = to_location
                     specimen.spec_type = spec_type
                     specimen.other_ref = transfer_out_row.other_ref
@@ -473,14 +494,13 @@ class AnnihilationFileHandler(FileHandler):
         from models import AnnihilationRow
 
         header = self.excel_annihilation_file.read_header()
-        date_cols = [4]
         rows_inserted = 0
         rows_failed = 0
 
         for row_num in range(self.excel_annihilation_file.nrows):
             try:
                 if row_num >= 1:
-                    row = self.excel_annihilation_file.read_row(row_num, date_cols)
+                    row = self.excel_annihilation_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
                     annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
@@ -498,7 +518,7 @@ class AnnihilationFileHandler(FileHandler):
                     rows_inserted = rows_inserted + 1
             except Exception, e:
                 logger.exception(e)
-                self.annihilation_file.message = e.message
+                self.annihilation_file.message = "row " + str(row_num) + ": " + e.message
                 self.annihilation_file.save()
                 return 0, 1
 
@@ -529,7 +549,7 @@ class AnnihilationFileHandler(FileHandler):
                         
                         parent_specimen.num_containers = annihilation_row.number_of_aliquot
                         parent_specimen.volume = annihilation_row.child_volume
-                        parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
+                        parent_specimen.modified_date = self.float_to_date(annihilation_row.annihilation_date)
                         parent_specimen.reason = reason
                         parent_specimen.aliquoting_reason = aliquoting_reason
                         parent_specimen.panel_inclusion_criteria = panel_inclusion_criteria
@@ -541,7 +561,7 @@ class AnnihilationFileHandler(FileHandler):
                         except Specimen.DoesNotExist:
                             raise Exception("Specimen does not exist")
 
-                        parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
+                        parent_specimen.modified_date = self.float_to__date(annihilation_row.annihilation_date)
                         parent_specimen.save()
 
                         Specimen.objects.update_or_create(specimen_label=annihilation_row.child_id,
@@ -551,7 +571,7 @@ class AnnihilationFileHandler(FileHandler):
                                                           spec_type=parent_specimen.spec_type,
                                                           reported_draw_date=parent_specimen.reported_draw_date,
                                                           source_study=parent_specimen.source_study,
-                                                          created_date=self.get_date(annihilation_row.annihilation_date),
+                                                          created_date=self.float_to_date(annihilation_row.annihilation_date),
                                                           reason=reason,
                                                           aliquoting_reason=aliquoting_reason,
                                                           panel_inclusion_criteria=panel_inclusion_criteria)
@@ -617,7 +637,7 @@ class MissingTransferOutFileHandler(FileHandler):
                             rows_inserted += 1
                     except Exception, e:
                         logger.exception(e)
-                        self.missing_transfer_out_file.message = e.message
+                        self.missing_transfer_out_file.message = "row " + str(row_num) + ": " + e.message
                         self.missing_transfer_out_file.save()
                         return 0, 1
 

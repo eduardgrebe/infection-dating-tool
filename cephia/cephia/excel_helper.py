@@ -91,8 +91,8 @@ class ExcelHelper(object):
         f.seek(0)
         return f
 
-    def read_row(self, row, date_cols=[]):
-        return [ self._excel_unicode(self.as_date(self.sheet.cell_value(row, col))).strip() if col in date_cols else self._excel_unicode(self.sheet.cell_value(row,col)).strip() for col in range(self.sheet.ncols) ]
+    def read_row(self, row):
+        return [  self._excel_unicode(self.sheet.cell_value(row,col)).strip() for col in range(self.sheet.ncols) ]
 
     def read_header(self):
         return [ v.lower() for v in self.read_row(0) ]

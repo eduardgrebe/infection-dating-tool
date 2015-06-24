@@ -12,8 +12,8 @@ import time
 import os
 from django.utils import html
 from file_handlers import get_file_handler_for_type
-
 import logging
+
 logger = logging.getLogger(__name__)
 
 class CephiaUser(AbstractUser):
@@ -251,8 +251,8 @@ class Visit(models.Model):
     visit_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     study = models.ForeignKey(Study, null=True, blank=True)
-    visit_cd4 = models.IntegerField(null=True, blank=True)
-    visit_vl = models.CharField(max_length=10, null=False, blank=True)
+    visit_cd4 = models.IntegerField(null=True, blank=False)
+    visit_vl = models.CharField(max_length=10, null=True, blank=False)
     scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
     visit_pregnant = models.NullBooleanField()
     visit_hepatitis = models.NullBooleanField()

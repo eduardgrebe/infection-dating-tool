@@ -57,11 +57,11 @@
 	    <td>{{subject.entry_date}}</td>
 	    <td>{{subject.entry_status}}</td>
 	    <td>{{subject.country.name}}</td>
-	    <td>{{subject.last_negative_date}}</td>
-	    <td>{{subject.last_positive_date}}</td>
+	    <td>{% if subject.last_negative_date %}{{subject.last_negative_date}}{% endif %}</td>
+	    <td>{% if subject.last_positive_date %}{{subject.last_positive_date}}{% endif %}</td>
 	    <td>{% if subject.ars_onset %} {{subject.ars_onset}} {% else %} &nbsp; {% endif %}</td>
 	    <td>{{subject.fiebig}}</td>
-	    <td>{{subject.dob}}</td>
+	    <td>{% if subject.dob %}{{ subject.dob|date:"Y" }}{% endif %}</td>
 	    <td>{{subject.gender}}</td>
 	    <td>{{subject.ethnicity.name}}</td>
 	    <td>{% if subject.sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
