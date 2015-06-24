@@ -277,19 +277,6 @@ def delete_file(request, file_id):
         return HttpResponseRedirect(reverse('file_info'))
 
 
-@login_required
-def delete_row(request, row_id):
-    try:
-        subject_row = SubjectRow.objects.get(pk=row_id)
-        messages.add_message(request, messages.SUCCESS, 'Row successfully deleted')
-
-        return HttpResponseRedirect(reverse('file_info'))
-    except Exception, e:
-        logger.exception(e)
-        messages.add_message(request, messages.ERROR, 'Could not delete row')
-        return HttpResponseRedirect(reverse('file_info'))
-
-
 
 @login_required
 def export_as_csv(request, file_id):

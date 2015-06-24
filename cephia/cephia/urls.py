@@ -24,7 +24,6 @@ urlpatterns = [
     url(r'^process_file/(?P<file_id>\d+)/$', views.process_file, name='process_file'),
     url(r'^parse_file/(?P<file_id>\d+)/$', views.parse_file, name='parse_file'),
     url(r'^delete_file/(?P<file_id>\d+)/$', views.delete_file, name='delete_file'),
-    url(r'^delete_row/(?P<row_id>\d+)/$', views.delete_row, name='delete_row'),
     url(r'^export_as_csv/(?P<file_id>\d+)/$', views.export_as_csv, name='export_as_csv'),
     url(r'^download_subjects_no_visits/$', views.download_subjects_no_visits, name='download_subjects_no_visits'),
     url(r'^download_visits_no_subjects/$', views.download_visits_no_subjects, name='download_visits_no_subjects'),

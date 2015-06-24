@@ -90,7 +90,7 @@ class SubjectFileHandler(FileHandler):
                     subject_row.state = 'pending'
                     subject_row.save()
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 self.subject_file.message = "row " + str(row_num) + ": " + e.message
@@ -149,14 +149,14 @@ class SubjectFileHandler(FileHandler):
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
                     subject_row.date_processed = timezone.now()
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
                     subject_row.save()
             except Exception, e:
                 logger.exception(e)
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()
-                rows_failed = rows_failed + 1
+                rows_failed += 1
                 continue
                 
         return rows_inserted, rows_failed
@@ -202,7 +202,7 @@ class VisitFileHandler(FileHandler):
                     visit_row.state = 'pending'
                     visit_row.save()
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 self.visit_file.message = "row " + str(row_num) + ": " + e.message
@@ -364,14 +364,14 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.date_processed = timezone.now()
                     transfer_in_row.save()
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 transfer_in_row.state = 'error'
                 transfer_in_row.error_message = e.message
                 transfer_in_row.save()
 
-                rows_failed = rows_failed + 1
+                rows_failed += 1
                 continue
 
         return rows_inserted, rows_failed
@@ -411,7 +411,7 @@ class TransferOutFileHandler(FileHandler):
                                                                      state='pending')
 
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 self.transfer_out_file.message = "row " + str(row_num) + ": " + e.message
@@ -468,14 +468,14 @@ class TransferOutFileHandler(FileHandler):
                     transfer_out_row.date_processed = timezone.now()
                     transfer_out_row.save()
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 transfer_out_row.state = 'error'
                 transfer_out_row.error_message = e.message
                 transfer_out_row.save()
 
-                rows_failed = rows_failed + 1
+                rows_failed += 1
                 continue
 
         return rows_inserted, rows_failed
@@ -515,7 +515,7 @@ class AnnihilationFileHandler(FileHandler):
                                                                       state='pending')
 
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 self.annihilation_file.message = "row " + str(row_num) + ": " + e.message
@@ -581,14 +581,14 @@ class AnnihilationFileHandler(FileHandler):
                     annihilation_row.date_processed = timezone.now()
                     annihilation_row.save()
 
-                    rows_inserted = rows_inserted + 1
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 annihilation_row.state = 'error'
                 annihilation_row.error_message = e.message
                 annihilation_row.save()
 
-                rows_failed = rows_failed + 1
+                rows_failed += 1
                 continue
 
         return rows_inserted, rows_failed
@@ -667,7 +667,7 @@ class MissingTransferOutFileHandler(FileHandler):
                             missing_transfer_out_row.date_processed = timezone.now()
                             missing_transfer_out_row.save()
 
-                            rows_inserted = rows_inserted + 1
+                            rows_inserted += 1
                 else:
                     raise Exception("Aliquot range does not match")
 
@@ -677,7 +677,7 @@ class MissingTransferOutFileHandler(FileHandler):
                 missing_transfer_out_row.error_message = e.message
                 missing_transfer_out_row.save()
                 
-                rows_failed = rows_failed + 1
+                rows_failed += 1
                 continue
 
         return rows_inserted, rows_failed
