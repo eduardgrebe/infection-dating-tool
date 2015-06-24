@@ -1,13 +1,13 @@
-{% extends "cephia/base.html" %}
+{% extends "cephia/tms_base.html" %}
 {% load bootstrap3 %}
 {% load endless %}
 
 
-{% block site-title %} Sources {% endblock %}
+{% block site-title %} Studies {% endblock %}
 
 {% block page_content %}
 
-{% paginate sources %}
+{% paginate studies %}
 {% show_pages %}
 
 <table class="table-striped table table-hover" style="overflow:auto;">
@@ -17,10 +17,10 @@
     </thead>
 
     <tbody>
-	{% for source in sources %}
+	{% for study in studies %}
 	<tr>
-	    <td>{{source.id}}</td>
-	    <td>{{source.name}}</td>
+	    <td>{{study.id}}</td>
+	    <td>{{study.name}}</td>
 	</tr>
 	{% endfor %}
     </tbody>

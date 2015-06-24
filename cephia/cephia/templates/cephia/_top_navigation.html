@@ -2,6 +2,8 @@
   <ul>
 
     {% if user.id %}
+    <li><a href="{% url 'home' %}">Home</a></li>
+    <li><a href="{% url 'table_management' %}">TMS</a></li>
     <li><a href="{% url 'auth_logout' %}">Logout</a></li>
     {% endif %}
   </ul>

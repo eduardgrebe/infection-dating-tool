@@ -1,0 +1,13 @@
+<div id="nav">
+  <ul class="sf-menu sf-js-enabled">
+
+    {% if user.id %}
+    <li><a href="{% url 'countries' %}">Countries</a></li>
+    <li><a href="{% url 'ethnicities' %}">Ethnicities</a></li>
+    <li><a href="{% url 'locations' %}">Locations</a></li>
+    <li><a href="{% url 'specimen_type' %}">Specimen Type</a></li>
+    <li><a href="{% url 'studies' %}">Studies</a></li>
+    {% endif %}
+
+  </ul>
+</div>

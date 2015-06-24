@@ -1,4 +1,4 @@
-from fabric.api import local, settings, abort, run, cd, env, sudo, lcd
+afrom fabric.api import local, settings, abort, run, cd, env, sudo, lcd
 import os
 import getpass
 import shutil
@@ -47,7 +47,8 @@ def _deploy_staging(branch_name="master"):
     print("   Deploying: ** %s **" % branch_name)
     with cd(imp_remote_code_staging_dir):
         run("git reset --hard HEAD")
-        run("git checkout %s" % branch_name)
+        run("git fetch origin")
+        run("git checkout origin/%s" % branch_name)
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_impd.sh")
         
@@ -57,6 +58,7 @@ def _deploy_cephia_test(branch_name="master"):
     print("   Deploying: ** %s **" % branch_name)
     with cd(cephia_test_remote_code_staging_dir):
         run("git reset --hard HEAD")
+        run("git fetch origin %s" % branch_name)
         run("git checkout %s" % branch_name)
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_cephia_test.sh")

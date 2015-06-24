@@ -1,4 +1,4 @@
-{% extends "cephia/base.html" %}
+{% extends "cephia/row_info_base.html" %}
 {% load bootstrap3 %}
 {% load endless %}
 
@@ -39,9 +39,6 @@
 	    <td>{{row.visit_hepatitis}}</td>
 	    <td>{{row.state}}</td>
 	    <td>{{row.error_message}}</td>
-	    {% if row.state == 'error' %}
-	    <td><a href="{% url 'delete_row' row.id %}" class="btn btn-default btn-sm">Delete</a><td>
-	    {% endif %}
 	</tr>
 	{% endfor %}
     </tbody>
