@@ -615,8 +615,7 @@ class MissingTransferOutFileHandler(FileHandler):
         for sheet in sheets:
 
             current_sheet = self.excel_missing_transfer_out_file.wb.sheet_by_name(sheet)
-            header = current_sheet.row_values(0)
-            header = [x.lower() for x in header]
+            header = [x.lower() for x in current_sheet.row_values(0)]
 
             if current_sheet.name.lower() in allowed_sheets:
                 for row_num in range(current_sheet.nrows):
