@@ -13,7 +13,6 @@ class Command(BaseCommand):
 
         for specimen in Specimen.objects.filter(visit=None):
             try:
-                import pdb; pdb.set_trace()
                 visit = Visit.objects.get(subject=specimen.subject, visit_date=specimen.reported_draw_date)
                 specimen.visit = visit
                 specimen.save()

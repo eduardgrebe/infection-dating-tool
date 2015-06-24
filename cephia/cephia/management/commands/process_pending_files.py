@@ -10,8 +10,6 @@ class Command(BaseCommand):
 
         for file_info in FileInfo.objects.filter(state='pending'):
 
-            #handle file parsing over here based on file type
-
             file_info.state = 'imported'
             file_info.save()
 

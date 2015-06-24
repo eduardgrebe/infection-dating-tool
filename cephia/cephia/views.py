@@ -191,7 +191,7 @@ def download_file(request, file_id):
             return response
     except Exception, e:
         logger.exception(e)
-        message.error(request, 'Failed to download file')
+        messages.error(request, 'Failed to download file')
         return HttpResponseRedirect(reverse('file_info'))
 
 
