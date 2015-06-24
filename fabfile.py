@@ -1,4 +1,4 @@
-afrom fabric.api import local, settings, abort, run, cd, env, sudo, lcd
+from fabric.api import local, settings, abort, run, cd, env, sudo, lcd
 import os
 import getpass
 import shutil
