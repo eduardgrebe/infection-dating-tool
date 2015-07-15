@@ -21,5 +21,6 @@ class FileInfoForm(forms.ModelForm):
         model = FileInfo
         fields = ['data_file','file_type']
         widgets = {
-            'data_file': forms.FileInput(),
+            'data_file': forms.FileInput(attrs={'accept':'.xls, .xlsx, .csv'}),
         }
+
