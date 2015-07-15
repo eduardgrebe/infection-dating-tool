@@ -179,6 +179,7 @@ def row_info(request, file_id, template=None):
 
         context['rows'] = rows
         context['file_id'] = fileinfo.id
+        context['has_errors'] = rows.filter(state='error').exists()
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
