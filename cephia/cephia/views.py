@@ -235,6 +235,9 @@ def parse_file(request, file_id):
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Import failed: ' + e.message)
+        file_to_parse.state = 'error'
+        file_to_parse.message = e.message
+        file_to_parse.save()
         return HttpResponseRedirect(reverse('file_info'))
 
 
