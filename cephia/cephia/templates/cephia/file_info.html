@@ -39,9 +39,6 @@
 		<a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Process</a>
 		{% endif %}
 	    </td>
-	    <td>
-		<a href="{% url 'delete_file' file.id %}" class="btn btn-default btn-sm">Delete File</a>
-	    </td>
 	</tr>
 	{% endfor %}
     </tbody>
@@ -64,6 +61,7 @@
 </div>
 
 {% endblock %}
+
 
 
 
