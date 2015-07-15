@@ -15,7 +15,7 @@ def get_file_handler_for_type(file_type):
     for registered_file_type, registered_file_handler in registered_file_handlers:
         if file_type == registered_file_type:
             return registered_file_handler
-    raise Exception("Unknown file type: %s" % file_type)
+            raise Exception("Unknown file type: %s" % file_type)
 
 
 
@@ -51,7 +51,7 @@ class FileHandler(object):
 
         if extra_cols:
             return "Your file contained the following extra columns and they have been ignored %s" % str(extra_cols)
-        
+            
                 
 class SubjectFileHandler(FileHandler):
     subject_file = None
@@ -145,11 +145,17 @@ class SubjectFileHandler(FileHandler):
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending']):
             try:
                 with transaction.atomic():
+                    exists = Subject.objects.filter(patient_label=subject_row.patient_label).exists()
+                    if exists:
+                        raise Exception("Subject already exists")
+
                     try:
+
                         if subject_row.ethnicity:
                             ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
                         else:
                             ethnicity = Ethnicity.objects.get(name='Unknown')
+
                     except Ethnicity.DoesNotExist:
                         raise Exception("Ethnicity does not exist")
 
@@ -160,26 +166,26 @@ class SubjectFileHandler(FileHandler):
                     except Country.DoesNotExist:
                         raise Exception("Country does not exist")
 
-                    Subject.objects.update_or_create(patient_label=subject_row.patient_label,
-                                                     entry_date = self.float_to_date(subject_row.entry_date),
-                                                     entry_status = subject_row.entry_status,
-                                                     country = country,
-                                                     last_negative_date = self.float_to_date(subject_row.last_negative_date),
-                                                     last_positive_date = self.float_to_date(subject_row.last_positive_date),
-                                                     ars_onset = self.float_to_date(subject_row.ars_onset),
-                                                     fiebig = subject_row.fiebig,
-                                                     dob = self.get_year(subject_row.dob),
-                                                     gender = subject_row.gender,
-                                                     ethnicity = ethnicity,
-                                                     sex_with_men = self.get_bool(subject_row.sex_with_men),
-                                                     sex_with_women = self.get_bool(subject_row.sex_with_women),
-                                                     iv_drug_user = self.get_bool(subject_row.iv_drug_user),
-                                                     subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
-                                                     subtype = subtype,
-                                                     anti_retroviral_initiation_date = self.float_to_date(subject_row.anti_retroviral_initiation_date),
-                                                     aids_diagnosis_date = self.float_to_date(subject_row.aids_diagnosis_date),
-                                                     treatment_interruption_date = self.float_to_date(subject_row.treatment_interruption_date),
-                                                     treatment_resumption_date = self.float_to_date(subject_row.treatment_resumption_date))
+                    Subject.objects.create(patient_label=subject_row.patient_label,
+                                           entry_date = self.float_to_date(subject_row.entry_date),
+                                           entry_status = subject_row.entry_status,
+                                           country = country,
+                                           last_negative_date = self.float_to_date(subject_row.last_negative_date),
+                                           last_positive_date = self.float_to_date(subject_row.last_positive_date),
+                                           ars_onset = self.float_to_date(subject_row.ars_onset),
+                                           fiebig = subject_row.fiebig,
+                                           dob = self.get_year(subject_row.dob),
+                                           gender = subject_row.gender,
+                                           ethnicity = ethnicity,
+                                           sex_with_men = self.get_bool(subject_row.sex_with_men),
+                                           sex_with_women = self.get_bool(subject_row.sex_with_women),
+                                           iv_drug_user = self.get_bool(subject_row.iv_drug_user),
+                                           subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
+                                           subtype = subtype,
+                                           anti_retroviral_initiation_date = self.float_to_date(subject_row.anti_retroviral_initiation_date),
+                                           aids_diagnosis_date = self.float_to_date(subject_row.aids_diagnosis_date),
+                                           treatment_interruption_date = self.float_to_date(subject_row.treatment_interruption_date),
+                                           treatment_resumption_date = self.float_to_date(subject_row.treatment_resumption_date))
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
@@ -193,7 +199,7 @@ class SubjectFileHandler(FileHandler):
                 subject_row.save()
                 rows_failed += 1
                 continue
-                
+                    
         return rows_inserted, rows_failed
 
 
@@ -231,11 +237,11 @@ class VisitFileHandler(FileHandler):
                     row = self.excel_visit_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
-                    visit_row = VisitRow.objects.create(visit_label=row_dict['visit_pt_id'],
+                    visit_row = VisitRow.objects.create(patient_label=row_dict['visit_pt_id'],
                                                         visit_date=row_dict['visit_date'],
                                                         fileinfo=self.visit_file)
 
-                    visit_row.visit_label = row_dict['visit_pt_id']
+                    visit_row.patient_label = row_dict['visit_pt_id']
                     visit_row.visit_date = row_dict['visit_date']
                     visit_row.status = row_dict['visit_status']
                     visit_row.source = row_dict['visit_source']
@@ -269,6 +275,10 @@ class VisitFileHandler(FileHandler):
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
             try:
                 with transaction.atomic():
+                    exists = Visit.objects.filter(patient_label=visit_row.patient_label, visit_date=self.float_to_date(visit_row.visit_date)).exists()
+                    if exists:
+                        raise Exception("Visit already exists")
+
                     try:
                         study = Study.objects.get(name=visit_row.source)
                     except Study.DoesNotExist:
@@ -284,21 +294,22 @@ class VisitFileHandler(FileHandler):
                     else:
                         vl = None
 
-                    Visit.objects.update_or_create(visit_date = self.float_to_date(visit_row.visit_date),
-                                                   status = visit_row.status,
-                                                   study = study,
-                                                   visit_cd4 = cd4,
-                                                   visit_vl = vl,
-                                                   scope_visit_ec = visit_row.scope_visit_ec,
-                                                   visit_pregnant = self.get_bool(visit_row.visit_pregnant),
-                                                   visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
-                                                   visit_label = visit_row.visit_label)
+                    Visit.objects.create(visit_date = self.float_to_date(visit_row.visit_date),
+                                         status = visit_row.status,
+                                         study = study,
+                                         visit_cd4 = cd4,
+                                         visit_vl = vl,
+                                         scope_visit_ec = visit_row.scope_visit_ec,
+                                         visit_pregnant = self.get_bool(visit_row.visit_pregnant),
+                                         visit_hepatitis = self.get_bool(visit_row.visit_hepatitis),
+                                         patient_label = visit_row.patient_label)
 
                     visit_row.state = 'processed'
                     visit_row.date_processed = timezone.now()
                     visit_row.error_message = ''
                     visit_row.save()
                     rows_inserted += 1
+
             except Exception, e:
                 logger.exception(e)
                 visit_row.state = 'error'
@@ -306,7 +317,7 @@ class VisitFileHandler(FileHandler):
                 visit_row.save()
                 rows_failed += 1
                 continue
-            
+                    
         return rows_inserted, rows_failed
 
 class TransferInFileHandler(FileHandler):
@@ -340,7 +351,7 @@ class TransferInFileHandler(FileHandler):
         for row_num in range(self.excel_transfer_in_file.nrows):
             try:
                 if row_num >= 1:
-                        
+                    
                     row = self.excel_transfer_in_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
                     
@@ -365,6 +376,7 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.save()
 
                     rows_inserted += 1
+
             except Exception, e:
                 logger.exception(e)
                 self.transfer_in_file.message = "row " + str(row_num) + ": " + e.message
@@ -386,11 +398,6 @@ class TransferInFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     try:
-                        subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    except Subject.DoesNotExist:
-                        raise Exception("Subject does not exist")
-
-                    try:
                         site = Site.objects.get(name=transfer_in_row.sites)
                     except Site.DoesNotExist:
                         raise Exception("Site does not exist")
@@ -400,7 +407,6 @@ class TransferInFileHandler(FileHandler):
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
                     specimen, specimen_created = Specimen.objects.update_or_create(specimen_label = transfer_in_row.specimen_label,
-                                                                                   subject = subject,
                                                                                    reported_draw_date = self.float_to_date(transfer_in_row.draw_date),
                                                                                    transfer_in_date = self.float_to_date(transfer_in_row.transfer_in_date),
                                                                                    source_study = site,
@@ -516,7 +522,7 @@ class TransferOutFileHandler(FileHandler):
                         specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, spec_type=spec_type)
                     except Specimen.DoesNotExist:
                         raise Exception("Specimen does not exist")
-                    
+                        
 
                     specimen.num_containers=transfer_out_row.num_containers
                     specimen.transfer_out_date = self.float_to_date(transfer_out_row.transfer_out_date)
@@ -597,6 +603,7 @@ class AnnihilationFileHandler(FileHandler):
 
 
                     rows_inserted += 1
+
             except Exception, e:
                 logger.exception(e)
                 self.annihilation_file.message = "row " + str(row_num) + ": " + e.message
@@ -627,7 +634,7 @@ class AnnihilationFileHandler(FileHandler):
                             parent_specimen = Specimen.objects.get(specimen_label=annihilation_row.parent_id, parent_label=None)
                         except Specimen.DoesNotExist:
                             raise Exception("Specimen does not exist")
-                        
+                            
                         parent_specimen.num_containers = annihilation_row.number_of_aliquot
                         parent_specimen.volume = annihilation_row.child_volume
                         parent_specimen.modified_date = self.float_to_date(annihilation_row.annihilation_date)
@@ -663,12 +670,12 @@ class AnnihilationFileHandler(FileHandler):
                     annihilation_row.save()
 
                     rows_inserted += 1
+
             except Exception, e:
                 logger.exception(e)
                 annihilation_row.state = 'error'
                 annihilation_row.error_message = e.message
                 annihilation_row.save()
-
                 rows_failed += 1
                 continue
 
@@ -748,15 +755,14 @@ class MissingTransferOutFileHandler(FileHandler):
                             missing_transfer_out_row.save()
 
                             rows_inserted += 1
-                else:
-                    raise Exception("Aliquot range does not match")
+                        else:
+                            raise Exception("Aliquot range does not match")
 
             except Exception, e:
                 logger.exception(e)
                 missing_transfer_out_row.state = 'error'
                 missing_transfer_out_row.error_message = e.message
                 missing_transfer_out_row.save()
-                
                 rows_failed += 1
                 continue
 

@@ -5,15 +5,15 @@ class FileInfoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(FileInfoForm, self).__init__(*args, **kwargs)
-        self.fields['data_file'].required = True
-        self.fields['file_type'].required = True
+
+        for key in self.fields:
+            self.fields[key].required = True
 
     FILE_TYPE_CHOICES = (
         ('subject','Subject'),
         ('visit','Visit'),
         ('transfer_in','Transfer In'),
         ('transfer_out','Transfer Out'),
-        ('missing_transfer_out','Missing Transfer Out'),
         ('annihilation','Annihilation')
     )
 

@@ -42,7 +42,7 @@
     <tbody>
 	{% for visit in visits %}
 	<tr>
-	    <td>{% if visit.subject %}<a href="{% url 'subjects' %}?patient_label={{visit.visit_label}}">{{visit.visit_label}}</a>{% else %}{{visit.visit_label}}{% endif %}</td>
+	    <td>{% if visit.subject %}<a href="{% url 'subjects' %}?patient_label={{visit.patient_label}}">{{visit.patient_label}}</a>{% else %}{{visit.patient_label}}{% endif %}</td>
 	    <td>{{visit.visit_date}}</td>
 	    <td>{{visit.status}}</td>
 	    <td>{{visit.study.name}}</td>
@@ -57,5 +57,6 @@
 </table>
 
 {% endblock %}
+
 
 

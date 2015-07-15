@@ -219,7 +219,7 @@ class VisitRow(ImportedRow):
     class Meta:
         db_table = "cephia_visitrow"
 
-    visit_label = models.CharField(max_length=255, null=False, blank=True)
+    patient_label = models.CharField(max_length=255, null=False, blank=True)
     visit_date = models.CharField(max_length=255, null=False, blank=True)
     status = models.CharField(max_length=255, null=False, blank=True)
     source = models.CharField(max_length=255, null=False, blank=True)
@@ -247,7 +247,7 @@ class Visit(models.Model):
     )
     
 
-    visit_label = models.CharField(max_length=255, null=False, blank=False)
+    patient_label = models.CharField(max_length=255, null=False, blank=False)
     visit_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     study = models.ForeignKey(Study, null=True, blank=True)
@@ -414,4 +414,5 @@ class MissingTransferOutRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_id
+
 

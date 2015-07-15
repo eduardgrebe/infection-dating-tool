@@ -12,7 +12,7 @@
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>Visit Label</th>
+	<th>Patient Label</th>
 	<th>Visit Date</th>
 	<th>Status</th>
 	<th>Source</th>
@@ -28,7 +28,7 @@
     <tbody>
 	{% for row in rows %}
 	<tr>
-	    <td>{{row.visit_label}}</td>
+	    <td>{{row.patient_label}}</td>
 	    <td>{{row.visit_date}}</td>
 	    <td>{{row.status}}</td>
 	    <td>{{row.source}}</td>
@@ -45,5 +45,6 @@
 </table>
 
 {% endblock %}
+
 
 
