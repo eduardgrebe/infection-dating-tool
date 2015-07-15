@@ -41,6 +41,17 @@ class FileHandler(object):
             return datetime(*xlrd.xldate_as_tuple(float(value), 0)).date()
         else:
             return None
+
+    def validate_file(self):
+        missing_cols = list(set(self.registered_columns) - set(self.existing_columns))
+        extra_cols = list(set(self.existing_columns) - set(self.registered_columns))
+
+        if missing_cols:
+            raise Exception("The following columns are missing from your file %s" % str(missing_cols))
+
+        if extra_cols:
+            return "Your file contained the following extra columns and they have been ignored %s" % str(extra_cols)
+        
                 
 class SubjectFileHandler(FileHandler):
     subject_file = None
@@ -49,6 +60,30 @@ class SubjectFileHandler(FileHandler):
         super(SubjectFileHandler, self).__init__()
         self.subject_file = subject_file
         self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
+
+        self.registered_columns = ['pt_id',
+                                   'pt_entrydt',
+                                   'pt_entrystat',
+                                   'pt_country',
+                                   'pt_lastnegdate',
+                                   'pt_firstpozdate',
+                                   'pt_arsonset',
+                                   'pt_fiebig',
+                                   'pt_yob',
+                                   'pt_sex',
+                                   'pt_ethnicity',
+                                   'pt_sexwithmen',
+                                   'pt_sexwithwomen',
+                                   'pt_ivdu',
+                                   'pt_subconf',
+                                   'pt_subtype',
+                                   'pt_arvdate',
+                                   'pt_aidsdx',
+                                   'pt_txintdate',
+                                   'pt_txresdate']
+
+        self.existing_columns = self.excel_subject_file.read_header()
+        
 
     def parse(self):
 
@@ -170,6 +205,18 @@ class VisitFileHandler(FileHandler):
         self.visit_file = visit_file
         self.excel_visit_file = ExcelHelper(f=visit_file.data_file.url)
 
+        self.registered_columns = ['visit_pt_id',
+                                   'visit_date',
+                                   'visit_status',
+                                   'visit_source',
+                                   'visit_cd4',
+                                   'visit_vl',
+                                   'scopevisit_ec',
+                                   'visit_pregnant',
+                                   'visit_hepatitis']
+
+        self.existing_columns = self.excel_visit_file.read_header()
+
     def parse(self):
 
         from models import VisitRow
@@ -269,6 +316,18 @@ class TransferInFileHandler(FileHandler):
         super(TransferInFileHandler, self).__init__()
         self.transfer_in_file = transfer_in_file
         self.excel_transfer_in_file = ExcelHelper(f=transfer_in_file.data_file.url)
+
+        self.registered_columns = ['specimen_id',
+                                   'subject_id',
+                                   'draw_date',
+                                   'number of containers',
+                                   'transfer date',
+                                   'sites',
+                                   'transfer reason',
+                                   'spec type',
+                                   'volume']
+
+        self.existing_columns = self.excel_transfer_in_file.read_header()
 
     def parse(self):
         
@@ -385,6 +444,17 @@ class TransferOutFileHandler(FileHandler):
         self.transfer_out_file = transfer_out_file
         self.excel_transfer_out_file = ExcelHelper(f=transfer_out_file.data_file.url)
 
+        self.registered_columns = ['spec_id',
+                                   '#_ containers',
+                                   'transfer date',
+                                   'to location',
+                                   'reason',
+                                   'spec type',
+                                   'vol',
+                                   'other id']
+
+        self.existing_columns = self.excel_transfer_out_file.read_header()
+
     def parse(self):
         
         from models import TransferOutRow
@@ -400,7 +470,6 @@ class TransferOutFileHandler(FileHandler):
                     row_dict = dict(zip(header, row))
 
                     transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['spec_id'],
-                                                                     fileinfo=self.transfer_out_file,
                                                                      num_containers=row_dict['#_ containers'],
                                                                      transfer_out_date=row_dict['transfer date'],
                                                                      to_location=row_dict['to location'],
@@ -408,6 +477,7 @@ class TransferOutFileHandler(FileHandler):
                                                                      spec_type=row_dict['spec type'],
                                                                      volume=row_dict['vol'],
                                                                      other_ref=row_dict['other id'],
+                                                                     fileinfo=self.transfer_out_file,
                                                                      state='pending')
 
 
@@ -489,8 +559,19 @@ class AnnihilationFileHandler(FileHandler):
         self.excel_annihilation_file = ExcelHelper(f=annihilation_file.data_file.url)
         self.annihilation_row = None
 
+        self.registered_columns = ['parent id',
+                                   'child id',
+                                   'child volume',
+                                   'number of aliquot',
+                                   'annihilation date',
+                                   'reason',
+                                   'panel type',
+                                   'panel inclusion criteria']
+
+        self.existing_columns = self.excel_annihilation_file.read_header()
+
+
     def parse(self):
-        
         from models import AnnihilationRow
 
         header = self.excel_annihilation_file.read_header()
@@ -504,7 +585,6 @@ class AnnihilationFileHandler(FileHandler):
                     row_dict = dict(zip(header, row))
 
                     annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
-                                                                      fileinfo=self.annihilation_file,
                                                                       child_id=row_dict['child id'],
                                                                       child_volume=row_dict['child volume'],
                                                                       number_of_aliquot=row_dict['number of aliquot'],
@@ -512,6 +592,7 @@ class AnnihilationFileHandler(FileHandler):
                                                                       reason=row_dict['reason'],
                                                                       panel_type=row_dict['panel type'],
                                                                       panel_inclusion_criteria=row_dict['panel inclusion criteria'],
+                                                                      fileinfo=self.annihilation_file,
                                                                       state='pending')
 
 

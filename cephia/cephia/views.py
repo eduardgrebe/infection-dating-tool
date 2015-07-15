@@ -137,7 +137,7 @@ def specimen_type(request, template="cephia/specimen_type.html"):
 def file_info(request, template="cephia/file_info.html"):
     if request.method == "GET":
         context = {}
-        files = FileInfo.objects.all()
+        files = FileInfo.objects.all().order_by('-created')
         form = FileInfoForm()
         context['files'] = files
         context['form'] = form
@@ -216,6 +216,10 @@ def parse_file(request, file_id):
     try:
         file_to_parse = FileInfo.objects.get(pk=file_id)
         file_handler = file_to_parse.get_handler()
+        msg = file_handler.validate_file()
+
+        if msg:
+            messages.add_message(request, messages.WARNING, msg)
 
         num_success, num_fail = file_handler.parse()
         
@@ -353,3 +357,4 @@ def download_subjects_no_visits(request):
         logger.exception(e)
         messages.error(request, 'Failed to download file')
         return HttpResponseRedirect(reverse('file_info'))
+
