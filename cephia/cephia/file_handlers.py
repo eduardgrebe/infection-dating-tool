@@ -561,7 +561,7 @@ class AnnihilationFileHandler(FileHandler):
                         except Specimen.DoesNotExist:
                             raise Exception("Specimen does not exist")
 
-                        parent_specimen.modified_date = self.float_to__date(annihilation_row.annihilation_date)
+                        parent_specimen.modified_date = self.float_to_date(annihilation_row.annihilation_date)
                         parent_specimen.save()
 
                         Specimen.objects.update_or_create(specimen_label=annihilation_row.child_id,
@@ -689,3 +689,4 @@ register_file_handler("annihilation", AnnihilationFileHandler)
 register_file_handler("transfer_out", TransferOutFileHandler)
 register_file_handler("transfer_in", TransferInFileHandler)
 register_file_handler("missing_transfer_out", MissingTransferOutFileHandler)
+
