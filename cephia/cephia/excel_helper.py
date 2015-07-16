@@ -31,7 +31,7 @@ class ExcelHelper(object):
 
     def _open_for_read(self, f, sheet_number):
         self.sheet_number = sheet_number
-        self.wb = xlrd.open_workbook(f)
+        self.wb = xlrd.open_workbook(f, formatting_info=False)
         self._goto_sheet(int(sheet_number))
 
     def _open_for_write(self, sheet_name):
@@ -141,3 +141,4 @@ class ExcelHelper(object):
             return ''
     
     
+

@@ -21,9 +21,12 @@ def get_file_handler_for_type(file_type):
 
 class FileHandler(object):
 
-    def get_date(self, date_string):
-        if date_string:
-            return datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S").date()
+    def get_date(self, value):
+        if value:
+            if ('/' in value) or ('-' in value):
+                return datetime.strptime(value, "%Y-%m-%d").date()        
+            else:
+                return datetime(*xlrd.xldate_as_tuple(float(value), 0)).date()
         else:
             return None
 
@@ -35,12 +38,6 @@ class FileHandler(object):
 
     def get_bool(self, bool_string):
         return bool_string == '1'
-
-    def float_to_date(self, value):
-        if value:
-            return datetime(*xlrd.xldate_as_tuple(float(value), 0)).date()
-        else:
-            return None
 
     def validate_file(self):
         missing_cols = list(set(self.registered_columns) - set(self.existing_columns))
@@ -167,12 +164,12 @@ class SubjectFileHandler(FileHandler):
                         raise Exception("Country does not exist")
 
                     Subject.objects.create(patient_label=subject_row.patient_label,
-                                           entry_date = self.float_to_date(subject_row.entry_date),
+                                           entry_date = self.get_date(subject_row.entry_date),
                                            entry_status = subject_row.entry_status,
                                            country = country,
-                                           last_negative_date = self.float_to_date(subject_row.last_negative_date),
-                                           last_positive_date = self.float_to_date(subject_row.last_positive_date),
-                                           ars_onset = self.float_to_date(subject_row.ars_onset),
+                                           last_negative_date = self.get_date(subject_row.last_negative_date),
+                                           last_positive_date = self.get_date(subject_row.last_positive_date),
+                                           ars_onset = self.get_date(subject_row.ars_onset),
                                            fiebig = subject_row.fiebig,
                                            dob = self.get_year(subject_row.dob),
                                            gender = subject_row.gender,
@@ -182,10 +179,10 @@ class SubjectFileHandler(FileHandler):
                                            iv_drug_user = self.get_bool(subject_row.iv_drug_user),
                                            subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                            subtype = subtype,
-                                           anti_retroviral_initiation_date = self.float_to_date(subject_row.anti_retroviral_initiation_date),
-                                           aids_diagnosis_date = self.float_to_date(subject_row.aids_diagnosis_date),
-                                           treatment_interruption_date = self.float_to_date(subject_row.treatment_interruption_date),
-                                           treatment_resumption_date = self.float_to_date(subject_row.treatment_resumption_date))
+                                           anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
+                                           aids_diagnosis_date = self.get_date(subject_row.aids_diagnosis_date),
+                                           treatment_interruption_date = self.get_date(subject_row.treatment_interruption_date),
+                                           treatment_resumption_date = self.get_date(subject_row.treatment_resumption_date))
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
@@ -275,7 +272,7 @@ class VisitFileHandler(FileHandler):
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending', 'error']):
             try:
                 with transaction.atomic():
-                    exists = Visit.objects.filter(patient_label=visit_row.patient_label, visit_date=self.float_to_date(visit_row.visit_date)).exists()
+                    exists = Visit.objects.filter(patient_label=visit_row.patient_label, visit_date=self.get_date(visit_row.visit_date)).exists()
                     if exists:
                         raise Exception("Visit already exists")
 
@@ -294,7 +291,7 @@ class VisitFileHandler(FileHandler):
                     else:
                         vl = None
 
-                    Visit.objects.create(visit_date = self.float_to_date(visit_row.visit_date),
+                    Visit.objects.create(visit_date = self.get_date(visit_row.visit_date),
                                          status = visit_row.status,
                                          study = study,
                                          visit_cd4 = cd4,
@@ -328,7 +325,7 @@ class TransferInFileHandler(FileHandler):
         self.transfer_in_file = transfer_in_file
         self.excel_transfer_in_file = ExcelHelper(f=transfer_in_file.data_file.url)
 
-        self.registered_columns = ['specimen_id',
+        self.registered_columns = ['specimen id',
                                    'subject_id',
                                    'draw_date',
                                    'number of containers',
@@ -398,6 +395,12 @@ class TransferInFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     try:
+                        subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
+                    except Site.DoesNotExist:
+                        subject = None
+                        pass
+
+                    try:
                         site = Site.objects.get(name=transfer_in_row.sites)
                     except Site.DoesNotExist:
                         raise Exception("Site does not exist")
@@ -406,12 +409,13 @@ class TransferInFileHandler(FileHandler):
 
                     spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
-                    specimen, specimen_created = Specimen.objects.update_or_create(specimen_label = transfer_in_row.specimen_label,
-                                                                                   reported_draw_date = self.float_to_date(transfer_in_row.draw_date),
-                                                                                   transfer_in_date = self.float_to_date(transfer_in_row.transfer_in_date),
-                                                                                   source_study = site,
-                                                                                   reason = reason,
-                                                                                   spec_type = spec_type)
+                    specimen, specimen_created = Specimen.objects.get_or_create(specimen_label = transfer_in_row.specimen_label,
+                                                                                reported_draw_date = self.get_date(transfer_in_row.draw_date),
+                                                                                transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
+                                                                                source_study = site,
+                                                                                reason = reason,
+                                                                                subject = subject,
+                                                                                spec_type = spec_type)
 
                     if transfer_in_row.num_containers:
                         specimen.num_containers = transfer_in_row.num_containers
@@ -475,6 +479,10 @@ class TransferOutFileHandler(FileHandler):
                     row = self.excel_transfer_out_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
+                    #this is to ignore blanks and can probably be done better
+                    if not row_dict['spec_id']:
+                        continue
+
                     transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['spec_id'],
                                                                      num_containers=row_dict['#_ containers'],
                                                                      transfer_out_date=row_dict['transfer date'],
@@ -525,7 +533,7 @@ class TransferOutFileHandler(FileHandler):
                         
 
                     specimen.num_containers=transfer_out_row.num_containers
-                    specimen.transfer_out_date = self.float_to_date(transfer_out_row.transfer_out_date)
+                    specimen.transfer_out_date = self.get_date(transfer_out_row.transfer_out_date)
                     specimen.to_location = to_location
                     specimen.spec_type = spec_type
                     specimen.other_ref = transfer_out_row.other_ref
@@ -637,7 +645,7 @@ class AnnihilationFileHandler(FileHandler):
                             
                         parent_specimen.num_containers = annihilation_row.number_of_aliquot
                         parent_specimen.volume = annihilation_row.child_volume
-                        parent_specimen.modified_date = self.float_to_date(annihilation_row.annihilation_date)
+                        parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
                         parent_specimen.reason = reason
                         parent_specimen.aliquoting_reason = aliquoting_reason
                         parent_specimen.panel_inclusion_criteria = panel_inclusion_criteria
@@ -649,20 +657,20 @@ class AnnihilationFileHandler(FileHandler):
                         except Specimen.DoesNotExist:
                             raise Exception("Specimen does not exist")
 
-                        parent_specimen.modified_date = self.float_to_date(annihilation_row.annihilation_date)
+                        parent_specimen.modified_date = self.get_date(annihilation_row.annihilation_date)
                         parent_specimen.save()
 
-                        Specimen.objects.update_or_create(specimen_label=annihilation_row.child_id,
-                                                          parent_label=annihilation_row.parent_id,
-                                                          num_containers=annihilation_row.number_of_aliquot,
-                                                          volume=annihilation_row.child_volume,
-                                                          spec_type=parent_specimen.spec_type,
-                                                          reported_draw_date=parent_specimen.reported_draw_date,
-                                                          source_study=parent_specimen.source_study,
-                                                          created_date=self.float_to_date(annihilation_row.annihilation_date),
-                                                          reason=reason,
-                                                          aliquoting_reason=aliquoting_reason,
-                                                          panel_inclusion_criteria=panel_inclusion_criteria)
+                        Specimen.objects.get_or_create(specimen_label=annihilation_row.child_id,
+                                                       parent_label=annihilation_row.parent_id,
+                                                       num_containers=annihilation_row.number_of_aliquot,
+                                                       volume=annihilation_row.child_volume,
+                                                       spec_type=parent_specimen.spec_type,
+                                                       reported_draw_date=parent_specimen.reported_draw_date,
+                                                       source_study=parent_specimen.source_study,
+                                                       created_date=self.get_date(annihilation_row.annihilation_date),
+                                                       reason=reason,
+                                                       aliquoting_reason=aliquoting_reason,
+                                                       panel_inclusion_criteria=panel_inclusion_criteria)
 
                     annihilation_row.state = 'processed'
                     annihilation_row.error_message = ''
@@ -776,4 +784,5 @@ register_file_handler("annihilation", AnnihilationFileHandler)
 register_file_handler("transfer_out", TransferOutFileHandler)
 register_file_handler("transfer_in", TransferInFileHandler)
 register_file_handler("missing_transfer_out", MissingTransferOutFileHandler)
+
 
