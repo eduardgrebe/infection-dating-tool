@@ -18,12 +18,6 @@ class Command(BaseCommand):
                 visit.save()
             except Subject.DoesNotExist:
                 continue
-                # subject = Subject.objects.create(patient_label=visit.visit_label,
-                #                                  entry_date = timezone.now())
-                # subject.patient_label = 'dummy_subject_' + str(subject.pk)
-                # subject.save()
-                # visit.subject = subject
-                # visit.save()
 
             num_associations = num_associations + 1
 

@@ -361,7 +361,7 @@ class TransferInFileHandler(FileHandler):
                     row_dict = dict(zip(header, row))
 
                     #this is to ignore blanks and can probably be done better
-                    if not row_dict['specimen_id'] and not row_dict['subject_id']:
+                    if not row_dict['specimen id'] and not row_dict['subject_id']:
                         continue
                     
                     transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen id'],
@@ -611,7 +611,7 @@ class AnnihilationFileHandler(FileHandler):
                     row_dict = dict(zip(header, row))
 
                     #this is to ignore blanks and can probably be done better
-                    if not row_dict['parent_id']:
+                    if not row_dict['parent id']:
                         continue
                     
                     annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
