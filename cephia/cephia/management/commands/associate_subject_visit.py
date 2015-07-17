@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
         for visit in Visit.objects.filter(subject=None):
             try:
-                subject = Subject.objects.get(patient_label=visit.visit_label)
+                subject = Subject.objects.get(patient_label=visit.patient_label)
                 visit.subject = subject
                 visit.save()
             except Subject.DoesNotExist:
