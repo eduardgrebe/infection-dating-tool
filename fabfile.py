@@ -79,7 +79,8 @@ def _update_cron_jobs():
                        marker=script_name)
         
     ## Every minute
-    create_cron_line(script_name='import_pending_files', stars="* * * * *")
-    create_cron_line(script_name='process_imported_files', stars="* * * * *")
-    create_cron_line(script_name='associate_subject_visit', stars="* * * * *")
-    create_cron_line(script_name='associate_specimen_visit', stars="* * * * *")
+    create_cron_line(script_name='run_commands', stars="* * * * *")
+    # create_cron_line(script_name='import_pending_files', stars="* * * * *")
+    # create_cron_line(script_name='process_imported_files', stars="* * * * *")
+    # create_cron_line(script_name='associate_subject_visit', stars="* * * * *")
+    # create_cron_line(script_name='associate_specimen_visit', stars="* * * * *")
