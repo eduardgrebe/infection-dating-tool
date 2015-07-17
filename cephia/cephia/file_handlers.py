@@ -96,6 +96,10 @@ class SubjectFileHandler(FileHandler):
                     row = self.excel_subject_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
+                    #this is to ignore blanks and can probably be done better
+                    if not row_dict['pt_id']:
+                        continue
+
                     subject_row = SubjectRow.objects.create(patient_label=row_dict['pt_id'], fileinfo=self.subject_file)
 
                     subject_row.patient_label = row_dict['pt_id']
@@ -234,6 +238,10 @@ class VisitFileHandler(FileHandler):
                     row = self.excel_visit_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
+                    #this is to ignore blanks and can probably be done better
+                    if not row_dict['visit_pt_id']:
+                        continue
+                    
                     visit_row = VisitRow.objects.create(patient_label=row_dict['visit_pt_id'],
                                                         visit_date=row_dict['visit_date'],
                                                         fileinfo=self.visit_file)
@@ -351,6 +359,10 @@ class TransferInFileHandler(FileHandler):
                     
                     row = self.excel_transfer_in_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
+
+                    #this is to ignore blanks and can probably be done better
+                    if not row_dict['specimen_id'] and not row_dict['subject_id']:
+                        continue
                     
                     transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen id'],
                                                                    patient_label=row_dict['subject_id'],
@@ -598,6 +610,10 @@ class AnnihilationFileHandler(FileHandler):
                     row = self.excel_annihilation_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
+                    #this is to ignore blanks and can probably be done better
+                    if not row_dict['parent_id']:
+                        continue
+                    
                     annihilation_row = AnnihilationRow.objects.create(parent_id=row_dict['parent id'],
                                                                       child_id=row_dict['child id'],
                                                                       child_volume=row_dict['child volume'],
