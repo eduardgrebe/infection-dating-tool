@@ -15,7 +15,7 @@ cephia_test_remote_code_staging_dir = "/home/cephia/staging"
 
 usage = """
 
-fonkserver
+
 --------
 staging       : > fab host_impd deploy:<branch>
 cephia test   : > fab host_cephiatest deploy:<branch>
@@ -52,7 +52,9 @@ def _deploy_staging(branch_name="master"):
         run("git checkout origin/%s" % branch_name)
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_impd.sh")
-        
+
+    _update_cron_jobs()
+    
     print("Deployed to: http://cephia.impd.co.za/")
 
 def _deploy_cephia_test(branch_name="master"):
@@ -64,6 +66,8 @@ def _deploy_cephia_test(branch_name="master"):
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_cephia_test.sh")
         
+    _update_cron_jobs()
+    
     print("Deployed to: http://cephiatest.eduardgrebe.net/")
 
 def _update_cron_jobs():
