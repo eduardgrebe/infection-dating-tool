@@ -5,7 +5,7 @@ import shutil
 from fabric.contrib.console import confirm, prompt
 from fabric.operations import put
 import datetime
-from cephia.lib.fab_deploy_cron import crontab_update, crontab_remove_all_with_marker, crontab_add
+from cephia.lib.fab_deploy_cron import crontab_update, crontab_remove_all_with_marker
 
 local_code_dir = os.path.dirname(os.path.realpath(__file__))
 imp_remote_code_staging_dir = "/home/cephia"
@@ -75,7 +75,7 @@ def _update_cron_jobs():
     crontab_remove_all_with_marker()
 
     def create_cron_line(script_name, stars):
-        crontab_add("{stars} /home/cephia/scripts/{script_name}.sh > /home/cephia/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
+        crontab_update("{stars} /home/cephia/scripts/{script_name}.sh > /home/cephia/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
                        marker=script_name)
         
     ## Every minute
