@@ -114,6 +114,7 @@ class FileInfo(models.Model):
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
+    priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
 
     def __unicode__(self):

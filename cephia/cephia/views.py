@@ -20,7 +20,6 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-
 @login_required
 def home(request, template="cephia/home.html"):
     context = {}
@@ -199,8 +198,20 @@ def download_file(request, file_id):
 @login_required
 def upload_file(request):
     try:
+        FILE_PRIORITIES = {
+            'subject': 1,
+            'visit': 2,
+            'transfer_in': 3,
+            'annihilation': 4,
+            'transfer_out': 5
+        }
+
         if request.method == "POST":
-            form = FileInfoForm(request.POST, request.FILES)
+            post_data = request.POST.copy()
+            priority = FILE_PRIORITIES[request.POST.get('file_type')]
+            post_data.__setitem__('priority', priority)
+            
+            form = FileInfoForm(post_data, request.FILES)
             if form.is_valid():
                 form.save();
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
