@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        for file_to_process in FileInfo.objects.filter(state='imported'):
+        for file_to_process in FileInfo.objects.filter(state='imported').order_by('priority'):
             try:
                 file_handler = file_to_process.get_handler()
         
