@@ -1,9 +1,12 @@
  #!/bin/bash
+BASE_DIR="`dirname \"$0\"`/.."
+cd $BASE_DIR
 
-ROOT=`git rev-parse --show-toplevel`
+ROOT=$(pwd)
 cd ${ROOT}
+
 SRC=${ROOT}/cephia
-SITE_PATH=${SRC}
+SITE_PATH=${SRC}                                                                                                                                                            
 VENV=${ROOT}/venv
 
 echo "activate virtualenv"

@@ -325,7 +325,7 @@ class Specimen(models.Model):
     
         
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
-    parent_label = models.CharField(max_length=255, null=True, blank=True) 
+    parent_label = models.CharField(max_length=255, null=True, blank=True)
     num_containers = models.IntegerField(null=True, blank=True)
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
@@ -339,7 +339,7 @@ class Specimen(models.Model):
     volume = models.FloatField(null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     other_ref = models.CharField(max_length=10, null=True, blank=True)
-    source_study = models.ForeignKey(Site, null=True, blank=True)
+    source_study = models.ForeignKey(Study, null=True, blank=True)
     to_location = models.ForeignKey(Location, null=True, blank=True)
     aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
     panel_inclusion_criteria = models.ForeignKey(PanelInclusionCriteria, null=True, blank=True)

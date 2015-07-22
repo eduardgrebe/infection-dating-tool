@@ -412,10 +412,10 @@ class TransferInFileHandler(FileHandler):
                         subject = None
                         pass
 
-                    try:
-                        site = Site.objects.get(name=transfer_in_row.sites)
-                    except Site.DoesNotExist:
-                        raise Exception("Site does not exist")
+                    # try:
+                    #     site = Site.objects.get(name=transfer_in_row.sites)
+                    # except Site.DoesNotExist:
+                    #     raise Exception("Site does not exist")
 
                     reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
 
@@ -424,7 +424,6 @@ class TransferInFileHandler(FileHandler):
                     specimen, specimen_created = Specimen.objects.get_or_create(specimen_label = transfer_in_row.specimen_label,
                                                                                 reported_draw_date = self.get_date(transfer_in_row.draw_date),
                                                                                 transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
-                                                                                source_study = site,
                                                                                 reason = reason,
                                                                                 subject = subject,
                                                                                 spec_type = spec_type)
