@@ -12,7 +12,6 @@ class Command(BaseCommand):
         num_associations = 0
 
         for specimen in Specimen.objects.filter(visit=None):
-            import pdb; pdb.set_trace()
             try:
                 visit = Visit.objects.get(subject=specimen.subject, visit_date=specimen.reported_draw_date)
                 specimen.visit = visit
