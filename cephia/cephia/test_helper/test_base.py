@@ -10,8 +10,13 @@ class TestHelper(object):
     def __init__(self, *args, **kwargs):
         super(TestHelper, self).__init__(*args, **kwargs)
 
-    def create_fileinfo(self, filename, file_type):
-        return FileInfo.objects.create(filename=filename,
+    def get_file(self, file_type):
+        import pdb; pdb.set_trace()
+        return open(settings.TEST_FILE_ROOT + file_type)
+    
+    def create_fileinfo(self, file_type):
+        excel_file = self.get_file(file_type)
+        return FileInfo.objects.create(data_file=excel_file,
                                        file_type=file_type,
                                        state='pending')
 
