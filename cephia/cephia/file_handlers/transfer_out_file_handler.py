@@ -6,14 +6,16 @@ class TransferOutFileHandler(FileHandler):
         self.transfer_out_file = transfer_out_file
         self.excel_transfer_out_file = ExcelHelper(f=transfer_out_file.data_file.url)
 
-        self.registered_columns = ['spec_id',
-                                   '#_ containers',
-                                   'transfer date',
-                                   'to location',
-                                   'reason',
-                                   'spec type',
-                                   'vol',
-                                   'other id']
+        self.registered_columns = ['specimen_label',
+                                   'number_of_containers',
+                                   'specimen_type',
+                                   'volume',
+                                   'volume_units',
+                                   'shipped_in_panel',
+                                   'shipment_date_yyyy',
+                                   'shipment_date_mm',
+                                   'shipment_date_dd',
+                                   'destination_site']
 
         self.existing_columns = self.excel_transfer_out_file.read_header()
 
@@ -56,6 +58,8 @@ class TransferOutFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
+    def validate(self, row):
+        pass
 
     def process(self):
         

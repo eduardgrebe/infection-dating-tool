@@ -6,29 +6,48 @@ class SubjectFileHandler(FileHandler):
         self.subject_file = subject_file
         self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
 
-        self.registered_columns = ['pt_id',
-                                   'pt_entrydt',
-                                   'pt_entrystat',
-                                   'pt_country',
-                                   'pt_lastnegdate',
-                                   'pt_firstpozdate',
-                                   'pt_arsonset',
-                                   'pt_fiebig',
-                                   'pt_yob',
-                                   'pt_sex',
-                                   'pt_ethnicity',
-                                   'pt_sexwithmen',
-                                   'pt_sexwithwomen',
-                                   'pt_ivdu',
-                                   'pt_subconf',
-                                   'pt_subtype',
-                                   'pt_arvdate',
-                                   'pt_aidsdx',
-                                   'pt_txintdate',
-                                   'pt_txresdate']
+        self.registered_columns = ['subject_label',
+                                   'source_study',
+                                   'cohort_entry_date_yyyy',
+                                   'cohort_entry_date_mm',
+                                   'cohort_entry_date_dd',
+                                   'country',
+                                   'last_negative_date_yyyy',
+                                   'last_negative_date_mm',
+                                   'last_negative_date_dd',
+                                   'first_positive_date_yyyy',
+                                   'first_positive_date_mm',
+                                   'first_positive_date_dd',
+                                   'fiebig_stage_at_firstpos',
+                                   'ars_onset_date_yyyy',
+                                   'ars_onset_date_mm',
+                                   'ars_onset_date_dd',
+                                   'date_of_birth_yyyy',
+                                   'date_of_birth_mm',
+                                   'date_of_birth_dd',
+                                   'sex',
+                                   'transgender',
+                                   'population_group',
+                                   'risk_sex_with_men',
+                                   'risk_sex_with_women',
+                                   'risk_idu',
+                                   'subtype',
+                                   'subtype_confirmed',
+                                   'aids_diagnosis_date_yyyy',
+                                   'aids_diagnosis_date_mm',
+                                   'aids_diagnosis_date_dd',
+                                   'art_initiation_date_yyyy',
+                                   'art_initiation_date_mm',
+                                   'art_initiation_date_dd',
+                                   'art_interruption_date_yyyy',
+                                   'art_interruption_date_mm',
+                                   'art_interruption_date_dd',
+                                   'art_resumption_date_yyyy',
+                                   'art_resumption_date_mm',
+                                   'art_resumption_date_dd']
 
         self.existing_columns = self.excel_subject_file.read_header()
-        
+
 
     def parse(self):
 
@@ -83,6 +102,10 @@ class SubjectFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
+    
+    def validate(self, row):
+        pass
+
 
     def process(self):
 
@@ -99,12 +122,10 @@ class SubjectFileHandler(FileHandler):
                         raise Exception("Subject already exists")
 
                     try:
-
                         if subject_row.ethnicity:
                             ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
                         else:
                             ethnicity = Ethnicity.objects.get(name='Unknown')
-
                     except Ethnicity.DoesNotExist:
                         raise Exception("Ethnicity does not exist")
 

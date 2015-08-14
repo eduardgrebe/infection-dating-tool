@@ -6,15 +6,16 @@ class VisitFileHandler(FileHandler):
         self.visit_file = visit_file
         self.excel_visit_file = ExcelHelper(f=visit_file.data_file.url)
 
-        self.registered_columns = ['visit_pt_id',
-                                   'visit_date',
-                                   'visit_status',
-                                   'visit_source',
-                                   'visit_cd4',
-                                   'visit_vl',
+        self.registered_columns = ['subject_label',
+                                   'visitdate_yyyy',
+                                   'visitdate_mm',
+                                   'visitdate_dd',
+                                   'source_study',
+                                   'cd4_count',
+                                   'vl',
                                    'scopevisit_ec',
-                                   'visit_pregnant',
-                                   'visit_hepatitis']
+                                   'pregnant',
+                                   'hepatitis']
 
         self.existing_columns = self.excel_visit_file.read_header()
 
@@ -62,6 +63,9 @@ class VisitFileHandler(FileHandler):
                 return 0, 1
 
         return rows_inserted, rows_failed
+
+    def validate(self, row):
+        pass
 
 
     def process(self):

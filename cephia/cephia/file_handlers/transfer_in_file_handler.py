@@ -6,15 +6,24 @@ class TransferInFileHandler(FileHandler):
         self.transfer_in_file = transfer_in_file
         self.excel_transfer_in_file = ExcelHelper(f=transfer_in_file.data_file.url)
 
-        self.registered_columns = ['specimen id',
-                                   'subject_id',
-                                   'draw_date',
-                                   'number of containers',
-                                   'transfer date',
-                                   'sites',
-                                   'transfer reason',
-                                   'spec type',
-                                   'volume']
+        self.registered_columns = ['specimen_label',
+                                   'subject_label',
+                                   'drawdate_year',
+                                   'drawdate_month',
+                                   'drawdate_day',
+                                   'number_of_containers',
+                                   'transfer_date_yyyy',
+                                   'transfer_date_mm',
+                                   'transfer_date_dd',
+                                   'receiving_site',
+                                   'transfer_reason',
+                                   'specimen_type',
+                                   'volume',
+                                   'volume_units',
+                                   'source_study',
+                                   'notes',
+                                   'visit_linkage']
+
 
         self.existing_columns = self.excel_transfer_in_file.read_header()
 
@@ -66,6 +75,9 @@ class TransferInFileHandler(FileHandler):
                 return 0, 1
 
         return rows_inserted, rows_failed
+
+    def validate(self, row):
+        pass
 
 
     def process(self):

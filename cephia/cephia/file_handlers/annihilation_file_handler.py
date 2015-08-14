@@ -6,14 +6,15 @@ class AnnihilationFileHandler(FileHandler):
         self.excel_annihilation_file = ExcelHelper(f=annihilation_file.data_file.url)
         self.annihilation_row = None
 
-        self.registered_columns = ['parent id',
-                                   'child id',
-                                   'child volume',
-                                   'number of aliquot',
-                                   'annihilation date',
-                                   'reason',
-                                   'panel type',
-                                   'panel inclusion criteria']
+        self.registered_columns = ['parent_label',
+                                   'aliquot_label',
+                                   'aliquoting_date_yyyy',
+                                   'aliquoting_date_mm',
+                                   'aliquoting_date_dd',
+                                   'specimen_type',
+                                   'volume',
+                                   'volume_units',
+                                   'reason']
 
         self.existing_columns = self.excel_annihilation_file.read_header()
 
