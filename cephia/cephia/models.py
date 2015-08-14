@@ -11,7 +11,7 @@ import pytz
 import time
 import os
 from django.utils import html
-from file_handlers import get_file_handler_for_type
+from file_handlers import file_handler_register
 import logging
 
 logger = logging.getLogger(__name__)

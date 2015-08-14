@@ -1,3 +1,5 @@
+from file_handler import FileHandler
+
 class TransferOutFileHandler(FileHandler):
     transfer_out_file = None
     

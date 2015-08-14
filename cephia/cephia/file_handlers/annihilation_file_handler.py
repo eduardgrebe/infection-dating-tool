@@ -1,3 +1,6 @@
+from file_handler import FileHandler
+
+
 class AnnihilationFileHandler(FileHandler):
 
     def __init__(self, annihilation_file):
@@ -17,7 +20,6 @@ class AnnihilationFileHandler(FileHandler):
                                    'reason']
 
         self.existing_columns = self.excel_annihilation_file.read_header()
-
 
     def parse(self):
         from models import AnnihilationRow
@@ -70,7 +72,7 @@ class AnnihilationFileHandler(FileHandler):
 
             try:
                 with transaction.atomic():
-                    
+
                     reason, reason_created = Reason.objects.get_or_create(name=annihilation_row.reason)
                     aliquoting_reason, aliquoting_reason_created = AliquotingReason.objects.get_or_create(name=annihilation_row.panel_type)
                     panel_inclusion_criteria, panel_inclusion_criteria_created = PanelInclusionCriteria.objects.get_or_create(name=annihilation_row.panel_inclusion_criteria)

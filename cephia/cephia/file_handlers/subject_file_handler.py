@@ -1,6 +1,9 @@
+from file_handler import FileHandler
+
+
 class SubjectFileHandler(FileHandler):
     subject_file = None
-    
+
     def __init__(self, subject_file, *args, **kwargs):
         super(SubjectFileHandler, self).__init__()
         self.subject_file = subject_file
@@ -104,8 +107,37 @@ class SubjectFileHandler(FileHandler):
 
     
     def validate(self, row):
-        pass
+        """
+        Check that date fields make sense: yyyy > 1900 < currentyear; mm >= 01 <= 12; dd >=01 <=31; [Possibly: check that if mm==01 dd <= 31, if mm==02, dd<=29, etc.]
+        date_of_birth < all other date fields
+        date_of_death > all other date fields
+        last_negative_date < first_positive_date
+        ars_onset_date < first_positive_date
+        art_initiation_date > first_positive_date
+        art_interruption_date > art_initiation_date
+        art_resumption_date > art_interruption_date
+        aids_diagnosis_date > first_positive_date
+        if sex=transgender set to Unknown, unless "MTF" set sex to "Male" or "FTM" set sex to "Female"
+        subtype is not NULL if subtype_confirmed==Y
+        """
 
+        exists = Subject.objects.filter(patient_label=subject_row.patient_label).exists()
+        if exists:
+            raise Exception("Subject already exists")
+
+        try:
+            if subject_row.ethnicity:
+                ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
+            else:
+                ethnicity = Ethnicity.objects.get(name='Unknown')
+        except Ethnicity.DoesNotExist:
+            raise Exception("Ethnicity does not exist")
+
+        subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
+        try:
+            country = Country.objects.get(code=subject_row.country)
+        except Country.DoesNotExist:
+            raise Exception("Country does not exist")
 
     def process(self):
 
@@ -117,25 +149,6 @@ class SubjectFileHandler(FileHandler):
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending']):
             try:
                 with transaction.atomic():
-                    exists = Subject.objects.filter(patient_label=subject_row.patient_label).exists()
-                    if exists:
-                        raise Exception("Subject already exists")
-
-                    try:
-                        if subject_row.ethnicity:
-                            ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
-                        else:
-                            ethnicity = Ethnicity.objects.get(name='Unknown')
-                    except Ethnicity.DoesNotExist:
-                        raise Exception("Ethnicity does not exist")
-
-                    subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
-
-                    try:
-                        country = Country.objects.get(code=subject_row.country)
-                    except Country.DoesNotExist:
-                        raise Exception("Country does not exist")
-
                     Subject.objects.create(patient_label=subject_row.patient_label,
                                            entry_date = self.get_date(subject_row.entry_date),
                                            entry_status = subject_row.entry_status,

@@ -1,6 +1,9 @@
+from file_handler import FileHandler
+
+
 class TransferInFileHandler(FileHandler):
     transfer_in_file = None
-    
+
     def __init__(self, transfer_in_file):
         super(TransferInFileHandler, self).__init__()
         self.transfer_in_file = transfer_in_file
@@ -77,11 +80,32 @@ class TransferInFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self, row):
-        pass
+        """
+        Check that date fields make sense: yyyy > 1900 < currentyear; mm >= 01 <= 12; dd >=01 <=31; [Possibly: check that if mm==01 dd <= 31, if mm==02, dd<=29, etc.]
+        drawdate < transfer_date
+        transfer_date < currentdate
+        if volume_units is not NULL: volume_units == 'microlitres'
+        if specimentype == 1 | 3 | 4[.1|.2] | 6 | 8; volume_units == 'cards'
+        if specimentype==2; volume_units == grams 
+        if specimentype == 5[.1|.2]; volume_units == 'm cells'
+        if specimentype==7; volume_units == 'swabs'
+        if specimentype==10[.1|.2]; volume > 90
+        if specimentype == 1 | 3 | 4[.1|.2] | 6 | 8; volume < 20 
+        if specimentype==2; volume < 100
+        if specimentype == 5[.1|.2]; volume < 20
+        if specimentype==7; volume <= 10 
+        if specimentype==2; volume <= 10 
+        if specimentype==10[.1|.2];
+        """
+        reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
 
+        try:
+            spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
+        except SpecimenType.DoesNotExist:
+            raise Exception("SpecimenType does not exist")
 
     def process(self):
-        
+
         from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen, Site
         
         rows_inserted = 0
@@ -96,15 +120,6 @@ class TransferInFileHandler(FileHandler):
                     except Site.DoesNotExist:
                         subject = None
                         pass
-
-                    # try:
-                    #     site = Site.objects.get(name=transfer_in_row.sites)
-                    # except Site.DoesNotExist:
-                    #     raise Exception("Site does not exist")
-
-                    reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
-
-                    spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
 
                     specimen, specimen_created = Specimen.objects.get_or_create(specimen_label = transfer_in_row.specimen_label,
                                                                                 reported_draw_date = self.get_date(transfer_in_row.draw_date),
