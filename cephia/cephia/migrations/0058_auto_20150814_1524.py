@@ -8,7 +8,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
     def add_spec_type(apps, schema_editor):
 
-        model = apps.get_model("cephia", "SourceStudy")
+        model = apps.get_model("cephia", "Study")
 
         source_study_list = [{'name':'SIPP',
                               'description':'Options study - SIPP samples (large volume collections)'},
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
             model.objects.create(name=study['name'], description=study['description'])
 
     dependencies = [
-        ('cephia', '0057_auto_20150722_1237'),
+        ('cephia', '0059_study_description'),
     ]
 
     operations = [
