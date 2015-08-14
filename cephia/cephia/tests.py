@@ -1,8 +1,9 @@
 import logging
 from test_helper.test_base import TestBase
-from cephia.models import Subject, Visit, Specimen
+from cephia.models import Subject, Visit, Specimen, FileInfo, RowInfo
 
 logger = logging.getLogger(__name__)
+
 class TestFiles(TestBase):
 
     def test_subject_file(self):
@@ -11,10 +12,10 @@ class TestFiles(TestBase):
 
         file_handler = subject_file.get_handler()
         file_handler.parse()
-        self.assertEqual(2, RowInfo.ojects.filter(file_info=subject_file).count())
+        self.assertEqual(2, SubjectRow.ojects.filter(file_info=subject_file).count())
 
         file_handler.process()
-        self.assertEqual(1, Subject.ojects.all().count())
+        self.assertEqual(2, Subject.ojects.all().count())
 
 
     def test_visit_file(self):
