@@ -7,23 +7,25 @@ logger = logging.getLogger(__name__)
 
 class FileHandler(object):
 
-    def get_date(self, value):
-        if value:
-            if ('/' in value) or ('-' in value):
-                return datetime.strptime(value, "%Y-%m-%d").date()
-            else:
-                return datetime(*xlrd.xldate_as_tuple(float(value), 0)).date()
-        else:
-            return None
+    def register_dates(self, row):
+        self.registered_dates = {}
 
-    def get_year(self, year_string):
-        if year_string:
-            return date(int(year_string), 1, 1)
-        else:
-            return None
+        for key in row:
+            is_year = key.split('_')[-1] == 'yyyy'
+            if is_year:
+                prefix = '_'.join(key.split('_').remove('yyyy'))
+                self.registered_dates[prefix] = datetime.date(year=row[prefix + '_yyyy'], month=row[prefix + '_mm'], day=row[prefix + '_dd'])
 
-    def get_bool(self, bool_string):
-        return bool_string == '1'
+    def get_date(self, year, month, day):
+        input_date = datetime.date(year=year, month=month, day=day)
+        min_date = datetime.date(year=1900, month=1, day=1)
+        max_date = datetime.now()
+        if input_date < min_date:
+            raise Exception("Dates cannot be before 1900")
+        if input_date > max_date:
+            raise Exception("Dates cannot be in the future")
+
+        return input_date
 
     def validate_file(self):
         missing_cols = list(set(self.registered_columns) - set(self.existing_columns))

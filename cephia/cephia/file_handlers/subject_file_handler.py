@@ -107,37 +107,32 @@ class SubjectFileHandler(FileHandler):
 
     
     def validate(self, row):
-        """
-        Check that date fields make sense: yyyy > 1900 < currentyear; mm >= 01 <= 12; dd >=01 <=31; [Possibly: check that if mm==01 dd <= 31, if mm==02, dd<=29, etc.]
-        date_of_birth < all other date fields
-        date_of_death > all other date fields
-        last_negative_date < first_positive_date
-        ars_onset_date < first_positive_date
-        art_initiation_date > first_positive_date
-        art_interruption_date > art_initiation_date
-        art_resumption_date > art_interruption_date
-        aids_diagnosis_date > first_positive_date
-        if sex=transgender set to Unknown, unless "MTF" set sex to "Male" or "FTM" set sex to "Female"
-        subtype is not NULL if subtype_confirmed==Y
-        """
+        self.register_dates()
+        
+        for key, value in self.registered_dates.iteritems():
+            if self.registered_dates['date_of_birth'] > value:
+                raise Exception('Date of birth cannot be greater than %s' % key)
 
-        exists = Subject.objects.filter(patient_label=subject_row.patient_label).exists()
-        if exists:
-            raise Exception("Subject already exists")
+            if self.registered_dates['date_of_death'] < value:
+                raise Exception('Date of death cannot be smaller than %s' % key)
 
-        try:
-            if subject_row.ethnicity:
-                ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
-            else:
-                ethnicity = Ethnicity.objects.get(name='Unknown')
-        except Ethnicity.DoesNotExist:
-            raise Exception("Ethnicity does not exist")
+        if not self.registered_dates['last_negative_date'] < self.registered_dates['first_positive_date']:
+            raise Exception('last_negative_date must be smaller than first_positive_date')
 
-        subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
-        try:
-            country = Country.objects.get(code=subject_row.country)
-        except Country.DoesNotExist:
-            raise Exception("Country does not exist")
+        if not self.registered_dates['ars_onset_date'] < self.registered_dates['first_positive_date']:
+            raise Exception('ars_onset_date must be smaller than first_positive_date')
+
+        if not self.registered_dates['art_initiation_date'] > self.registered_dates['first_positive_date']:
+            raise Exception('art_initiation_date must be larger than first_positive_date')
+
+        if not self.registered_dates['art_interruption_date'] > self.registered_dates['art_initiation_date']:
+            raise Exception('art_interruption_date must be greater than art_initiation_date')
+        
+        if not self.registered_dates['art_resumption_date'] > self.registered_dates['art_interruption_date']:
+            raise Exception('ars_resumption_date must be greater than art_interruption_date')
+
+        if not self.registered_dates['aids_diagnosis_date'] > self.registered_dates['first_positive_date']:
+            raise Exception('ars_onset_date must be smaller than first_positive_date')
 
     def process(self):
 
@@ -149,6 +144,25 @@ class SubjectFileHandler(FileHandler):
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending']):
             try:
                 with transaction.atomic():
+
+                    exists = Subject.objects.filter(patient_label=subject_row.patient_label).exists()
+                    if exists:
+                        raise Exception("Subject already exists")
+
+                    try:
+                        if subject_row.ethnicity:
+                            ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
+                        else:
+                            ethnicity = Ethnicity.objects.get(name='Unknown')
+                    except Ethnicity.DoesNotExist:
+                        raise Exception("Ethnicity does not exist")
+
+                    subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
+                    try:
+                        country = Country.objects.get(code=subject_row.country)
+                    except Country.DoesNotExist:
+                        raise Exception("Country does not exist")
+                    
                     Subject.objects.create(patient_label=subject_row.patient_label,
                                            entry_date = self.get_date(subject_row.entry_date),
                                            entry_status = subject_row.entry_status,
