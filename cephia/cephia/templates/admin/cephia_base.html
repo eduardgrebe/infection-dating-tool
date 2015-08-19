@@ -3,6 +3,7 @@
 <head>
 <title>{% block title %}{% endblock %}</title>
 {% block extrastyle %}{{ block.super }}<link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap-theme.min.css' %}" />
+
 <link type="text/css" rel="stylesheet" href="{% static 'css/base.css' %}" />{% endblock %}
 {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}" />{% endif %}
 <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "admin/" %}{% endfilter %}";</script>
@@ -13,7 +14,7 @@
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     <!-- Container -->
 <div id="container">
-<img class="logo" src="{% static "images/logo.jpg" %}" alt="logo"/>
+<img id="logo" class="logo" src="{% static "images/logo.png" %}" alt="logo"/>
     {% if not is_popup %}
     <!-- Header -->
     <div id="header">

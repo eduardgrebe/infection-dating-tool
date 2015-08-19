@@ -3,9 +3,11 @@
 {% load staticfiles %}
 {% block extrastyle %}
 {{ block.super }}
+
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/jquery-ui.min.js' %}"></script>
 <script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/login.js' %}"></script>
 <link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
 <link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap-theme.min.css' %}" />
 <link type="text/css" rel="stylesheet" href="{% static 'css/login.css' %}" />
@@ -36,27 +38,20 @@
 
 {{form.errors}}
 
-<div id="content-main">
+<div id="content-main" class="login">
     <form action="{{ app_path }}" method="post" class="login_form" id="login-form">{% csrf_token %}
-        <div class="row username">
-            <div class="cell">
-                <img src="{% static "images/username.png" %}" alt="My image"/>
-            </div>
-            <div class="cell">
-                {% if not form.this_is_the_login_form.errors %}{{ form.username.errors }}{% endif %}
-                {{form.username}}
-            </div>
+        <div class="row username" id="username">
+
+            {% if not form.this_is_the_login_form.errors %}{{ form.username.errors }}{% endif %}
+            {{form.username}}
+
         </div>
-        <div class="row password">
-            <div class="cell">
-                <img src="{% static "images/psswlock.png" %}" alt="My image"/>
-            </div>
-            <div class="cell">
-                {% if not form.this_is_the_login_form.errors %}{{ form.password.errors }}{% endif %}
-                <input type="hidden" name="this_is_the_login_form" value="1" />
-                <input type="hidden" name="next" value="{{ next }}" />
-                {{form.password}}
-            </div>
+        <div class="row password" id="password">
+
+            {% if not form.this_is_the_login_form.errors %}{{ form.password.errors }}{% endif %}
+
+            {{form.password}}
+
         </div>
         {% url 'admin_password_reset' as password_reset_url %}
         {% if password_reset_url %}
@@ -64,18 +59,13 @@
             <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
         </div>
         {% endif %}
-        <div class="row">
-            <br/><br/><br/>
+        <br/>
+        <div>
             <button class="button login_button" onclick="$('.login_form').submit(); return false;">
-                <div>
-                    Log in
-                </div>
+                Login
             </button>
         </div>
     </form>
 
-    <script type="text/javascript">
-     document.getElementById('id_username').focus()
-    </script>
 </div>
 {% endblock %}
