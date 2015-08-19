@@ -373,3 +373,20 @@ def download_subjects_no_visits(request):
         messages.error(request, 'Failed to download file')
         return HttpResponseRedirect(reverse('file_info'))
 
+@login_required
+def associate_specimen_visits(request):
+    try:
+        context = {}
+
+        specimen = Specimen.objects.filter(visit__isnull=True)
+        for x in specimen:
+            from_date = x.reported_draw_date - timedelta(days=14)
+            to_date = x.reported_draw_date + timedelta(days=14)
+            possible_visits = Visit.objects.filter(draw_date__gte=from_date, draw_date__lte=to_date)
+
+            context[x][possible_visits]
+
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to make association')
+        return HttpResponseRedirect(reverse('file_info'))
