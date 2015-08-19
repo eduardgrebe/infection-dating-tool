@@ -78,9 +78,24 @@ class VisitFileHandler(FileHandler):
             raise Exception('Visits HIV status cannot become "negative" if it was initially "positive"')
 
         if row_dict['scope_visit_ec'] and row_dict['source_study'] != 'SCOPE':
-            
+            raise Exception('scope_visit_ec must be null if source study is not "SCOPE"')
 
-            
+        first_visit = Visit.objects.filter(subject_label=row_dict['subject_label']).values('study__name').order_by('visit_date').first()
+        if first_visit.name != row_dict['source_study']:
+            raise Exception('source_study does not match other visits for the patient')
+
+        subject_sex = Subject.objects.filter(subject_label=row_dict['subject_label']).values('sex')
+        if row_dict['pregnant'] == 'Y' and subject_sex == 'M':
+            raise Exception('Male subjects cannot be marked as pregnant')
+        
+        exists = Visit.objects.filter(patient_label=visit_row.patient_label, visit_date=self.get_date(visit_row.visit_date)).exists()
+        if exists:
+            raise Exception("Visit already exists")
+
+        try:
+            study = Study.objects.get(name=visit_row.source)
+        except Study.DoesNotExist:
+            raise Exception("Study does not exist")
 
     def process(self):
         from models import VisitRow, Visit, Study
@@ -88,29 +103,14 @@ class VisitFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state__in=['pending']):
+        for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state='validated'):
             try:
                 with transaction.atomic():
-                    """
-                    source_study is the same as all other visits recorded for the same subject
-                    scopevisit_ec = NULL if source_study <> SCOPE
-                    pregnant = NULL or FALSE/N if sex == M
-                    """
-
-                    exists = Visit.objects.filter(patient_label=visit_row.patient_label, visit_date=self.get_date(visit_row.visit_date)).exists()
-                    if exists:
-                        raise Exception("Visit already exists")
-
-                    try:
-                        study = Study.objects.get(name=visit_row.source)
-                    except Study.DoesNotExist:
-                        raise Exception("Study does not exist")
-
                     if visit_row.visit_cd4:
                         cd4 = visit_row.visit_cd4
                     else:
                         cd4 = None
-
+    
                     if visit_row.visit_vl:
                         vl = visit_row.visit_vl
                     else:
