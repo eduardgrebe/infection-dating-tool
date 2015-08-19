@@ -31,7 +31,6 @@ class TransferInFileHandler(FileHandler):
         self.existing_columns = self.excel_transfer_in_file.read_header()
 
     def parse(self):
-        
         from models import TransferInRow
         
         header = self.excel_transfer_in_file.read_header()
@@ -80,32 +79,50 @@ class TransferInFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self, row):
-        """
-        Check that date fields make sense: yyyy > 1900 < currentyear; mm >= 01 <= 12; dd >=01 <=31; [Possibly: check that if mm==01 dd <= 31, if mm==02, dd<=29, etc.]
-        drawdate < transfer_date
-        transfer_date < currentdate
-        if volume_units is not NULL: volume_units == 'microlitres'
-        if specimentype == 1 | 3 | 4[.1|.2] | 6 | 8; volume_units == 'cards'
-        if specimentype==2; volume_units == grams 
-        if specimentype == 5[.1|.2]; volume_units == 'm cells'
-        if specimentype==7; volume_units == 'swabs'
-        if specimentype==10[.1|.2]; volume > 90
-        if specimentype == 1 | 3 | 4[.1|.2] | 6 | 8; volume < 20 
-        if specimentype==2; volume < 100
-        if specimentype == 5[.1|.2]; volume < 20
-        if specimentype==7; volume <= 10 
-        if specimentype==2; volume <= 10 
-        if specimentype==10[.1|.2];
-        """
+        self.register_dates()
+
+        if not self.registered_dates['draw_date'] < self.registered_dates['transfer_date']:
+            raise Exception('draw_date must be smaller than transfer_date')
+
+        if not self.registered_dates['aids_diagnosis_date'] > datetime.now().date():
+            raise Exception('ars_onset_date must be smaller than first_positive_date')
+
+        if row_dict['specimen_type'] in ['1','3','4.1','4.2','6', '8']:
+            if row_dict['volume_units'] != 'cards':
+                raise Exception('volume_units must be "cards" for this specimen_type')
+            if row_dict['volume'] < 20:
+                raise Exception('volume must be less than 20 for this specimen type')
+
+        if row_dict['specimen_type'] == '2':
+            if row_dict['volume_units'] != 'grams':
+                raise Exception('volume_units must be "grams" for this specimen')
+            if row_dict['volume'] < 100:
+                raise Exception('volume must be less than 100 for this specimen')
+
+        if row_dict['specimen_type'] in ['5.1','5.2']:
+            if row_dict['volume_units'] != 'm cells':
+                raise Exception('volume_units must be "cards" for this specimen_type')
+            if row_dict['volume'] < 20:
+                raise Exception('volume must be less than 20 for this specimen')
+
+        if row_dict['specimen_type'] == '7':
+            if row_dict['volume_units'] != 'swabs':
+                raise Exception('volume_units must be "swabs" for this specimen_type')
+            if row_dict['volume'] < 20:
+                raise Exception('volume must be less than 20 for this specimen')
+
+        if row_dict['specimen_type'] in ['10.1','10.2']:
+            if row_dict['volume'] > 90:
+                raise Exception('volume must be greater than 90 for this specimen type')
+
         reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
 
         try:
-            spec_type = SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
+            SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
         except SpecimenType.DoesNotExist:
             raise Exception("SpecimenType does not exist")
 
     def process(self):
-
         from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen, Site
         
         rows_inserted = 0
