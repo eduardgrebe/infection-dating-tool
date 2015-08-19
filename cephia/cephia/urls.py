@@ -1,11 +1,14 @@
-
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
+admin.autodiscover()
 import views
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf.urls.static import static
 
 urlpatterns = [
+    url('^', include('django.contrib.auth.urls')),
     url(r'^admin/', include(admin.site.urls)),
-
     url(r'^$', views.home, name='home'),
     url(r'^tms/$', views.table_management, name='table_management'),
     
@@ -28,7 +31,7 @@ urlpatterns = [
     url(r'^download_subjects_no_visits/$', views.download_subjects_no_visits, name='download_subjects_no_visits'),
     url(r'^download_visits_no_subjects/$', views.download_visits_no_subjects, name='download_visits_no_subjects'),
 
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}, name='auth_login'),
+    url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/cephia_login.html'}, name='auth_login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
     url(r'^accounts/password-change/$', 'django.contrib.auth.views.password_change', name='change_password'),
     url(r'^accounts/password-change/done/$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
@@ -37,4 +40,4 @@ urlpatterns = [
     url(r'^accounts/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm', name='password_reset_confirm'),
     url(r'^accounts/reset/done/$', 'django.contrib.auth.views.password_reset_complete'),
     
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
