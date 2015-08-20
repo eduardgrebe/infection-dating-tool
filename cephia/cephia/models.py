@@ -11,7 +11,7 @@ import pytz
 import time
 import os
 from django.utils import html
-from file_handlers import file_handler_register
+#from file_handlers.file_handler_register import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -99,6 +99,7 @@ class FileInfo(models.Model):
     STATE_CHOICES = (
         ('pending','Pending'),
         ('imported','Imported'),
+        ('validated','Validated'),
         ('error','Error')
     )
 
@@ -117,7 +118,9 @@ class FileInfo(models.Model):
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
-
+    
+    from file_handlers.file_handler_register import *
+    
     def __unicode__(self):
         return self.data_file.name
 

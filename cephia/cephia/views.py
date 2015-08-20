@@ -251,6 +251,34 @@ def parse_file(request, file_id):
         file_to_parse.save()
         return HttpResponseRedirect(reverse('file_info'))
 
+@login_required
+def validate_rows(request, file_id):
+    try:
+        file_to_validate = FileInfo.objects.get(pk=file_id)
+        file_handler = file_to_parse.get_handler()
+        msg = file_handler.validate_file()
+
+        if msg:
+            messages.add_message(request, messages.WARNING, msg)
+
+        num_success, num_fail = file_handler.validate()
+        
+        if num_fail > 0:
+            messages.add_message(request, messages.ERROR, 'Failed to validate ' + str(num_fail) + ' rows ')
+        else:
+            file_to_parse.state = 'validated'
+            file_to_parse.save()
+            messages.add_message(request, messages.SUCCESS, 'Successfully validated ' + str(num_success) + ' rows ')
+        
+        return HttpResponseRedirect(reverse('file_info'))
+    except Exception, e:
+        logger.exception(e)
+        messages.add_message(request, messages.ERROR, 'Validate failed: ' + e.message)
+        file_to_parse.state = 'error'
+        file_to_parse.message = e.message
+        file_to_parse.save()
+        return HttpResponseRedirect(reverse('file_info'))
+
 
 @login_required
 def process_file(request, file_id):

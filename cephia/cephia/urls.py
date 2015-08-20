@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^download_file/(?P<file_id>\d+)/$', views.download_file, name='download_file'),
     url(r'^process_file/(?P<file_id>\d+)/$', views.process_file, name='process_file'),
     url(r'^parse_file/(?P<file_id>\d+)/$', views.parse_file, name='parse_file'),
+    url(r'^validate_rows/(?P<file_id>\d+)/$', views.validate_rows, name='validate_rows'),
     url(r'^delete_file/(?P<file_id>\d+)/$', views.delete_file, name='delete_file'),
     url(r'^export_as_csv/(?P<file_id>\d+)/$', views.export_as_csv, name='export_as_csv'),
     url(r'^download_subjects_no_visits/$', views.download_subjects_no_visits, name='download_subjects_no_visits'),

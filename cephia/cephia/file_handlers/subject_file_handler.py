@@ -1,4 +1,5 @@
 from file_handler import FileHandler
+from handler_imports import *
 
 
 class SubjectFileHandler(FileHandler):
@@ -53,7 +54,7 @@ class SubjectFileHandler(FileHandler):
 
 
     def parse(self):
-
+        import pdb; pdb.set_trace()
         from models import SubjectRow
         
         header = self.excel_subject_file.read_header()
