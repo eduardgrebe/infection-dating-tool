@@ -19,7 +19,7 @@ def get_file_handler_for_type(file_type):
     for registered_file_type, registered_file_handler in registered_file_handlers:
         if file_type == registered_file_type:
             return registered_file_handler
-        raise Exception("Unknown file type: %s" % file_type)
+    raise Exception("Unknown file type: %s" % file_type)
 
 register_file_handler("subject", SubjectFileHandler)
 register_file_handler("visit", VisitFileHandler)

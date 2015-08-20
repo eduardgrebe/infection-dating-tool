@@ -9,12 +9,14 @@ class FileHandler(object):
 
     def register_dates(self, row):
         self.registered_dates = {}
-
         for key in row:
             is_year = key.split('_')[-1] == 'yyyy'
             if is_year:
-                prefix = '_'.join(key.split('_').remove('yyyy'))
-                self.registered_dates[prefix] = datetime.date(year=row[prefix + '_yyyy'], month=row[prefix + '_mm'], day=row[prefix + '_dd'])
+                if row[key]:
+                    key_list = key.split('_')
+                    key_list.remove('yyyy')
+                    prefix = '_'.join(key_list)
+                    self.registered_dates[prefix] = date(year=int(row[prefix + '_yyyy']), month=int(row[prefix + '_mm'] or 1), day=int(row[prefix + '_dd'] or 1))
 
     def get_date(self, year, month, day):
         input_date = datetime.date(year=year, month=month, day=day)

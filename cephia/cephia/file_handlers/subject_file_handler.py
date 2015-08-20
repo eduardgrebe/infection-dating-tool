@@ -121,43 +121,48 @@ class SubjectFileHandler(FileHandler):
 
     def validate(self):
         from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
+
+        default_less_date = datetime.now().date() - timedelta(years=75)
+        default_more_date = datetime.now().date() + timedelta(years=75)
         
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending'):
             try:
                 self.register_dates(subject_row.model_to_dict())
-            
+
                 for key, value in self.registered_dates.iteritems():
-                    if self.registered_dates['date_of_birth'] > value:
-                        raise Exception('Date of birth cannot be greater than %s' % key)
+                    if self.registered_dates.has_key('date_of_birth'):
+                        if self.registered_dates['date_of_birth'] > value:
+                            raise Exception('Date of birth cannot be greater than %s' % key)
 
-                    if self.registered_dates['date_of_death'] < value:
-                        raise Exception('Date of death cannot be smaller than %s' % key)
+                    if self.registered_dates.has_key('date_of_death'):
+                        if self.registered_dates['date_of_death'] < value:
+                            raise Exception('Date of death cannot be smaller than %s' % key)
 
-                if not self.registered_dates['last_negative_date'] < self.registered_dates['first_positive_date']:
+                if not self.registered_dates.get('last_negative_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
                     raise Exception('last_negative_date must be smaller than first_positive_date')
 
-                if not self.registered_dates['ars_onset_date'] < self.registered_dates['first_positive_date']:
+                if not self.registered_dates.get('ars_onset_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
                     raise Exception('ars_onset_date must be smaller than first_positive_date')
 
-                if not self.registered_dates['art_initiation_date'] > self.registered_dates['first_positive_date']:
+                if not self.registered_dates.get('art_initiation_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
                     raise Exception('art_initiation_date must be larger than first_positive_date')
 
-                if not self.registered_dates['art_interruption_date'] > self.registered_dates['art_initiation_date']:
+                if not self.registered_dates.get('art_interruption_date', default_more_date) > self.registered_dates.get('art_initiation_date', default_less_date):
                     raise Exception('art_interruption_date must be greater than art_initiation_date')
         
-                if not self.registered_dates['art_resumption_date'] > self.registered_dates['art_interruption_date']:
+                if not self.registered_dates.get('art_resumption_date', default_more_date) > self.registered_dates.get('art_interruption_date', default_less_date):
                     raise Exception('ars_resumption_date must be greater than art_interruption_date')
 
-                if not self.registered_dates['aids_diagnosis_date'] > self.registered_dates['first_positive_date']:
+                if not self.registered_dates.get('aids_diagnosis_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
                     raise Exception('ars_onset_date must be smaller than first_positive_date')
 
-                exists = Subject.objects.filter(subject_label=subject_row.subject_label).exists()
+                exists = Subject.objects.filter(patient_label=subject_row.subject_label).exists()
                 if exists:
                     raise Exception("Subject already exists")
 
                 try:
-                    if subject_row.ethnicity:
-                        Ethnicity.objects.get(name=subject_row.ethnicity)
+                    if subject_row.population_group:
+                        Ethnicity.objects.get(name=subject_row.population_group)
                 except Ethnicity.DoesNotExist:
                     raise Exception("Ethnicity does not exist")
 
@@ -177,7 +182,6 @@ class SubjectFileHandler(FileHandler):
                 subject_row.save()
             except Exception, e:
                 #logger.exception(e)
-                import pdb; pdb.set_trace()
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()
@@ -220,7 +224,6 @@ class SubjectFileHandler(FileHandler):
                     subject_row.save()
             except Exception, e:
                 #logger.exception(e)
-                import pdb; pdb.set_trace()
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()

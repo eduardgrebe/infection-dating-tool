@@ -1,4 +1,5 @@
 from file_handler import FileHandler
+from handler_imports import *
 
 class VisitFileHandler(FileHandler):
     visit_file = None
@@ -22,7 +23,7 @@ class VisitFileHandler(FileHandler):
         self.existing_columns = self.excel_visit_file.read_header()
 
     def parse(self):
-        from models import VisitRow
+        from cephia.models import VisitRow
         
         header = self.excel_visit_file.read_header()
         rows_inserted = 0
@@ -33,24 +34,19 @@ class VisitFileHandler(FileHandler):
                 if row_num >= 1:
                     row = self.excel_visit_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
-
-                    #this is to ignore blanks and can probably be done better
-                    if not row_dict['visit_pt_id']:
-                        continue
                     
-                    visit_row = VisitRow.objects.create(patient_label=row_dict['visit_pt_id'],
-                                                        visit_date=row_dict['visit_date'],
-                                                        fileinfo=self.visit_file)
+                    visit_row = VisitRow.objects.create(subject_label=row_dict['subject_label'])
 
-                    visit_row.patient_label = row_dict['visit_pt_id']
-                    visit_row.visit_date = row_dict['visit_date']
-                    visit_row.status = row_dict['visit_status']
-                    visit_row.source = row_dict['visit_source']
-                    visit_row.visit_cd4 = row_dict['visit_cd4']
-                    visit_row.visit_vl = row_dict['visit_vl']
+                    visit_row.subject_label = row_dict['subject_label']
+                    visit_row.visitdate_yyyy = row_dict['visitdate_yyyy']
+                    visit_row.visitdate_mm = row_dict['visitdate_mm']
+                    visit_row.visitdate_yyyy = row_dict['visitdate_mm']
+                    visit_row.source_study = row_dict['source_study']
+                    visit_row.cd4_count = row_dict['visit_cd4']
+                    visit_row.vl = row_dict['vl']
                     visit_row.sopevisit_ec = row_dict['scopevisit_ec']
-                    visit_row.visit_pregnant = row_dict['visit_pregnant']
-                    visit_row.visit_hepatitis = row_dict['visit_hepatitis']
+                    visit_row.pregnant = row_dict['pregnant']
+                    visit_row.hepatitis = row_dict['hepatitis']
 
                     visit_row.fileinfo = self.visit_file
                     visit_row.state = 'pending'
@@ -98,7 +94,7 @@ class VisitFileHandler(FileHandler):
             raise Exception("Study does not exist")
 
     def process(self):
-        from models import VisitRow, Visit, Study
+        from cephia.models import VisitRow, Visit, Study
         
         rows_inserted = 0
         rows_failed = 0
@@ -106,13 +102,13 @@ class VisitFileHandler(FileHandler):
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state='validated'):
             try:
                 with transaction.atomic():
-                    if visit_row.visit_cd4:
-                        cd4 = visit_row.visit_cd4
+                    if visit_row.cd4_count:
+                        cd4 = visit_row.cd4_count
                     else:
                         cd4 = None
     
-                    if visit_row.visit_vl:
-                        vl = visit_row.visit_vl
+                    if visit_row.vl:
+                        vl = visit_row.vl
                     else:
                         vl = None
 

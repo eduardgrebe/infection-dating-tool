@@ -13,7 +13,7 @@ import os
 from django.utils import html
 from file_handlers.file_handler_register import *
 import logging
-from django.forms.models import model_to_dict as _model_to_dict
+from django.forms.models import model_to_dict
 
 logger = logging.getLogger(__name__)
 
