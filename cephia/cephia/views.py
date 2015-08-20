@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Location, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow)
+                    Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow, Site)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
@@ -64,6 +64,13 @@ def studies(request, template="cephia/studies.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+@login_required
+def sites(request, template="cephia/sites.html"):
+    context = {}
+    sites = Site.objects.all()
+    context['sites'] = sites
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def subjects(request, template="cephia/subjects.html"):

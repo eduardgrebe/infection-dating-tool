@@ -60,7 +60,8 @@ class Site(models.Model):
         db_table = "cephia_site"
 
     name = models.CharField(max_length=255, null=False, blank=False)
-
+    description = models.CharField(max_length=255, null=False, blank=False)
+    
     def __unicode__(self):
         return self.name
 
