@@ -11,8 +11,9 @@ import pytz
 import time
 import os
 from django.utils import html
-#from file_handlers.file_handler_register import *
+from file_handlers.file_handler_register import *
 import logging
+from django.forms.models import model_to_dict as _model_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -28,20 +29,20 @@ class CephiaUser(AbstractUser):
 
 
 class Region(models.Model):
-    
+
     class Meta:
         db_table = "cephia_region"
 
     name = models.CharField(max_length=100, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    
+
     def __unicode__(self):
         return self.name
 
 
 class Country(models.Model):
-    
+
     class Meta:
         db_table = "cephia_country"
 
@@ -50,7 +51,7 @@ class Country(models.Model):
     region = ProtectedForeignKey(Region, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    
+
     def __unicode__(self):
         return self.code
 
@@ -119,7 +120,6 @@ class FileInfo(models.Model):
     priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
     
-    from file_handlers.file_handler_register import *
     
     def __unicode__(self):
         return self.data_file.name
@@ -128,6 +128,25 @@ class FileInfo(models.Model):
         return os.path.basename(self.data_file.name)
 
     def get_handler(self):
+
+        # from file_handlers.subject_file_handler import SubjectFileHandler
+        # from file_handlers.visit_file_handler import VisitFileHandler
+        # from file_handlers.transfer_in_file_handler import TransferInFileHandler
+        # from file_handlers.annihilation_file_handler import AnnihilationFileHandler
+        # from file_handlers.transfer_out_file_handler import TransferOutFileHandler
+
+        # if self.file_type == 'subject':
+        #     handler = SubjectFileHandler(self)
+        # if self.file_type == 'visit':
+        #     handler = VisitFileHandler(self)
+        # if self.file_type == 'transfer_in':
+        #     handler = TransferInFileHandler(self)
+        # if self.file_type == 'annihilation':
+        #     handler = AnnihilationFileHandler(self)
+        # if self.file_type == 'transfer_out':
+        #     handler = TransferOutFileHandler(self)
+
+        # return handler
         return get_file_handler_for_type(self.file_type)(self)
 
 
@@ -153,29 +172,52 @@ class SubjectRow(ImportedRow):
     class Meta:
         db_table = "cephia_subjectrow"
 
-    patient_label = models.CharField(max_length=255, null=False, blank=True)
-    entry_date = models.CharField(max_length=255, null=False, blank=True)
-    entry_status = models.CharField(max_length=255, null=False, blank=True)
+    subject_label = models.CharField(max_length=255, null=False, blank=True)
+    source_study = models.CharField(max_length=255, null=False, blank=True)
+    cohort_entry_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    cohort_entry_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    cohort_entry_date_dd = models.CharField(max_length=255, null=False, blank=True)
     country = models.CharField(max_length=255, null=False, blank=True)
-    last_negative_date = models.CharField(max_length=255, null=False, blank=True)
-    last_positive_date = models.CharField(max_length=255, null=False, blank=True)
-    ars_onset = models.CharField(max_length=255, null=False, blank=True)
-    fiebig = models.CharField(max_length=255, null=False, blank=True)
-    dob = models.CharField(max_length=255, null=False, blank=True)
-    gender = models.CharField(max_length=255, null=False, blank=True)
-    ethnicity = models.CharField(max_length=255, null=False, blank=True)
-    sex_with_men = models.CharField(max_length=255, null=False, blank=True)
-    sex_with_women = models.CharField(max_length=255, null=False, blank=True)
-    iv_drug_user = models.CharField(max_length=255, null=False, blank=True)
-    subtype_confirmed = models.CharField(max_length=255, null=False, blank=True)
+    last_negative_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    last_negative_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    last_negative_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    first_positive_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    first_positive_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    first_positive_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    fiebig_stage_at_firstpos = models.CharField(max_length=255, null=False, blank=True)
+    ars_onset_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    ars_onset_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    ars_onset_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    date_of_birth_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    date_of_birth_mm = models.CharField(max_length=255, null=False, blank=True)
+    date_of_birth_dd = models.CharField(max_length=255, null=False, blank=True)
+    sex = models.CharField(max_length=255, null=False, blank=True)
+    transgender = models.CharField(max_length=255, null=False, blank=True)
+    population_group = models.CharField(max_length=255, null=False, blank=True)
+    risk_sex_with_men = models.CharField(max_length=255, null=False, blank=True)
+    risk_sex_with_women = models.CharField(max_length=255, null=False, blank=True)
+    risk_idu = models.CharField(max_length=255, null=False, blank=True)
     subtype = models.CharField(max_length=255, null=False, blank=True)
-    anti_retroviral_initiation_date = models.CharField(max_length=255, null=False, blank=True)
-    aids_diagnosis_date = models.CharField(max_length=255, null=False, blank=True)
-    treatment_interruption_date = models.CharField(max_length=255, null=False, blank=True)
-    treatment_resumption_date = models.CharField(max_length=255, null=False, blank=True)
+    subtype_confirmed = models.CharField(max_length=255, null=False, blank=True)
+    aids_diagnosis_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    aids_diagnosis_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    aids_diagnosis_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    art_initiation_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    art_initiation_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    art_initiation_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    art_interruption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    art_interruption_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    art_interruption_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    art_resumption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    art_resumption_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.patient_label
+
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
 
 
 class Subject(models.Model):
@@ -224,16 +266,17 @@ class VisitRow(ImportedRow):
     class Meta:
         db_table = "cephia_visitrow"
 
-    patient_label = models.CharField(max_length=255, null=False, blank=True)
-    visit_date = models.CharField(max_length=255, null=False, blank=True)
+    subject_label = models.CharField(max_length=255, null=False, blank=True)
+    visitdate_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    visitdate_mm = models.CharField(max_length=255, null=False, blank=True)
+    visitdate_dd = models.CharField(max_length=255, null=False, blank=True)
     status = models.CharField(max_length=255, null=False, blank=True)
-    source = models.CharField(max_length=255, null=False, blank=True)
-    visit_cd4 = models.CharField(max_length=255, null=False, blank=True)
-    visit_vl = models.CharField(max_length=255, null=False, blank=True)
-    scope_visit_ec = models.CharField(max_length=255, null=False, blank=True)
-    visit_pregnant = models.CharField(max_length=255, null=False, blank=True)
-    visit_hepatitis = models.CharField(max_length=255, null=False, blank=True)
-
+    source_study = models.CharField(max_length=255, null=False, blank=True)
+    cd4_count = models.CharField(max_length=255, null=False, blank=True)
+    vl = models.CharField(max_length=255, null=False, blank=True)
+    scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
+    pregnant = models.CharField(max_length=255, null=False, blank=True)
+    hepatitis = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.visit_label
@@ -357,19 +400,28 @@ class TransferInRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_transfer_in_row"
-        
-    specimen_label = models.CharField(max_length=255, null=True, blank=True) 
-    patient_label = models.CharField(max_length=255, null=True, blank=True)
-    draw_date = models.CharField(max_length=255, null=True, blank=True)
-    num_containers = models.CharField(max_length=255, null=True, blank=True)
-    transfer_in_date = models.CharField(max_length=255, null=True, blank=True)
-    sites = models.CharField(max_length=255, null=True, blank=True)
+
+    specimen_label = models.CharField(max_length=255, null=True, blank=True)
+    subject_label = models.CharField(max_length=255, null=True, blank=True)
+    drawdate_year = models.CharField(max_length=255, null=True, blank=True)
+    drawdate_month = models.CharField(max_length=255, null=True, blank=True)
+    drawdate_day = models.CharField(max_length=255, null=True, blank=True)
+    number_of_containers = models.CharField(max_length=255, null=True, blank=True)
+    transfer_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
+    transfer_date_mm = models.CharField(max_length=255, null=True, blank=True)
+    transfer_date_dd = models.CharField(max_length=255, null=True, blank=True)
+    receiving_site = models.CharField(max_length=255, null=True, blank=True)
     transfer_reason = models.CharField(max_length=255, null=True, blank=True)
-    spec_type = models.CharField(max_length=255, null=True, blank=True)
+    specimen_type = models.CharField(max_length=255, null=True, blank=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
+    volume_units = models.CharField(max_length=255, null=True, blank=True)
+    source_study = models.CharField(max_length=255, null=True, blank=True)
+    notes = models.CharField(max_length=255, null=True, blank=True)
+    visit_linkage = models.CharField(max_length=255, null=True, blank=True)
 
     def __unicode__(self):
         return self.specimen_label
+
 
 class TransferOutRow(ImportedRow):
 

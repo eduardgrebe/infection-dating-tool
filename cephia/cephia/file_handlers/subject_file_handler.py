@@ -54,8 +54,7 @@ class SubjectFileHandler(FileHandler):
 
 
     def parse(self):
-        import pdb; pdb.set_trace()
-        from models import SubjectRow
+        from cephia.models import SubjectRow
         
         header = self.excel_subject_file.read_header()
         rows_inserted = 0
@@ -67,33 +66,47 @@ class SubjectFileHandler(FileHandler):
                     row = self.excel_subject_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
 
-                    #this is to ignore blanks and can probably be done better
-                    if not row_dict['pt_id']:
-                        continue
+                    subject_row = SubjectRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.subject_file)
 
-                    subject_row = SubjectRow.objects.create(patient_label=row_dict['pt_id'], fileinfo=self.subject_file)
-
-                    subject_row.patient_label = row_dict['pt_id']
-                    subject_row.entry_date = row_dict['pt_entrydt']
-                    subject_row.entry_status = row_dict['pt_entrystat']
-                    subject_row.country = row_dict['pt_country']
-                    subject_row.last_negative_date = row_dict['pt_lastnegdate']
-                    subject_row.last_positive_date = row_dict['pt_firstpozdate']
-                    subject_row.ars_onset = row_dict['pt_arsonset']
-                    subject_row.fiebig = row_dict['pt_fiebig']
-                    subject_row.dob = row_dict['pt_yob']
-                    subject_row.gender = row_dict['pt_sex']
-                    subject_row.ethnicity = row_dict['pt_ethnicity']
-                    subject_row.sex_with_men = row_dict['pt_sexwithmen']
-                    subject_row.sex_with_women = row_dict['pt_sexwithwomen']
-                    subject_row.iv_drug_user = row_dict['pt_ivdu']
-                    subject_row.subtype_confirmed = row_dict['pt_subconf']
-                    subject_row.subtype = row_dict['pt_subtype']
-                    subject_row.anti_retroviral_initiation_date = row_dict['pt_arvdate']
-                    subject_row.aids_diagnosis_date = row_dict['pt_aidsdx']
-                    subject_row.treatment_interruption_date = row_dict['pt_txintdate']
-                    subject_row.treatment_resumption_date = row_dict['pt_txresdate']
-                    subject_row.fileinfo = self.subject_file
+                    subject_row.subject_label = row_dict['subject_label']
+                    subject_row.source_study = row_dict['source_study']
+                    subject_row.cohort_entry_date_yyyy = row_dict['cohort_entry_date_yyyy']
+                    subject_row.cohort_entry_date_mm = row_dict['cohort_entry_date_mm']
+                    subject_row.cohort_entry_date_dd = row_dict['cohort_entry_date_dd']
+                    subject_row.country = row_dict['country']
+                    subject_row.last_negative_date_yyyy = row_dict['last_negative_date_yyyy']
+                    subject_row.last_negative_date_mm = row_dict['last_negative_date_mm']
+                    subject_row.last_negative_date_dd = row_dict['last_negative_date_dd']
+                    subject_row.first_positive_date_yyyy = row_dict['first_positive_date_yyyy']
+                    subject_row.first_positive_date_mm = row_dict['first_positive_date_mm']
+                    subject_row.first_positive_date_dd = row_dict['first_positive_date_dd']
+                    subject_row.fiebig_stage_at_firstpos = row_dict['fiebig_stage_at_firstpos']
+                    subject_row.ars_onset_date_yyyy = row_dict['ars_onset_date_yyyy']
+                    subject_row.ars_onset_date_mm = row_dict['ars_onset_date_mm']
+                    subject_row.ars_onset_date_dd = row_dict['ars_onset_date_dd']
+                    subject_row.date_of_birth_yyyy = row_dict['date_of_birth_yyyy']
+                    subject_row.date_of_birth_mm = row_dict['date_of_birth_mm']
+                    subject_row.date_of_birth_dd = row_dict['date_of_birth_dd']
+                    subject_row.sex = row_dict['sex']
+                    subject_row.transgender = row_dict['transgender']
+                    subject_row.population_group = row_dict['population_group']
+                    subject_row.risk_sex_with_men = row_dict['risk_sex_with_men']
+                    subject_row.risk_sex_with_women = row_dict['risk_sex_with_women']
+                    subject_row.risk_idu = row_dict['risk_idu']
+                    subject_row.subtype = row_dict['subtype']
+                    subject_row.subtype_confirmed = row_dict['subtype_confirmed']
+                    subject_row.aids_diagnosis_date_yyyy = row_dict['aids_diagnosis_date_yyyy']
+                    subject_row.aids_diagnosis_date_mm = row_dict['aids_diagnosis_date_mm']
+                    subject_row.aids_diagnosis_date_dd = row_dict['aids_diagnosis_date_dd']
+                    subject_row.art_initiation_date_yyyy = row_dict['art_initiation_date_yyyy']
+                    subject_row.art_initiation_date_mm = row_dict['art_initiation_date_mm']
+                    subject_row.art_initiation_date_dd = row_dict['art_initiation_date_dd']
+                    subject_row.art_interruption_date_yyyy = row_dict['art_interruption_date_yyyy']
+                    subject_row.art_interruption_date_mm = row_dict['art_interruption_date_mm']
+                    subject_row.art_interruption_date_dd = row_dict['art_interruption_date_dd']
+                    subject_row.art_resumption_date_yyyy = row_dict['art_resumption_date_yyyy']
+                    subject_row.art_resumption_date_mm = row_dict['art_resumption_date_mm']
+                    subject_row.art_resumption_date_dd = row_dict['art_resumption_date_dd']
                     subject_row.state = 'pending'
                     subject_row.save()
 
@@ -106,61 +119,77 @@ class SubjectFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
-    
-    def validate(self, row):
-        self.register_dates()
+    def validate(self):
+        from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
         
-        for key, value in self.registered_dates.iteritems():
-            if self.registered_dates['date_of_birth'] > value:
-                raise Exception('Date of birth cannot be greater than %s' % key)
+        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending'):
+            try:
+                self.register_dates(subject_row.model_to_dict())
+            
+                for key, value in self.registered_dates.iteritems():
+                    if self.registered_dates['date_of_birth'] > value:
+                        raise Exception('Date of birth cannot be greater than %s' % key)
 
-            if self.registered_dates['date_of_death'] < value:
-                raise Exception('Date of death cannot be smaller than %s' % key)
+                    if self.registered_dates['date_of_death'] < value:
+                        raise Exception('Date of death cannot be smaller than %s' % key)
 
-        if not self.registered_dates['last_negative_date'] < self.registered_dates['first_positive_date']:
-            raise Exception('last_negative_date must be smaller than first_positive_date')
+                if not self.registered_dates['last_negative_date'] < self.registered_dates['first_positive_date']:
+                    raise Exception('last_negative_date must be smaller than first_positive_date')
 
-        if not self.registered_dates['ars_onset_date'] < self.registered_dates['first_positive_date']:
-            raise Exception('ars_onset_date must be smaller than first_positive_date')
+                if not self.registered_dates['ars_onset_date'] < self.registered_dates['first_positive_date']:
+                    raise Exception('ars_onset_date must be smaller than first_positive_date')
 
-        if not self.registered_dates['art_initiation_date'] > self.registered_dates['first_positive_date']:
-            raise Exception('art_initiation_date must be larger than first_positive_date')
+                if not self.registered_dates['art_initiation_date'] > self.registered_dates['first_positive_date']:
+                    raise Exception('art_initiation_date must be larger than first_positive_date')
 
-        if not self.registered_dates['art_interruption_date'] > self.registered_dates['art_initiation_date']:
-            raise Exception('art_interruption_date must be greater than art_initiation_date')
+                if not self.registered_dates['art_interruption_date'] > self.registered_dates['art_initiation_date']:
+                    raise Exception('art_interruption_date must be greater than art_initiation_date')
         
-        if not self.registered_dates['art_resumption_date'] > self.registered_dates['art_interruption_date']:
-            raise Exception('ars_resumption_date must be greater than art_interruption_date')
+                if not self.registered_dates['art_resumption_date'] > self.registered_dates['art_interruption_date']:
+                    raise Exception('ars_resumption_date must be greater than art_interruption_date')
 
-        if not self.registered_dates['aids_diagnosis_date'] > self.registered_dates['first_positive_date']:
-            raise Exception('ars_onset_date must be smaller than first_positive_date')
+                if not self.registered_dates['aids_diagnosis_date'] > self.registered_dates['first_positive_date']:
+                    raise Exception('ars_onset_date must be smaller than first_positive_date')
 
-        exists = Subject.objects.filter(patient_label=subject_row.patient_label).exists()
-        if exists:
-            raise Exception("Subject already exists")
+                exists = Subject.objects.filter(subject_label=subject_row.subject_label).exists()
+                if exists:
+                    raise Exception("Subject already exists")
 
-        try:
-            if subject_row.ethnicity:
-                ethnicity = Ethnicity.objects.get(name=subject_row.ethnicity)
-            else:
-                ethnicity = Ethnicity.objects.get(name='Unknown')
-        except Ethnicity.DoesNotExist:
-            raise Exception("Ethnicity does not exist")
+                try:
+                    if subject_row.ethnicity:
+                        Ethnicity.objects.get(name=subject_row.ethnicity)
+                except Ethnicity.DoesNotExist:
+                    raise Exception("Ethnicity does not exist")
 
-        subtype, subtype_created = Subtype.objects.get_or_create(name=subject_row.subtype)
-        try:
-            country = Country.objects.get(code=subject_row.country)
-        except Country.DoesNotExist:
-            raise Exception("Country does not exist")
+                try:
+                    Subtype.objects.get(name=subject_row.subtype)
+                except Subtype.DoesNotExist:
+                    raise Exception("Subtype does not exist")
+            
+                try:
+                    country = Country.objects.get(code=subject_row.country)
+                except Country.DoesNotExist:
+                    raise Exception("Country does not exist")
+                
+                subject_row.state = 'validated'
+                subject_row.error_message = ''
+                #subject_row.date_processed = timezone.now()
+                subject_row.save()
+            except Exception, e:
+                #logger.exception(e)
+                import pdb; pdb.set_trace()
+                subject_row.state = 'error'
+                subject_row.error_message = e.message
+                subject_row.save()
+                continue
         
     def process(self):
-
-        from models import Ethnicity, Subtype, Country, Subject, SubjectRow
+        from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
         
         rows_inserted = 0
         rows_failed = 0
 
-        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state__in=['pending']):
+        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='validated'):
             try:
                 with transaction.atomic():
                     Subject.objects.create(patient_label=subject_row.patient_label,
@@ -190,7 +219,8 @@ class SubjectFileHandler(FileHandler):
                     rows_inserted += 1
                     subject_row.save()
             except Exception, e:
-                logger.exception(e)
+                #logger.exception(e)
+                import pdb; pdb.set_trace()
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()

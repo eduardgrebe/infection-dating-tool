@@ -255,7 +255,7 @@ def parse_file(request, file_id):
 def validate_rows(request, file_id):
     try:
         file_to_validate = FileInfo.objects.get(pk=file_id)
-        file_handler = file_to_parse.get_handler()
+        file_handler = file_to_validate.get_handler()
         msg = file_handler.validate_file()
 
         if msg:
@@ -266,17 +266,17 @@ def validate_rows(request, file_id):
         if num_fail > 0:
             messages.add_message(request, messages.ERROR, 'Failed to validate ' + str(num_fail) + ' rows ')
         else:
-            file_to_parse.state = 'validated'
-            file_to_parse.save()
+            file_to_validate.state = 'validated'
+            file_to_validate.save()
             messages.add_message(request, messages.SUCCESS, 'Successfully validated ' + str(num_success) + ' rows ')
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Validate failed: ' + e.message)
-        file_to_parse.state = 'error'
-        file_to_parse.message = e.message
-        file_to_parse.save()
+        file_to_validate.state = 'error'
+        file_to_validate.message = e.message
+        file_to_validate.save()
         return HttpResponseRedirect(reverse('file_info'))
 
 
