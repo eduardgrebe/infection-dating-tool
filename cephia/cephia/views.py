@@ -216,6 +216,8 @@ def upload_file(request):
             'transfer_out': 5
         }
 
+
+
         if request.method == "POST":
             post_data = request.POST.copy()
             if post_data.get("priority"):
