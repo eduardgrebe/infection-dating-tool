@@ -134,10 +134,9 @@ class FileInfo(models.Model):
 
 
 class ImportedRow(models.Model):
-
     class Meta:
         abstract = True
-
+    
     STATE_CHOICES = (
         ('pending','Pending'),
         ('processed','Processed'),

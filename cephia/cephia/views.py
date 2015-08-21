@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Location, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow, Site)
+                    Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow, Site, ImportedRow)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction
@@ -22,10 +22,24 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def home(request, template="cephia/home.html"):
-    context = {}
-    form = FileInfoForm()
-    context['form'] = form
-
+    if request.method == "GET":
+        context = {}
+        subject_file = FileInfo.objects.filter(priority=1).order_by('-created').first()
+        visit_file = FileInfo.objects.filter(priority=2).order_by('-created').first()
+        transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
+        transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
+        annihilation_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
+        subject_process_date = SubjectRow.objects.all()
+        form = FileInfoForm()
+        context['form'] = form
+        context['files'] = []
+        context['subject_file'] = subject_file
+        context['visit_file'] = visit_file
+        context['transfer_in_file'] = transfer_in_file
+        context['transfer_out_file'] = transfer_out_file
+        context['annihilation_file'] = annihilation_file
+        context['subject_process_date'] = subject_process_date
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -153,7 +167,7 @@ def file_info(request, template="cephia/file_info.html"):
         
         return render_to_response(template, context, context_instance=RequestContext(request))
 
-
+   
 @login_required
 def row_info(request, file_id, template=None):
     if request.method == 'GET':

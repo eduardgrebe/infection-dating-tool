@@ -35,3 +35,8 @@ button {
 button:hover {
     background-color: #FF9598;
 }
+
+.home thead th,
+.home{
+    text-align:center;
+}
