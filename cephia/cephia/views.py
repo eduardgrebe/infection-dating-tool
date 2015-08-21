@@ -229,7 +229,6 @@ def upload_file(request):
                 post_data.__setitem__('priority', priority)
             
             form = FileInfoForm(post_data, request.FILES)
-            import pdb; pdb.set_trace()
             if form.is_valid():
                 form.save();
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
