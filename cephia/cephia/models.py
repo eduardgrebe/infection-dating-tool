@@ -128,25 +128,6 @@ class FileInfo(models.Model):
         return os.path.basename(self.data_file.name)
 
     def get_handler(self):
-
-        # from file_handlers.subject_file_handler import SubjectFileHandler
-        # from file_handlers.visit_file_handler import VisitFileHandler
-        # from file_handlers.transfer_in_file_handler import TransferInFileHandler
-        # from file_handlers.annihilation_file_handler import AnnihilationFileHandler
-        # from file_handlers.transfer_out_file_handler import TransferOutFileHandler
-
-        # if self.file_type == 'subject':
-        #     handler = SubjectFileHandler(self)
-        # if self.file_type == 'visit':
-        #     handler = VisitFileHandler(self)
-        # if self.file_type == 'transfer_in':
-        #     handler = TransferInFileHandler(self)
-        # if self.file_type == 'annihilation':
-        #     handler = AnnihilationFileHandler(self)
-        # if self.file_type == 'transfer_out':
-        #     handler = TransferOutFileHandler(self)
-
-        # return handler
         return get_file_handler_for_type(self.file_type)(self)
 
 
@@ -177,6 +158,7 @@ class SubjectRow(ImportedRow):
     cohort_entry_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
     cohort_entry_date_mm = models.CharField(max_length=255, null=False, blank=True)
     cohort_entry_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    cohort_entry_hiv_status = models.CharField(max_length=255, null=False, blank=True)
     country = models.CharField(max_length=255, null=False, blank=True)
     last_negative_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
     last_negative_date_mm = models.CharField(max_length=255, null=False, blank=True)
@@ -270,7 +252,7 @@ class VisitRow(ImportedRow):
     visitdate_yyyy = models.CharField(max_length=255, null=False, blank=True)
     visitdate_mm = models.CharField(max_length=255, null=False, blank=True)
     visitdate_dd = models.CharField(max_length=255, null=False, blank=True)
-    status = models.CharField(max_length=255, null=False, blank=True)
+    visit_hivstatus = models.CharField(max_length=255, null=False, blank=True)
     source_study = models.CharField(max_length=255, null=False, blank=True)
     cd4_count = models.CharField(max_length=255, null=False, blank=True)
     vl = models.CharField(max_length=255, null=False, blank=True)
@@ -280,6 +262,10 @@ class VisitRow(ImportedRow):
 
     def __unicode__(self):
         return self.visit_label
+
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
 
 
 class Visit(models.Model):

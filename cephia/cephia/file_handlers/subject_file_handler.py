@@ -1,5 +1,8 @@
 from file_handler import FileHandler
 from handler_imports import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SubjectFileHandler(FileHandler):
@@ -16,6 +19,7 @@ class SubjectFileHandler(FileHandler):
                                    'cohort_entry_date_mm',
                                    'cohort_entry_date_dd',
                                    'country',
+                                   'cohort_entry_hiv_status',
                                    'last_negative_date_yyyy',
                                    'last_negative_date_mm',
                                    'last_negative_date_dd',
@@ -74,6 +78,7 @@ class SubjectFileHandler(FileHandler):
                     subject_row.cohort_entry_date_mm = row_dict['cohort_entry_date_mm']
                     subject_row.cohort_entry_date_dd = row_dict['cohort_entry_date_dd']
                     subject_row.country = row_dict['country']
+                    subject_row.cohort_entry_hiv_status = row_dict['cohort_entry_hiv_status']
                     subject_row.last_negative_date_yyyy = row_dict['last_negative_date_yyyy']
                     subject_row.last_negative_date_mm = row_dict['last_negative_date_mm']
                     subject_row.last_negative_date_dd = row_dict['last_negative_date_dd']
@@ -122,8 +127,8 @@ class SubjectFileHandler(FileHandler):
     def validate(self):
         from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
 
-        default_less_date = datetime.now().date() - timedelta(years=75)
-        default_more_date = datetime.now().date() + timedelta(years=75)
+        default_less_date = datetime.now().date() - relativedelta(years=75)
+        default_more_date = datetime.now().date() + relativedelta(years=75)
         
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending'):
             try:
@@ -166,10 +171,10 @@ class SubjectFileHandler(FileHandler):
                 except Ethnicity.DoesNotExist:
                     raise Exception("Ethnicity does not exist")
 
-                try:
-                    Subtype.objects.get(name=subject_row.subtype)
-                except Subtype.DoesNotExist:
-                    raise Exception("Subtype does not exist")
+                # try:
+                #     Subtype.objects.get(name=subject_row.subtype)
+                # except Subtype.DoesNotExist:
+                #     raise Exception("Subtype does not exist")
             
                 try:
                     country = Country.objects.get(code=subject_row.country)
@@ -178,10 +183,9 @@ class SubjectFileHandler(FileHandler):
                 
                 subject_row.state = 'validated'
                 subject_row.error_message = ''
-                #subject_row.date_processed = timezone.now()
                 subject_row.save()
             except Exception, e:
-                #logger.exception(e)
+                logger.exception(e)
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()
@@ -196,6 +200,8 @@ class SubjectFileHandler(FileHandler):
         for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='validated'):
             try:
                 with transaction.atomic():
+                    self.register_dates(subject_row.model_to_dict())
+                    
                     Subject.objects.create(patient_label=subject_row.patient_label,
                                            entry_date = self.get_date(subject_row.entry_date),
                                            entry_status = subject_row.entry_status,
@@ -209,7 +215,6 @@ class SubjectFileHandler(FileHandler):
                                            ethnicity = ethnicity,
                                            sex_with_men = self.get_bool(subject_row.sex_with_men),
                                            sex_with_women = self.get_bool(subject_row.sex_with_women),
-                                           iv_drug_user = self.get_bool(subject_row.iv_drug_user),
                                            subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                            subtype = subtype,
                                            anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
@@ -223,7 +228,7 @@ class SubjectFileHandler(FileHandler):
                     rows_inserted += 1
                     subject_row.save()
             except Exception, e:
-                #logger.exception(e)
+                logger.exception(e)
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()

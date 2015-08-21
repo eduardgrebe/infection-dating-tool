@@ -152,7 +152,7 @@ def row_info(request, file_id, template=None):
         if states:
             states = states.split()
         else:
-            states = ['pending','processed','error']
+            states = ['pending','processed','error','validated']
 
         context = {}
         fileinfo = FileInfo.objects.get(pk=file_id)
