@@ -5,6 +5,7 @@ from lib.fields import ProtectedForeignKey
 from django.contrib.auth.models import UserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django import forms
 from django.conf import settings
 from datetime import datetime, timedelta, date
 import pytz
@@ -109,7 +110,7 @@ class FileInfo(models.Model):
         ('visit','Visit'),
         ('transfer_in','Transfer In'),
         ('transfer_out','Transfer Out'),
-        ('missing_transfer_out','Missing Transfer Out'),
+        #('missing_transfer_out','Missing Transfer Out'),
         ('annihilation','Annihilation'),
     )
 

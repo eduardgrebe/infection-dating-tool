@@ -16,6 +16,7 @@ class FileInfoForm(forms.ModelForm):
         fields = ['data_file','file_type', 'priority']
         widgets = {
             'data_file': forms.FileInput(attrs={'accept':'.xls, .xlsx, .csv'}),
+            'priority':forms.HiddenInput(),
         }
     
     def __init__(self, *args, **kwargs):

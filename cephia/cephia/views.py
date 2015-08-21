@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 @login_required
 def home(request, template="cephia/home.html"):
     context = {}
+    form = FileInfoForm()
+    context['form'] = form
+
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -215,10 +218,16 @@ def upload_file(request):
 
         if request.method == "POST":
             post_data = request.POST.copy()
-            priority = FILE_PRIORITIES[request.POST.get('file_type')]
-            post_data.__setitem__('priority', priority)
+            if post_data.get("priority"):
+                priority = post_data.get("priority")
+                file_type = [k for k , v in FILE_PRIORITIES.iteritems() if u"%s" % v == priority][0]
+                post_data.__setitem__('file_type', file_type)
+            else:
+                priority = FILE_PRIORITIES[request.POST.get('file_type')]
+                post_data.__setitem__('priority', priority)
             
             form = FileInfoForm(post_data, request.FILES)
+            import pdb; pdb.set_trace()
             if form.is_valid():
                 form.save();
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')

@@ -4,5 +4,42 @@
 
 {% block page_content %}
 Welcome to Cephia
+<br/><br/><br/><br/>
+
+<button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="1">Subject</button><br/><br/>
+<button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="2">Visit</button><br/><br/>
+<button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="3">Transfer In</button><br/><br/>
+<button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="4">Transfer Out</button><br/><br/>
+<button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="5">Annihhilation</button><br/><br/>
+
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="form" class="upload_form" action="{% url 'upload_file_priority'  %}" enctype="multipart/form-data" role="form" method="POST">
+	            {% csrf_token %}
+                <div class="modal-header">
+                    
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Upload File</h4>
+                </div>
+                <div class="modal-body">
+	                {{form.data_file}}
+                    {{form.priority}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary upload-btn">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+ $('.file_priority').on("click", function(){
+     var file_p = $(this).data("file-priority");
+     $('#{{form.priority.auto_id}}').val(file_p);
+    });
+</script>
 
 {% endblock %}
