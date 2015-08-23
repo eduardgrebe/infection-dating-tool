@@ -10,7 +10,7 @@ class FileHandler(object):
     def register_dates(self, row):
         self.registered_dates = {}
         for key in row:
-            is_year = key.split('_')[-1] == 'yyyy'
+            is_year = key.split('_')[-1] == 'yyyy' or 'year'
             if is_year:
                 if row[key]:
                     key_list = key.split('_')

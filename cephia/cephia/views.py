@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Location, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AnnihilationRow, MissingTransferOutRow)
+                    Study, TransferOutRow, AnnihilationRow)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction

@@ -202,25 +202,27 @@ class SubjectFileHandler(FileHandler):
                 with transaction.atomic():
                     self.register_dates(subject_row.model_to_dict())
                     
-                    Subject.objects.create(patient_label=subject_row.patient_label,
-                                           entry_date = self.get_date(subject_row.entry_date),
-                                           entry_status = subject_row.entry_status,
+                    Subject.objects.create(subject_label=subject_row.subject_label,
+                                           cohort_entry_date = self.registered_dates.get('entry_date', None),
+                                           cohort_entry_status = subject_row.entry_status,
                                            country = country,
-                                           last_negative_date = self.get_date(subject_row.last_negative_date),
-                                           last_positive_date = self.get_date(subject_row.last_positive_date),
-                                           ars_onset = self.get_date(subject_row.ars_onset),
+                                           last_negative_date = self.registered_dates.get('last_negative_date', None),
+                                           first_positive_date = self.registered_dates.get('first_positive_date', None),
+                                           ars_onset_date = self.registered_dates.get('ars_onset_date', None),
                                            fiebig = subject_row.fiebig,
-                                           dob = self.get_year(subject_row.dob),
+                                           date_of_birth = self.registered_dates.get('date_of_birth', None),
                                            gender = subject_row.gender,
+                                           transgender = self.get_bool(subject_row.transgender),
                                            ethnicity = ethnicity,
-                                           sex_with_men = self.get_bool(subject_row.sex_with_men),
-                                           sex_with_women = self.get_bool(subject_row.sex_with_women),
+                                           risk_sex_with_men = self.get_bool(subject_row.risk_sex_with_men),
+                                           risk_sex_with_women = self.get_bool(subject_row.risk_sex_with_women),
+                                           risk_idu = self.get_bool(subject_row.risk_idu),
                                            subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                            subtype = subtype,
-                                           anti_retroviral_initiation_date = self.get_date(subject_row.anti_retroviral_initiation_date),
-                                           aids_diagnosis_date = self.get_date(subject_row.aids_diagnosis_date),
-                                           treatment_interruption_date = self.get_date(subject_row.treatment_interruption_date),
-                                           treatment_resumption_date = self.get_date(subject_row.treatment_resumption_date))
+                                           art_initiation_date = self.registered_dates.get('art_initiation_date', None),
+                                           aids_diagnosis_date = self.registered_dates.get('aids_diagnosis_date', None),
+                                           art_interruption_date = self.registered_dates.get('art_interruption_date', None),
+                                           art_resumption_date = self.registered_dates.get('art_resumption_date', None))
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''

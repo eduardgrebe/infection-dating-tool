@@ -218,7 +218,7 @@ class Subject(models.Model):
         ('positive','Positive'),
     )
     
-    patient_label = models.CharField(max_length=255, null=True, blank=True)
+    subject_label = models.CharField(max_length=255, null=True, blank=True)
     entry_date = models.DateField(null=True, blank=True)
     entry_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     country = models.ForeignKey(Country, null=True, blank=True)
@@ -261,7 +261,7 @@ class VisitRow(ImportedRow):
     hepatitis = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
-        return self.visit_label
+        return self.subject_label
 
     def model_to_dict(self):
         d = model_to_dict(self)
@@ -273,25 +273,23 @@ class Visit(models.Model):
     class Meta:
         db_table = "cephia_visit"
 
-
     STATUS_CHOICES = (
         ('negative','Negative'),
         ('positive','Positive'),
         ('unknown','Unkown'),
     )
     
-
-    patient_label = models.CharField(max_length=255, null=False, blank=False)
+    subject_label = models.CharField(max_length=255, null=False, blank=False)
     visit_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     study = models.ForeignKey(Study, null=True, blank=True)
-    visit_cd4 = models.IntegerField(null=True, blank=False)
-    visit_vl = models.CharField(max_length=10, null=True, blank=False)
-    scope_visit_ec = models.CharField(max_length=100, null=False, blank=True)
-    visit_pregnant = models.NullBooleanField()
-    visit_hepatitis = models.NullBooleanField()
+    cd4_count = models.IntegerField(null=True, blank=False)
+    vl = models.CharField(max_length=10, null=True, blank=False)
+    scopevisit_ec = models.CharField(max_length=100, null=False, blank=True)
+    pregnant = models.NullBooleanField()
+    hepatitis = models.NullBooleanField()
+    artificial = models.BooleanField(default=False)
     subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
-
 
     def __unicode__(self):
         return self.visit_label
@@ -408,6 +406,10 @@ class TransferInRow(ImportedRow):
     def __unicode__(self):
         return self.specimen_label
 
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
+
 
 class TransferOutRow(ImportedRow):
 
@@ -439,21 +441,6 @@ class AnnihilationRow(ImportedRow):
     reason = models.CharField(max_length=255, null=True, blank=True)
     panel_type = models.CharField(max_length=255, null=True, blank=True)
     panel_inclusion_criteria = models.CharField(max_length=255, null=True, blank=True)
-
-    def __unicode__(self):
-        return self.parent_id
-
-
-class MissingTransferOutRow(ImportedRow):
-
-    class Meta:
-        db_table = "cephia_missing_transfer_out_row"
-    
-    first_aliquot = models.CharField(max_length=255, null=True, blank=True)
-    last_aliquot = models.CharField(max_length=255, null=True, blank=True)    
-    volume = models.CharField(max_length=255, null=True, blank=True)
-    aliquots_created = models.CharField(max_length=255, null=True, blank=True)
-    panels_used = models.CharField(max_length=255, null=True, blank=True)
 
     def __unicode__(self):
         return self.parent_id
