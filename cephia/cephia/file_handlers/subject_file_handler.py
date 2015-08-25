@@ -127,10 +127,13 @@ class SubjectFileHandler(FileHandler):
     def validate(self):
         from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
 
+        rows_validated = 0
+        rows_failed = 0
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
-        
-        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending'):
+        pending_rows = SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending')
+
+        for subject_row in pending_rows:
             try:
                 self.register_dates(subject_row.model_to_dict())
 
@@ -161,7 +164,7 @@ class SubjectFileHandler(FileHandler):
                 if not self.registered_dates.get('aids_diagnosis_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
                     raise Exception('ars_onset_date must be smaller than first_positive_date')
 
-                exists = Subject.objects.filter(patient_label=subject_row.subject_label).exists()
+                exists = Subject.objects.filter(subject_label=subject_row.subject_label).exists()
                 if exists:
                     raise Exception("Subject already exists")
 
@@ -171,10 +174,10 @@ class SubjectFileHandler(FileHandler):
                 except Ethnicity.DoesNotExist:
                     raise Exception("Ethnicity does not exist")
 
-                # try:
-                #     Subtype.objects.get(name=subject_row.subtype)
-                # except Subtype.DoesNotExist:
-                #     raise Exception("Subtype does not exist")
+                try:
+                    Subtype.objects.get_or_create(name=subject_row.subtype)
+                except Subtype.DoesNotExist:
+                    raise Exception("Subtype does not exist")
             
                 try:
                     country = Country.objects.get(code=subject_row.country)
@@ -183,13 +186,17 @@ class SubjectFileHandler(FileHandler):
                 
                 subject_row.state = 'validated'
                 subject_row.error_message = ''
+                rows_validated += 1
                 subject_row.save()
             except Exception, e:
                 logger.exception(e)
                 subject_row.state = 'error'
                 subject_row.error_message = e.message
                 subject_row.save()
+                rows_failed += 1
                 continue
+            
+        return rows_validated, rows_failed
         
     def process(self):
         from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
@@ -203,22 +210,23 @@ class SubjectFileHandler(FileHandler):
                     self.register_dates(subject_row.model_to_dict())
                     
                     Subject.objects.create(subject_label=subject_row.subject_label,
-                                           cohort_entry_date = self.registered_dates.get('entry_date', None),
-                                           cohort_entry_status = subject_row.entry_status,
-                                           country = country,
+                                           cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),
+                                           cohort_entry_hiv_status = subject_row.cohort_entry_hiv_status,
+                                           country = Country.objects.get(code=subject_row.country),
                                            last_negative_date = self.registered_dates.get('last_negative_date', None),
                                            first_positive_date = self.registered_dates.get('first_positive_date', None),
                                            ars_onset_date = self.registered_dates.get('ars_onset_date', None),
-                                           fiebig = subject_row.fiebig,
+                                           fiebig_stage_at_firstpos = subject_row.fiebig_stage_at_firstpos,
                                            date_of_birth = self.registered_dates.get('date_of_birth', None),
-                                           gender = subject_row.gender,
+                                           date_of_death = self.registered_dates.get('date_of_death', None),
+                                           sex = subject_row.sex,
                                            transgender = self.get_bool(subject_row.transgender),
-                                           ethnicity = ethnicity,
+                                           population_group = Ethnicity.objects.get(name=subject_row.population_group),
                                            risk_sex_with_men = self.get_bool(subject_row.risk_sex_with_men),
                                            risk_sex_with_women = self.get_bool(subject_row.risk_sex_with_women),
                                            risk_idu = self.get_bool(subject_row.risk_idu),
                                            subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
-                                           subtype = subtype,
+                                           subtype = Subtype.objects.get(name=subject_row.subtype),
                                            art_initiation_date = self.registered_dates.get('art_initiation_date', None),
                                            aids_diagnosis_date = self.registered_dates.get('aids_diagnosis_date', None),
                                            art_interruption_date = self.registered_dates.get('art_interruption_date', None),

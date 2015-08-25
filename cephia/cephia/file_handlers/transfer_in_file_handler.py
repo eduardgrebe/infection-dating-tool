@@ -1,4 +1,8 @@
 from file_handler import FileHandler
+from handler_imports import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TransferInFileHandler(FileHandler):
@@ -24,14 +28,13 @@ class TransferInFileHandler(FileHandler):
                                    'volume',
                                    'volume_units',
                                    'source_study',
-                                   'notes',
-                                   'visit_linkage']
+                                   'notes']
 
 
         self.existing_columns = self.excel_transfer_in_file.read_header()
 
     def parse(self):
-        from models import TransferInRow
+        from cephia.models import TransferInRow
         
         header = self.excel_transfer_in_file.read_header()
         rows_inserted = 0
@@ -44,11 +47,15 @@ class TransferInFileHandler(FileHandler):
                     row = self.excel_transfer_in_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
                     
-                    transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen label'],
-                                                                   subject_label=row_dict['subject_label'],
-                                                                   drawdate_year=row_dict['drawdate_year'],
-                                                                   drawdate_month=row_dict['drawdate_month'],
-                                                                   drawdate_day=row_dict['drawdate_day'])
+                    try:
+                        transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
+                                                                       subject_label=row_dict['subject_label'],
+                                                                       drawdate_year=row_dict['drawdate_year'],
+                                                                       drawdate_month=row_dict['drawdate_month'],
+                                                                       drawdate_day=row_dict['drawdate_day'],
+                                                                       fileinfo=self.transfer_in_file)
+                    except Exception, e:
+                        import pdb; pdb.set_trace()    
 
                     transfer_in_row.number_of_containers = row_dict['number_of_containers']
                     transfer_in_row.transfer_date_yyyy = row_dict['transfer_date_yyyy']
@@ -61,8 +68,6 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.specimen_type = row_dict['specimen_type']
                     transfer_in_row.source_study = row_dict['source_study'],
                     transfer_in_row.notes = row_dict['notes'],
-                    transfer_in_row.visit_linkage = row_dict['visit_linkage']
-                    transfer_in_row.fileinfo = self.transfer_in_file
                     transfer_in_row.state = 'pending'
                     transfer_in_row.save()
 
@@ -81,14 +86,17 @@ class TransferInFileHandler(FileHandler):
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
+        rows_validated = 0
+        rows_failed = 0
         
         for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.visit_file, state='pending'):
             try:
-                self.register_dates()
-                if not self.registered_dates['draw_date'] < self.registered_dates['transfer_date']:
+                self.register_dates(transfer_in_row.model_to_dict())
+                
+                if not self.registered_dates.get('draw_date', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
                     raise Exception('draw_date must be smaller than transfer_date')
 
-                if not self.registered_dates['aids_diagnosis_date'] > datetime.now().date():
+                if not self.registered_dates.get('aids_diagnosis_date', default_more_date) > datetime.now().date():
                     raise Exception('ars_onset_date must be smaller than first_positive_date')
 
                 if row_dict['specimen_type'] in ['1','3','4.1','4.2','6', '8']:
@@ -118,22 +126,27 @@ class TransferInFileHandler(FileHandler):
                 if row_dict['specimen_type'] in ['10.1','10.2']:
                     if row_dict['volume'] > 90:
                         raise Exception('volume must be greater than 90 for this specimen type')
-                    
+
+                try:
+                    SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
+                except SpecimenType.DoesNotExist:
+                    raise Exception("SpecimenType does not exist")
+
                 transfer_in_row.state = 'validated'
                 transfer_in_row.error_message = ''
+                rows_validated += 1
                 transfer_in_row.save()
             except Exception, e:
                 logger.exception(e)
                 transfer_in_row.state = 'error'
                 transfer_in_row.error_message = e.message
+                rows_failed += 1
                 transfer_in_row.save()
                 continue
 
-        #reason, reason_created = Reason.objects.get_or_create(name=transfer_in_row.transfer_reason)
-        # try:
-        #     SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
-        # except SpecimenType.DoesNotExist:
-        #     raise Exception("SpecimenType does not exist")
+        return rows_validated, rows_failed
+
+
 
     def process(self):
         from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen, Site

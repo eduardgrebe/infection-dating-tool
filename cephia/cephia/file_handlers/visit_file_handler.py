@@ -71,11 +71,17 @@ class VisitFileHandler(FileHandler):
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
+        rows_validated = 0
+        rows_failed = 0
         
         for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state='pending'):
             try:
                 self.register_dates(visit_row.model_to_dict())
-                subject = Subject.objects.filter(subject_label=visit_row.subject_label)
+                try:
+                    subject = Subject.objects.get(subject_label=visit_row.subject_label)
+                except Subject.DoesNotExist:
+                    subject = None
+                    
                 first_visit = Visit.objects.filter(subject_label=visit_row.subject_label).order_by('visit_date').first()
                 already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
                 
@@ -83,16 +89,16 @@ class VisitFileHandler(FileHandler):
                     if not self.registered_dates['visitdate'] > subject.cohort_entry_date:
                         raise Exception('visit_date must be greater than cohort_entry_date')
 
-                    if row_dict['pregnant'] == 'Y' and subject.sex == 'M':
+                    if visit_row.pregnant == 'Y' and subject.sex == 'M':
                         raise Exception('Male subjects cannot be marked as pregnant')
 
                     if subject.cohort_entry_hiv_status == 'P' and visit_row.visit_hivstatus == 'N':
                         raise Exception('Visits HIV status cannot become "negative" if it was initially "positive"')
 
                 if first_visit:
-                    if first_visit.name != row_dict['source_study']:
+                    if first_visit.name != visit_row.source_study:
                         raise Exception('source_study does not match other visits for the patient')
-                    
+
                 if not self.registered_dates['visitdate'] < datetime.now().date():
                     raise Exception('visit_date must be smaller than today')
 
@@ -106,16 +112,20 @@ class VisitFileHandler(FileHandler):
                 #     study = Study.objects.get(name=visit_row.source)
                 # except Study.DoesNotExist:
                 #     raise Exception("Study does not exist")
-                
+
                 visit_row.state = 'validated'
                 visit_row.error_message = ''
+                rows_validated += 1
                 visit_row.save()
             except Exception, e:
                 logger.exception(e)
                 visit_row.state = 'error'
                 visit_row.error_message = e.message
+                rows_failed += 1
                 visit_row.save()
                 continue
+
+        return rows_validated, rows_failed
 
     def process(self):
         from cephia.models import VisitRow, Visit, Study
@@ -127,16 +137,16 @@ class VisitFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     self.register_dates(visit_row.model_to_dict())
-                    
+
                     Visit.objects.create(subject_label = visit_row.subject_label,
                                          visit_date = self.registered_dates.get('visitdate', None),
                                          visit_hivstatus = visit_row.visit_hivstatus,
-                                         source_study = source_study,
+                                         source_study = Study.objects.get(name=visit_row.source_study),
                                          cd4_count = visit_row.cd4_count or None,
                                          vl = visit_row.vl or None,
                                          scopevisit_ec = visit_row.scopevisit_ec or None,
-                                         visit_pregnant = self.get_bool(visit_row.pregnant),
-                                         visit_hepatitis = self.get_bool(visit_row.hepatitis))
+                                         pregnant = self.get_bool(visit_row.pregnant),
+                                         hepatitis = self.get_bool(visit_row.hepatitis))
 
                     visit_row.state = 'processed'
                     visit_row.date_processed = timezone.now()

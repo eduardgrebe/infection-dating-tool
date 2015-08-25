@@ -42,15 +42,15 @@
     <tbody>
 	{% for visit in visits %}
 	<tr>
-	    <td>{% if visit.subject %}<a href="{% url 'subjects' %}?patient_label={{visit.patient_label}}">{{visit.patient_label}}</a>{% else %}{{visit.patient_label}}{% endif %}</td>
+	    <td>{% if visit.subject %}<a href="{% url 'subjects' %}?patient_label={{visit.subject_label}}">{{visit.subject_label}}</a>{% else %}{{visit.subject_label}}{% endif %}</td>
 	    <td>{{visit.visit_date}}</td>
-	    <td>{{visit.status}}</td>
-	    <td>{{visit.study.name}}</td>
-	    <td>{{visit.visit_cd4}}</td>
-	    <td>{{visit.visit_vl}}</td>
-	    <td>{{visit.scope_visit_ec}}</td>
-	    <td>{% if visit.visit_pregnant %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if visit.visit_hepatitis %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{{visit.visit_hivstatus}}</td>
+	    <td>{{visit.source_study.name}}</td>
+	    <td>{{visit.cd4_count}}</td>
+	    <td>{{visit.vl}}</td>
+	    <td>{{visit.scopevisit_ec}}</td>
+	    <td>{% if visit.pregnant %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if visit.hepatitis %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	</tr>
 	{% endfor %}
     </tbody>

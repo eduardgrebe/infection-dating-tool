@@ -12,7 +12,7 @@
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
 	<th>Specimen Label</th>
-	<th>Patient Label</th>
+	<th>Subject Label</th>
 	<th>Draw Date</th>
 	<th>Number of Containers</th>
 	<th>Transfer Date</th>
@@ -28,14 +28,21 @@
 	{% for row in rows %}
 	<tr>
 	    <td>{{row.specimen_label}}</td>
-	    <td>{{row.patient_label}}</td>
-	    <td>{{row.draw_date}}</td>
-	    <td>{{row.num_containers}}</td>
-	    <td>{{row.transfer_in_date}}</td>
-	    <td>{{row.sites}}</td>
+	    <td>{{row.subject_label}}</td>
+	    <td>{{row.drawdate_yyyy}}</td>
+            <td>{{row.drawdate_mm}}</td>
+            <td>{{row.drawdate_dd}}</td>
+	    <td>{{row.number_of_containers}}</td>
+	    <td>{{row.transferin_date_yyyy}}</td>
+            <td>{{row.transferin_date_mm}}</td>
+            <td>{{row.transferin_date_dd}}</td>
+	    <td>{{row.receiving_site}}</td>
 	    <td>{{row.transfer_reason}}</td>
-	    <td>{{row.spec_type}}</td>
+	    <td>{{row.specimen_type}}</td>
 	    <td>{{row.volume}}</td>
+            <td>{{row.volume_units}}</td>
+            <td>{{row.source_study}}</td>
+            <td>{{row.notes}}</td>
 	    <td>{{row.state}}</td>
 	    <td>{{row.error_message}}</td>
 	</tr>

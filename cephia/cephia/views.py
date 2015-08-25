@@ -262,13 +262,13 @@ def validate_rows(request, file_id):
             messages.add_message(request, messages.WARNING, msg)
 
         num_success, num_fail = file_handler.validate()
-        
-        if num_fail > 0:
-            messages.add_message(request, messages.ERROR, 'Failed to validate ' + str(num_fail) + ' rows ')
-        else:
-            file_to_validate.state = 'validated'
-            file_to_validate.save()
-            messages.add_message(request, messages.SUCCESS, 'Successfully validated ' + str(num_success) + ' rows ')
+
+        fail_msg = 'Failed to validate ' + str(num_fail) + ' rows '
+        msg = 'Successfully validated ' + str(num_success) + ' rows '
+
+        file_to_validate.state = 'validated'
+        file_to_validate.message = fail_msg + ' ' + msg
+        file_to_validate.save()
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:

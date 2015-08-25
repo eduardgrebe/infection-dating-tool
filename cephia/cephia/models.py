@@ -195,7 +195,7 @@ class SubjectRow(ImportedRow):
     art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
-        return self.patient_label
+        return self.subject_label
 
     def model_to_dict(self):
         d = model_to_dict(self)
@@ -219,28 +219,30 @@ class Subject(models.Model):
     )
     
     subject_label = models.CharField(max_length=255, null=True, blank=True)
-    entry_date = models.DateField(null=True, blank=True)
-    entry_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
+    cohort_entry_date = models.DateField(null=True, blank=True)
+    cohort_entry_hiv_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     country = models.ForeignKey(Country, null=True, blank=True)
     last_negative_date = models.DateField(null=True, blank=True)
-    last_positive_date = models.DateField(null=True, blank=True)
-    ars_onset = models.DateField(null=True, blank=True)
-    fiebig = models.CharField(max_length=10, null=False, blank=False)
-    dob = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
-    ethnicity = models.ForeignKey(Ethnicity, null=True, blank=True)
-    sex_with_men = models.NullBooleanField()
-    sex_with_women = models.NullBooleanField()
-    iv_drug_user = models.NullBooleanField()
+    first_positive_date = models.DateField(null=True, blank=True)
+    ars_onset_date = models.DateField(null=True, blank=True)
+    fiebig_stage_at_firstpos = models.CharField(max_length=10, null=False, blank=False)
+    date_of_birth = models.DateField(null=True, blank=True)
+    date_of_death = models.DateField(null=True, blank=True)
+    sex = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
+    transgender = models.NullBooleanField()
+    population_group = models.ForeignKey(Ethnicity, null=True, blank=True)
+    risk_sex_with_men = models.NullBooleanField()
+    risk_sex_with_women = models.NullBooleanField()
+    risk_idu = models.NullBooleanField()
     subtype_confirmed = models.NullBooleanField()
     subtype = models.ForeignKey(Subtype, null=True, blank=True)
-    anti_retroviral_initiation_date = models.DateField(null=True, blank=True)
+    art_initiation_date = models.DateField(null=True, blank=True)
     aids_diagnosis_date = models.DateField(null=True, blank=True)
-    treatment_interruption_date = models.DateField(null=True, blank=True)
-    treatment_resumption_date = models.DateField(null=True, blank=True)
+    art_interruption_date = models.DateField(null=True, blank=True)
+    art_resumption_date = models.DateField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.patient_label
+        return self.subject_label
 
 
 class VisitRow(ImportedRow):
@@ -281,11 +283,11 @@ class Visit(models.Model):
     
     subject_label = models.CharField(max_length=255, null=False, blank=False)
     visit_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
-    study = models.ForeignKey(Study, null=True, blank=True)
+    visit_hivstatus = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
+    source_study = models.ForeignKey(Study, null=True, blank=True)
     cd4_count = models.IntegerField(null=True, blank=False)
     vl = models.CharField(max_length=10, null=True, blank=False)
-    scopevisit_ec = models.CharField(max_length=100, null=False, blank=True)
+    scopevisit_ec = models.CharField(max_length=100, null=True, blank=False)
     pregnant = models.NullBooleanField()
     hepatitis = models.NullBooleanField()
     artificial = models.BooleanField(default=False)
@@ -369,11 +371,9 @@ class Specimen(models.Model):
     spec_type = models.ForeignKey(SpecimenType, null=True, blank=True)
     volume = models.FloatField(null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
-    other_ref = models.CharField(max_length=10, null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
     to_location = models.ForeignKey(Location, null=True, blank=True)
     aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
-    panel_inclusion_criteria = models.ForeignKey(PanelInclusionCriteria, null=True, blank=True)
 
 
     def __unicode__(self):
@@ -401,7 +401,6 @@ class TransferInRow(ImportedRow):
     volume_units = models.CharField(max_length=255, null=True, blank=True)
     source_study = models.CharField(max_length=255, null=True, blank=True)
     notes = models.CharField(max_length=255, null=True, blank=True)
-    visit_linkage = models.CharField(max_length=255, null=True, blank=True)
 
     def __unicode__(self):
         return self.specimen_label

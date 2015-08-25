@@ -28,51 +28,54 @@
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>Patient Label</th>
+	<th>Subject Label</th>
 	<th>Entry Date</th>
 	<th>Entry Status</th>
 	<th>Country</th>
 	<th>Last Negative Date</th>
-	<th>Last Positive Date</th>
+	<th>First Positive Date</th>
 	<th>ARS Onset</th>
 	<th>Fiebig</th>
-	<th>DOB</th>
-	<th>Gender</th>
-	<th>Ethnicity</th>
+	<th>DoB</th>
+        <th>DoD</th>
+	<th>Sex</th>
+	<th>Population Group</th>
 	<th>Sex with men</th>
 	<th>Sex with women</th>
-	<th>IV Drug User</th>
+	<th>IDU</th>
 	<th>Subtype Confirmed</th>
 	<th>Subtype</th>
-	<th>Anti Retroviral Init Date</th>
+	<th>ART Init Date</th>
 	<th>AIDS Diagnosis Date</th>
-	<th>Treatment Interruption Date</th>
-	<th>Treatment Resumption Date</th>
+	<th>ART Interruption Date</th>
+	<th>ART Resumption Date</th>
     </thead>
 
     <tbody>
 	{% for subject in subjects %}
 	<tr>
-	    <td>{{subject.patient_label}}</td>
-	    <td>{{subject.entry_date}}</td>
-	    <td>{{subject.entry_status}}</td>
+	    <td>{{subject.subject_label}}</td>
+	    <td>{{subject.cohort_entry_date}}</td>
+	    <td>{{subject.cohort_entry_hiv_status}}</td>
 	    <td>{{subject.country.name}}</td>
 	    <td>{% if subject.last_negative_date %}{{subject.last_negative_date}}{% endif %}</td>
-	    <td>{% if subject.last_positive_date %}{{subject.last_positive_date}}{% endif %}</td>
-	    <td>{% if subject.ars_onset %} {{subject.ars_onset}} {% else %} &nbsp; {% endif %}</td>
-	    <td>{{subject.fiebig}}</td>
-	    <td>{% if subject.dob %}{{ subject.dob|date:"Y" }}{% endif %}</td>
-	    <td>{{subject.gender}}</td>
-	    <td>{{subject.ethnicity.name}}</td>
-	    <td>{% if subject.sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if subject.sex_with_women %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if subject.iv_drug_user %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.first_positive_date %}{{subject.first_positive_date}}{% endif %}</td>
+	    <td>{% if subject.art_onset_date %} {{subject.art_onset_date}} {% else %} &nbsp; {% endif %}</td>
+	    <td>{{subject.fiebig_stage_at_firstpos}}</td>
+	    <td>{% if subject.date_of_birth %}{{ subject.date_of_birth|date:"Y" }}{% endif %}</td>
+            <td>{% if subject.date_of_death %}{{ subject.date_of_death|date:"Y" }}{% endif %}</td>
+            <td>{{subject.population_group.name}}</td>
+	    <td>{{subject.sex}}</td>
+	    <td>{% if subject.transgender %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.risk_sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.risk_sex_with_women %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	    <td>{% if subject.risk_idu %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	    <td>{% if subject.subtype_confirmed %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	    <td>{{subject.subtype.name}}</td>
-	    <td>{% if subject.anti_retroviral_initiation_date %} {{subject.anti_retroviral_initiation_date}} {% else %} &nbsp; {% endif %}</td>
+	    <td>{% if subject.art_initiation_date %} {{subject.art_initiation_date}} {% else %} &nbsp; {% endif %}</td>
 	    <td>{% if subject.aids_diagnosis_date %} {{subject.aids_diagnosis_date}} {% else %} &nbsp; {% endif %}</td>
-	    <td>{% if subject.treatment_interruption_date %} {{subject.treatment_interruption_date }} {% else %} &nbsp; {% endif %}</td>
-	    <td>{% if subject.treatment_resumption_date %} {{subject.treatment_resumption_date}} {% else %} &nbsp; {% endif %}</td>
+	    <td>{% if subject.art_interruption_date %} {{subject.art_interruption_date }} {% else %} &nbsp; {% endif %}</td>
+	    <td>{% if subject.art_resumption_date %} {{subject.art_resumption_date}} {% else %} &nbsp; {% endif %}</td>
 	</tr>
 	{% endfor %}
     </tbody>
