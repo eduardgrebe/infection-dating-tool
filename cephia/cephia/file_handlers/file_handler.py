@@ -8,18 +8,20 @@ logger = logging.getLogger(__name__)
 class FileHandler(object):
 
     def register_dates(self, row):
-        try:
-            self.registered_dates = {}
-            for key in row:
-                is_year = key.split('_')[-1] == 'yyyy'
-                if is_year:
-                    if row[key]:
-                        key_list = key.split('_')
-                        key_list.remove('yyyy')
-                        prefix = '_'.join(key_list)
-                        self.registered_dates[prefix] = date(year=int(row[prefix + '_yyyy']), month=int(row[prefix + '_mm'] or 1), day=int(row[prefix + '_dd'] or 1))
-        except Exception, e:
-            import pdb; pdb.set_trace()
+        self.registered_dates = {}
+        for key in row:
+            is_year = key.split('_')[-1] == 'yyyy'
+            if is_year:
+                if row[key]:
+                    key_list = key.split('_')
+                    key_list.remove('yyyy')
+                    prefix = '_'.join(key_list)
+                    if row[prefix + '_yyyy']:
+                        self.registered_dates[prefix] = date(year=int(row[prefix + '_yyyy']),
+                                                             month=int(row[prefix + '_mm'] or 1),
+                                                             day=int(row[prefix + '_dd'] or 1))
+                    else:
+                        self.registered_dates[prefix] = None
 
     def get_date(self, year, month, day):
         input_date = datetime.date(year=year, month=month, day=day)

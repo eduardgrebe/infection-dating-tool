@@ -175,12 +175,11 @@ class TransferInFileHandler(FileHandler):
                                                        transfer_reason = transfer_in_row.transfer_reason,
                                                        subject = subject,
                                                        specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
-                                                       number_of_containers = transfer_in_row.number_of_containers,
-                                                       initial_claimed_volume = transfer_in_row.volume,
+                                                       number_of_containers = (transfer_in_row.number_of_containers or None),
+                                                       initial_claimed_volume = (transfer_in_row.volume or None),
                                                        volume_units = transfer_in_row.volume_units,
                                                        source_study = Study.objects.get(name=transfer_in_row.source_study),
-                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site),
-                                                       notes = transfer_in_row.notes)
+                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = timezone.now()
