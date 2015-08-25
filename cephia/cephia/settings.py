@@ -99,12 +99,16 @@ ROOT_URLCONF = 'cephia.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -139,6 +143,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+
+STATICFILES_DIRS = (                                                                 
+  os.path.join(BASE_DIR, 'static/'),                                                
+  BASE_DIR                                                                          
+) 
 STATIC_URL = '/static/'+REVISION+'/'
 STATIC_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'static_collected', REVISION)
 
