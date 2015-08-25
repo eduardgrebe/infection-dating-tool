@@ -6,8 +6,8 @@ from django.template import loader, RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
-                    VisitRow, Location, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AnnihilationRow)
+                    VisitRow, Site, Specimen, SpecimenType, TransferInRow,
+                    Study, TransferOutRow, AliquotRow)
 from forms import FileInfoForm
 from django.contrib import messages
 from django.db import transaction

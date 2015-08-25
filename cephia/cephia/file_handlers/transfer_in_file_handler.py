@@ -46,16 +46,13 @@ class TransferInFileHandler(FileHandler):
                     
                     row = self.excel_transfer_in_file.read_row(row_num)
                     row_dict = dict(zip(header, row))
-                    
-                    try:
-                        transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                       subject_label=row_dict['subject_label'],
-                                                                       drawdate_year=row_dict['drawdate_year'],
-                                                                       drawdate_month=row_dict['drawdate_month'],
-                                                                       drawdate_day=row_dict['drawdate_day'],
-                                                                       fileinfo=self.transfer_in_file)
-                    except Exception, e:
-                        import pdb; pdb.set_trace()    
+
+                    transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
+                                                                   subject_label=row_dict['subject_label'],
+                                                                   drawdate_yyyy=row_dict['drawdate_year'],
+                                                                   drawdate_mm=row_dict['drawdate_month'],
+                                                                   drawdate_dd=row_dict['drawdate_day'],
+                                                                   fileinfo=self.transfer_in_file)
 
                     transfer_in_row.number_of_containers = row_dict['number_of_containers']
                     transfer_in_row.transfer_date_yyyy = row_dict['transfer_date_yyyy']
@@ -66,12 +63,13 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.volume = row_dict['volume']
                     transfer_in_row.volume_units = row_dict['volume_units']
                     transfer_in_row.specimen_type = row_dict['specimen_type']
-                    transfer_in_row.source_study = row_dict['source_study'],
-                    transfer_in_row.notes = row_dict['notes'],
+                    transfer_in_row.source_study = row_dict['source_study']
+                    transfer_in_row.notes = row_dict['notes']
                     transfer_in_row.state = 'pending'
                     transfer_in_row.save()
 
                     rows_inserted += 1
+                    
 
             except Exception, e:
                 logger.exception(e)
@@ -81,56 +79,62 @@ class TransferInFileHandler(FileHandler):
 
         return rows_inserted, rows_failed
 
-    def validate(self, row):
-        from cephia.models import TransferInRow
+    def validate(self):
+        from cephia.models import TransferInRow, SpecimenType, TransferReason
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
         rows_validated = 0
         rows_failed = 0
         
-        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.visit_file, state='pending'):
+        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state='pending'):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
-                
-                if not self.registered_dates.get('draw_date', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
+
+                if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
                     raise Exception('draw_date must be smaller than transfer_date')
 
-                if not self.registered_dates.get('aids_diagnosis_date', default_more_date) > datetime.now().date():
-                    raise Exception('ars_onset_date must be smaller than first_positive_date')
+                if not self.registered_dates.get('transfer_date', default_less_date) < datetime.now().date():
+                    raise Exception('transfer_date must be smaller than today')
 
-                if row_dict['specimen_type'] in ['1','3','4.1','4.2','6', '8']:
-                    if row_dict['volume_units'] != 'cards':
+                try:
+                    SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type)
+                except SpecimenType.DoesNotExist:
+                    raise Exception("SpecimenType does not exist")
+
+                if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
+                    if transfer_in_row.volume_units != 'cards':
                         raise Exception('volume_units must be "cards" for this specimen_type')
-                if row_dict['volume'] < 20:
+                if transfer_in_row.volume < 20:
                     raise Exception('volume must be less than 20 for this specimen type')
 
-                if row_dict['specimen_type'] == '2':
-                    if row_dict['volume_units'] != 'grams':
+                if transfer_in_row.specimen_type == '2':
+                    if transfer_in_row.volume_units != 'grams':
                         raise Exception('volume_units must be "grams" for this specimen')
-                    if row_dict['volume'] < 100:
+                    if transfer_in_row.volume < 100:
                         raise Exception('volume must be less than 100 for this specimen')
 
-                if row_dict['specimen_type'] in ['5.1','5.2']:
-                    if row_dict['volume_units'] != 'm cells':
+                if transfer_in_row.specimen_type in ['5.1','5.2']:
+                    if transfer_in_row.volume_units != 'm cells':
                         raise Exception('volume_units must be "cards" for this specimen_type')
-                    if row_dict['volume'] < 20:
+                    if transfer_in_row.volume < 20:
                         raise Exception('volume must be less than 20 for this specimen')
 
-                if row_dict['specimen_type'] == '7':
-                    if row_dict['volume_units'] != 'swabs':
+                if transfer_in_row.specimen_type == '7':
+                    if transfer_in_row.volume_units != 'swabs':
                         raise Exception('volume_units must be "swabs" for this specimen_type')
-                    if row_dict['volume'] < 20:
+                    if transfer_in_row.volume < 20:
                         raise Exception('volume must be less than 20 for this specimen')
 
-                if row_dict['specimen_type'] in ['10.1','10.2']:
-                    if row_dict['volume'] > 90:
+                if transfer_in_row.specimen_type in ['10.1','10.2']:
+                    if transfer_in_row.volume > 90:
                         raise Exception('volume must be greater than 90 for this specimen type')
 
                 try:
-                    SpecimenType.objects.get(spec_type=transfer_in_row.spec_type)
+                    SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type)
                 except SpecimenType.DoesNotExist:
                     raise Exception("SpecimenType does not exist")
+
 
                 transfer_in_row.state = 'validated'
                 transfer_in_row.error_message = ''
@@ -149,39 +153,34 @@ class TransferInFileHandler(FileHandler):
 
 
     def process(self):
-        from models import TransferInRow, Subject, Study, Reason, SpecimenType, Specimen, Site
+        from cephia.models import TransferInRow, Subject, Study, TransferReason, SpecimenType, Specimen, Site
         
         rows_inserted = 0
         rows_failed = 0
 
-        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state__in=['pending']):
-
+        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state='validated'):
             try:
+                self.register_dates(transfer_in_row.model_to_dict())
+                
                 with transaction.atomic():
                     try:
-                        subject = Subject.objects.get(patient_label=transfer_in_row.patient_label)
-                    except Site.DoesNotExist:
+                        subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
+                    except Subject.DoesNotExist:
                         subject = None
                         pass
 
-                    specimen, specimen_created = Specimen.objects.get_or_create(specimen_label = transfer_in_row.specimen_label,
-                                                                                reported_draw_date = self.get_date(transfer_in_row.draw_date),
-                                                                                transfer_in_date = self.get_date(transfer_in_row.transfer_in_date),
-                                                                                reason = reason,
-                                                                                subject = subject,
-                                                                                spec_type = spec_type)
-
-                    if transfer_in_row.num_containers:
-                        specimen.num_containers = transfer_in_row.num_containers
-                    else:
-                        specimen.num_containers = None
-
-                    if transfer_in_row.volume:
-                        specimen.initial_claimed_volume = transfer_in_row.volume
-                    else:
-                        specimen.initial_claimed_volume = None
-
-                    specimen.save()
+                    specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
+                                                       reported_draw_date = self.registered_dates.get('drawdate', None),
+                                                       transfer_in_date = self.registered_dates.get('transfer_date', None),
+                                                       transfer_reason = transfer_in_row.transfer_reason,
+                                                       subject = subject,
+                                                       specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
+                                                       number_of_containers = transfer_in_row.number_of_containers,
+                                                       initial_claimed_volume = transfer_in_row.volume,
+                                                       volume_units = transfer_in_row.volume_units,
+                                                       source_study = Study.objects.get(name=transfer_in_row.source_study),
+                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site),
+                                                       notes = transfer_in_row.notes)
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = timezone.now()

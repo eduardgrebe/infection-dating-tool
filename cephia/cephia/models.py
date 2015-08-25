@@ -296,12 +296,12 @@ class Visit(models.Model):
     def __unicode__(self):
         return self.visit_label
 
-    
+
 class SpecimenType(models.Model):
 
     class Meta:
         db_table = "cephia_specimen_type"
-        
+
     name = models.CharField(max_length=255, null=False, blank=False)
     spec_type = models.CharField(max_length=10, null=False, blank=False)
     spec_group = models.IntegerField(null=True, blank=True)
@@ -310,10 +310,9 @@ class SpecimenType(models.Model):
         return self.name
 
 
-
-class Location(models.Model):
+class Units(models.Model):
     class Meta:
-        db_table = "cephia_location"
+        db_table = "cephia_units"
 
     name = models.CharField(max_length=255, null=False, blank=False)
 
@@ -321,14 +320,15 @@ class Location(models.Model):
         return self.name
 
 
-class Reason(models.Model):
+class TransferReason(models.Model):
     class Meta:
-        db_table = "cephia_reason"
+        db_table = "cephia_transfer_reason"
 
     name = models.CharField(max_length=255, null=False, blank=False)
 
     def __unicode__(self):
         return self.name
+
 
 class AliquotingReason(models.Model):
 
@@ -340,39 +340,29 @@ class AliquotingReason(models.Model):
     def __unicode__(self):
         return self.name
 
-class PanelInclusionCriteria(models.Model):
 
-    class Meta:
-        db_table = "cephia_panel_incl_criteria"
-        
-    name = models.CharField(max_length=255, null=False, blank=False) 
-
-    def __unicode__(self):
-        return self.name
-
-    
 class Specimen(models.Model):
 
     class Meta:
         db_table = "cephia_specimen"
-    
-        
+
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
     parent_label = models.CharField(max_length=255, null=True, blank=True)
-    num_containers = models.IntegerField(null=True, blank=True)
+    number_of_containers = models.IntegerField(null=True, blank=True)
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
     transfer_out_date = models.DateField(null=True, blank=True)
-    created_date = models.DateField(null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True, null=True)
     modified_date = models.DateField(null=True, blank=True)
-    reason = models.ForeignKey(Reason, null=True, blank=True)
+    transfer_reason = models.CharField(max_length=50, null=True, blank=True)
     subject = models.ForeignKey(Subject, null=True, blank=True)
     visit = models.ForeignKey(Visit, null=True, blank=True)
-    spec_type = models.ForeignKey(SpecimenType, null=True, blank=True)
+    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=True)
     volume = models.FloatField(null=True, blank=True)
+    volume_units = models.CharField(max_length=20, null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
-    to_location = models.ForeignKey(Location, null=True, blank=True)
+    receiving_site = models.ForeignKey(Site, null=True, blank=True)
     aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
 
 
@@ -387,9 +377,9 @@ class TransferInRow(ImportedRow):
 
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
     subject_label = models.CharField(max_length=255, null=True, blank=True)
-    drawdate_year = models.CharField(max_length=255, null=True, blank=True)
-    drawdate_month = models.CharField(max_length=255, null=True, blank=True)
-    drawdate_day = models.CharField(max_length=255, null=True, blank=True)
+    drawdate_yyyy = models.CharField(max_length=255, null=True, blank=True)
+    drawdate_mm = models.CharField(max_length=255, null=True, blank=True)
+    drawdate_dd = models.CharField(max_length=255, null=True, blank=True)
     number_of_containers = models.CharField(max_length=255, null=True, blank=True)
     transfer_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
     transfer_date_mm = models.CharField(max_length=255, null=True, blank=True)
@@ -427,10 +417,10 @@ class TransferOutRow(ImportedRow):
     def __unicode__(self):
         return self.specimen_label
 
-class AnnihilationRow(ImportedRow):
+class AliquotRow(ImportedRow):
 
     class Meta:
-        db_table = "cephia_annihilation_row"
+        db_table = "cephia_aliquot_row"
         
     parent_id = models.CharField(max_length=255, null=True, blank=True) 
     child_id = models.CharField(max_length=255, null=True, blank=True)

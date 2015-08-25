@@ -27,7 +27,6 @@
     <th>Shipped To</th>
     <th>Source Study</th>
     <th>Aliquoting Reason</th>
-    <th>Panel Inclusion Criteria</th>
   </thead>
 
   <tbody>
@@ -35,7 +34,7 @@
     <tr>
       <td>{{spec.specimen_label}}</td>
       <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
-      <td>{% if spec.num_containers %}{{spec.num_containers}}{% endif %}</td>
+      <td>{% if spec.number_of_containers %}{{spec.number_of_containers}}{% endif %}</td>
       <td>
 	  {% if spec.reported_draw_date %}
 	  {% if spec.visit %}
@@ -49,14 +48,13 @@
       <td>{% if spec.transfer_out_date %}{{spec.transfer_out_date}}{% endif %}</td>
       <td>{% if spec.modified_date %}{{spec.modified_date}}{% endif %}</td>
       <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
-      <td>{% if spec.reason %}{{spec.reason}}{% endif %}</td>
-      <td>{{spec.spec_type.name}}</td>
+      <td>{% if spec.transfer_reason %}{{spec.transfer_reason}}{% endif %}</td>
+      <td>{{spec.specimen_type.name}}</td>
       <td>{% if spec.volume %}{{spec.volume}}{% endif %}</td>
       <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
-      <td>{{spec.to_location.name}}</td>
+      <td>{{spec.receiving_site.name}}</td>
       <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
       <td>{{spec.aliquoting_reason.name}}</td>
-      <td>{{spec.panel_inclusion_criteria.name}}</td>
     </tr>
     {% endfor %}
   </tbody>
