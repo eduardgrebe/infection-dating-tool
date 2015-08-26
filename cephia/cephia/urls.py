@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^file_info/$', views.file_info, name='file_info'),
     url(r'^row_info/(?P<file_id>\d+)/$', views.row_info, name='row_info'),
     url(r'^upload_file/$', views.upload_file, name='upload_file'),
+    url(r'^upload_file_priority/$', views.upload_file, name='upload_file_priority'),
     url(r'^download_file/(?P<file_id>\d+)/$', views.download_file, name='download_file'),
     url(r'^process_file/(?P<file_id>\d+)/$', views.process_file, name='process_file'),
     url(r'^parse_file/(?P<file_id>\d+)/$', views.parse_file, name='parse_file'),

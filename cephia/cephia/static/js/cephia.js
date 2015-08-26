@@ -14,6 +14,7 @@ $(document).ready(function() {
             $('button[type="submit"]').removeAttr('disabled');
         }
     });
+
 });
 
 

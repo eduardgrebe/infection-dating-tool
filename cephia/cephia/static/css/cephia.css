@@ -17,3 +17,26 @@
     width: 100%;
     margin: auto;
 }
+
+button {
+    border: 1px solid #990033;
+    padding: 10px 15px;
+    color: #fff;
+    background: #CC6666;
+    width: 250px;
+    left: 16%;
+    height:47px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight:bold;
+
+}
+
+button:hover {
+    background-color: #FF9598;
+}
+
+.home thead th,
+.home{
+    text-align:center;
+}

@@ -22,7 +22,24 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def home(request, template="cephia/home.html"):
-    context = {}
+    if request.method == "GET":
+        context = {}
+        subject_file = FileInfo.objects.filter(priority=1).order_by('-created').first()
+        visit_file = FileInfo.objects.filter(priority=2).order_by('-created').first()
+        transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
+        transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
+        annihilation_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
+        subject_process_date = SubjectRow.objects.all()
+        form = FileInfoForm()
+        context['form'] = form
+        context['files'] = []
+        context['subject_file'] = subject_file
+        context['visit_file'] = visit_file
+        context['transfer_in_file'] = transfer_in_file
+        context['transfer_out_file'] = transfer_out_file
+        context['annihilation_file'] = annihilation_file
+        context['subject_process_date'] = subject_process_date
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -150,7 +167,7 @@ def file_info(request, template="cephia/file_info.html"):
         
         return render_to_response(template, context, context_instance=RequestContext(request))
 
-
+   
 @login_required
 def row_info(request, file_id, template=None):
     if request.method == 'GET':
@@ -213,10 +230,17 @@ def upload_file(request):
             'transfer_out': 5
         }
 
+
+
         if request.method == "POST":
             post_data = request.POST.copy()
-            priority = FILE_PRIORITIES[request.POST.get('file_type')]
-            post_data.__setitem__('priority', priority)
+            if post_data.get("priority"):
+                priority = post_data.get("priority")
+                file_type = [k for k , v in FILE_PRIORITIES.iteritems() if u"%s" % v == priority][0]
+                post_data.__setitem__('file_type', file_type)
+            else:
+                priority = FILE_PRIORITIES[request.POST.get('file_type')]
+                post_data.__setitem__('priority', priority)
             
             form = FileInfoForm(post_data, request.FILES)
             if form.is_valid():
