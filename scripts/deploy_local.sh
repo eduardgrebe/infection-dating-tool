@@ -61,8 +61,8 @@ if [ ! -d "media" ]; then
 fi
 
 echo "collecting static files"
-cd ${SITE_PATH}
-python manage.py collectstatic --noinput --verbosity=0 --settings=cephia.management_settings
+cd ${SITE_PATH}/cephia
+python ../manage.py collectstatic --noinput --verbosity=0 --settings=cephia.management_settings
 cd -
 
 echo "Deploy local complete"
