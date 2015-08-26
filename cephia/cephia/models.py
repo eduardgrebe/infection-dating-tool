@@ -436,4 +436,6 @@ class AliquotRow(ImportedRow):
     def __unicode__(self):
         return self.parent_label
 
-
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
