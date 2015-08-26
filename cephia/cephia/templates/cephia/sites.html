@@ -1,0 +1,31 @@
+{% extends "cephia/tms_base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+
+{% block site-title %} Sits {% endblock %}
+
+{% block page_content %}
+
+{% paginate sites %}
+{% show_pages %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+	<th>Name</th>
+	<th>Description</th>
+    </thead>
+
+    <tbody>
+	{% for site in sites %}
+	<tr>
+	    <td>{{site.name}}</td>
+	    <td>{{site.description}}</td>
+	</tr>
+	{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+

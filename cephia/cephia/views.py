@@ -64,6 +64,13 @@ def studies(request, template="cephia/studies.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+@login_required
+def sites(request, template="cephia/sites.html"):
+    context = {}
+    sites = Site.objects.all()
+    context['sites'] = sites
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def subjects(request, template="cephia/subjects.html"):

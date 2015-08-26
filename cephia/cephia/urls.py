@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^locations/$', views.locations, name='locations'),
     url(r'^specimen_type/$', views.specimen_type, name='specimen_type'),
     url(r'^studies/$', views.studies, name='studies'),
+    url(r'^sites/$', views.sites, name='sites'),
     url(r'^subjects/$', views.subjects, name='subjects'),
     url(r'^visits/$', views.visits, name='visits'),
     url(r'^specimen/$', views.specimen, name='specimen'),
