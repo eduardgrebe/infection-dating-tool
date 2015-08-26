@@ -28,8 +28,12 @@ def home(request, template="cephia/home.html"):
         visit_file = FileInfo.objects.filter(priority=2).order_by('-created').first()
         transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
         transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
-        annihilation_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
+        aliquot_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
         subject_process_date = SubjectRow.objects.all()
+        visit_process_date = VisitRow.objects.all()
+        transfer_in_process_date = TransferInRow.objects.all()
+        transfer_out_process_date = TransferOutRow.objects.all()
+        aliquot_process_date = AliquotRow.objects.all()
         form = FileInfoForm()
         context['form'] = form
         context['files'] = []
@@ -37,9 +41,13 @@ def home(request, template="cephia/home.html"):
         context['visit_file'] = visit_file
         context['transfer_in_file'] = transfer_in_file
         context['transfer_out_file'] = transfer_out_file
-        context['annihilation_file'] = annihilation_file
+        context['aliquot_file'] = aliquot_file
         context['subject_process_date'] = subject_process_date
-    
+        context['visit_process_date'] = visit_process_date
+        context['transfer_in_process_date'] = transfer_in_process_date
+        context['transfer_out_process_date'] = transfer_out_process_date
+        context['aliquot_process_date'] = aliquot_process_date
+        
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required

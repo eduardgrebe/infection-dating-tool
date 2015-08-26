@@ -20,14 +20,10 @@ Welcome to Cephia
         <tr>
             <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="1">Subject</button></td>
 
-            {% if subject_process_date %}
-            {{subject_process_date.state}}
-            {% endif %}
-
             {% if subject_file%}
             <td>{{ subject_file.filename }}</td>
             <td>{{ subject_file.created }}</td>
-            <td>{{ subject_file.state }}</td>
+            <td>{{ subject_process_date.date_processed|default:'Pending' }}</td>
             <td>{{ subject_file.message|default:'None' }}</td>
             <td>{{ subject_file.state }}</td>
             <td>{{ subject_file.errors|default:'No Error Comments' }}</td>
@@ -39,7 +35,7 @@ Welcome to Cephia
             {% if visit_file %}
             <td>{{ visit_file.filename }}</td>
             <td>{{ visit_file.created }}</td>
-            <td>{{ visit_file.state }}</td>
+            <td>{{ visit_process_date.date_processed|default:'Pending'  }}</td>
             <td>{{ visit_file.message|default:'None' }}</td>
             <td>{{ visit_file.state }}</td>
             <td>{{ visit_file.errors|default:'No Error Comments' }}</td>
@@ -50,10 +46,21 @@ Welcome to Cephia
             {% if transfer_in_file %}
             <td>{{ transfer_in_file.filename }}</td>
             <td>{{ transfer_in_file.created }}</td>
-            <td>{{ transfer_in_file.state }}</td>
+            <td>{{ transfer_in_process_date.date_processed|default:'Pending'  }}</td>
             <td>{{ transfer_in_file.message|default:'None' }}</td>
             <td>{{ transfer_in_file.state }}</td>
             <td>{{ transfer_in_file.errors|default:'No Error Comments' }}</td>
+            {% endif %}
+        </tr>
+        <tr>
+            <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="5">Aliquotting</button></td>
+            {% if aliquot_file %}
+            <td>{{ aliquot_file.filename }}</td>
+            <td>{{ aliquot_file.created }}</td>
+            <td>{{ aliquot_process_date.date_processed|default:'Pending'  }}</td>
+            <td>{{ aliquot_file.message|default:'None' }}</td>
+            <td>{{ aliquot_file.state }}</td>
+            <td>{{ aliquot_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
         </tr>
         <tr>
@@ -61,27 +68,17 @@ Welcome to Cephia
             {% if transfer_out_file %}
             <td>{{ transfer_out_file.filename }}</td>
             <td>{{ transfer_out_file.created }}</td>
-            <td>{{ transfer_out_file.state }}</td>
+            <td>{{ transfer_out_process_date.date_processed|default:'Pending'  }}</td>
             <td>{{ transfer_out_file.message|default:'None' }}</td>
             <td>{{ transfer_out_file.state }}</td>
             <td>{{ transfer_out_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
         </tr>
-        <tr>
-            <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="5">Annihhilation</button></td>
-            {% if annihilation_file %}
-            <td>{{ annihilation_file.filename }}</td>
-            <td>{{ annihilation_file.created }}</td>
-            <td>{{ annihilation_file.state }}</td>
-            <td>{{ annihilation_file.message|default:'None' }}</td>
-            <td>{{ annihilation_file.state }}</td>
-            <td>{{ annihilation_file.errors|default:'No Error Comments' }}</td>
-            {% endif %}
-        </tr>
+
     </tbody>
 </table>
 
-<div class="modal fade" id="myModal">
+<div class="modal fade in" id="myModal">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="form" class="upload_form" action="{% url 'upload_file_priority'  %}" enctype="multipart/form-data" role="form" method="POST">
@@ -103,6 +100,7 @@ Welcome to Cephia
         </div>
     </div>
 </div>
+
 
 
 
