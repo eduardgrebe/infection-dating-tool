@@ -311,37 +311,6 @@ class SpecimenType(models.Model):
         return self.name
 
 
-class Units(models.Model):
-    class Meta:
-        db_table = "cephia_units"
-
-    name = models.CharField(max_length=255, null=False, blank=False)
-
-    def __unicode__(self):
-        return self.name
-
-
-class TransferReason(models.Model):
-    class Meta:
-        db_table = "cephia_transfer_reason"
-
-    name = models.CharField(max_length=255, null=False, blank=False)
-
-    def __unicode__(self):
-        return self.name
-
-
-class AliquotingReason(models.Model):
-
-    class Meta:
-        db_table = "cephia_aliquoting_reason"
-        
-    name = models.CharField(max_length=255, null=False, blank=False) 
-
-    def __unicode__(self):
-        return self.name
-
-
 class Specimen(models.Model):
 
     class Meta:
@@ -364,11 +333,11 @@ class Specimen(models.Model):
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
     receiving_site = models.ForeignKey(Site, null=True, blank=True)
-    aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
+    aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
 
 
     def __unicode__(self):
-        return self.label
+        return self.specimen_label
 
 
 class TransferInRow(ImportedRow):

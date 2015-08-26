@@ -61,7 +61,7 @@ class AliquotFileHandler(FileHandler):
         return rows_inserted, rows_failed
     
     def validate(self):
-        from cephia.models import AliquotRow
+        from cephia.models import AliquotRow, Specimen
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -110,11 +110,11 @@ class AliquotFileHandler(FileHandler):
                     
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
                         parent_specimen.volume = aliquot_row.volume
-                        parent_specimen.modified_date = self.registered_dates('aliquot_date', None)
+                        parent_specimen.modified_date = self.registered_dates.get('aliquot_date', None)
                         parent_specimen.reason = aliquot_row.aliquot_reason
                         parent_specimen.save()
                     else:
-                        parent_specimen.modified_date = self.registered_dates('aliquot_date', None)
+                        parent_specimen.modified_date = self.registered_dates.get('aliquot_date', None)
                         parent_specimen.save()
 
                         Specimen.objects.create(specimen_label=aliquot_row.aliquot_label,
@@ -124,7 +124,7 @@ class AliquotFileHandler(FileHandler):
                                                 specimen_type=parent_specimen.specimen_type,
                                                 reported_draw_date=parent_specimen.reported_draw_date,
                                                 source_study=parent_specimen.source_study,
-                                                created_date=self.registered_dates('aliquot_date', None),
+                                                created_date=self.registered_dates.get('aliquot_date', None),
                                                 aliquoting_reason=aliquot_row.aliquot_reason)
                         
                     aliquot_row.state = 'processed'
