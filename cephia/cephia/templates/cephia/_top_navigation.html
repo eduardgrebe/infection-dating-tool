@@ -1,10 +1,21 @@
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Cephia</a>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">
+        {% if user.id %}
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'table_management' %}">TMS</a></li>
+        <li><a href="{% url 'auth_logout' %}">Logout</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
 <div id="topmenu" class="navigation">
   <ul>
-
-    {% if user.id %}
-    <li><a href="{% url 'home' %}">Home</a></li>
-    <li><a href="{% url 'table_management' %}">TMS</a></li>
-    <li><a href="{% url 'auth_logout' %}">Logout</a></li>
-    {% endif %}
   </ul>
 </div>

@@ -111,7 +111,7 @@ class FileInfo(models.Model):
         ('transfer_in','Transfer In'),
         ('transfer_out','Transfer Out'),
         ('missing_transfer_out','Missing Transfer Out'),
-        ('annihilation','Annihilation'),
+        ('aliquot','Aliquot'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -423,16 +423,17 @@ class AliquotRow(ImportedRow):
     class Meta:
         db_table = "cephia_aliquot_row"
         
-    parent_id = models.CharField(max_length=255, null=True, blank=True) 
-    child_id = models.CharField(max_length=255, null=True, blank=True)
-    child_volume = models.CharField(max_length=255, null=True, blank=True)
+    parent_label = models.CharField(max_length=255, null=True, blank=True) 
+    aliquot_label = models.CharField(max_length=255, null=True, blank=True)
+    volume = models.CharField(max_length=255, null=True, blank=True)
+    volume_units = models.CharField(max_length=255, null=True, blank=True)
     number_of_aliquot = models.CharField(max_length=255, null=True, blank=True)
-    annihilation_date = models.CharField(max_length=255, null=True, blank=True)
-    reason = models.CharField(max_length=255, null=True, blank=True)
-    panel_type = models.CharField(max_length=255, null=True, blank=True)
-    panel_inclusion_criteria = models.CharField(max_length=255, null=True, blank=True)
+    aliquoting_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
+    aliquoting_date_mm = models.CharField(max_length=255, null=True, blank=True)
+    aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
+    aliquot_reason = models.CharField(max_length=255, null=True, blank=True)
 
     def __unicode__(self):
-        return self.parent_id
+        return self.parent_label
 
 

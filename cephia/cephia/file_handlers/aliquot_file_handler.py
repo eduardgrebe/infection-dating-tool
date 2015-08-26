@@ -1,7 +1,11 @@
 from file_handler import FileHandler
+from handler_imports import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class AnnihilationFileHandler(FileHandler):
+class AliquotFileHandler(FileHandler):
 
     def __init__(self, aliquot_file):
         super(AliquotFileHandler, self).__init__()
@@ -22,7 +26,7 @@ class AnnihilationFileHandler(FileHandler):
         self.existing_columns = self.excel_aliquot_file.read_header()
 
     def parse(self):
-        from models import AliquotRow
+        from cephia.models import AliquotRow
 
         header = self.excel_aliquot_file.read_header()
         rows_inserted = 0

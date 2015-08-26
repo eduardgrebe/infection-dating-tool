@@ -173,15 +173,12 @@ def row_info(request, file_id, template=None):
         elif fileinfo.file_type == 'transfer_in':
             rows = TransferInRow.objects.filter(fileinfo=fileinfo, state__in=states)
             template = 'cephia/transfer_in_row_info.html'
+        elif fileinfo.file_type == 'aliquot':
+            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state__in=states)
+            template = 'cephia/aliquot_row_info.html'
         elif fileinfo.file_type == 'transfer_out':
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
             template = 'cephia/transfer_out_row_info.html'
-        elif fileinfo.file_type == 'annihilation':
-            rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/annihilation_row_info.html'
-        elif fileinfo.file_type == 'missing_transfer_out':
-            rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/missing_transfer_out_row_info.html'
 
         context['rows'] = rows
         context['file_id'] = fileinfo.id
@@ -209,7 +206,7 @@ def upload_file(request):
             'subject': 1,
             'visit': 2,
             'transfer_in': 3,
-            'annihilation': 4,
+            'aliquot': 4,
             'transfer_out': 5
         }
 
