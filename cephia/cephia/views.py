@@ -21,7 +21,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 @login_required
-def home(request, template="cephia/home.html"):
+def home(request, file_id=None, template="cephia/home.html"):
     if request.method == "GET":
         context = {}
         subject_file = FileInfo.objects.filter(priority=1).order_by('-created').first()
@@ -29,12 +29,26 @@ def home(request, template="cephia/home.html"):
         transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
         transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
         aliquot_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
-        subject_process_date = SubjectRow.objects.all()
-        visit_process_date = VisitRow.objects.all()
-        transfer_in_process_date = TransferInRow.objects.all()
-        transfer_out_process_date = TransferOutRow.objects.all()
-        aliquot_process_date = AliquotRow.objects.all()
+        subject_process_date = SubjectRow.objects.last()
+        visit_process_date = VisitRow.objects.last()
+        transfer_in_process_date = TransferInRow.objects.last()
+        transfer_out_process_date = TransferOutRow.objects.last()
+        aliquot_process_date = AliquotRow.objects.last()
+        subject_errors = SubjectRow.objects.filter(state='error').count()
+        visit_errors = VisitRow.objects.filter(state='error').count()
+        transfer_in_errors = TransferInRow.objects.filter(state='error').count()
+        transfer_out_errors = TransferOutRow.objects.filter(state='error').count()
+
+        aliquot_errors = AliquotRow.objects.filter(state='error').count()
+
+        subject_success = 44 - subject_errors
+        visit_success = 15 - subject_errors
+        transfer_in_success = 20 - subject_errors
+        transfer_out_success = 12 - subject_errors
+        aliquot_success = 12 - subject_errors
+
         form = FileInfoForm()
+        
         context['form'] = form
         context['files'] = []
         context['subject_file'] = subject_file
@@ -47,6 +61,18 @@ def home(request, template="cephia/home.html"):
         context['transfer_in_process_date'] = transfer_in_process_date
         context['transfer_out_process_date'] = transfer_out_process_date
         context['aliquot_process_date'] = aliquot_process_date
+        context['subject_errors'] = subject_errors
+        context['visit_errors'] = visit_errors
+        context['aliquot_errors'] = aliquot_errors
+        context['transfer_in_errors'] = transfer_in_errors
+        context['transfer_out_errors'] = transfer_out_errors
+        context['subject_success'] = subject_success
+        context['visit_success'] = visit_success
+        context['transfer_in_success'] = transfer_in_success
+        context['transfer_out_success'] = transfer_out_success
+        context['aliquot_success'] = aliquot_success
+        
+
         
     return render_to_response(template, context, context_instance=RequestContext(request))
 

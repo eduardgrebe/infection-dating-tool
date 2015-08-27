@@ -23,10 +23,10 @@ Welcome to Cephia
             {% if subject_file%}
             <td>{{ subject_file.filename }}</td>
             <td>{{ subject_file.created }}</td>
-            <td>{{ subject_process_date.date_processed|default:'Pending' }}</td>
+            <td>{{ subject_process_date.date_processed }}</td>
+            <td>{{ subject_errors}}</td>
+            <td>{{ subject_success}}</td>
             <td>{{ subject_file.message|default:'None' }}</td>
-            <td>{{ subject_file.state }}</td>
-            <td>{{ subject_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
 
         </tr>
@@ -35,10 +35,10 @@ Welcome to Cephia
             {% if visit_file %}
             <td>{{ visit_file.filename }}</td>
             <td>{{ visit_file.created }}</td>
-            <td>{{ visit_process_date.date_processed|default:'Pending'  }}</td>
+            <td>{{ visit_process_date.date_processed }}</td>
+            <td>{{ visit_errors }}</td>
+            <td>{{ visit_success }}</td>
             <td>{{ visit_file.message|default:'None' }}</td>
-            <td>{{ visit_file.state }}</td>
-            <td>{{ visit_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
         </tr>
         <tr>
@@ -46,10 +46,10 @@ Welcome to Cephia
             {% if transfer_in_file %}
             <td>{{ transfer_in_file.filename }}</td>
             <td>{{ transfer_in_file.created }}</td>
-            <td>{{ transfer_in_process_date.date_processed|default:'Pending'  }}</td>
+            <td>{{ transfer_in_process_date.date_processed }}</td>
+            <td>{{ transfer_in_errors}}</td>
+            <td>{{ transfer_in_success }}</td>
             <td>{{ transfer_in_file.message|default:'None' }}</td>
-            <td>{{ transfer_in_file.state }}</td>
-            <td>{{ transfer_in_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
         </tr>
         <tr>
@@ -57,10 +57,10 @@ Welcome to Cephia
             {% if aliquot_file %}
             <td>{{ aliquot_file.filename }}</td>
             <td>{{ aliquot_file.created }}</td>
-            <td>{{ aliquot_process_date.date_processed|default:'Pending'  }}</td>
+            <<td>{{ aliquot_process_date.date_processed }}</td>
+            <td>{{ aliquot_errors}}</td>
+            <td>{{ aliquot_success }}</td>
             <td>{{ aliquot_file.message|default:'None' }}</td>
-            <td>{{ aliquot_file.state }}</td>
-            <td>{{ aliquot_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
         </tr>
         <tr>
@@ -68,10 +68,10 @@ Welcome to Cephia
             {% if transfer_out_file %}
             <td>{{ transfer_out_file.filename }}</td>
             <td>{{ transfer_out_file.created }}</td>
-            <td>{{ transfer_out_process_date.date_processed|default:'Pending'  }}</td>
+            <td>{{ transfer_out_process_date.date_processed }}</td>
+            <td>{{ transfer_out_errors}}</td>
+            <td>{{ transfer_out_success }}</td>
             <td>{{ transfer_out_file.message|default:'None' }}</td>
-            <td>{{ transfer_out_file.state }}</td>
-            <td>{{ transfer_out_file.errors|default:'No Error Comments' }}</td>
             {% endif %}
         </tr>
 
