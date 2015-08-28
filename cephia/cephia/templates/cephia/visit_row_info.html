@@ -10,43 +10,45 @@
 {% paginate rows %}
 {% show_pages %}
 
-<table class="table-striped table table-hover" style="overflow:auto;">
+<div class="table-responsive">
+  <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>Subject Label</th>
-	<th>Visit Date</th>
-	<th></th>
-	<th></th>
-        <th>Visit HIV Status</th>
-	<th>Source Study</th>
-	<th>CD4 Count</th>
-	<th>VL</th>
-        <th>Scope Visit EC</th>
-	<th>Pregnant</th>
-	<th>Hepatitis</th>
-	<th>State</th>
-	<th>Message</th>
+      <th>Subject Label</th>
+      <th>Visit Date</th>
+      <th></th>
+      <th></th>
+      <th>Visit HIV Status</th>
+      <th>Source Study</th>
+      <th>CD4 Count</th>
+      <th>VL</th>
+      <th>Scope Visit EC</th>
+      <th>Pregnant</th>
+      <th>Hepatitis</th>
+      <th>State</th>
+      <th>Message</th>
     </thead>
 
     <tbody>
-	{% for row in rows %}
-	<tr>
-	    <td>{{row.subject_label}}</td>
-	    <td>{{row.visitdate_yyyy}}</td>
-	    <td>{{row.visitdate_mm}}</td>
-	    <td>{{row.visitdate_dd}}</td>
-            <td>{{row.visit_hivstatus}}</td>
-	    <td>{{row.source_study}}</td>
-	    <td>{{row.cd4_count}}</td>
-	    <td>{{row.vl}}</td>
-	    <td>{{row.scopevisit_ec}}</td>
-	    <td>{{row.pregnant}}</td>
-            <td>{{row.hepatitis}}</td>
-	    <td>{{row.state}}</td>
-	    <td>{{row.error_message}}</td>
-	</tr>
-	{% endfor %}
+      {% for row in rows %}
+      <tr>
+	<td>{{row.subject_label}}</td>
+	<td>{{row.visitdate_yyyy}}</td>
+	<td>{{row.visitdate_mm}}</td>
+	<td>{{row.visitdate_dd}}</td>
+        <td>{{row.visit_hivstatus}}</td>
+	<td>{{row.source_study}}</td>
+	<td>{{row.cd4_count}}</td>
+	<td>{{row.vl}}</td>
+	<td>{{row.scopevisit_ec}}</td>
+	<td>{{row.pregnant}}</td>
+        <td>{{row.hepatitis}}</td>
+	<td>{{row.state}}</td>
+	<td>{{row.error_message}}</td>
+      </tr>
+      {% endfor %}
     </tbody>
-</table>
+  </table>
+</div>
 
 {% endblock %}
 

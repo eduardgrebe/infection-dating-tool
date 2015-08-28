@@ -7,7 +7,11 @@
 
 {% block button_content %}
 {% if has_errors %}
-  <a href="{% url 'export_as_csv' file_id %}" class="btn btn-primary" style="float:right">Export errors as CSV</a>
+<div class="container">
+  <div class="col-md-1">
+    <a href="{% url 'export_as_csv' file_id %}" class="btn btn-primary" style="float:right">Export errors to CSV</a>
+  </div>
+</div>
 {% endif %}
 {% endblock %}
 

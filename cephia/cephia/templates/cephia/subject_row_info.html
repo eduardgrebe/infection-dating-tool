@@ -10,101 +10,104 @@
 {% paginate rows %}
 {% show_pages %}
 
-<table class="table-striped table table-hover" style="overflow:auto;">
+<div class="table-responsive">
+  <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>Subject label</th>
-	<th>Source study</th>
-	<th>Cohort entry date</th>
-	<th></th>
-	<th></th>
-	<th>Country</th>
-        <th>Cohort HIV entry status</th>
-	<th>Last Negative Date</th>
-	<th></th>
-	<th></th>
-	<th>First Positive Date</th>
-	<th></th>
-	<th></th>
-	<th>Fiebig</th>
-	<th>ARS Onset Date</th>
-	<th></th>
-	<th></th>
-	<th>Date of Birth</th>
-	<th></th>
-	<th></th>
-	<th>Sex</th>
-	<th>Transgender</th>
-	<th>Population Group</th>
-        <th>Sex with men</th>
-	<th>Sex with women</th>
-	<th>Risk IDU</th>
-	<th>Subtype</th>
-	<th>Subtype Confirmed</th>
-	<th>AIDS Diagnosis Date</th>
-	<th></th>
-	<th></th>
-	<th>ART Initiation Date</th>
-	<th></th>
-	<th></th>
-	<th>ART Interuption Date</th>
-	<th></th>
-	<th></th>
-	<th>ART Resumption Date</th>
-	<th></th>
-	<th></th>
-	<th>State</th>
-	<th>Message</th>
+      <th>Subject label</th>
+      <th>Source study</th>
+      <th>Cohort entry date</th>
+      <th></th>
+      <th></th>
+      <th>Country</th>
+      <th>Cohort HIV entry status</th>
+      <th>Last Negative Date</th>
+      <th></th>
+      <th></th>
+      <th>First Positive Date</th>
+      <th></th>
+      <th></th>
+      <th>Fiebig</th>
+      <th>ARS Onset Date</th>
+      <th></th>
+      <th></th>
+      <th>Date of Birth</th>
+      <th></th>
+      <th></th>
+      <th>Sex</th>
+      <th>Transgender</th>
+      <th>Population Group</th>
+      <th>Sex with men</th>
+      <th>Sex with women</th>
+      <th>Risk IDU</th>
+      <th>Subtype</th>
+      <th>Subtype Confirmed</th>
+      <th>AIDS Diagnosis Date</th>
+      <th></th>
+      <th></th>
+      <th>ART Initiation Date</th>
+      <th></th>
+      <th></th>
+      <th>ART Interuption Date</th>
+      <th></th>
+      <th></th>
+      <th>ART Resumption Date</th>
+      <th></th>
+      <th></th>
+      <th>State</th>
+      <th>Message</th>
     </thead>
 
     <tbody>
-	{% for row in rows %}
-	<tr>
-            <td>{{row.subject_label}}</td>
-            <td>{{row.source_study}}</td>
-            <td>{{row.cohort_entry_date_yyyy}}</td>
-            <td>{{row.cohort_entry_date_mm}}</td>
-            <td>{{row.cohort_entry_date_dd}}</td>
-            <td>{{row.country}}</td>
-            <td>{{row.cohort_entry_hiv_status}}</td>
-            <td>{{row.last_negative_date_yyyy}}</td>
-            <td>{{row.last_negative_date_mm}}</td>
-            <td>{{row.last_negative_date_dd}}</td>
-            <td>{{row.first_positive_date_yyyy}}</td>
-            <td>{{row.first_positive_date_mm}}</td>
-            <td>{{row.first_positive_date_dd}}</td>
-            <td>{{row.fiebig_stage_at_firstpos}}</td>
-            <td>{{row.ars_onset_date_yyyy}}</td>
-            <td>{{row.ars_onset_date_mm}}</td>
-            <td>{{row.ars_onset_date_dd}}</td>
-            <td>{{row.date_of_birth_yyyy}}</td>
-            <td>{{row.date_of_birth_mm}}</td>
-            <td>{{row.date_of_birth_dd}}</td>
-            <td>{{row.sex}}</td>
-            <td>{{row.transgender}}</td>
-            <td>{{row.population_group}}</td>
-            <td>{{row.risk_sex_with_men}}</td>
-            <td>{{row.risk_sex_with_women}}</td>
-            <td>{{row.risk_idu}}</td>
-            <td>{{row.subtype}}</td>
-            <td>{{row.subtype_confirmed}}</td>
-            <td>{{row.aids_diagnosis_date_yyyy}}</td>
-            <td>{{row.aids_diagnosis_date_mm}}</td>
-            <td>{{row.aids_diagnosis_date_dd}}</td>
-            <td>{{row.art_initiation_date_yyyy}}</td>
-            <td>{{row.art_initiation_date_mm}}</td>
-            <td>{{row.art_initiation_date_dd}}</td>
-            <td>{{row.art_interruption_date_yyyy}}</td>
-            <td>{{row.art_interruption_date_mm}}</td>
-            <td>{{row.art_interruption_date_dd}}</td>
-            <td>{{row.art_resumption_date_yyyy}}</td>
-            <td>{{row.art_resumption_date_mm}}</td>
-            <td>{{row.art_resumption_date_dd}}</td>
-            <td>{{row.state}}</td>
-	    <td>{{row.error_message}}</td>
-	</tr>
-	{% endfor %}
+      {% for row in rows %}
+      <tr>
+        <td>{{row.subject_label}}</td>
+        <td>{{row.source_study}}</td>
+        <td>{{row.cohort_entry_date_yyyy}}</td>
+        <td>{{row.cohort_entry_date_mm}}</td>
+        <td>{{row.cohort_entry_date_dd}}</td>
+        <td>{{row.country}}</td>
+        <td>{{row.cohort_entry_hiv_status}}</td>
+        <td>{{row.last_negative_date_yyyy}}</td>
+        <td>{{row.last_negative_date_mm}}</td>
+        <td>{{row.last_negative_date_dd}}</td>
+        <td>{{row.first_positive_date_yyyy}}</td>
+        <td>{{row.first_positive_date_mm}}</td>
+        <td>{{row.first_positive_date_dd}}</td>
+        <td>{{row.fiebig_stage_at_firstpos}}</td>
+        <td>{{row.ars_onset_date_yyyy}}</td>
+        <td>{{row.ars_onset_date_mm}}</td>
+        <td>{{row.ars_onset_date_dd}}</td>
+        <td>{{row.date_of_birth_yyyy}}</td>
+        <td>{{row.date_of_birth_mm}}</td>
+        <td>{{row.date_of_birth_dd}}</td>
+        <td>{{row.sex}}</td>
+        <td>{{row.transgender}}</td>
+        <td>{{row.population_group}}</td>
+        <td>{{row.risk_sex_with_men}}</td>
+        <td>{{row.risk_sex_with_women}}</td>
+        <td>{{row.risk_idu}}</td>
+        <td>{{row.subtype}}</td>
+        <td>{{row.subtype_confirmed}}</td>
+        <td>{{row.aids_diagnosis_date_yyyy}}</td>
+        <td>{{row.aids_diagnosis_date_mm}}</td>
+        <td>{{row.aids_diagnosis_date_dd}}</td>
+        <td>{{row.art_initiation_date_yyyy}}</td>
+        <td>{{row.art_initiation_date_mm}}</td>
+        <td>{{row.art_initiation_date_dd}}</td>
+        <td>{{row.art_interruption_date_yyyy}}</td>
+        <td>{{row.art_interruption_date_mm}}</td>
+        <td>{{row.art_interruption_date_dd}}</td>
+        <td>{{row.art_resumption_date_yyyy}}</td>
+        <td>{{row.art_resumption_date_mm}}</td>
+        <td>{{row.art_resumption_date_dd}}</td>
+        <td>{{row.state}}</td>
+	<td>{{row.error_message}}</td>
+        <td data-row-id="{{row.id}}"><button class="btn btn-success" data-toggle="modal" data-target="#myModal">{% bootstrap_icon "comment" %}</button></td>
+      </tr>
+      {% endfor %}
     </tbody>
-</table>
+  </table>
+</div>
 
 {% include 'cephia/comment_modal.html' with form=form %}
 
