@@ -1,10 +1,5 @@
-from fabric.api import local, settings, abort, run, cd, env, sudo, lcd
+from fabric.api import run, cd, env
 import os
-import getpass
-import shutil
-from fabric.contrib.console import confirm, prompt
-from fabric.operations import put
-import datetime
 from cephia.lib.fab_deploy_cron import crontab_update, crontab_remove_all_with_marker
 
 local_code_dir = os.path.dirname(os.path.realpath(__file__))
