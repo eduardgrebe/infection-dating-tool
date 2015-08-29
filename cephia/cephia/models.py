@@ -14,6 +14,7 @@ from django.utils import html
 from file_handlers.file_handler_register import *
 import logging
 from django.forms.models import model_to_dict
+from simple_history.models import HistoricalRecords
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +121,8 @@ class FileInfo(models.Model):
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
-    
-    
+    history = HistoricalRecords()
+
     def __unicode__(self):
         return self.data_file.name
 
@@ -139,6 +140,8 @@ class ImportedRow(models.Model):
 
     STATE_CHOICES = (
         ('pending','Pending'),
+        ('validated','Validated'),
+        ('imported','Imported'),
         ('processed','Processed'),
         ('error','Error')
     )
@@ -147,6 +150,18 @@ class ImportedRow(models.Model):
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
     fileinfo = models.ForeignKey(FileInfo)
+    history = HistoricalRecords()
+
+
+class ImportedRowComment(models.Model):
+
+    class Meta:
+        db_table = "cephia_importedrow_comment"
+
+    comment = models.TextField(blank=False, null=False)
+    resolve_date = models.DateTimeField(blank=False, null=False)
+    resolve_action = models.TextField(blank=False, null=False)
+    assigned_to = models.CharField(max_length=50, null=False, blank=False)
 
 
 class SubjectRow(ImportedRow):
@@ -194,6 +209,7 @@ class SubjectRow(ImportedRow):
     art_resumption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_mm = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    row_comment = models.ManyToManyField(ImportedRowComment, blank=True)
 
     def __unicode__(self):
         return self.subject_label
@@ -241,6 +257,7 @@ class Subject(models.Model):
     aids_diagnosis_date = models.DateField(null=True, blank=True)
     art_interruption_date = models.DateField(null=True, blank=True)
     art_resumption_date = models.DateField(null=True, blank=True)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
@@ -262,6 +279,7 @@ class VisitRow(ImportedRow):
     scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
     pregnant = models.CharField(max_length=255, null=False, blank=True)
     hepatitis = models.CharField(max_length=255, null=False, blank=True)
+    row_comment = models.ManyToManyField(ImportedRowComment, blank=True)
 
     def __unicode__(self):
         return self.subject_label
@@ -293,6 +311,7 @@ class Visit(models.Model):
     hepatitis = models.NullBooleanField()
     artificial = models.BooleanField(default=False)
     subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.visit_label
@@ -334,6 +353,7 @@ class Specimen(models.Model):
     source_study = models.ForeignKey(Study, null=True, blank=True)
     receiving_site = models.ForeignKey(Site, null=True, blank=True)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
+    history = HistoricalRecords()
 
 
     def __unicode__(self):
@@ -361,6 +381,7 @@ class TransferInRow(ImportedRow):
     volume_units = models.CharField(max_length=255, null=True, blank=True)
     source_study = models.CharField(max_length=255, null=True, blank=True)
     notes = models.CharField(max_length=255, null=True, blank=True)
+    row_comment = models.ManyToManyField(ImportedRowComment, blank=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -383,6 +404,7 @@ class TransferOutRow(ImportedRow):
     spec_type = models.CharField(max_length=255, null=True, blank=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
     other_ref = models.CharField(max_length=255, null=True, blank=True)
+    row_comment = models.ManyToManyField(ImportedRowComment, blank=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -401,6 +423,7 @@ class AliquotRow(ImportedRow):
     aliquoting_date_mm = models.CharField(max_length=255, null=True, blank=True)
     aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
     aliquot_reason = models.CharField(max_length=255, null=True, blank=True)
+    row_comment = models.ManyToManyField(ImportedRowComment, blank=True)
 
     def __unicode__(self):
         return self.parent_label

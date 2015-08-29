@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required,user_passes_test
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Site, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
-from forms import FileInfoForm
+from forms import FileInfoForm, RowCommentForm
 from django.contrib import messages
 from django.db import transaction
 from django.forms.models import model_to_dict
@@ -163,6 +163,7 @@ def row_info(request, file_id, template=None):
 
         context = {}
         fileinfo = FileInfo.objects.get(pk=file_id)
+        form = RowCommentForm()
 
         if fileinfo.file_type == 'subject':
             rows = SubjectRow.objects.filter(fileinfo=fileinfo, state__in=states)
@@ -183,6 +184,7 @@ def row_info(request, file_id, template=None):
         context['rows'] = rows
         context['file_id'] = fileinfo.id
         context['has_errors'] = rows.filter(state='error').exists()
+        context['form'] = form
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -421,4 +423,20 @@ def associate_specimen_visits(request):
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to make association')
+        return HttpResponseRedirect(reverse('file_info'))
+
+@login_required
+def comment_on_row(request):
+    try:
+        if request.method == "POST":
+            form = RowCommentForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.add_message(request, messages.SUCCESS,
+                                     'Successfully commented on row')
+
+                return HttpResponseRedirect(reverse('file_info'))
+    except Exception, e:
+        logger.exception(e)
+        messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))

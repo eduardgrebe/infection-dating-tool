@@ -72,10 +72,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'paranoidsessions',
-
+    'simple_history',
     'bootstrap3',
     'endless_pagination',
-
     'cephia',
 )
 

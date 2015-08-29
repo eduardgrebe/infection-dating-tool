@@ -80,7 +80,7 @@ class TransferInFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self):
-        from cephia.models import TransferInRow, SpecimenType, TransferReason
+        from cephia.models import TransferInRow, SpecimenType
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
