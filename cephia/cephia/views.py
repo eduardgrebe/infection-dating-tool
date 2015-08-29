@@ -1,20 +1,17 @@
 import logging
-from django.shortcuts import render_to_response, redirect, render
+from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-from django.template import loader, RequestContext
+from django.template import RequestContext
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Site, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
-from forms import FileInfoForm, RowCommentForm
-from django.contrib import messages
-from django.db import transaction
+from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
+                   VisitFilterForm, RowFilterForm, SpecimenFilterForm,
+                   FileInfoFilterForm)
 from django.forms.models import model_to_dict
-import csv
-import os
-from django.conf import settings
 from csv_helper import get_csv_response
 from datetime import datetime
 
@@ -47,15 +44,6 @@ def ethnicities(request, template="cephia/ethnicities.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-
-@login_required
-def locations(request, template="cephia/locations.html"):
-    context = {}
-    locations = Location.objects.all()
-    context['locations'] = locations
-    
-    return render_to_response(template, context, context_instance=RequestContext(request))
-
 @login_required
 def studies(request, template="cephia/studies.html"):
     context = {}
@@ -79,6 +67,8 @@ def subjects(request, template="cephia/subjects.html"):
     associated = request.GET.get('associated')
     context = {}
     subjects = None
+
+    form = SubjectFilterForm(request.GET or None)
     
     if patient_label:
         subjects = Subject.objects.filter(patient_label=patient_label)
@@ -91,6 +81,7 @@ def subjects(request, template="cephia/subjects.html"):
         subjects = subjects.exclude(visit__isnull=False)
 
     context['subjects'] = subjects
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
@@ -101,6 +92,8 @@ def visits(request, template="cephia/visits.html"):
     associated = request.GET.get('associated')
     context = {}
     visits = None
+
+    form = VisitFilterForm(request.GET or None)
 
     if patient_label:
         visits = Visit.objects.filter(subject__patient_label=patient_label)
@@ -113,6 +106,7 @@ def visits(request, template="cephia/visits.html"):
         visits = visits.exclude(subject__isnull=False)
 
     context['visits'] = visits
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
@@ -121,13 +115,15 @@ def specimen(request, template="cephia/specimen.html"):
 
     specimen_label = request.GET.get('specimen_label')
     context = {}
-
+    form = SpecimenFilterForm(request.GET or None)
+    
     if specimen_label:
         specimen = Specimen.objects.filter(specimen_label=specimen_label)
     else:
         specimen = Specimen.objects.all().order_by('specimen_label', 'parent_label')
 
     context['specimen'] = specimen
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -144,9 +140,11 @@ def file_info(request, template="cephia/file_info.html"):
     if request.method == "GET":
         context = {}
         files = FileInfo.objects.all().order_by('-created')
-        form = FileInfoForm()
+        upload_form = FileInfoForm()
+        filter_form = FileInfoFilterForm()
         context['files'] = files
-        context['form'] = form
+        context['upload_form'] = upload_form
+        context['filter_form'] = filter_form
         
         return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -163,7 +161,8 @@ def row_info(request, file_id, template=None):
 
         context = {}
         fileinfo = FileInfo.objects.get(pk=file_id)
-        form = RowCommentForm()
+        comment_form = RowCommentForm()
+        filter_form = RowFilterForm()
 
         if fileinfo.file_type == 'subject':
             rows = SubjectRow.objects.filter(fileinfo=fileinfo, state__in=states)
@@ -183,8 +182,10 @@ def row_info(request, file_id, template=None):
 
         context['rows'] = rows
         context['file_id'] = fileinfo.id
+        context['file'] = fileinfo.filename()
         context['has_errors'] = rows.filter(state='error').exists()
-        context['form'] = form
+        context['filter_form'] = filter_form
+        context['comment_form'] = comment_form
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -345,11 +346,8 @@ def export_as_csv(request, file_id):
             rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'transfer_out':
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
-        elif fileinfo.file_type == 'annihilation':
-            rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state=state)
-        elif fileinfo.file_type == 'missing_transfer_out':
-            rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
-
+        elif fileinfo.file_type == 'aliquot':
+            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = model_to_dict(rows[0]).keys()

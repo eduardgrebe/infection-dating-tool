@@ -2,23 +2,45 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-
-{% block site-title %} Subjects {% endblock %}
-
 {% block filter_content %}
-<div class="btn-group" style="float:right;">
-    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-	Filter <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu pull-right">
-	<li><a href="{% url 'subjects' %}?associated=false">No associated visits</a></li>
-	<li><a href="{% url 'subjects' %}?associated=true">Associated with visits</a></li>
-    </ul>
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Filter</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-3">
+            {% bootstrap_field form.subject_label %}
+            {% bootstrap_field form.cohort_entry_date %}
+            {% bootstrap_field form.cohort_entry_hiv_status %}
+          </div>
+          <div class="col-md-3">
+            {% bootstrap_field form.sex %}
+            {% bootstrap_field form.population_group %}
+          </div>
+          <div class="col-md-3">
+            {% bootstrap_field form.transgender %}
+            {% bootstrap_field form.risk_sex_with_men %}
+            {% bootstrap_field form.risk_sex_with_women %}
+            {% bootstrap_field form.risk_idu %}
+            {% bootstrap_field form.has_visits %}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-1">
+            {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block button_content %}
-<a href="{% url 'download_subjects_no_visits' %}" class="btn btn-primary" style="float:right">Export as CSV</a>
+
 {% endblock %}
 
 {% block page_content %}
@@ -26,61 +48,78 @@
 {% paginate subjects %}
 {% show_pages %}
 
-<table class="table-striped table table-hover" style="overflow:auto;">
-    <thead>
-	<th>Subject Label</th>
-	<th>Entry Date</th>
-	<th>Entry Status</th>
-	<th>Country</th>
-	<th>Last Negative Date</th>
-	<th>First Positive Date</th>
-	<th>ARS Onset</th>
-	<th>Fiebig</th>
-	<th>DoB</th>
-        <th>DoD</th>
-	<th>Sex</th>
-	<th>Population Group</th>
-	<th>Sex with men</th>
-	<th>Sex with women</th>
-	<th>IDU</th>
-	<th>Subtype Confirmed</th>
-	<th>Subtype</th>
-	<th>ART Init Date</th>
-	<th>AIDS Diagnosis Date</th>
-	<th>ART Interruption Date</th>
-	<th>ART Resumption Date</th>
-    </thead>
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Subjects</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="table-responsive">
+            <table class="table-striped table table-hover" style="overflow:auto;">
+              <thead>
+                <th>Subject Label</th>
+                <th>Entry Date</th>
+                <th>Entry Status</th>
+                <th>Country</th>
+                <th>Last Negative Date</th>
+                <th>First Positive Date</th>
+                <th>ARS Onset</th>
+                <th>Fiebig</th>
+                <th>DoB</th>
+                <th>DoD</th>
+                <th>Sex</th>
+                <th>Population Group</th>
+                <th>Sex with men</th>
+                <th>Sex with women</th>
+                <th>IDU</th>
+                <th>Subtype Confirmed</th>
+                <th>Subtype</th>
+                <th>ART Init Date</th>
+                <th>AIDS Diagnosis Date</th>
+                <th>ART Interruption Date</th>
+                <th>ART Resumption Date</th>
+              </thead>
 
-    <tbody>
-	{% for subject in subjects %}
-	<tr>
-	    <td>{{subject.subject_label}}</td>
-	    <td>{{subject.cohort_entry_date}}</td>
-	    <td>{{subject.cohort_entry_hiv_status}}</td>
-	    <td>{{subject.country.name}}</td>
-	    <td>{% if subject.last_negative_date %}{{subject.last_negative_date}}{% endif %}</td>
-	    <td>{% if subject.first_positive_date %}{{subject.first_positive_date}}{% endif %}</td>
-	    <td>{% if subject.art_onset_date %} {{subject.art_onset_date}} {% else %} &nbsp; {% endif %}</td>
-	    <td>{{subject.fiebig_stage_at_firstpos}}</td>
-	    <td>{% if subject.date_of_birth %}{{ subject.date_of_birth|date:"Y" }}{% endif %}</td>
-            <td>{% if subject.date_of_death %}{{ subject.date_of_death|date:"Y" }}{% endif %}</td>
-            <td>{{subject.population_group.name}}</td>
-	    <td>{{subject.sex}}</td>
-	    <td>{% if subject.transgender %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if subject.risk_sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if subject.risk_sex_with_women %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if subject.risk_idu %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{% if subject.subtype_confirmed %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-	    <td>{{subject.subtype.name}}</td>
-	    <td>{% if subject.art_initiation_date %} {{subject.art_initiation_date}} {% else %} &nbsp; {% endif %}</td>
-	    <td>{% if subject.aids_diagnosis_date %} {{subject.aids_diagnosis_date}} {% else %} &nbsp; {% endif %}</td>
-	    <td>{% if subject.art_interruption_date %} {{subject.art_interruption_date }} {% else %} &nbsp; {% endif %}</td>
-	    <td>{% if subject.art_resumption_date %} {{subject.art_resumption_date}} {% else %} &nbsp; {% endif %}</td>
-	</tr>
-	{% endfor %}
-    </tbody>
-</table>
-
+              <tbody>
+                {% for subject in subjects %}
+                <tr>
+	          <td>{{subject.subject_label}}</td>
+	          <td>{{subject.cohort_entry_date}}</td>
+	          <td>{{subject.cohort_entry_hiv_status}}</td>
+	          <td>{{subject.country.name}}</td>
+	          <td>{% if subject.last_negative_date %}{{subject.last_negative_date}}{% endif %}</td>
+	          <td>{% if subject.first_positive_date %}{{subject.first_positive_date}}{% endif %}</td>
+	          <td>{% if subject.art_onset_date %} {{subject.art_onset_date}} {% else %} &nbsp; {% endif %}</td>
+	          <td>{{subject.fiebig_stage_at_firstpos}}</td>
+	          <td>{% if subject.date_of_birth %}{{ subject.date_of_birth|date:"Y" }}{% endif %}</td>
+                  <td>{% if subject.date_of_death %}{{ subject.date_of_death|date:"Y" }}{% endif %}</td>
+                  <td>{{subject.population_group.name}}</td>
+	          <td>{{subject.sex}}</td>
+	          <td>{% if subject.transgender %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	          <td>{% if subject.risk_sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	          <td>{% if subject.risk_sex_with_women %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	          <td>{% if subject.risk_idu %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	          <td>{% if subject.subtype_confirmed %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+	          <td>{{subject.subtype.name}}</td>
+	          <td>{% if subject.art_initiation_date %} {{subject.art_initiation_date}} {% else %} &nbsp; {% endif %}</td>
+	          <td>{% if subject.aids_diagnosis_date %} {{subject.aids_diagnosis_date}} {% else %} &nbsp; {% endif %}</td>
+	          <td>{% if subject.art_interruption_date %} {{subject.art_interruption_date }} {% else %} &nbsp; {% endif %}</td>
+	          <td>{% if subject.art_resumption_date %} {{subject.art_resumption_date}} {% else %} &nbsp; {% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="btn-group">
+          <a href="{% url 'download_subjects_no_visits' %}" class="btn btn-primary" style="float:right; text-decoration:none;">Export as CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 

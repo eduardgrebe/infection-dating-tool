@@ -3,45 +3,61 @@
 {% load endless %}
 
 
-{% block site-title %} Row Information {% endblock %}
+
 
 {% block page_content %}
 
 {% paginate rows %}
 {% show_pages %}
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Files</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="container"
+               {% show_pages %}
+            <div class="table-responsive">
+              <table class="table-striped table table-hover" style="overflow:auto;">
+                <thead>
+	          <th>Parent Label</th>
+	          <th>Aliquot Label</th>
+	          <th>Volume</th>
+	          <th>Volume Units</th>
+	          <th>Aliquoting Date</th>
+                  <th></th>
+                  <th></th>
+	          <th>Reason</th>
+	          <th>State</th>
+	          <th>Message</th>
+                </thead>
 
-<table class="table-striped table table-hover" style="overflow:auto;">
-    <thead>
-	<th>Parent Label</th>
-	<th>Aliquot Label</th>
-	<th>Volume</th>
-	<th>Volume Units</th>
-	<th>Aliquoting Date</th>
-        <th></th>
-        <th></th>
-	<th>Reason</th>
-	<th>State</th>
-	<th>Message</th>
-    </thead>
-
-    <tbody>
-	{% for row in rows %}
-	<tr>
-	    <td>{{row.parent_label}}</td>
-	    <td>{{row.aliquot_label}}</td>
-	    <td>{{row.volume}}</td>
-	    <td>{{row.volume_units}}</td>
-	    <td>{{row.aliquoting_date_yyyy}}</td>
-            <td>{{row.aliquoting_date_mm}}</td>
-            <td>{{row.aliquoting_date_dd}}</td>
-	    <td>{{row.aliquot_reason}}</td>
-	    <td>{{row.state}}</td>
-	    <td>{{row.error_message}}</td>
-	</tr>
-	{% endfor %}
-    </tbody>
-</table>
-
+                <tbody>
+	          {% for row in rows %}
+	          <tr>
+	            <td>{{row.parent_label}}</td>
+	            <td>{{row.aliquot_label}}</td>
+	            <td>{{row.volume}}</td>
+	            <td>{{row.volume_units}}</td>
+	            <td>{{row.aliquoting_date_yyyy}}</td>
+                    <td>{{row.aliquoting_date_mm}}</td>
+                    <td>{{row.aliquoting_date_dd}}</td>
+	            <td>{{row.aliquot_reason}}</td>
+	            <td>{{row.state}}</td>
+	            <td>{{row.error_message}}</td>
+	          </tr>
+	          {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 

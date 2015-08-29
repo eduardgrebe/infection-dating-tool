@@ -13,7 +13,6 @@ urlpatterns = [
     
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
-    url(r'^locations/$', views.locations, name='locations'),
     url(r'^specimen_type/$', views.specimen_type, name='specimen_type'),
     url(r'^studies/$', views.studies, name='studies'),
     url(r'^sites/$', views.sites, name='sites'),
