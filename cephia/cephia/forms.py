@@ -1,16 +1,8 @@
 from django import forms
-from models import FileInfo, ImportedRowComment
+from models import FileInfo, ImportedRowComment, Specimen
+
 
 class FileInfoForm(forms.ModelForm):
-
-    FILE_TYPE_CHOICES = (
-        ('subject','Subject'),
-        ('visit','Visit'),
-        ('transfer_in','Transfer In'),
-        ('aliquot','Aliquot'),
-        ('transfer_out','Transfer Out'),
-    )
-    
     class Meta:
         model = FileInfo
         fields = ['data_file','file_type', 'priority']
@@ -34,7 +26,7 @@ class RowCommentForm(forms.ModelForm):
         model = ImportedRowComment
         fields = ['resolve_date','resolve_action', 'assigned_to', 'comment']
         widgets = {
-            'resolve_date':forms.DateInput(attrs={'class': 'getdadate'}),
+            'resolve_date':forms.DateInput(attrs={'class': 'datepicker'}),
             'resolve_action':forms.Select(choices=ACTION_CHOICES)
         }
     
@@ -121,9 +113,30 @@ class SpecimenFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(SpecimenFilterForm, self).__init__(*args, **kwargs)
+        self.fields['reported_draw_date'].widget = forms.DateInput()
+        self.fields['reported_draw_date'].widget.attrs.update({'class':'datepicker'})
+        self.fields['transfer_in_date'].widget = forms.DateInput()
+        self.fields['transfer_in_date'].widget.attrs.update({'class':'datepicker'})
+        self.fields['transfer_out_date'].widget = forms.DateInput()
+        self.fields['transfer_out_date'].widget.attrs.update({'class':'datepicker'})
 
     def filter(self):
-        pass
+        qs = Specimen.objects.all().order_by('specimen_label', 'parent_label')
+        reported_draw_date = self.cleaned_data['reported_draw_date']
+        transfer_in_date = self.cleaned_data['transfer_in_date']
+        transfer_out_date = self.cleaned_data['transfer_out_date']
+        specimen_label = self.cleaned_data['specimen_label']
+
+        if transfer_out_date:
+            qs = qs.filter(transfer_out_date=transfer_out_date)
+        if transfer_in_date:
+            qs = qs.filter(transfer_in_date=transfer_in_date)
+        if reported_draw_date:
+            qs = qs.filter(reported_draw_date=reported_draw_date)
+        if specimen_label:
+            qs = qs.filter(specimen_label=specimen_label)
+                
+        return qs
 
 
 class RowFilterForm(forms.Form):
@@ -145,7 +158,7 @@ class RowFilterForm(forms.Form):
         pass
 
 
-class FileInfoFilterForm(RowFilterForm):
+class FileInfoFilterForm(forms.Form):
 
     STATE_CHOICES = (
         ('','---------'),
@@ -171,4 +184,13 @@ class FileInfoFilterForm(RowFilterForm):
         super(FileInfoFilterForm, self).__init__(*args, **kwargs)
 
     def filter(self):
-        pass
+        qs = FileInfo.objects.all().order_by('-created')
+        file_type = self.cleaned_data['file_type']
+        state = self.cleaned_data['state']
+
+        if file_type:
+            qs = qs.filter(file_type=file_type)
+        if state:
+            qs = qs.filter(state=state)
+            
+        return qs

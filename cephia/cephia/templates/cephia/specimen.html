@@ -2,34 +2,18 @@
 {% load bootstrap3 %}
 {% load endless %}
 
+{% block submit_action %}
+{% url 'specimen' %}
+{% endblock %}
 
-{% block filter_content %}
-<div class="container">
-  <div class="row">
-    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Filter</h3>
-      </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="col-md-3">
-            {% bootstrap_field form.specimen_label %}
-            {% bootstrap_field form.reported_draw_date %}
-          </div>
-          <div class="col-md-3">
-            {% bootstrap_field form.transfer_in_date %}
-            {% bootstrap_field form.transfer_out_date %}
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-1">
-            {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+{% block filter_col_a %}
+{% bootstrap_field form.specimen_label %}
+{% bootstrap_field form.reported_draw_date %}
+{% endblock %}
+
+{% block filter_col_b %}
+{% bootstrap_field form.transfer_in_date %}
+{% bootstrap_field form.transfer_out_date %}
 {% endblock %}
 
 {% block page_content %}

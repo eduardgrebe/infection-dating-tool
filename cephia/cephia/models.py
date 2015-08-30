@@ -1,16 +1,9 @@
 # encoding: utf-8
-from django.db.models.query import QuerySet
-import uuid
 from lib.fields import ProtectedForeignKey
-from django.contrib.auth.models import UserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
-from datetime import datetime, timedelta, date
-import pytz
-import time
 import os
-from django.utils import html
 from file_handlers.file_handler_register import *
 import logging
 from django.forms.models import model_to_dict
@@ -110,9 +103,8 @@ class FileInfo(models.Model):
         ('subject','Subject'),
         ('visit','Visit'),
         ('transfer_in','Transfer In'),
-        ('transfer_out','Transfer Out'),
-        ('missing_transfer_out','Missing Transfer Out'),
         ('aliquot','Aliquot'),
+        ('transfer_out','Transfer Out'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)

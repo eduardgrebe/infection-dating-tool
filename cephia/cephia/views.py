@@ -112,13 +112,11 @@ def visits(request, template="cephia/visits.html"):
 
 @login_required
 def specimen(request, template="cephia/specimen.html"):
-
-    specimen_label = request.GET.get('specimen_label')
     context = {}
     form = SpecimenFilterForm(request.GET or None)
-    
-    if specimen_label:
-        specimen = Specimen.objects.filter(specimen_label=specimen_label)
+
+    if form.is_valid():
+        specimen = form.filter()
     else:
         specimen = Specimen.objects.all().order_by('specimen_label', 'parent_label')
 
@@ -137,16 +135,20 @@ def specimen_type(request, template="cephia/specimen_type.html"):
 
 @login_required
 def file_info(request, template="cephia/file_info.html"):
+    context = {}
     if request.method == "GET":
-        context = {}
-        files = FileInfo.objects.all().order_by('-created')
         upload_form = FileInfoForm()
-        filter_form = FileInfoFilterForm()
+        filter_form = FileInfoFilterForm(request.GET or None)
+        if filter_form.is_valid():
+            files = filter_form.filter()
+        else:
+            files = FileInfo.objects.all().order_by('-created')
+
         context['files'] = files
         context['upload_form'] = upload_form
         context['filter_form'] = filter_form
         
-        return render_to_response(template, context, context_instance=RequestContext(request))
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required

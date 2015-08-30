@@ -3,6 +3,10 @@
 {% load endless %}
 
 
+{% block submit_action %}
+{% url 'file_info' %}
+{% endblock %}
+
 {% block filter_col_a %}
 {% bootstrap_field filter_form.file_type %}
 {% bootstrap_field filter_form.state %}
@@ -75,21 +79,10 @@
                 </tbody>
               </table>
 
-              {% include 'cephia/upload_file.html' with form=form %}
+              {% include 'cephia/upload_file.html' with upload_form=upload_form %}
 
               {% include 'cephia/message_modal.html'%}
 
-              <div class="container">
-                <div class="modal fade" id="rowModal">
-                  <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-		      {% block modal_header %}{% endblock %}
-		      {% block modal_body %}{% endblock %}
-		      {% block modal_footer %}{% endblock %}
-                    </div>
-	          </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -98,8 +91,3 @@
   </div>
 </div>
 {% endblock %}
-
-
-
-
-
