@@ -306,7 +306,7 @@ class Visit(models.Model):
     history = HistoricalRecords()
 
     def __unicode__(self):
-        return self.visit_label
+        return self.subject_label
 
 
 class SpecimenType(models.Model):

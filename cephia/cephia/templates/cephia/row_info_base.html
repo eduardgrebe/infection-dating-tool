@@ -10,17 +10,19 @@
         <h3 class="panel-title">Filter</h3>
       </div>
       <div class="panel-body">
-        <div class="row">
-          <div class="col-md-4">
-            {% block filter_fields %}
-            {% endblock %}
+        <form id="form" action="{% block submit_action %}{% endblock %}" role="form" method="GET">
+          <div class="row">
+            <div class="col-md-4">
+              {% block filter_fields %}
+              {% endblock %}
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-md-1">
-            {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
+          <div class="row">
+            <div class="col-md-1">
+              {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>

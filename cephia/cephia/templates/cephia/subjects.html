@@ -2,45 +2,30 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-{% block filter_content %}
-<div class="container">
-  <div class="row">
-    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Filter</h3>
-      </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="col-md-3">
-            {% bootstrap_field form.subject_label %}
-            {% bootstrap_field form.cohort_entry_date %}
-            {% bootstrap_field form.cohort_entry_hiv_status %}
-          </div>
-          <div class="col-md-3">
-            {% bootstrap_field form.sex %}
-            {% bootstrap_field form.population_group %}
-          </div>
-          <div class="col-md-3">
-            {% bootstrap_field form.transgender %}
-            {% bootstrap_field form.risk_sex_with_men %}
-            {% bootstrap_field form.risk_sex_with_women %}
-            {% bootstrap_field form.risk_idu %}
-            {% bootstrap_field form.has_visits %}
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-1">
-            {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+{% block submit_action %}
+{% url 'subjects' %}
 {% endblock %}
 
-{% block button_content %}
+{% block filter_col_a %}
+{% bootstrap_field form.subject_label %}
+{% bootstrap_field form.cohort_entry_date %}
+{% bootstrap_field form.cohort_entry_hiv_status %}
+{% endblock %}
 
+{% block filter_col_b %}
+{% bootstrap_field form.sex %}
+{% bootstrap_field form.transgender %}
+{% bootstrap_field form.population_group %}
+{% endblock %}
+
+{% block filter_col_c %}
+{% bootstrap_field form.risk_sex_with_men %}
+{% bootstrap_field form.risk_sex_with_women %}
+{% endblock %}
+
+{% block filter_col_d %}
+{% bootstrap_field form.risk_idu %}
+{% bootstrap_field form.has_visits %}
 {% endblock %}
 
 {% block page_content %}
@@ -70,6 +55,7 @@
                 <th>DoB</th>
                 <th>DoD</th>
                 <th>Sex</th>
+                <th>Transgender</th>
                 <th>Population Group</th>
                 <th>Sex with men</th>
                 <th>Sex with women</th>
@@ -91,13 +77,13 @@
 	          <td>{{subject.country.name}}</td>
 	          <td>{% if subject.last_negative_date %}{{subject.last_negative_date}}{% endif %}</td>
 	          <td>{% if subject.first_positive_date %}{{subject.first_positive_date}}{% endif %}</td>
-	          <td>{% if subject.art_onset_date %} {{subject.art_onset_date}} {% else %} &nbsp; {% endif %}</td>
+	          <td>{% if subject.ars_onset_date %} {{subject.ars_onset_date}} {% else %} &nbsp; {% endif %}</td>
 	          <td>{{subject.fiebig_stage_at_firstpos}}</td>
 	          <td>{% if subject.date_of_birth %}{{ subject.date_of_birth|date:"Y" }}{% endif %}</td>
                   <td>{% if subject.date_of_death %}{{ subject.date_of_death|date:"Y" }}{% endif %}</td>
+                  <td>{{subject.sex}}</td>
+                  <td>{% if subject.transgender %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
                   <td>{{subject.population_group.name}}</td>
-	          <td>{{subject.sex}}</td>
-	          <td>{% if subject.transgender %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	          <td>{% if subject.risk_sex_with_men %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	          <td>{% if subject.risk_sex_with_women %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	          <td>{% if subject.risk_idu %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>

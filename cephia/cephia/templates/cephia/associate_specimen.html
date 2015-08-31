@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block content %}
+<div id="wrapper">
+  <div class="container">
+    <div class="heading">
+      {% include "cephia/_top_navigation.html" %}
+    </div>
+
+    {% include "cephia/_navigation.html" %}
+
+    <div class="outer_container fixed-outer-container">
+      {% block left_menu %}
+      {% endblock %}
+      
+      {% block page_content %}
+      <div class="row">
+        {% for x in specimen %}
+        <div class="col-md-6">
+          <div class="container">
+            <div class="row">
+              <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Speciman</h3>
+                </div>
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      {{x.reported_draw_date}}
+                    </div>
+                    <div class="col-md-6">
+                      {% for z in specimen.x %}
+                      {{z}}
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endblock %}
+    <div id="footer">
+      <div class="logo">
+        <a href="http://www.sacema.org/" target="_blank">
+          <img src="{% static 'images/logo.png' %}" style="float:left;" alt="SACEMA logo"
+               title="South African Centre for Epidemiological Modelling and Analysis" height="100">
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

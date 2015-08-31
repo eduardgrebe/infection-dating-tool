@@ -6,6 +6,10 @@
 {% bootstrap_field filter_form.state %}
 {% endblock %}
 
+{% block submit_action %}
+{% url 'row_info' file_id %}
+{% endblock %}
+
 {% block pages %}
 {% paginate rows %}
 {% show_pages %}

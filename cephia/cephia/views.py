@@ -13,7 +13,7 @@ from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    FileInfoFilterForm)
 from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -62,23 +62,12 @@ def sites(request, template="cephia/sites.html"):
 
 @login_required
 def subjects(request, template="cephia/subjects.html"):
-
-    patient_label = request.GET.get('patient_label')
-    associated = request.GET.get('associated')
     context = {}
-    subjects = None
+    subjects = Subject.objects.all()
 
     form = SubjectFilterForm(request.GET or None)
-    
-    if patient_label:
-        subjects = Subject.objects.filter(patient_label=patient_label)
-    else:
-        subjects = Subject.objects.all()
-
-    if associated == 'true':
-        subjects = subjects.exclude(visit__isnull=True)
-    elif associated == 'false':
-        subjects = subjects.exclude(visit__isnull=False)
+    if form.is_valid():
+        subjects = form.filter(subjects)
 
     context['subjects'] = subjects
     context['form'] = form
@@ -87,23 +76,12 @@ def subjects(request, template="cephia/subjects.html"):
 
 @login_required
 def visits(request, template="cephia/visits.html"):
-
-    patient_label = request.GET.get('patient_label')
-    associated = request.GET.get('associated')
     context = {}
-    visits = None
+    visits = Visit.objects.all()
 
     form = VisitFilterForm(request.GET or None)
-
-    if patient_label:
-        visits = Visit.objects.filter(subject__patient_label=patient_label)
-    else:
-        visits = Visit.objects.all()
-
-    if associated == 'true':
-        visits = visits.exclude(subject__isnull=True)
-    elif associated == 'false':
-        visits = visits.exclude(subject__isnull=False)
+    if form.is_valid():
+        visits = form.filter(visits)
 
     context['visits'] = visits
     context['form'] = form
@@ -154,33 +132,15 @@ def file_info(request, template="cephia/file_info.html"):
 @login_required
 def row_info(request, file_id, template=None):
     if request.method == 'GET':
-        states = request.GET.get('state')
-
-        if states:
-            states = states.split()
-        else:
-            states = ['pending','processed','error','validated']
-
         context = {}
         fileinfo = FileInfo.objects.get(pk=file_id)
         comment_form = RowCommentForm()
-        filter_form = RowFilterForm()
-
-        if fileinfo.file_type == 'subject':
-            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/subject_row_info.html'
-        elif fileinfo.file_type == 'visit':
-            rows = VisitRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/visit_row_info.html'
-        elif fileinfo.file_type == 'transfer_in':
-            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/transfer_in_row_info.html'
-        elif fileinfo.file_type == 'aliquot':
-            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/aliquot_row_info.html'
-        elif fileinfo.file_type == 'transfer_out':
-            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/transfer_out_row_info.html'
+        
+        filter_form = RowFilterForm(request.GET or None)
+        if filter_form.is_valid():
+            rows, template = filter_form.filter(fileinfo)
+        else:
+            rows, template = filter_form.filter(fileinfo)
 
         context['rows'] = rows
         context['file_id'] = fileinfo.id
@@ -408,17 +368,16 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
-def associate_specimen_visits(request):
+def associate_specimen(request, template="cephia/associate_specimen.html"):
     try:
-        context = {}
-
+        context = {'specimen': {}}
         specimen = Specimen.objects.filter(visit__isnull=True)
         for x in specimen:
             from_date = x.reported_draw_date - timedelta(days=14)
             to_date = x.reported_draw_date + timedelta(days=14)
-            possible_visits = Visit.objects.filter(draw_date__gte=from_date, draw_date__lte=to_date)
-
-            context[x][possible_visits]
+            possible_visits = Visit.objects.filter(visit_date__gte=from_date, visit_date__lte=to_date)
+            context['specimen'][x] = possible_visits
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
     except Exception, e:
         logger.exception(e)
