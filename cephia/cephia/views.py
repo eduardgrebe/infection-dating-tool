@@ -398,10 +398,9 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
 @login_required
 def row_comment(request, file_type=None, file_id=None, row_id=None, template="cephia/comment_modal.html"):
     try:
-        import pdb; pdb.get_trace()
         context = {}
         form = RowCommentForm(request.POST or None)
-        row = FileInfo.objects.get(id=file_id).get_row(pk=row_id)
+        row = FileInfo.objects.get(id=file_id).get_row(row_id=row_id)
         
         if request.method == "POST":
             if form.is_valid():
@@ -413,9 +412,8 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
                 row.save()
             return HttpResponseRedirect(reverse('file_info'))
         elif request.method == 'GET':
-            import pdb; pdb.get_trace()
             if row.comment:
-                form = RowCommentForm(initial=comment.model_to_dict())
+                form = RowCommentForm(initial=row.comment.model_to_dict())
                 
             context['comment_form'] = form
             context['data'] = {
@@ -426,6 +424,7 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
             response = render_to_response(template, context, context_instance=RequestContext(request))
             return HttpResponse(json.dumps({'response': response.content}))
     except Exception, e:
+        import pdb; pdb.set_trace()
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))

@@ -277,18 +277,24 @@ class FileInfoFilterForm(forms.Form):
 
     file_type = forms.ChoiceField(choices=FILE_TYPE_CHOICES, required=False)
     state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    created = forms.DateField(required=False)
     
     def __init__(self, *args, **kwargs):
         super(FileInfoFilterForm, self).__init__(*args, **kwargs)
+        self.fields['created'].widget = forms.DateInput()
+        self.fields['created'].widget.attrs.update({'class':'datepicker'})
 
     def filter(self):
         qs = FileInfo.objects.all().order_by('-created')
         file_type = self.cleaned_data['file_type']
         state = self.cleaned_data['state']
+        created = self.cleaned_data['created']
 
         if file_type:
             qs = qs.filter(file_type=file_type)
         if state:
             qs = qs.filter(state=state)
+        if created:
+            qs = qs.filter(created=created)
             
         return qs

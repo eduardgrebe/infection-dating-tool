@@ -20,11 +20,12 @@ $(document).ready(function() {
   //
 
   $('.btn-comment-modal').on('click', function(event) {
+    event.preventDefault();
     var rowId = $(event.target).parent().data('row-id');
     var fileId = $(event.target).parent().data('file-id');
     var fileType = $(event.target).parent().data('file-type');
     var url = "/row_comment/" + fileType + '/' + String(fileId) + '/' + String(rowId);
-    debugger;
+
     $.get(url, function(data, status) {
       var response = JSON.parse(data);
       if (status == "success") {

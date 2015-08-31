@@ -9,7 +9,14 @@
 
 {% block filter_col_a %}
 {% bootstrap_field filter_form.file_type %}
+{% endblock %}
+
+{% block filter_col_b %}
 {% bootstrap_field filter_form.state %}
+{% endblock %}
+
+{% block filter_col_c %}
+{% bootstrap_field filter_form.created %}
 {% endblock %}
 
 {% block info_content %}
