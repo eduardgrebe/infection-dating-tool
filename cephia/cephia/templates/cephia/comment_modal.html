@@ -2,7 +2,7 @@
   <div class="modal fade" id="myModal">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form id="form" action="{% url 'row_comment' %}" enctype="multipart/form-data" role="form" method="POST">
+        <form id="form" action="{% url 'row_comment' file_id=data.file_id row_id=data.row_id file_type=data.file_type %}" enctype="multipart/form-data" role="form" method="POST">
 	  {% csrf_token %}
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>

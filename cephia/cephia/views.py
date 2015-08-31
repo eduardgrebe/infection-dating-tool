@@ -14,6 +14,7 @@ from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
 from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
 from datetime import datetime, timedelta
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -384,7 +385,8 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
         for x in specimen:
             from_date = x.reported_draw_date - timedelta(days=14)
             to_date = x.reported_draw_date + timedelta(days=14)
-            possible_visits = Visit.objects.filter(visit_date__gte=from_date, visit_date__lte=to_date).exclude(pk__in=[z['visit'] for z in visits_already_associated])
+            possible_visits = Visit.objects.filter(visit_date__gte=from_date,
+                                                   visit_date__lte=to_date).exclude(pk__in=[z['visit'] for z in visits_already_associated])
             context['specimen'][x] = possible_visits
             
         return render_to_response(template, context, context_instance=RequestContext(request))
@@ -396,21 +398,33 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
 @login_required
 def row_comment(request, file_type=None, file_id=None, row_id=None, template="cephia/comment_modal.html"):
     try:
+        import pdb; pdb.get_trace()
+        context = {}
+        form = RowCommentForm(request.POST or None)
+        row = FileInfo.objects.get(id=file_id).get_row(pk=row_id)
+        
         if request.method == "POST":
-            form = RowCommentForm(request.POST)
             if form.is_valid():
-                form.save()
+                comment = form.save()
                 messages.add_message(request, messages.SUCCESS,
                                      'Successfully commented on row')
 
+                row.comment = comment
+                row.save()
             return HttpResponseRedirect(reverse('file_info'))
         elif request.method == 'GET':
-            if file_type == 'subject':
-                comment = SubjectRow.objects.get(id=row_id).comment
-                form = RowCommentForm(data=comment.model_to_dict())
-
-        response = render_to_response(template, context, context_instance=RequestContext(request))
-        return HttpResponse(json.dumps({'response': response.content, 'response_message': msg}))
+            import pdb; pdb.get_trace()
+            if row.comment:
+                form = RowCommentForm(initial=comment.model_to_dict())
+                
+            context['comment_form'] = form
+            context['data'] = {
+                'file_id':file_id,
+                'file_type':file_type,
+                'row_id':row_id
+            }
+            response = render_to_response(template, context, context_instance=RequestContext(request))
+            return HttpResponse(json.dumps({'response': response.content}))
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')

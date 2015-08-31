@@ -43,8 +43,12 @@
     <td>{{row.aliquot_reason}}</td>
     <td>{{row.state}}</td>
     <td>{{row.error_message}}</td>
-    <td data-row-id="{{row.id}}">
-      {% if row.state == 'error' %}<a href="#" class="btn btn-success" data-toggle="modal" data-target="#myModal">{% bootstrap_icon "comment" %}</a>{% endif %}
+    <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
+      {% if row.state == 'error' %}
+      <button class="btn btn-success btn-comment-modal">
+        {% bootstrap_icon "comment" %}
+      </button>
+      {% endif %}
     </td>
   </tr>
   {% endfor %}

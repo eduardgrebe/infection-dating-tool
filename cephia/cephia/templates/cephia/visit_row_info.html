@@ -49,6 +49,13 @@
     <td>{{row.hepatitis}}</td>
     <td>{{row.state}}</td>
     <td>{{row.error_message}}</td>
+    <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
+      {% if row.state == 'error' %}
+      <button class="btn btn-success btn-comment-modal">
+        {% bootstrap_icon "comment" %}
+      </button>
+      {% endif %}
+    </td>
   </tr>
   {% endfor %}
 </tbody>

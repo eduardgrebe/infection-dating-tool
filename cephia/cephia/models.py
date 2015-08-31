@@ -124,6 +124,18 @@ class FileInfo(models.Model):
     def get_handler(self):
         return get_file_handler_for_type(self.file_type)(self)
 
+    def get_row(self, row_id):
+        if self.file_type == 'subject':
+            return SubjectRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'visit':
+            return VisitRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'transfer_in':
+            return TransferInRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'aliquot':
+            return AliquotRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'transfer_out':
+            return TransferOutRow.objects.get(fileinfo__id=self.id, id=row_id)
+
 
 class ImportedRow(models.Model):
 
