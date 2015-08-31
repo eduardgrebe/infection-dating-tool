@@ -17,10 +17,10 @@
       
       {% block page_content %}
       <div class="row">
-        {% for x in specimen %}
         <div class="col-md-6">
           <div class="container">
             <div class="row">
+              {% for specimen, visits in specimen.items %}
               <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
                 <div class="panel-heading">
                   <h3 class="panel-title">Speciman</h3>
@@ -28,23 +28,50 @@
                 <div class="panel-body">
                   <div class="row">
                     <div class="col-md-6">
-                      {{x.reported_draw_date}}
+                      <div class="table-responsive">
+                        <table class="table-striped table table-hover" style="overflow:auto;">
+                          <thead>
+                            <th>Specimen</th>
+                            <th>Reported Draw Date</th>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>{{specimen.specimen_label}}</td>
+                              <td>{{specimen.reported_draw_date}}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                     <div class="col-md-6">
-                      {% for z in specimen.x %}
-                      {{z}}
-                      {% endfor %}
+                      <div class="table-responsive">
+                        <table class="table-striped table table-hover" style="overflow:auto;">
+                          <thead>
+                            <th>Subject</th>
+                            <th>Visit Date</th>
+                          </thead>
+                          <tbody>
+                            {% for visit in visits %}
+                            <tr>
+                              <td>{{visit.subject_label}}</td>
+                              <td>{{visit.visit_date}}</td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              {% endfor %}
             </div>
           </div>
         </div>
-        {% endfor %}
       </div>
+      {% endblock %}
     </div>
-    {% endblock %}
+    
     <div id="footer">
       <div class="logo">
         <a href="http://www.sacema.org/" target="_blank">
