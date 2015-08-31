@@ -17,57 +17,87 @@
       
       {% block page_content %}
       <div class="row">
+        {% for specimen, visits in specimen.items %}
         <div class="col-md-6">
           <div class="container">
             <div class="row">
-              {% for specimen, visits in specimen.items %}
               <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
                 <div class="panel-heading">
-                  <h3 class="panel-title">Speciman</h3>
+                  <h3 class="panel-title">Association</h3>
                 </div>
                 <div class="panel-body">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="table-responsive">
-                        <table class="table-striped table table-hover" style="overflow:auto;">
-                          <thead>
-                            <th>Specimen</th>
-                            <th>Reported Draw Date</th>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>{{specimen.specimen_label}}</td>
-                              <td>{{specimen.reported_draw_date}}</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                  <form id="form" action="{% url 'associate_specimen_visit' specimen.id %}" role="form" method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h5 class="panel-title">Specimen</h5>
+                          </div>
+                          <div class="panel-body">
+                            <div class="table-responsive">
+                              <table class="table-striped table table-hover" style="overflow:auto;">
+                                <thead>
+                                  <th>Specimen</th>
+                                  <th>Reported Draw Date</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>{{specimen.specimen_label}}</td>
+                                    <td>{{specimen.reported_draw_date}}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h5 class="panel-title">Available visits in 14 day window</h5>
+                          </div>
+                          <div class="panel-body">
+                            <div class="table-responsive">
+                              <table class="table-striped table table-hover" style="overflow:auto;">
+                                <thead>
+                                  <th>Subject</th>
+                                  <th>Visit Date</th>
+                                </thead>
+                                <tbody>
+                                  {% for visit in visits %}
+                                  <tr>
+                                    <td>{{visit.subject_label}}</td>
+                                    <td>{{visit.visit_date}}</td>
+                                    <td><input type="radio" name="visit" value="{{visit.id}}"></td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div class="col-md-6">
-                      <div class="table-responsive">
-                        <table class="table-striped table table-hover" style="overflow:auto;">
-                          <thead>
-                            <th>Subject</th>
-                            <th>Visit Date</th>
-                          </thead>
-                          <tbody>
-                            {% for visit in visits %}
-                            <tr>
-                              <td>{{visit.subject_label}}</td>
-                              <td>{{visit.visit_date}}</td>
-                            </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
+                    <div class="row">
+                      <div class="container">
+                        <div class="col-md-3 col-md-offset-9">
+                          <div class="btn-group">
+                            <a href="{% url 'artificial_visit' specimen.id %}" class="btn btn-primary" style="text-decoration:none;">Artificial Visit</a>
+                          </div>
+                          <div class="btn-group">
+                            <input type="submit" value="Associate" class="btn btn-primary" style="text-decoration:none;">
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </form>
                 </div>
               </div>
-              {% endfor %}
             </div>
           </div>
         </div>
+        {% endfor %}
       </div>
       {% endblock %}
     </div>

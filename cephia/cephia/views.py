@@ -368,21 +368,30 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
-def associate_specimen(request, template="cephia/associate_specimen.html"):
+def associate_specimen(request, specimen_id=None, template="cephia/associate_specimen.html"):
     try:
+        if request.POST:
+            associate_specimen = Specimen.objects.get(id=specimen_id)
+            associate_visit = Visit.objects.get(id=request.POST.get('visit'))
+            associate_specimen.visit = associate_visit
+            associate_specimen.save()
+            messages.success(request, 'Successfully associated specimen with visit')    
+
         context = {'specimen': {}}
         specimen = Specimen.objects.filter(visit__isnull=True)
+        visits_already_associated = Specimen.objects.values('visit').filter(visit__isnull=False)
+        
         for x in specimen:
             from_date = x.reported_draw_date - timedelta(days=14)
             to_date = x.reported_draw_date + timedelta(days=14)
-            possible_visits = Visit.objects.filter(visit_date__gte=from_date, visit_date__lte=to_date)
+            possible_visits = Visit.objects.filter(visit_date__gte=from_date, visit_date__lte=to_date).exclude(pk__in=[z['visit'] for z in visits_already_associated])
             context['specimen'][x] = possible_visits
+            
         return render_to_response(template, context, context_instance=RequestContext(request))
-
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to make association')
-        return HttpResponseRedirect(reverse('file_info'))
+        return HttpResponseRedirect(reverse('specimen'))
 
 @login_required
 def comment_on_row(request):
@@ -399,3 +408,21 @@ def comment_on_row(request):
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))
+
+@login_required
+def artificial_visit(request, specimen_id=None):
+    try:
+        import pdb; pdb.set_trace()
+        associate_specimen = Specimen.objects.get(id=specimen_id)
+        associate_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
+                                               visit_date=associate_specimen.reported_draw_date,
+                                               artificial=True)
+        associate_specimen.visit = associate_visit
+        associate_specimen.save()
+        messages.success(request, 'Successfully created artificial visit')
+
+        return HttpResponseRedirect(reverse('associate_specimen'))
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to create artificial visit')
+        return HttpResponseRedirect(reverse('associate_specimen'))
