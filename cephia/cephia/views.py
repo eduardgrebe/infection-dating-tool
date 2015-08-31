@@ -370,7 +370,7 @@ def download_subjects_no_visits(request):
 @login_required
 def associate_specimen(request, specimen_id=None, template="cephia/associate_specimen.html"):
     try:
-        if request.POST:
+        if request.method == 'POST':
             associate_specimen = Specimen.objects.get(id=specimen_id)
             associate_visit = Visit.objects.get(id=request.POST.get('visit'))
             associate_specimen.visit = associate_visit
@@ -394,7 +394,7 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
         return HttpResponseRedirect(reverse('specimen'))
 
 @login_required
-def comment_on_row(request):
+def row_comment(request, file_type=None, file_id=None, row_id=None, template="cephia/comment_modal.html"):
     try:
         if request.method == "POST":
             form = RowCommentForm(request.POST)
@@ -403,7 +403,14 @@ def comment_on_row(request):
                 messages.add_message(request, messages.SUCCESS,
                                      'Successfully commented on row')
 
-                return HttpResponseRedirect(reverse('file_info'))
+            return HttpResponseRedirect(reverse('file_info'))
+        elif request.method == 'GET':
+            if file_type == 'subject':
+                comment = SubjectRow.objects.get(id=row_id).comment
+                form = RowCommentForm(data=comment.model_to_dict())
+
+        response = render_to_response(template, context, context_instance=RequestContext(request))
+        return HttpResponse(json.dumps({'response': response.content, 'response_message': msg}))
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
@@ -412,7 +419,6 @@ def comment_on_row(request):
 @login_required
 def artificial_visit(request, specimen_id=None):
     try:
-        import pdb; pdb.set_trace()
         associate_specimen = Specimen.objects.get(id=specimen_id)
         associate_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
                                                visit_date=associate_specimen.reported_draw_date,

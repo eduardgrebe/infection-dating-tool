@@ -4,6 +4,7 @@
 
 {% block filter_fields %}
 {% bootstrap_field filter_form.state %}
+{% bootstrap_field filter_form.has_comment %}
 {% endblock %}
 
 {% block submit_action %}
@@ -110,7 +111,13 @@
     <td>{{row.art_resumption_date_dd}}</td>
     <td>{{row.state}}</td>
     <td>{{row.error_message}}</td>
-    <td data-row-id="{{row.id}}"><button class="btn btn-success" data-toggle="modal" data-target="#myModal">{% bootstrap_icon "comment" %}</button></td>
+    <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
+      {% if row.state == 'error' %}
+      <button class="btn btn-success btn-comment-modal" data-toggle="modal" data-target="#myModal">
+        {% bootstrap_icon "comment" %}
+      </button>
+      {% endif %}
+    </td>
   </tr>
   {% endfor %}
 </tbody>

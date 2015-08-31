@@ -4,6 +4,7 @@
 
 {% block filter_fields %}
 {% bootstrap_field filter_form.state %}
+{% bootstrap_field filter_form.has_comment %}
 {% endblock %}
 
 
@@ -42,10 +43,15 @@
     <td>{{row.aliquot_reason}}</td>
     <td>{{row.state}}</td>
     <td>{{row.error_message}}</td>
+    <td data-row-id="{{row.id}}">
+      {% if row.state == 'error' %}<a href="#" class="btn btn-success" data-toggle="modal" data-target="#myModal">{% bootstrap_icon "comment" %}</a>{% endif %}
+    </td>
   </tr>
   {% endfor %}
 </tbody>
 {% endblock %}
+
+
 
 
 

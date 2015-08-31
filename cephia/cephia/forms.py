@@ -21,8 +21,9 @@ class FileInfoForm(forms.ModelForm):
 class RowCommentForm(forms.ModelForm):
     class Meta:
         ACTION_CHOICES = (
-            ('action1','Action1'),
-            ('action2', 'Action2'),
+            ('','---------'),
+            ('report','Report to developer'),
+            ('correct', 'Correct and re-upload'),
         )
         model = ImportedRowComment
         fields = ['resolve_date','resolve_action', 'assigned_to', 'comment']
@@ -207,8 +208,15 @@ class RowFilterForm(forms.Form):
         ('processed','Processed'),
         ('error','Error'),
     )
+
+    ASSOCIATED_CHOICES = (
+        ('','---------'),
+        (True,'Yes'),
+        (False,'No'),
+    )
     
     state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    has_comment = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
 
     def __init__(self, *args, **kwargs):
         super(RowFilterForm, self).__init__(*args, **kwargs)
@@ -216,8 +224,10 @@ class RowFilterForm(forms.Form):
     def filter(self, fileinfo):
         if self.is_valid():
             state = self.cleaned_data['state']
+            has_comment = self.cleaned_data['has_comment']
         else:
             state = None
+            has_comment = None
 
         if fileinfo.file_type == 'subject':
             rows = SubjectRow.objects.filter(fileinfo=fileinfo)
@@ -234,8 +244,14 @@ class RowFilterForm(forms.Form):
         elif fileinfo.file_type == 'transfer_out':
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo)
             template = 'cephia/transfer_out_row_info.html'
+
         if state:
             rows = rows.filter(state=state)
+        if has_comment:
+            if has_comment == 'True':
+                rows = rows.filter(comment__isnull=False)
+            else:
+                rows = rows.filter(comment__isnull=True)
 
         return rows, template
 
