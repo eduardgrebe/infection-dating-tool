@@ -42,6 +42,9 @@
           <div class="container"
             <div class="table-responsive">
               {% block pages %}{% endblock %}
+              <div class="btn-group pull-right">
+                <a href="{% url 'export_as_csv' file_id=file_id %}" class="btn btn-primary" style="float:right; text-decoration:none;">Export errors to CSV</a>
+              </div>
               <table class="table-striped table table-hover" style="overflow:auto;">
                 {% block table_header %}{% endblock %}
                 {% block table_body %}{% endblock %}
