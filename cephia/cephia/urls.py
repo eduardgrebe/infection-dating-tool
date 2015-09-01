@@ -7,14 +7,12 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf.urls.static import static
 
 urlpatterns = [
-    url('^', include('django.contrib.auth.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.home, name='home'),
     url(r'^tms/$', views.table_management, name='table_management'),
     
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
-    url(r'^locations/$', views.locations, name='locations'),
     url(r'^specimen_type/$', views.specimen_type, name='specimen_type'),
     url(r'^studies/$', views.studies, name='studies'),
     url(r'^sites/$', views.sites, name='sites'),
@@ -33,6 +31,11 @@ urlpatterns = [
     url(r'^export_as_csv/(?P<file_id>\d+)/$', views.export_as_csv, name='export_as_csv'),
     url(r'^download_subjects_no_visits/$', views.download_subjects_no_visits, name='download_subjects_no_visits'),
     url(r'^download_visits_no_subjects/$', views.download_visits_no_subjects, name='download_visits_no_subjects'),
+    url(r'^associate_specimen/$', views.associate_specimen, name='associate_specimen'),
+    url(r'^associate_specimen/(?P<specimen_id>\d+)$', views.associate_specimen, name='associate_specimen_visit'),
+    url(r'^artificial_visit/(?P<specimen_id>\d+)$', views.artificial_visit, name='artificial_visit'),
+    url(r'^row_comment/(?P<file_type>\w+)/(?P<file_id>\d+)/(?P<row_id>\d+)$', views.row_comment, name='row_comment'),
+    url(r'^row_comment/$', views.row_comment, name='row_comment'),
 
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/cephia_login.html'}, name='auth_login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
@@ -43,4 +46,4 @@ urlpatterns = [
     url(r'^accounts/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm', name='password_reset_confirm'),
     url(r'^accounts/reset/done/$', 'django.contrib.auth.views.password_reset_complete'),
     
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

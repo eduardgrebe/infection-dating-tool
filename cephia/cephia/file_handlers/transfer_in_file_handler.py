@@ -80,7 +80,7 @@ class TransferInFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self):
-        from cephia.models import TransferInRow, SpecimenType, TransferReason
+        from cephia.models import TransferInRow, SpecimenType
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -153,7 +153,7 @@ class TransferInFileHandler(FileHandler):
 
 
     def process(self):
-        from cephia.models import TransferInRow, Subject, Study, TransferReason, SpecimenType, Specimen, Site
+        from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Site
         
         rows_inserted = 0
         rows_failed = 0
@@ -169,17 +169,17 @@ class TransferInFileHandler(FileHandler):
                         subject = None
                         pass
 
-                    specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
-                                                       reported_draw_date = self.registered_dates.get('drawdate', None),
-                                                       transfer_in_date = self.registered_dates.get('transfer_date', None),
-                                                       transfer_reason = transfer_in_row.transfer_reason,
-                                                       subject = subject,
-                                                       specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
-                                                       number_of_containers = (transfer_in_row.number_of_containers or None),
-                                                       initial_claimed_volume = (transfer_in_row.volume or None),
-                                                       volume_units = transfer_in_row.volume_units,
-                                                       source_study = Study.objects.get(name=transfer_in_row.source_study),
-                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
+                    Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
+                                            reported_draw_date = self.registered_dates.get('drawdate', None),
+                                            transfer_in_date = self.registered_dates.get('transfer_date', None),
+                                            transfer_reason = transfer_in_row.transfer_reason,
+                                            subject = subject,
+                                            specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
+                                            number_of_containers = (transfer_in_row.number_of_containers or None),
+                                            initial_claimed_volume = (transfer_in_row.volume or None),
+                                            volume_units = transfer_in_row.volume_units,
+                                            source_study = Study.objects.get(name=transfer_in_row.source_study),
+                                            receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = timezone.now()

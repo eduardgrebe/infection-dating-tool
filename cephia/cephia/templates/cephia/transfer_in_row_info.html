@@ -2,61 +2,73 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-{% block site-title %} Row Information {% endblock %}
+{% block filter_fields %}
+{% bootstrap_field filter_form.state %}
+{% bootstrap_field filter_form.has_comment %}
+{% endblock %}
 
-{% block page_content %}
 
+{% block pages %}
 {% paginate rows %}
 {% show_pages %}
+{% endblock %}
 
-<table class="table-striped table table-hover" style="overflow:auto;">
-    <thead>
-	<th>Specimen Label</th>
-	<th>Subject Label</th>
-	<th>Draw Date</th>
-        <th></th>
-        <th></th>
-	<th>Number of Containers</th>
-	<th>Transfer Date</th>
-        <th></th>
-        <th></th>
-	<th>Receiving Site</th>
-	<th>Transfer Reason</th>
-	<th>Specimen Type</th>
-	<th>Volume</th>
-        <th>Volume Units</th>
-        <th>Source Study</th>
-        <th>Notes</th>
-	<th>State</th>
-	<th>Message</th>
-    </thead>
+{% block filename %}{{file}}{% endblock %}
+{% block table_header %}
+<thead>
+  <th>Specimen Label</th>
+  <th>Subject Label</th>
+  <th>Draw Date</th>
+  <th></th>
+  <th></th>
+  <th>Number of Containers</th>
+  <th>Transfer Date</th>
+  <th></th>
+  <th></th>
+  <th>Receiving Site</th>
+  <th>Transfer Reason</th>
+  <th>Specimen Type</th>
+  <th>Volume</th>
+  <th>Volume Units</th>
+  <th>Source Study</th>
+  <th>Notes</th>
+  <th>State</th>
+  <th>Message</th>
+</thead>
+{% endblock %}
 
-    <tbody>
-	{% for row in rows %}
-	<tr>
-	    <td>{{row.specimen_label}}</td>
-	    <td>{{row.subject_label}}</td>
-	    <td>{{row.drawdate_yyyy}}</td>
-            <td>{{row.drawdate_mm}}</td>
-            <td>{{row.drawdate_dd}}</td>
-	    <td>{{row.number_of_containers}}</td>
-	    <td>{{row.transfer_date_yyyy}}</td>
-            <td>{{row.transfer_date_mm}}</td>
-            <td>{{row.transfer_date_dd}}</td>
-	    <td>{{row.receiving_site}}</td>
-	    <td>{{row.transfer_reason}}</td>
-	    <td>{{row.specimen_type}}</td>
-	    <td>{{row.volume}}</td>
-            <td>{{row.volume_units}}</td>
-            <td>{{row.source_study}}</td>
-            <td>{{row.notes}}</td>
-	    <td>{{row.state}}</td>
-	    <td>{{row.error_message}}</td>
-	</tr>
-	{% endfor %}
-    </tbody>
-</table>
-
+{% block table_body %}
+<tbody>
+  {% for row in rows %}
+  <tr>
+    <td>{{row.specimen_label}}</td>
+    <td>{{row.subject_label}}</td>
+    <td>{{row.drawdate_yyyy}}</td>
+    <td>{{row.drawdate_mm}}</td>
+    <td>{{row.drawdate_dd}}</td>
+    <td>{{row.number_of_containers}}</td>
+    <td>{{row.transfer_date_yyyy}}</td>
+    <td>{{row.transfer_date_mm}}</td>
+    <td>{{row.transfer_date_dd}}</td>
+    <td>{{row.receiving_site}}</td>
+    <td>{{row.transfer_reason}}</td>
+    <td>{{row.specimen_type}}</td>
+    <td>{{row.volume}}</td>
+    <td>{{row.volume_units}}</td>
+    <td>{{row.source_study}}</td>
+    <td>{{row.notes}}</td>
+    <td>{{row.state}}</td>
+    <td>{{row.error_message}}</td>
+    <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
+      {% if row.state == 'error' %}
+      <a href="#" class="btn btn-success btn-comment-modal">
+        {% bootstrap_icon "comment" %}
+      </a>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
 {% endblock %}
 
 

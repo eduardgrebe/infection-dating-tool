@@ -1,16 +1,9 @@
 from django import forms
-from models import FileInfo
+from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
+                    VisitRow, Site, Specimen, SpecimenType, TransferInRow,
+                    Study, TransferOutRow, AliquotRow, ImportedRowComment)
 
 class FileInfoForm(forms.ModelForm):
-
-    FILE_TYPE_CHOICES = (
-        ('subject','Subject'),
-        ('visit','Visit'),
-        ('transfer_in','Transfer In'),
-        ('transfer_out','Transfer Out'),
-        ('annihilation','Annihilation')
-    )
-    
     class Meta:
         model = FileInfo
         fields = ['data_file','file_type', 'priority']
@@ -24,5 +17,285 @@ class FileInfoForm(forms.ModelForm):
         
         for key in self.fields:
             self.fields[key].required = True
+
+
+class RowCommentForm(forms.ModelForm):
+    class Meta:
+        ACTION_CHOICES = (
+            ('','---------'),
+            ('report','Report to developer'),
+            ('correct', 'Correct and re-upload'),
+        )
+        model = ImportedRowComment
+        fields = ['resolve_date','resolve_action', 'assigned_to', 'comment']
+        widgets = {
+            'resolve_date':forms.DateInput(attrs={'class': 'datepicker'}),
+            'resolve_action':forms.Select(choices=ACTION_CHOICES)
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super(RowCommentForm, self).__init__(*args, **kwargs)
         
 
+class SubjectFilterForm(forms.Form):
+    
+    GENDER_CHOICES = (
+        ('','---------'),
+        ('M','Male'),
+        ('F','Female'),
+    )
+
+    STATUS_CHOICES = (
+        ('','---------'),
+        ('N','Negative'),
+        ('P','Positive'),
+    )
+
+    ASSOCIATED_CHOICES = (
+        ('','---------'),
+        (True,'Yes'),
+        (False,'No'),
+    )
+    
+    subject_label = forms.CharField(max_length=255, required=False)
+    cohort_entry_date = forms.DateField(required=False)
+    cohort_entry_hiv_status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
+    sex = forms.ChoiceField(choices=GENDER_CHOICES, required=False)
+    population_group = forms.ChoiceField(required=False)
+    transgender = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    risk_sex_with_men = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    risk_sex_with_women = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    risk_idu = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    subtype_confirmed = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    has_visits = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super(SubjectFilterForm, self).__init__(*args, **kwargs)
+        
+        self.fields['cohort_entry_date'].widget = forms.DateInput()
+        self.fields['cohort_entry_date'].widget.attrs.update({'class':'datepicker'})
+
+    def filter(self, subjects):
+        subject_label = self.cleaned_data['subject_label']
+        cohort_entry_date = self.cleaned_data['cohort_entry_date']
+        cohort_entry_hiv_status = self.cleaned_data['cohort_entry_hiv_status']
+        sex = self.cleaned_data['sex']
+        population_group = self.cleaned_data['population_group']
+        transgender = self.cleaned_data['transgender']
+        risk_sex_with_men = self.cleaned_data['risk_sex_with_men']
+        risk_sex_with_women = self.cleaned_data['risk_sex_with_women']
+        risk_idu = self.cleaned_data['risk_idu']
+        subtype_confirmed = self.cleaned_data['subtype_confirmed']
+        has_visits = self.cleaned_data['has_visits']
+
+        if subject_label:
+            subjects = subjects.filter(subject_label=subject_label)
+        if cohort_entry_date:
+            subjects = subjects.filter(cohort_entry_date=cohort_entry_date)
+        if cohort_entry_hiv_status:
+            subjects = subjects.filter(cohort_entry_hiv_status=cohort_entry_hiv_status)
+        if sex:
+            subjects = subjects.filter(sex=sex)
+        if population_group:
+            subjects = subjects.filter(ethnicity__id=population_group)
+        if transgender:
+            subjects = subjects.filter(transgender=transgender)
+        if risk_sex_with_men:
+            subjects = subjects.filter(risk_sex_with_men=risk_sex_with_men)
+        if risk_sex_with_women:
+            subjects = subjects.filter(risk_sex_with_women=risk_sex_with_women)
+        if risk_idu:
+            subjects = subjects.filter(risk_idu=risk_idu)
+        if subtype_confirmed:
+            subjects = subjects.filter(subtype_confirmed=subtype_confirmed)
+        if has_visits:
+            subjects = subjects.exclude(visit__isnull=has_visits)
+
+        return subjects
+
+
+class VisitFilterForm(forms.Form):
+
+    ASSOCIATED_CHOICES = (
+        ('','---------'),
+        (True,'Yes'),
+        (False,'No'),
+    )
+
+    STATUS_CHOICES = (
+        ('','---------'),
+        ('N','Negative'),
+        ('P','Positive'),
+    )
+    
+    subject_label = forms.CharField(max_length=50, required=False)
+    visit_date = forms.DateField(required=False)
+    visit_hivstatus = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
+    pregnant = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    hepatitis = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    artificial = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(VisitFilterForm, self).__init__(*args, **kwargs)
+        self.fields['visit_date'].widget = forms.DateInput()
+        self.fields['visit_date'].widget.attrs.update({'class':'datepicker'})
+
+    def filter(self, visits):
+        subject_label = self.cleaned_data['subject_label']
+        visit_date = self.cleaned_data['visit_date']
+        visit_hivstatus = self.cleaned_data['visit_hivstatus']
+        pregnant = self.cleaned_data['pregnant']
+        hepatitis = self.cleaned_data['hepatitis']
+        artificial = self.cleaned_data['artificial']
+
+        if subject_label:
+            visits = visits.filter(subject_label=subject_label)
+        if visit_date:
+            visits = visits.filter(visit_date=visit_date)
+        if visit_hivstatus:
+            visits = visits.filter(visit_hivstatus=visit_hivstatus)
+        if pregnant:
+            visits = visits.filter(pregnant=pregnant)
+        if hepatitis:
+            visits = visits.filter(hepatitis=hepatitis)
+        if artificial:
+            visits = visits.filter(artificial=artificial)
+
+        return visits
+        #visits = visits.exclude(subject__isnull=True)
+
+
+class SpecimenFilterForm(forms.Form):
+    
+    specimen_label = forms.CharField(required=False)
+    reported_draw_date = forms.DateField(required=False)
+    transfer_in_date = forms.DateField(required=False)
+    transfer_out_date = forms.DateField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(SpecimenFilterForm, self).__init__(*args, **kwargs)
+        self.fields['reported_draw_date'].widget = forms.DateInput()
+        self.fields['reported_draw_date'].widget.attrs.update({'class':'datepicker'})
+        self.fields['transfer_in_date'].widget = forms.DateInput()
+        self.fields['transfer_in_date'].widget.attrs.update({'class':'datepicker'})
+        self.fields['transfer_out_date'].widget = forms.DateInput()
+        self.fields['transfer_out_date'].widget.attrs.update({'class':'datepicker'})
+
+    def filter(self):
+        qs = Specimen.objects.all().order_by('specimen_label', 'parent_label')
+        reported_draw_date = self.cleaned_data['reported_draw_date']
+        transfer_in_date = self.cleaned_data['transfer_in_date']
+        transfer_out_date = self.cleaned_data['transfer_out_date']
+        specimen_label = self.cleaned_data['specimen_label']
+
+        if transfer_out_date:
+            qs = qs.filter(transfer_out_date=transfer_out_date)
+        if transfer_in_date:
+            qs = qs.filter(transfer_in_date=transfer_in_date)
+        if reported_draw_date:
+            qs = qs.filter(reported_draw_date=reported_draw_date)
+        if specimen_label:
+            qs = qs.filter(specimen_label=specimen_label)
+                
+        return qs
+
+
+class RowFilterForm(forms.Form):
+
+    STATE_CHOICES = (
+        ('','---------'),
+        ('pending','Pending'),
+        ('validated','Validated'),
+        ('processed','Processed'),
+        ('error','Error'),
+    )
+
+    ASSOCIATED_CHOICES = (
+        ('','---------'),
+        (True,'Yes'),
+        (False,'No'),
+    )
+    
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    has_comment = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(RowFilterForm, self).__init__(*args, **kwargs)
+
+    def filter(self, fileinfo):
+        if self.is_valid():
+            state = self.cleaned_data['state']
+            has_comment = self.cleaned_data['has_comment']
+        else:
+            state = None
+            has_comment = None
+
+        if fileinfo.file_type == 'subject':
+            rows = SubjectRow.objects.filter(fileinfo=fileinfo)
+            template = 'cephia/subject_row_info.html'
+        elif fileinfo.file_type == 'visit':
+            rows = VisitRow.objects.filter(fileinfo=fileinfo)
+            template = 'cephia/visit_row_info.html'
+        elif fileinfo.file_type == 'transfer_in':
+            rows = TransferInRow.objects.filter(fileinfo=fileinfo)
+            template = 'cephia/transfer_in_row_info.html'
+        elif fileinfo.file_type == 'aliquot':
+            rows = AliquotRow.objects.filter(fileinfo=fileinfo)
+            template = 'cephia/aliquot_row_info.html'
+        elif fileinfo.file_type == 'transfer_out':
+            rows = TransferOutRow.objects.filter(fileinfo=fileinfo)
+            template = 'cephia/transfer_out_row_info.html'
+
+        if state:
+            rows = rows.filter(state=state)
+        if has_comment:
+            if has_comment == 'True':
+                rows = rows.filter(comment__isnull=False)
+            else:
+                rows = rows.filter(comment__isnull=True)
+
+        return rows, template
+
+
+class FileInfoFilterForm(forms.Form):
+
+    STATE_CHOICES = (
+        ('','---------'),
+        ('pending','Pending'),
+        ('validated','Validated'),
+        ('processed','Processed'),
+        ('error','Error'),
+    )
+
+    FILE_TYPE_CHOICES = (
+        ('','---------'),
+        ('subject','Subject'),
+        ('visit','Visit'),
+        ('transfer_in','Transfer In'),
+        ('aliquot','Aliquot'),
+        ('transfer_out','Transfer Out'),
+    )
+
+    file_type = forms.ChoiceField(choices=FILE_TYPE_CHOICES, required=False)
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    created = forms.DateField(required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super(FileInfoFilterForm, self).__init__(*args, **kwargs)
+        self.fields['created'].widget = forms.DateInput()
+        self.fields['created'].widget.attrs.update({'class':'datepicker'})
+
+    def filter(self):
+        qs = FileInfo.objects.all().order_by('-created')
+        file_type = self.cleaned_data['file_type']
+        state = self.cleaned_data['state']
+        created = self.cleaned_data['created']
+
+        if file_type:
+            qs = qs.filter(file_type=file_type)
+        if state:
+            qs = qs.filter(state=state)
+        if created:
+            qs = qs.filter(created=created)
+            
+        return qs

@@ -72,10 +72,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'paranoidsessions',
-
+    'simple_history',
     'bootstrap3',
     'endless_pagination',
-
     'cephia',
 )
 
@@ -145,7 +144,7 @@ USE_TZ = True
 
 
 STATICFILES_DIRS = (                                                                 
-  os.path.join(BASE_DIR, 'static/'),                                                
+  os.path.join(BASE_DIR, 'cephia/static/'),                                                
   BASE_DIR                                                                          
 ) 
 STATIC_URL = '/static/'+REVISION+'/'

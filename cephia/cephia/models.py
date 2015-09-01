@@ -1,20 +1,14 @@
 # encoding: utf-8
-from django.db.models.query import QuerySet
-import uuid
 from lib.fields import ProtectedForeignKey
-from django.contrib.auth.models import UserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django import forms
 from django.conf import settings
-from datetime import datetime, timedelta, date
-import pytz
-import time
 import os
-from django.utils import html
 from file_handlers.file_handler_register import *
 import logging
 from django.forms.models import model_to_dict
+from simple_history.models import HistoricalRecords
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +104,8 @@ class FileInfo(models.Model):
         ('subject','Subject'),
         ('visit','Visit'),
         ('transfer_in','Transfer In'),
+        ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
-        #('missing_transfer_out','Missing Transfer Out'),
-        ('annihilation','Annihilation'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -121,8 +114,8 @@ class FileInfo(models.Model):
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
-    
-    
+    history = HistoricalRecords()
+
     def __unicode__(self):
         return self.data_file.name
 
@@ -132,6 +125,18 @@ class FileInfo(models.Model):
     def get_handler(self):
         return get_file_handler_for_type(self.file_type)(self)
 
+    def get_row(self, row_id):
+        if self.file_type == 'subject':
+            return SubjectRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'visit':
+            return VisitRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'transfer_in':
+            return TransferInRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'aliquot':
+            return AliquotRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'transfer_out':
+            return TransferOutRow.objects.get(fileinfo__id=self.id, id=row_id)
+
 
 class ImportedRow(models.Model):
     class Meta:
@@ -139,6 +144,8 @@ class ImportedRow(models.Model):
     
     STATE_CHOICES = (
         ('pending','Pending'),
+        ('validated','Validated'),
+        ('imported','Imported'),
         ('processed','Processed'),
         ('error','Error')
     )
@@ -147,6 +154,22 @@ class ImportedRow(models.Model):
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
     fileinfo = models.ForeignKey(FileInfo)
+    history = HistoricalRecords()
+
+
+class ImportedRowComment(models.Model):
+
+    class Meta:
+        db_table = "cephia_importedrow_comment"
+
+    comment = models.TextField(blank=False, null=False)
+    resolve_date = models.DateTimeField(blank=False, null=False)
+    resolve_action = models.TextField(blank=False, null=False)
+    assigned_to = models.CharField(max_length=50, null=False, blank=False)
+
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
 
 
 class SubjectRow(ImportedRow):
@@ -194,6 +217,7 @@ class SubjectRow(ImportedRow):
     art_resumption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_mm = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
 
     def __unicode__(self):
         return self.subject_label
@@ -241,6 +265,7 @@ class Subject(models.Model):
     aids_diagnosis_date = models.DateField(null=True, blank=True)
     art_interruption_date = models.DateField(null=True, blank=True)
     art_resumption_date = models.DateField(null=True, blank=True)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
@@ -262,6 +287,7 @@ class VisitRow(ImportedRow):
     scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
     pregnant = models.CharField(max_length=255, null=False, blank=True)
     hepatitis = models.CharField(max_length=255, null=False, blank=True)
+    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
 
     def __unicode__(self):
         return self.subject_label
@@ -293,9 +319,10 @@ class Visit(models.Model):
     hepatitis = models.NullBooleanField()
     artificial = models.BooleanField(default=False)
     subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
+    history = HistoricalRecords()
 
     def __unicode__(self):
-        return self.visit_label
+        return self.subject_label
 
 
 class SpecimenType(models.Model):
@@ -306,37 +333,6 @@ class SpecimenType(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
     spec_type = models.CharField(max_length=10, null=False, blank=False)
     spec_group = models.IntegerField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
-
-
-class Units(models.Model):
-    class Meta:
-        db_table = "cephia_units"
-
-    name = models.CharField(max_length=255, null=False, blank=False)
-
-    def __unicode__(self):
-        return self.name
-
-
-class TransferReason(models.Model):
-    class Meta:
-        db_table = "cephia_transfer_reason"
-
-    name = models.CharField(max_length=255, null=False, blank=False)
-
-    def __unicode__(self):
-        return self.name
-
-
-class AliquotingReason(models.Model):
-
-    class Meta:
-        db_table = "cephia_aliquoting_reason"
-        
-    name = models.CharField(max_length=255, null=False, blank=False) 
 
     def __unicode__(self):
         return self.name
@@ -364,11 +360,12 @@ class Specimen(models.Model):
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
     receiving_site = models.ForeignKey(Site, null=True, blank=True)
-    aliquoting_reason = models.ForeignKey(AliquotingReason, null=True, blank=True)
+    aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
+    history = HistoricalRecords()
 
 
     def __unicode__(self):
-        return self.label
+        return self.specimen_label
 
 
 class TransferInRow(ImportedRow):
@@ -392,6 +389,7 @@ class TransferInRow(ImportedRow):
     volume_units = models.CharField(max_length=255, null=True, blank=True)
     source_study = models.CharField(max_length=255, null=True, blank=True)
     notes = models.CharField(max_length=255, null=True, blank=True)
+    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -414,6 +412,7 @@ class TransferOutRow(ImportedRow):
     spec_type = models.CharField(max_length=255, null=True, blank=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
     other_ref = models.CharField(max_length=255, null=True, blank=True)
+    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -423,16 +422,20 @@ class AliquotRow(ImportedRow):
     class Meta:
         db_table = "cephia_aliquot_row"
         
-    parent_id = models.CharField(max_length=255, null=True, blank=True) 
-    child_id = models.CharField(max_length=255, null=True, blank=True)
-    child_volume = models.CharField(max_length=255, null=True, blank=True)
+    parent_label = models.CharField(max_length=255, null=True, blank=True) 
+    aliquot_label = models.CharField(max_length=255, null=True, blank=True)
+    volume = models.CharField(max_length=255, null=True, blank=True)
+    volume_units = models.CharField(max_length=255, null=True, blank=True)
     number_of_aliquot = models.CharField(max_length=255, null=True, blank=True)
-    annihilation_date = models.CharField(max_length=255, null=True, blank=True)
-    reason = models.CharField(max_length=255, null=True, blank=True)
-    panel_type = models.CharField(max_length=255, null=True, blank=True)
-    panel_inclusion_criteria = models.CharField(max_length=255, null=True, blank=True)
+    aliquoting_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
+    aliquoting_date_mm = models.CharField(max_length=255, null=True, blank=True)
+    aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
+    aliquot_reason = models.CharField(max_length=255, null=True, blank=True)
+    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
 
     def __unicode__(self):
-        return self.parent_id
+        return self.parent_label
 
-
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d

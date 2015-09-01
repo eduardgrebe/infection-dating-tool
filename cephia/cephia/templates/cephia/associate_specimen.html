@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block content %}
+<div id="wrapper">
+  <div class="container">
+    <div class="heading">
+      {% include "cephia/_top_navigation.html" %}
+    </div>
+
+    {% include "cephia/_navigation.html" %}
+
+    <div class="outer_container fixed-outer-container">
+      {% block left_menu %}
+      {% endblock %}
+      
+      {% block page_content %}
+      <div class="row">
+        {% for specimen, visits in specimen.items %}
+        <div class="col-md-6">
+          <div class="container">
+            <div class="row">
+              <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Association</h3>
+                </div>
+                <div class="panel-body">
+                  <form id="form" action="{% url 'associate_specimen_visit' specimen.id %}" role="form" method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h5 class="panel-title">Specimen</h5>
+                          </div>
+                          <div class="panel-body">
+                            <div class="table-responsive">
+                              <table class="table-striped table table-hover" style="overflow:auto;">
+                                <thead>
+                                  <th>Specimen</th>
+                                  <th>Reported Draw Date</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>{{specimen.specimen_label}}</td>
+                                    <td>{{specimen.reported_draw_date}}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h5 class="panel-title">Available visits in 14 day window</h5>
+                          </div>
+                          <div class="panel-body">
+                            <div class="table-responsive">
+                              <table class="table-striped table table-hover" style="overflow:auto;">
+                                <thead>
+                                  <th>Subject</th>
+                                  <th>Visit Date</th>
+                                </thead>
+                                <tbody>
+                                  {% for visit in visits %}
+                                  <tr>
+                                    <td>{{visit.subject_label}}</td>
+                                    <td>{{visit.visit_date}}</td>
+                                    <td><input type="radio" name="visit" value="{{visit.id}}"></td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="container">
+                        <div class="btn-group">
+                          <a href="{% url 'artificial_visit' specimen.id %}" class="btn btn-primary" style="text-decoration:none;">Artificial Visit</a>
+                        </div>
+                        <div class="btn-group">
+                          <input type="submit" value="Associate" class="btn btn-primary" style="text-decoration:none;">
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        <div class="clearfix visible-md-block"></div>
+      </div>
+      {% endblock %}
+    </div>
+    
+    <div id="footer">
+      <div class="logo">
+        <a href="http://www.sacema.org/" target="_blank">
+          <img src="{% static 'images/logo.png' %}" style="float:left;" alt="SACEMA logo"
+               title="South African Centre for Epidemiological Modelling and Analysis" height="100">
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

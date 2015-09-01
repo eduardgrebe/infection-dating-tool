@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load bootstrap3 %}
 
 {% block content %}
 <div id="wrapper">
@@ -8,36 +9,68 @@
       {% include "cephia/_top_navigation.html" %}
     </div>
 
-    <div style="clear:both"></div>
-
-    <div class="page_header">
-      <h1 class="site-title">{% block site-title %}{% endblock %}</h1>
-    </div>
-
     {% include "cephia/_navigation.html" %}
 
     <div class="outer_container fixed-outer-container">
       {% block left_menu %}
       {% endblock %}
 
-      {% block filter_content %}
-      {% endblock %}
-
-      {% block button_content %}
-      {% endblock %}
-
+      <div class="row">
+        <div class="col-md-8">
+          {% block filter_content %}
+          <div class="container">
+            <div class="row">
+              <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Filter</h3>
+                </div>
+                <div class="panel-body">
+                  <form id="form" action="{% block submit_action %}{% endblock %}" role="form" method="GET">
+                    <div class="row">
+                      <div class="col-md-3">
+                        {% block filter_col_a %}
+                        {% endblock %}
+                      </div>
+                      <div class="col-md-3">
+                        {% block filter_col_b %}
+                        {% endblock %}
+                      </div>
+                      <div class="col-md-3">
+                        {% block filter_col_c %}
+                        {% endblock %}
+                      </div>
+                      <div class="col-md-3">
+                        {% block filter_col_d %}
+                        {% endblock %}
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-1">
+                        {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endblock %}
+        </div>
+        <div class="col-md-4">
+          {% block info_content %}
+          {% endblock %}
+        </div>
+      </div>
+      
       {% block page_content %}
       {% endblock %}
 
-      <div style="clear:both">&nbsp;</div>
-
     </div>
-    <div style="clear:both">&nbsp;</div>
-
     <div id="footer">
       <div class="logo">
         <a href="http://www.sacema.org/" target="_blank">
-          <img src="{% static 'images/logo.png' %}" style="float:left;" alt="SACEMA logo" title="South African Centre for Epidemiological Modelling and Analysis" height="100">
+          <img src="{% static 'images/logo.png' %}" style="float:left;" alt="SACEMA logo"
+               title="South African Centre for Epidemiological Modelling and Analysis" height="100">
         </a>
       </div>
     </div>

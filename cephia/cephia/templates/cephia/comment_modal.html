@@ -1,21 +1,19 @@
 <div class="container">
-  <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Upload a file</button>
   <div class="modal fade" id="myModal">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form id="form" action="{% url 'upload_file' %}" enctype="multipart/form-data" role="form" method="POST">
+        <form id="form" action="{% url 'row_comment' file_id=data.file_id row_id=data.row_id file_type=data.file_type %}" enctype="multipart/form-data" role="form" method="POST">
 	  {% csrf_token %}
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">Upload File</h4>
+            <h4 class="modal-title">Comment</h4>
           </div>
           <div class="modal-body">
-	    {{upload_form.data_file}}
-	    {{upload_form.file_type}}
+	    {{comment_form}}
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary upload-btn">Upload</button>
+            <button type="submit" class="btn btn-primary submit-comment">Submit</button>
           </div>
         </form>
       </div>

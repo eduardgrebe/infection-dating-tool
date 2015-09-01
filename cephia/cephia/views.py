@@ -1,22 +1,20 @@
 import logging
-from django.shortcuts import render_to_response, redirect, render
+from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-from django.template import loader, RequestContext
+from django.template import RequestContext
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Site, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
-from forms import FileInfoForm
-from django.contrib import messages
-from django.db import transaction
+from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
+                   VisitFilterForm, RowFilterForm, SpecimenFilterForm,
+                   FileInfoFilterForm)
 from django.forms.models import model_to_dict
-import csv
-import os
-from django.conf import settings
 from csv_helper import get_csv_response
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -98,15 +96,6 @@ def ethnicities(request, template="cephia/ethnicities.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-
-@login_required
-def locations(request, template="cephia/locations.html"):
-    context = {}
-    locations = Location.objects.all()
-    context['locations'] = locations
-    
-    return render_to_response(template, context, context_instance=RequestContext(request))
-
 @login_required
 def studies(request, template="cephia/studies.html"):
     context = {}
@@ -125,60 +114,44 @@ def sites(request, template="cephia/sites.html"):
 
 @login_required
 def subjects(request, template="cephia/subjects.html"):
-
-    patient_label = request.GET.get('patient_label')
-    associated = request.GET.get('associated')
     context = {}
-    subjects = None
-    
-    if patient_label:
-        subjects = Subject.objects.filter(patient_label=patient_label)
-    else:
-        subjects = Subject.objects.all()
+    subjects = Subject.objects.all()
 
-    if associated == 'true':
-        subjects = subjects.exclude(visit__isnull=True)
-    elif associated == 'false':
-        subjects = subjects.exclude(visit__isnull=False)
+    form = SubjectFilterForm(request.GET or None)
+    if form.is_valid():
+        subjects = form.filter(subjects)
 
     context['subjects'] = subjects
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required
 def visits(request, template="cephia/visits.html"):
-
-    patient_label = request.GET.get('patient_label')
-    associated = request.GET.get('associated')
     context = {}
-    visits = None
+    visits = Visit.objects.all()
 
-    if patient_label:
-        visits = Visit.objects.filter(subject__patient_label=patient_label)
-    else:
-        visits = Visit.objects.all()
-
-    if associated == 'true':
-        visits = visits.exclude(subject__isnull=True)
-    elif associated == 'false':
-        visits = visits.exclude(subject__isnull=False)
+    form = VisitFilterForm(request.GET or None)
+    if form.is_valid():
+        visits = form.filter(visits)
 
     context['visits'] = visits
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required
 def specimen(request, template="cephia/specimen.html"):
-
-    specimen_label = request.GET.get('specimen_label')
     context = {}
+    form = SpecimenFilterForm(request.GET or None)
 
-    if specimen_label:
-        specimen = Specimen.objects.filter(specimen_label=specimen_label)
+    if form.is_valid():
+        specimen = form.filter()
     else:
         specimen = Specimen.objects.all().order_by('specimen_label', 'parent_label')
 
     context['specimen'] = specimen
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -192,51 +165,41 @@ def specimen_type(request, template="cephia/specimen_type.html"):
 
 @login_required
 def file_info(request, template="cephia/file_info.html"):
+    context = {}
     if request.method == "GET":
-        context = {}
-        files = FileInfo.objects.all().order_by('-created')
-        form = FileInfoForm()
+        upload_form = FileInfoForm()
+        filter_form = FileInfoFilterForm(request.GET or None)
+        if filter_form.is_valid():
+            files = filter_form.filter()
+        else:
+            files = FileInfo.objects.all().order_by('-created')
+
         context['files'] = files
-        context['form'] = form
+        context['upload_form'] = upload_form
+        context['filter_form'] = filter_form
         
-        return render_to_response(template, context, context_instance=RequestContext(request))
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
    
 @login_required
 def row_info(request, file_id, template=None):
     if request.method == 'GET':
-        states = request.GET.get('state')
-
-        if states:
-            states = states.split()
-        else:
-            states = ['pending','processed','error','validated']
-
         context = {}
         fileinfo = FileInfo.objects.get(pk=file_id)
-
-        if fileinfo.file_type == 'subject':
-            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/subject_row_info.html'
-        elif fileinfo.file_type == 'visit':
-            rows = VisitRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/visit_row_info.html'
-        elif fileinfo.file_type == 'transfer_in':
-            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/transfer_in_row_info.html'
-        elif fileinfo.file_type == 'transfer_out':
-            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/transfer_out_row_info.html'
-        elif fileinfo.file_type == 'annihilation':
-            rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/annihilation_row_info.html'
-        elif fileinfo.file_type == 'missing_transfer_out':
-            rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state__in=states)
-            template = 'cephia/missing_transfer_out_row_info.html'
+        comment_form = RowCommentForm()
+        
+        filter_form = RowFilterForm(request.GET or None)
+        if filter_form.is_valid():
+            rows, template = filter_form.filter(fileinfo)
+        else:
+            rows, template = filter_form.filter(fileinfo)
 
         context['rows'] = rows
         context['file_id'] = fileinfo.id
+        context['file'] = fileinfo.filename()
         context['has_errors'] = rows.filter(state='error').exists()
+        context['filter_form'] = filter_form
+        context['comment_form'] = comment_form
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
@@ -260,7 +223,7 @@ def upload_file(request):
             'subject': 1,
             'visit': 2,
             'transfer_in': 3,
-            'annihilation': 4,
+            'aliquot': 4,
             'transfer_out': 5
         }
 
@@ -404,11 +367,8 @@ def export_as_csv(request, file_id):
             rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'transfer_out':
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
-        elif fileinfo.file_type == 'annihilation':
-            rows = AnnihilationRow.objects.filter(fileinfo=fileinfo, state=state)
-        elif fileinfo.file_type == 'missing_transfer_out':
-            rows = MissingTransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
-
+        elif fileinfo.file_type == 'aliquot':
+            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = model_to_dict(rows[0]).keys()
@@ -467,19 +427,79 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
-def associate_specimen_visits(request):
+def associate_specimen(request, specimen_id=None, template="cephia/associate_specimen.html"):
     try:
-        context = {}
+        if request.method == 'POST':
+            associate_specimen = Specimen.objects.get(id=specimen_id)
+            associate_visit = Visit.objects.get(id=request.POST.get('visit'))
+            associate_specimen.visit = associate_visit
+            associate_specimen.save()
+            messages.success(request, 'Successfully associated specimen with visit')    
 
+        context = {'specimen': {}}
         specimen = Specimen.objects.filter(visit__isnull=True)
+        visits_already_associated = Specimen.objects.values('visit').filter(visit__isnull=False)
+        
         for x in specimen:
             from_date = x.reported_draw_date - timedelta(days=14)
             to_date = x.reported_draw_date + timedelta(days=14)
-            possible_visits = Visit.objects.filter(draw_date__gte=from_date, draw_date__lte=to_date)
-
-            context[x][possible_visits]
-
+            possible_visits = Visit.objects.filter(visit_date__gte=from_date,
+                                                   visit_date__lte=to_date).exclude(pk__in=[z['visit'] for z in visits_already_associated])
+            context['specimen'][x] = possible_visits
+            
+        return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to make association')
+        return HttpResponseRedirect(reverse('specimen'))
+
+@login_required
+def row_comment(request, file_type=None, file_id=None, row_id=None, template="cephia/comment_modal.html"):
+    try:
+        context = {}
+        form = RowCommentForm(request.POST or None)
+        row = FileInfo.objects.get(id=file_id).get_row(row_id=row_id)
+        
+        if request.method == "POST":
+            if form.is_valid():
+                comment = form.save()
+                messages.add_message(request, messages.SUCCESS,
+                                     'Successfully commented on row')
+
+                row.comment = comment
+                row.save()
+            return HttpResponseRedirect(reverse('file_info'))
+        elif request.method == 'GET':
+            if row.comment:
+                form = RowCommentForm(initial=row.comment.model_to_dict())
+                
+            context['comment_form'] = form
+            context['data'] = {
+                'file_id':file_id,
+                'file_type':file_type,
+                'row_id':row_id
+            }
+            response = render_to_response(template, context, context_instance=RequestContext(request))
+            return HttpResponse(json.dumps({'response': response.content}))
+    except Exception, e:
+        import pdb; pdb.set_trace()
+        logger.exception(e)
+        messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))
+
+@login_required
+def artificial_visit(request, specimen_id=None):
+    try:
+        associate_specimen = Specimen.objects.get(id=specimen_id)
+        associate_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
+                                               visit_date=associate_specimen.reported_draw_date,
+                                               artificial=True)
+        associate_specimen.visit = associate_visit
+        associate_specimen.save()
+        messages.success(request, 'Successfully created artificial visit')
+
+        return HttpResponseRedirect(reverse('associate_specimen'))
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to create artificial visit')
+        return HttpResponseRedirect(reverse('associate_specimen'))

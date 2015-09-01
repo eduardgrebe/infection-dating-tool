@@ -7,26 +7,23 @@
 {% bootstrap_field filter_form.has_comment %}
 {% endblock %}
 
+
 {% block pages %}
 {% paginate rows %}
 {% show_pages %}
 {% endblock %}
 
 {% block filename %}{{file}}{% endblock %}
-
 {% block table_header %}
 <thead>
-  <th>Subject Label</th>
-  <th>Visit Date</th>
+  <th>Parent Label</th>
+  <th>Aliquot Label</th>
+  <th>Volume</th>
+  <th>Volume Units</th>
+  <th>Aliquoting Date</th>
   <th></th>
   <th></th>
-  <th>Visit HIV Status</th>
-  <th>Source Study</th>
-  <th>CD4 Count</th>
-  <th>VL</th>
-  <th>Scope Visit EC</th>
-  <th>Pregnant</th>
-  <th>Hepatitis</th>
+  <th>Reason</th>
   <th>State</th>
   <th>Message</th>
 </thead>
@@ -36,30 +33,34 @@
 <tbody>
   {% for row in rows %}
   <tr>
-    <td>{{row.subject_label}}</td>
-    <td>{{row.visitdate_yyyy}}</td>
-    <td>{{row.visitdate_mm}}</td>
-    <td>{{row.visitdate_dd}}</td>
-    <td>{{row.visit_hivstatus}}</td>
-    <td>{{row.source_study}}</td>
-    <td>{{row.cd4_count}}</td>
-    <td>{{row.vl}}</td>
-    <td>{{row.scopevisit_ec}}</td>
-    <td>{{row.pregnant}}</td>
-    <td>{{row.hepatitis}}</td>
+    <td>{{row.parent_label}}</td>
+    <td>{{row.aliquot_label}}</td>
+    <td>{{row.volume}}</td>
+    <td>{{row.volume_units}}</td>
+    <td>{{row.aliquoting_date_yyyy}}</td>
+    <td>{{row.aliquoting_date_mm}}</td>
+    <td>{{row.aliquoting_date_dd}}</td>
+    <td>{{row.aliquot_reason}}</td>
     <td>{{row.state}}</td>
     <td>{{row.error_message}}</td>
     <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
       {% if row.state == 'error' %}
-      <a href="#" class="btn btn-success btn-comment-modal">
+      <button class="btn btn-success btn-comment-modal">
         {% bootstrap_icon "comment" %}
-      </a>
+      </button>
       {% endif %}
     </td>
   </tr>
   {% endfor %}
 </tbody>
 {% endblock %}
+
+
+
+
+
+
+
 
 
 

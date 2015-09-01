@@ -35,9 +35,9 @@ class FileHandler(object):
         return input_date
 
     def get_bool(self, value):
-        if value in [0, 'N']:
+        if value in ['0', 'N']:
             return False
-        elif value in [1, 'Y']:
+        elif value in ['1', 'Y']:
             return True
         else:
             return None

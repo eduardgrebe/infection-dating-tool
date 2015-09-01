@@ -2,64 +2,90 @@
 {% load bootstrap3 %}
 {% load endless %}
 
+{% block submit_action %}
+{% url 'specimen' %}
+{% endblock %}
 
-{% block site-title %} Specimen {% endblock %}
+{% block filter_col_a %}
+{% bootstrap_field form.specimen_label %}
+{% bootstrap_field form.reported_draw_date %}
+{% endblock %}
+
+{% block filter_col_b %}
+{% bootstrap_field form.transfer_in_date %}
+{% bootstrap_field form.transfer_out_date %}
+{% endblock %}
 
 {% block page_content %}
 
 {% paginate specimen %}
-{% show_pages %}
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Specimen</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="container"
+               {% show_pages %}
+            <div class="table-responsive">
+              <table class="table-striped table table-hover" style="overflow:auto;">
+                <thead>
+                  <th>Specimen Label</th>
+                  <th>Parent Label</th>
+                  <th>Number of Containers</th>
+                  <th>Draw Date</th>
+                  <th>Transfer in Date</th>
+                  <th>Transfer out Date</th>
+                  <th>Modified Date</th>
+                  <th>Created Date</th>
+                  <th>Reason</th>
+                  <th>Specimen Type</th>
+                  <th>Volume</th>
+                  <th>Initial Claimed Volume</th>
+                  <th>Shipped To</th>
+                  <th>Source Study</th>
+                  <th>Aliquoting Reason</th>
+                </thead>
 
-<table class="table-striped table table-hover" style="overflow:auto;">
-  <thead>
-    <th>Specimen Label</th>
-    <th>Parent Label</th>
-    <th>Number of Containers</th>
-    <th>Draw Date</th>
-    <th>Transfer in Date</th>
-    <th>Transfer out Date</th>
-    <th>Modified Date</th>
-    <th>Created Date</th>
-    <th>Reason</th>
-    <th>Specimen Type</th>
-    <th>Volume</th>
-    <th>Initial Claimed Volume</th>
-    <th>Shipped To</th>
-    <th>Source Study</th>
-    <th>Aliquoting Reason</th>
-  </thead>
-
-  <tbody>
-    {% for spec in specimen %}
-    <tr>
-      <td>{{spec.specimen_label}}</td>
-      <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
-      <td>{% if spec.number_of_containers %}{{spec.number_of_containers}}{% endif %}</td>
-      <td>
-	  {% if spec.reported_draw_date %}
-	  {% if spec.visit %}
-	  <a href="#">{{spec.reported_draw_date}}</a>
-	  {% else %}
-	  {{spec.reported_draw_date}}
-	  {% endif %}
-	  {% endif %}
-      </td>
-      <td>{% if spec.transfer_in_date %}{{spec.transfer_in_date}}{% endif %}</td>
-      <td>{% if spec.transfer_out_date %}{{spec.transfer_out_date}}{% endif %}</td>
-      <td>{% if spec.modified_date %}{{spec.modified_date}}{% endif %}</td>
-      <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
-      <td>{% if spec.transfer_reason %}{{spec.transfer_reason}}{% endif %}</td>
-      <td>{{spec.specimen_type.name}}</td>
-      <td>{% if spec.volume %}{{spec.volume}}{% endif %}</td>
-      <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
-      <td>{{spec.receiving_site.name}}</td>
-      <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
-      <td>{{spec.aliquoting_reason.name}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
+                <tbody>
+                  {% for spec in specimen %}
+                  <tr>
+                    <td>{{spec.specimen_label}}</td>
+                    <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
+                    <td>{% if spec.number_of_containers %}{{spec.number_of_containers}}{% endif %}</td>
+                    <td>
+	              {% if spec.reported_draw_date %}
+	              {% if spec.visit %}
+	              <a href="#">{{spec.reported_draw_date}}</a>
+	              {% else %}
+	              {{spec.reported_draw_date}}
+	              {% endif %}
+	              {% endif %}
+                    </td>
+                    <td>{% if spec.transfer_in_date %}{{spec.transfer_in_date}}{% endif %}</td>
+                    <td>{% if spec.transfer_out_date %}{{spec.transfer_out_date}}{% endif %}</td>
+                    <td>{% if spec.modified_date %}{{spec.modified_date}}{% endif %}</td>
+                    <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
+                    <td>{% if spec.transfer_reason %}{{spec.transfer_reason}}{% endif %}</td>
+                    <td>{{spec.specimen_type.name}}</td>
+                    <td>{% if spec.volume %}{{spec.volume}}{% endif %}</td>
+                    <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
+                    <td>{{spec.receiving_site.name}}</td>
+                    <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
+                    <td>{{spec.aliquoting_reason.name}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 
