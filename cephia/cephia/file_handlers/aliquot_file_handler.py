@@ -31,16 +31,16 @@ class AliquotFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
-                    aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
-                                                            aliquot_label=row_dict['aliquot_label'],
-                                                            volume=row_dict['volume'],
-                                                            volume_units=row_dict['volume_units'],
-                                                            aliquoting_date_yyyy=row_dict['aliquoting_date_yyyy'],
-                                                            aliquoting_date_mm=row_dict['aliquoting_date_mm'],
-                                                            aliquoting_date_dd=row_dict['aliquoting_date_dd'],
-                                                            aliquot_reason=row_dict['reason'],
-                                                            fileinfo=self.upload_file,
-                                                            state='pending')
+                    AliquotRow.objects.create(parent_label=row_dict['parent_label'],
+                                              aliquot_label=row_dict['aliquot_label'],
+                                              volume=row_dict['volume'],
+                                              volume_units=row_dict['volume_units'],
+                                              aliquoting_date_yyyy=row_dict['aliquoting_date_yyyy'],
+                                              aliquoting_date_mm=row_dict['aliquoting_date_mm'],
+                                              aliquoting_date_dd=row_dict['aliquoting_date_dd'],
+                                              aliquot_reason=row_dict['reason'],
+                                              fileinfo=self.upload_file,
+                                              state='pending')
 
 
                     rows_inserted += 1
@@ -116,6 +116,7 @@ class AliquotFileHandler(FileHandler):
                                                 volume_units=aliquot_row.volume_units,
                                                 specimen_type=parent_specimen.specimen_type,
                                                 reported_draw_date=parent_specimen.reported_draw_date,
+                                                transfer_in_date=parent_specimen.transfer_in_date,
                                                 source_study=parent_specimen.source_study,
                                                 created_date=self.registered_dates.get('aliquot_date', None),
                                                 aliquoting_reason=aliquot_row.aliquot_reason)

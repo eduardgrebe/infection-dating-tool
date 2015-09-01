@@ -159,6 +159,10 @@ class ImportedRow(models.Model):
     fileinfo = models.ForeignKey(FileInfo)
     history = HistoricalRecords()
 
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
+
 
 class ImportedRowComment(models.Model):
 
@@ -225,10 +229,6 @@ class SubjectRow(ImportedRow):
     def __unicode__(self):
         return self.subject_label
 
-    def model_to_dict(self):
-        d = model_to_dict(self)
-        return d
-
 
 class Subject(models.Model):
 
@@ -294,10 +294,6 @@ class VisitRow(ImportedRow):
 
     def __unicode__(self):
         return self.subject_label
-
-    def model_to_dict(self):
-        d = model_to_dict(self)
-        return d
 
 
 class Visit(models.Model):
@@ -397,10 +393,6 @@ class TransferInRow(ImportedRow):
     def __unicode__(self):
         return self.specimen_label
 
-    def model_to_dict(self):
-        d = model_to_dict(self)
-        return d
-
 
 class TransferOutRow(ImportedRow):
 
@@ -422,6 +414,7 @@ class TransferOutRow(ImportedRow):
     def __unicode__(self):
         return self.specimen_label
 
+
 class AliquotRow(ImportedRow):
 
     class Meta:
@@ -440,7 +433,3 @@ class AliquotRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_label
-
-    def model_to_dict(self):
-        d = model_to_dict(self)
-        return d
