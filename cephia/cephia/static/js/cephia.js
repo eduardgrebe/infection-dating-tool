@@ -21,9 +21,9 @@ $(document).ready(function() {
 
   $('.btn-comment-modal').on('click', function(event) {
     event.preventDefault();
-    var rowId = $(event.target).parent().data('row-id');
-    var fileId = $(event.target).parent().data('file-id');
-    var fileType = $(event.target).parent().data('file-type');
+    var rowId = $(this).parent().data('row-id');
+    var fileId = $(this).parent().data('file-id');
+    var fileType = $(this).parent().data('file-type');
     var url = "/row_comment/" + fileType + '/' + String(fileId) + '/' + String(rowId);
 
     $.get(url, function(data, status) {
