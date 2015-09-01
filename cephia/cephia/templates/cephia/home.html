@@ -2,24 +2,25 @@
 
 {% block filter_content %}{% endblock %}
 {% block page_content %}
-Welcome to Cephia
-<br/><br/><br/><br/>
 
+<div class="page-header">
+  <h2>Welcome to Cephia</h2>
+</div>
 <table class="table-striped table table-hover home">
     <thead>
         <th>File Status</th>
-	    <th>Last File Uploaded</th>
-	    <th>Time Uploaded</th>
-	    <th>Time File Processed</th>
-	    <th>Errors</th>
-	    <th>Succesful Rows</th>
+	<th>Last File Uploaded</th>
+	<th>Time Uploaded</th>
+	<th>Time File Processed</th>
+	<th>Errors</th>
+	<th>Succesful Rows</th>
         <th>Comments</th>
     </thead>
     <tbody>
         <tr>
             <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="1">Subject</button></td>
 
-            {% if subject_file%}
+            {% if subject_file %}
             <td>{{ subject_file.filename }}</td>
             <td>{{ subject_file.created }}</td>
             <td>{{ subject_process_date.date_processed }}</td>
@@ -56,7 +57,7 @@ Welcome to Cephia
             {% if aliquot_file %}
             <td>{{ aliquot_file.filename }}</td>
             <td>{{ aliquot_file.created }}</td>
-            <<td>{{ aliquot_process_date.date_processed }}</td>
+            <td>{{ aliquot_process_date.date_processed }}</td>
             <td>{{ aliquot_errors}}</td>
             <td>{{ aliquot_success }}</td>
             <td>{{ aliquot_file.message|default:'None' }}</td>
@@ -88,8 +89,8 @@ Welcome to Cephia
                     <h4 class="modal-title">Upload File</h4>
                 </div>
                 <div class="modal-body">
-	                {{form.data_file}}
-                    {{form.priority}}
+	          {{form.data_file}}
+                  {{form.priority}}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -99,10 +100,6 @@ Welcome to Cephia
         </div>
     </div>
 </div>
-
-
-
-
 
 <script>
  $('.file_priority').on("click", function(){
