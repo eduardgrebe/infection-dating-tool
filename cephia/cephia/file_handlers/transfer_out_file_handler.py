@@ -1,13 +1,10 @@
 from file_handler import FileHandler
 
 class TransferOutFileHandler(FileHandler):
-    transfer_out_file = None
     
-    def __init__(self, transfer_out_file):
-        super(TransferOutFileHandler, self).__init__()
-        self.transfer_out_file = transfer_out_file
-        self.excel_transfer_out_file = ExcelHelper(f=transfer_out_file.data_file.url)
-
+    def __init__(self, upload_file):
+        super(TransferOutFileHandler, self).__init__(upload_file)
+        
         self.registered_columns = ['specimen_label',
                                    'number_of_containers',
                                    'specimen_type',
@@ -19,43 +16,36 @@ class TransferOutFileHandler(FileHandler):
                                    'shipment_date_dd',
                                    'destination_site']
 
-        self.existing_columns = self.excel_transfer_out_file.read_header()
-
     def parse(self):
-        
         from models import TransferOutRow
         
-        header = self.excel_transfer_out_file.read_header()
         rows_inserted = 0
         rows_failed = 0
 
-        for row_num in range(self.excel_transfer_out_file.nrows):
+        for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
-                    row = self.excel_transfer_out_file.read_row(row_num)
-                    row_dict = dict(zip(header, row))
+                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    #this is to ignore blanks and can probably be done better
-                    if not row_dict['spec_id']:
-                        continue
-
-                    transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['spec_id'],
-                                                                     num_containers=row_dict['#_ containers'],
-                                                                     transfer_out_date=row_dict['transfer date'],
-                                                                     to_location=row_dict['to location'],
-                                                                     transfer_reason=row_dict['reason'],
-                                                                     spec_type=row_dict['spec type'],
-                                                                     volume=row_dict['vol'],
-                                                                     other_ref=row_dict['other id'],
-                                                                     fileinfo=self.transfer_out_file,
+                    transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['spec_id']
+                                                                     number_of_containers=row_dict['spec_id']
+                                                                     specimen_type=row_dict['spec_id']
+                                                                     volume=row_dict['spec_id']
+                                                                     volume_units=row_dict['spec_id']
+                                                                     shipped_in_panel=row_dict['spec_id']
+                                                                     shipment_date_yyyy=row_dict['spec_id']
+                                                                     shipment_date_mm=row_dict['spec_id']
+                                                                     shipment_date_dd=row_dict['spec_id']
+                                                                     destination_site=row_dict['spec_id']
+                                                                     fileinfo=self.upload_file,
                                                                      state='pending')
 
 
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.transfer_out_file.message = "row " + str(row_num) + ": " + e.message
-                self.transfer_out_file.save()
+                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.save()
                 return 0, 1
 
         return rows_inserted, rows_failed
@@ -70,17 +60,12 @@ class TransferOutFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for transfer_out_row in TransferOutRow.objects.filter(fileinfo=self.transfer_out_file, state__in=['pending']):
+        for transfer_out_row in TransferOutRow.objects.filter(fileinfo=self.upload_file, state__in=['pending']):
 
             try:
                 with transaction.atomic():
                     try:
-                        to_location = Location.objects.get(name=transfer_out_row.to_location)
-                    except Location.DoesNotExist:
-                        raise Exception("Location does not exist")
-
-                    try:
-                        spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.spec_type)
+                        spec_type = SpecimenType.objects.get(spec_type=transfer_out_row.specimen_type)
                     except SpecimenType.DoesNotExist:
                         raise Exception("Specimen Type does not exist")
 
@@ -94,16 +79,19 @@ class TransferOutFileHandler(FileHandler):
                     specimen.transfer_out_date = self.get_date(transfer_out_row.transfer_out_date)
                     specimen.to_location = to_location
                     specimen.spec_type = spec_type
-                    specimen.other_ref = transfer_out_row.other_ref
-
-                    if transfer_out_row.volume:
-                        specimen.volume = transfer_out_row.volume
-                        specimen.initial_claimed_volume = transfer_out_row.volume
-                    else:
-                        specimen.volume = None
-                        specimen.initial_claimed_volume = None
-
+                    specimen.initial_claimed_volume = transfer_out_row.volume
                     specimen.save()
+
+                    number_of_containers = models.IntegerField(null=True, blank=True)
+                    transfer_out_date = models.DateField(null=True, blank=True)
+                    modified_date = models.DateField(null=True, blank=True)
+                    transfer_reason = models.CharField(max_length=50, null=True, blank=True)
+                    subject = models.ForeignKey(Subject, null=True, blank=True)
+                    visit = models.ForeignKey(Visit, null=True, blank=True)
+                    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=True)
+                    volume_units = models.CharField(max_length=20, null=True, blank=True)
+                    initial_claimed_volume = models.FloatField(null=True, blank=True)
+                    receiving_site = models.ForeignKey(Site, null=True, blank=True)
 
                     transfer_out_row.state = 'processed'
                     transfer_out_row.error_message = ''

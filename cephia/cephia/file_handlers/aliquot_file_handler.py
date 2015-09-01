@@ -7,11 +7,8 @@ logger = logging.getLogger(__name__)
 
 class AliquotFileHandler(FileHandler):
 
-    def __init__(self, aliquot_file):
-        super(AliquotFileHandler, self).__init__()
-        self.aliquot_file = aliquot_file
-        self.excel_aliquot_file = ExcelHelper(f=aliquot_file.data_file.url)
-        self.aliquot_row = None
+    def __init__(self, upload_file):
+        super(AliquotFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['parent_label',
                                    'aliquot_label',
@@ -23,20 +20,16 @@ class AliquotFileHandler(FileHandler):
                                    'volume_units',
                                    'reason']
 
-        self.existing_columns = self.excel_aliquot_file.read_header()
-
     def parse(self):
         from cephia.models import AliquotRow
 
-        header = self.excel_aliquot_file.read_header()
         rows_inserted = 0
         rows_failed = 0
 
-        for row_num in range(self.excel_aliquot_file.nrows):
+        for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
-                    row = self.excel_aliquot_file.read_row(row_num)
-                    row_dict = dict(zip(header, row))
+                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
                     aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
                                                             aliquot_label=row_dict['aliquot_label'],
@@ -46,7 +39,7 @@ class AliquotFileHandler(FileHandler):
                                                             aliquoting_date_mm=row_dict['aliquoting_date_mm'],
                                                             aliquoting_date_dd=row_dict['aliquoting_date_dd'],
                                                             aliquot_reason=row_dict['reason'],
-                                                            fileinfo=self.aliquot_file,
+                                                            fileinfo=self.upload_file,
                                                             state='pending')
 
 
@@ -54,8 +47,8 @@ class AliquotFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                self.aliquot_file.message = "row " + str(row_num) + ": " + e.message
-                self.aliquot_file.save()
+                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.save()
                 return 0, 1
 
         return rows_inserted, rows_failed
@@ -68,7 +61,7 @@ class AliquotFileHandler(FileHandler):
         rows_validated = 0
         rows_failed = 0
         
-        for aliquot_row in AliquotRow.objects.filter(fileinfo=self.aliquot_file, state='pending'):
+        for aliquot_row in AliquotRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 #self.register_dates(aliquot_row.model_to_dict())
 
@@ -100,7 +93,7 @@ class AliquotFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for aliquot_row in AliquotRow.objects.filter(fileinfo=self.aliquot_file, state='validated'):
+        for aliquot_row in AliquotRow.objects.filter(fileinfo=self.upload_file, state='validated'):
 
             try:
                 with transaction.atomic():

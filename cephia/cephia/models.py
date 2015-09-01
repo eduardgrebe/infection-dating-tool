@@ -408,13 +408,15 @@ class TransferOutRow(ImportedRow):
         db_table = "cephia_transfer_out_row"
         
     specimen_label = models.CharField(max_length=255, null=True, blank=True) 
-    num_containers = models.CharField(max_length=255, null=True, blank=True)
-    transfer_out_date = models.CharField(max_length=255, null=True, blank=True)
-    to_location = models.CharField(max_length=255, null=True, blank=True)
-    transfer_reason = models.CharField(max_length=255, null=True, blank=True)
-    spec_type = models.CharField(max_length=255, null=True, blank=True)
+    number_of_containers = models.CharField(max_length=255, null=True, blank=True)
+    specimen_type = models.CharField(max_length=255, null=True, blank=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
-    other_ref = models.CharField(max_length=255, null=True, blank=True)
+    volume_units = models.CharField(max_length=255, null=True, blank=True)
+    shipped_in_panel = models.CharField(max_length=255, null=True, blank=True)
+    shipment_date_dd = models.CharField(max_length=255, null=True, blank=True)
+    shipment_date_mm = models.CharField(max_length=255, null=True, blank=True)
+    shipment_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
+    destination_site = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
 
     def __unicode__(self):

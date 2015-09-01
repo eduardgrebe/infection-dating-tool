@@ -6,12 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 class TransferInFileHandler(FileHandler):
-    transfer_in_file = None
+    upload_file = None
 
-    def __init__(self, transfer_in_file):
-        super(TransferInFileHandler, self).__init__()
-        self.transfer_in_file = transfer_in_file
-        self.excel_transfer_in_file = ExcelHelper(f=transfer_in_file.data_file.url)
+    def __init__(self, upload_file):
+        super(TransferInFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['specimen_label',
                                    'subject_label',
@@ -31,28 +29,23 @@ class TransferInFileHandler(FileHandler):
                                    'notes']
 
 
-        self.existing_columns = self.excel_transfer_in_file.read_header()
-
     def parse(self):
         from cephia.models import TransferInRow
         
-        header = self.excel_transfer_in_file.read_header()
         rows_inserted = 0
         rows_failed = 0
 
-        for row_num in range(self.excel_transfer_in_file.nrows):
+        for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
-                    
-                    row = self.excel_transfer_in_file.read_row(row_num)
-                    row_dict = dict(zip(header, row))
+                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
                                                                    subject_label=row_dict['subject_label'],
                                                                    drawdate_yyyy=row_dict['drawdate_year'],
                                                                    drawdate_mm=row_dict['drawdate_month'],
                                                                    drawdate_dd=row_dict['drawdate_day'],
-                                                                   fileinfo=self.transfer_in_file)
+                                                                   fileinfo=self.upload_file)
 
                     transfer_in_row.number_of_containers = row_dict['number_of_containers']
                     transfer_in_row.transfer_date_yyyy = row_dict['transfer_date_yyyy']
@@ -73,8 +66,8 @@ class TransferInFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                self.transfer_in_file.message = "row " + str(row_num) + ": " + e.message
-                self.transfer_in_file.save()
+                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.save()
                 return 0, 1
 
         return rows_inserted, rows_failed
@@ -87,7 +80,7 @@ class TransferInFileHandler(FileHandler):
         rows_validated = 0
         rows_failed = 0
         
-        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state='pending'):
+        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
 
@@ -158,7 +151,7 @@ class TransferInFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.transfer_in_file, state='validated'):
+        for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
                 
