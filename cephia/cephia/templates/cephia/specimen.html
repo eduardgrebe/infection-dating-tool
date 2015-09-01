@@ -8,11 +8,17 @@
 
 {% block filter_col_a %}
 {% bootstrap_field form.specimen_label %}
-{% bootstrap_field form.reported_draw_date %}
 {% endblock %}
 
 {% block filter_col_b %}
+{% bootstrap_field form.reported_draw_date %}
+{% endblock %}
+
+{% block filter_col_c %}
 {% bootstrap_field form.transfer_in_date %}
+{% endblock %}
+
+{% block filter_col_d %}
 {% bootstrap_field form.transfer_out_date %}
 {% endblock %}
 

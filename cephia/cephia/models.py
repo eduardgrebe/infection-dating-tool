@@ -137,6 +137,9 @@ class FileInfo(models.Model):
         if self.file_type == 'transfer_out':
             return TransferOutRow.objects.get(fileinfo__id=self.id, id=row_id)
 
+    def get_extension(self):
+        return self.filename().split('.')[-1]
+
 
 class ImportedRow(models.Model):
     class Meta:

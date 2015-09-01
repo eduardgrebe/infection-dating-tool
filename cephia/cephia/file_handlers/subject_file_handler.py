@@ -6,12 +6,9 @@ logger = logging.getLogger(__name__)
 
 
 class SubjectFileHandler(FileHandler):
-    subject_file = None
 
-    def __init__(self, subject_file, *args, **kwargs):
-        super(SubjectFileHandler, self).__init__()
-        self.subject_file = subject_file
-        self.excel_subject_file = ExcelHelper(f=subject_file.data_file.url)
+    def __init__(self, upload_file, *args, **kwargs):
+        super(SubjectFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['subject_label',
                                    'source_study',
@@ -54,23 +51,18 @@ class SubjectFileHandler(FileHandler):
                                    'art_resumption_date_mm',
                                    'art_resumption_date_dd']
 
-        self.existing_columns = self.excel_subject_file.read_header()
-
 
     def parse(self):
         from cephia.models import SubjectRow
         
-        header = self.excel_subject_file.read_header()
         rows_inserted = 0
         rows_failed = 0
         
-        for row_num in range(self.excel_subject_file.nrows):
+        for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
-                    row = self.excel_subject_file.read_row(row_num)
-                    row_dict = dict(zip(header, row))
-
-                    subject_row = SubjectRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.subject_file)
+                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
+                    subject_row = SubjectRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
 
                     subject_row.subject_label = row_dict['subject_label']
                     subject_row.source_study = row_dict['source_study']
@@ -118,8 +110,8 @@ class SubjectFileHandler(FileHandler):
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.subject_file.message = "row " + str(row_num) + ": " + e.message
-                self.subject_file.save()
+                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.save()
                 return 0, 1
 
         return rows_inserted, rows_failed
@@ -131,7 +123,7 @@ class SubjectFileHandler(FileHandler):
         rows_failed = 0
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
-        pending_rows = SubjectRow.objects.filter(fileinfo=self.subject_file, state='pending')
+        pending_rows = SubjectRow.objects.filter(fileinfo=self.upload_file, state='pending')
 
         for subject_row in pending_rows:
             try:
@@ -204,7 +196,7 @@ class SubjectFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for subject_row in SubjectRow.objects.filter(fileinfo=self.subject_file, state='validated'):
+        for subject_row in SubjectRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
                     self.register_dates(subject_row.model_to_dict())

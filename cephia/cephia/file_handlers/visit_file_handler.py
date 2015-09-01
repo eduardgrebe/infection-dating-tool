@@ -5,12 +5,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class VisitFileHandler(FileHandler):
-    visit_file = None
+    upload_file = None
     
-    def __init__(self, visit_file):
-        super(VisitFileHandler, self).__init__()
-        self.visit_file = visit_file
-        self.excel_visit_file = ExcelHelper(f=visit_file.data_file.url)
+    def __init__(self, upload_file):
+        super(VisitFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['subject_label',
                                    'visitdate_yyyy',
@@ -24,22 +22,17 @@ class VisitFileHandler(FileHandler):
                                    'pregnant',
                                    'hepatitis']
 
-        self.existing_columns = self.excel_visit_file.read_header()
-
     def parse(self):
         from cephia.models import VisitRow
         
-        header = self.excel_visit_file.read_header()
         rows_inserted = 0
         rows_failed = 0
 
-        for row_num in range(self.excel_visit_file.nrows):
+        for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
-                    row = self.excel_visit_file.read_row(row_num)
-                    row_dict = dict(zip(header, row))
-                    
-                    visit_row = VisitRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.visit_file)
+                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
+                    visit_row = VisitRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
 
                     visit_row.subject_label = row_dict['subject_label']
                     visit_row.visitdate_yyyy = row_dict['visitdate_yyyy']
@@ -53,15 +46,15 @@ class VisitFileHandler(FileHandler):
                     visit_row.pregnant = row_dict['pregnant']
                     visit_row.hepatitis = row_dict['hepatitis']
 
-                    visit_row.fileinfo = self.visit_file
+                    visit_row.fileinfo = self.upload_file
                     visit_row.state = 'pending'
                     visit_row.save()
 
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.visit_file.message = "row " + str(row_num) + ": " + e.message
-                self.visit_file.save()
+                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.save()
                 return 0, 1
 
         return rows_inserted, rows_failed
@@ -74,7 +67,7 @@ class VisitFileHandler(FileHandler):
         rows_validated = 0
         rows_failed = 0
         
-        for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state='pending'):
+        for visit_row in VisitRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 self.register_dates(visit_row.model_to_dict())
                 try:
@@ -96,7 +89,7 @@ class VisitFileHandler(FileHandler):
                         raise Exception('Visits HIV status cannot become "negative" if it was initially "positive"')
 
                 if first_visit:
-                    if first_visit.name != visit_row.source_study:
+                    if first_visit.source_study.name != visit_row.source_study:
                         raise Exception('source_study does not match other visits for the patient')
 
                 if not self.registered_dates['visitdate'] < datetime.now().date():
@@ -133,7 +126,7 @@ class VisitFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for visit_row in VisitRow.objects.filter(fileinfo=self.visit_file, state='validated'):
+        for visit_row in VisitRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
                     self.register_dates(visit_row.model_to_dict())
