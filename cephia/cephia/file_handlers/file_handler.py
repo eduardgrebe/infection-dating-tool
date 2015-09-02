@@ -22,6 +22,12 @@ class FileHandler(object):
 
         self.registered_columns = []
 
+    def excel_unicode(self, val):
+        if type(val) == float:
+            if int(val) == val:
+                return unicode(int(val))
+        return unicode(val)
+
     def register_dates(self, row):
         self.registered_dates = {}
         for key in row:
@@ -86,7 +92,7 @@ class FileHandler(object):
         def read_lines(workbook):
             sheet = workbook.sheet_by_index(0)
             for row in range(sheet.nrows):
-                yield [sheet.cell(row, col).value for col in range(sheet.ncols)]
+                yield [self.excel_unicode(sheet.cell(row, col).value) for col in range(sheet.ncols)]
 
         try:
             workbook = xlrd.open_workbook(to_read)
