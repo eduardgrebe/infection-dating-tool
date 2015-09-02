@@ -134,6 +134,7 @@ class VisitFilterForm(forms.Form):
     pregnant = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
     hepatitis = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
     artificial = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
+    has_subjects = forms.ChoiceField(choices=ASSOCIATED_CHOICES, required=False)
 
     def __init__(self, *args, **kwargs):
         super(VisitFilterForm, self).__init__(*args, **kwargs)

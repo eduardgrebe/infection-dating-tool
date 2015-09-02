@@ -63,7 +63,7 @@ class SubjectFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    if row_dict['id']:
+                    if row_dict.get('id', None):
                         subject_row = SubjectRow.objects.get(pk=row_dict['id'])
                     else:
                         subject_row = SubjectRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)

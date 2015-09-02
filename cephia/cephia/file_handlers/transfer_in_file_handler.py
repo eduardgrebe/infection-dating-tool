@@ -40,7 +40,7 @@ class TransferInFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    if row_dict['id']:
+                    if row_dict.get('id', None):
                         transfer_in_row = TransferInRow.objects.get(pk=row_dict['id'])
                     else:
                         transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],

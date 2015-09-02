@@ -17,6 +17,10 @@
 {% bootstrap_field form.artificial %}
 {% endblock %}
 
+{% block filter_col_d %}
+{% bootstrap_field form.has_subjects %}
+{% endblock %}
+
 {% block page_content %}
 
 {% paginate visits %}
@@ -64,9 +68,11 @@
               </table>
             </div>
           </div>
+          {% comment %}
           <div class="btn-group">
-            <a href="{% url 'download_visits_no_subjects' %}" class="btn btn-primary">Export as CSV</a>
+            <a href="{% url 'download_visits_no_subjects' %}" class="btn btn-primary" style="float:right; text-decoration:none;">Export as CSV</a>
           </div>
+          {% endcomment %}
         </div>
       </div>
     </div>
