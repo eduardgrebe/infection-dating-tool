@@ -31,20 +31,24 @@ class AliquotFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
-                    AliquotRow.objects.create(parent_label=row_dict['parent_label'],
-                                              aliquot_label=row_dict['aliquot_label'],
-                                              volume=row_dict['volume'],
-                                              volume_units=row_dict['volume_units'],
-                                              aliquoting_date_yyyy=row_dict['aliquoting_date_yyyy'],
-                                              aliquoting_date_mm=row_dict['aliquoting_date_mm'],
-                                              aliquoting_date_dd=row_dict['aliquoting_date_dd'],
-                                              aliquot_reason=row_dict['reason'],
-                                              fileinfo=self.upload_file,
-                                              state='pending')
-
+                    if row_dict['id']:
+                        aliquot_row = AliquotRow.objects.get(pk=row_dict['id'])
+                    else:
+                        aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
+                                                                aliquot_label=row_dict['aliquot_label'])
+                    
+                    aliquot_row.volume=row_dict['volume']
+                    aliquot_row.volume_units=row_dict['volume_units']
+                    aliquot_row.aliquoting_date_yyyy=row_dict['aliquoting_date_yyyy']
+                    aliquot_row.aliquoting_date_mm=row_dict['aliquoting_date_mm']
+                    aliquot_row.aliquoting_date_dd=row_dict['aliquoting_date_dd']
+                    aliquot_row.aliquot_reason=row_dict['reason']
+                    aliquot_row.fileinfo=self.upload_file
+                    aliquot_row.state='pending'
+                    aliquot_row.error_message = ''
+                    aliquot_row.save()
 
                     rows_inserted += 1
-
             except Exception, e:
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message

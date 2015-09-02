@@ -30,19 +30,23 @@ class TransferOutFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    TransferOutRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                  number_of_containers=row_dict['number_of_containers'],
-                                                  specimen_type=row_dict['specimen_type'],
-                                                  volume=row_dict['volume'],
-                                                  volume_units=row_dict['volume_units'],
-                                                  shipped_in_panel=row_dict['shipped_in_panel'],
-                                                  shipment_date_yyyy=row_dict['shipment_date_yyyy'],
-                                                  shipment_date_mm=row_dict['shipment_date_mm'],
-                                                  shipment_date_dd=row_dict['shipment_date_dd'],
-                                                  destination_site=row_dict['destination_site'],
-                                                  fileinfo=self.upload_file,
-                                                  state='pending')
-
+                    if row_dict['id']:
+                        transfer_out_row = TransferOutRow.objects.get(pk=row_dict['id'])
+                    else:
+                        transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['specimen_label'])
+                    
+                    transfer_out_row.number_of_containers=row_dict['number_of_containers']
+                    transfer_out_row.specimen_type=row_dict['specimen_type']
+                    transfer_out_row.volume=row_dict['volume']
+                    transfer_out_row.volume_units=row_dict['volume_units']
+                    transfer_out_row.shipped_in_panel=row_dict['shipped_in_panel']
+                    transfer_out_row.shipment_date_yyyy=row_dict['shipment_date_yyyy']
+                    transfer_out_row.shipment_date_mm=row_dict['shipment_date_mm']
+                    transfer_out_row.shipment_date_dd=row_dict['shipment_date_dd']
+                    transfer_out_row.destination_site=row_dict['destination_site']
+                    transfer_out_row.fileinfo=self.upload_file
+                    transfer_out_row.state='pending'
+                    transfer_out_row.save()
 
                     rows_inserted += 1
             except Exception, e:

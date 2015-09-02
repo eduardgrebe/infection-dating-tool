@@ -227,8 +227,6 @@ def upload_file(request):
             'transfer_out': 5
         }
 
-
-
         if request.method == "POST":
             post_data = request.POST.copy()
             if post_data.get("priority"):
@@ -284,17 +282,17 @@ def validate_rows(request, file_id):
     try:
         file_to_validate = FileInfo.objects.get(pk=file_id)
         file_handler = file_to_validate.get_handler()
-        msg = file_handler.validate_file()
-
-        if msg:
-            messages.add_message(request, messages.WARNING, msg)
 
         num_success, num_fail = file_handler.validate()
 
         fail_msg = 'Failed to validate ' + str(num_fail) + ' rows '
         msg = 'Successfully validated ' + str(num_success) + ' rows '
 
-        file_to_validate.state = 'validated'
+        if num_fail > 0:
+            file_to_validate.state = 'error'
+        else:
+            file_to_validate.state = 'validated'
+
         file_to_validate.message = fail_msg + ' ' + msg
         file_to_validate.save()
         
@@ -371,13 +369,28 @@ def export_as_csv(request, file_id):
             rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-        headers = model_to_dict(rows[0]).keys()
+        headers = rows[0].model_to_dict().keys()
+
+        headers.append('resolve_action')
+        headers.append('resolve_date')
+        headers.append('assigned_to')
 
         writer.writerow(headers)
         
         for row in rows:
-            d = model_to_dict(row)
-            content = [ d[x] for x in headers ]
+            model_dict = model_to_dict(row)
+            if model_dict['comment']:
+                model_dict['comment'] = row.comment.comment
+                model_dict['resolve_action'] = row.comment.resolve_action
+                model_dict['resolve_date'] = row.comment.resolve_date
+                model_dict['assigned_to'] = row.comment.assigned_to
+            else:
+                model_dict['comment'] = None
+                model_dict['resolve_action'] = None
+                model_dict['resolve_date'] = None
+                model_dict['assigned_to'] = None
+
+            content = [ model_dict[x] for x in headers ]
             writer.writerow(content)
 
         return response
@@ -468,7 +481,9 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
 
                 row.comment = comment
                 row.save()
-            return HttpResponseRedirect(reverse('file_info'))
+
+            url_params = {'file_id':file_id}
+            return HttpResponseRedirect(reverse('row_info', kwargs=url_params))
         elif request.method == 'GET':
             if row.comment:
                 form = RowCommentForm(initial=row.comment.model_to_dict())
@@ -482,7 +497,6 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
             response = render_to_response(template, context, context_instance=RequestContext(request))
             return HttpResponse(json.dumps({'response': response.content}))
     except Exception, e:
-        import pdb; pdb.set_trace()
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))

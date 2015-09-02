@@ -62,7 +62,11 @@ class SubjectFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    subject_row = SubjectRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
+
+                    if row_dict['id']:
+                        subject_row = SubjectRow.objects.get(pk=row_dict['id'])
+                    else:
+                        subject_row = SubjectRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
 
                     subject_row.subject_label = row_dict['subject_label']
                     subject_row.source_study = row_dict['source_study']
@@ -104,7 +108,9 @@ class SubjectFileHandler(FileHandler):
                     subject_row.art_resumption_date_yyyy = row_dict['art_resumption_date_yyyy']
                     subject_row.art_resumption_date_mm = row_dict['art_resumption_date_mm']
                     subject_row.art_resumption_date_dd = row_dict['art_resumption_date_dd']
+                    subject_row.fileinfo=self.upload_file
                     subject_row.state = 'pending'
+                    subject_row.error_message = ''
                     subject_row.save()
 
                     rows_inserted += 1

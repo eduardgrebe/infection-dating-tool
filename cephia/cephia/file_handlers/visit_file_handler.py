@@ -32,7 +32,11 @@ class VisitFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    visit_row = VisitRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
+
+                    if row_dict['id']:
+                        visit_row = VisitRow.objects.get(pk=row_dict['id'])
+                    else:
+                        visit_row = VisitRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
 
                     visit_row.subject_label = row_dict['subject_label']
                     visit_row.visitdate_yyyy = row_dict['visitdate_yyyy']

@@ -40,12 +40,15 @@ class TransferInFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                   subject_label=row_dict['subject_label'],
-                                                                   drawdate_yyyy=row_dict['drawdate_year'],
-                                                                   drawdate_mm=row_dict['drawdate_month'],
-                                                                   drawdate_dd=row_dict['drawdate_day'],
-                                                                   fileinfo=self.upload_file)
+                    if row_dict['id']:
+                        transfer_in_row = TransferInRow.objects.get(pk=row_dict['id'])
+                    else:
+                        transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
+                                                                       subject_label=row_dict['subject_label'],
+                                                                       drawdate_yyyy=row_dict['drawdate_year'],
+                                                                       drawdate_mm=row_dict['drawdate_month'],
+                                                                       drawdate_dd=row_dict['drawdate_day'],
+                                                                       fileinfo=self.upload_file)
 
                     transfer_in_row.number_of_containers = row_dict['number_of_containers']
                     transfer_in_row.transfer_date_yyyy = row_dict['transfer_date_yyyy']
@@ -59,6 +62,7 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.source_study = row_dict['source_study']
                     transfer_in_row.notes = row_dict['notes']
                     transfer_in_row.state = 'pending'
+                    transfer_in_row.error_message = ''
                     transfer_in_row.save()
 
                     rows_inserted += 1

@@ -9,6 +9,7 @@ from file_handlers.file_handler_register import *
 import logging
 from django.forms.models import model_to_dict
 from simple_history.models import HistoricalRecords
+import collections
 
 logger = logging.getLogger(__name__)
 
