@@ -56,7 +56,7 @@ class SubjectFilterForm(forms.Form):
         (True,'Yes'),
         (False,'No'),
     )
-    
+
     subject_label = forms.CharField(max_length=255, required=False)
     cohort_entry_date = forms.DateField(required=False)
     cohort_entry_hiv_status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
@@ -74,6 +74,10 @@ class SubjectFilterForm(forms.Form):
         
         self.fields['cohort_entry_date'].widget = forms.DateInput()
         self.fields['cohort_entry_date'].widget.attrs.update({'class':'datepicker'})
+        
+        ethnicity_choices = [('','---------')]
+        [ ethnicity_choices.append((x.id, x.name)) for x in Ethnicity.objects.all() ]
+        self.fields['population_group'].choices = ethnicity_choices
 
     def filter(self, subjects):
         subject_label = self.cleaned_data['subject_label']
@@ -97,7 +101,7 @@ class SubjectFilterForm(forms.Form):
         if sex:
             subjects = subjects.filter(sex=sex)
         if population_group:
-            subjects = subjects.filter(ethnicity__id=population_group)
+            subjects = subjects.filter(population_group__id=population_group)
         if transgender:
             subjects = subjects.filter(transgender=transgender)
         if risk_sex_with_men:
