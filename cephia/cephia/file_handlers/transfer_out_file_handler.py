@@ -54,7 +54,7 @@ class TransferOutFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self):
-        from cephia.models import TransferOutRow, Specimen, SpecimenType
+        from cephia.models import TransferOutRow, Specimen, SpecimenType, Site
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         #default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -65,6 +65,11 @@ class TransferOutFileHandler(FileHandler):
             try:
                 self.register_dates(transfer_out_row.model_to_dict())
 
+                try:
+                    Site.objects.get(name=transfer_out_row.destination_site)
+                except Site.DoesNotExist:
+                    raise Exception("Site does not exist")
+                
                 try:
                     specimen_type = SpecimenType.objects.get(spec_type=transfer_out_row.specimen_type)
                 except SpecimenType.DoesNotExist:

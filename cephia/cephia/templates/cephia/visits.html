@@ -5,11 +5,14 @@
 {% block filter_col_a %}
 {% bootstrap_field form.subject_label %}
 {% bootstrap_field form.visit_date %}
-{% bootstrap_field form.visit_hivstatus %}
 {% endblock %}
 
 {% block filter_col_b %}
+{% bootstrap_field form.visit_hivstatus %}
 {% bootstrap_field form.pregnant %}
+{% endblock %}
+
+{% block filter_col_c %}
 {% bootstrap_field form.hepatitis %}
 {% bootstrap_field form.artificial %}
 {% endblock %}
