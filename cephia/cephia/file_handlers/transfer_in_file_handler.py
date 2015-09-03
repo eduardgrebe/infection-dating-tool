@@ -26,7 +26,7 @@ class TransferInFileHandler(FileHandler):
                                    'volume',
                                    'volume_units',
                                    'source_study',
-                                   'notes']
+                                   'Notes']
 
 
     def parse(self):
@@ -60,9 +60,10 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.volume_units = row_dict['volume_units']
                     transfer_in_row.specimen_type = row_dict['specimen_type']
                     transfer_in_row.source_study = row_dict['source_study']
-                    transfer_in_row.notes = row_dict['notes']
+                    transfer_in_row.notes = row_dict['Notes']
                     transfer_in_row.state = 'pending'
                     transfer_in_row.error_message = ''
+                    transfer_in_row.fileinfo=self.upload_file
                     transfer_in_row.save()
 
                     rows_inserted += 1

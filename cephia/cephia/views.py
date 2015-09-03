@@ -27,17 +27,16 @@ def home(request, file_id=None, template="cephia/home.html"):
         transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
         transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
         aliquot_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
-        subject_process_date = SubjectRow.objects.last()
-        visit_process_date = VisitRow.objects.last()
-        transfer_in_process_date = TransferInRow.objects.last()
-        transfer_out_process_date = TransferOutRow.objects.last()
-        aliquot_process_date = AliquotRow.objects.last()
-        subject_errors = SubjectRow.objects.filter(state='error').count()
-        visit_errors = VisitRow.objects.filter(state='error').count()
-        transfer_in_errors = TransferInRow.objects.filter(state='error').count()
-        transfer_out_errors = TransferOutRow.objects.filter(state='error').count()
-
-        aliquot_errors = AliquotRow.objects.filter(state='error').count()
+        subject_process_date = SubjectRow.objects.filter(fileinfo=subject_file).first().date_processed
+        visit_process_date = VisitRow.objects.filter(fileinfo=visit_file).first().date_processed
+        transfer_in_process_date = None#TransferInRow.objects.filter(fileinfo=transfer_in_file).first().date_processed
+        transfer_out_process_date = None#TransferOutRow.objects.filter(fileinfo=transfer_out_file).first().date_processed
+        aliquot_process_date = None#AliquotRow.objects.filter(fileinfo=aliquot_file).first().date_processed
+        subject_errors = SubjectRow.objects.filter(fileinfo=subject_file, state='error').count()
+        visit_errors = VisitRow.objects.filter(fileinfo=visit_file, state='error').count()
+        transfer_in_errors = TransferInRow.objects.filter(fileinfo=transfer_in_file, state='error').count()
+        transfer_out_errors = TransferOutRow.objects.filter(fileinfo=transfer_out_file,state='error').count()
+        aliquot_errors = AliquotRow.objects.filter(fileinfo=aliquot_file, state='error').count()
 
         subject_success = 44 - subject_errors
         visit_success = 15 - subject_errors
@@ -262,11 +261,11 @@ def parse_file(request, file_id):
         num_success, num_fail = file_handler.parse()
         
         if num_fail > 0:
-            messages.add_message(request, messages.ERROR, 'Failed to import ' + str(num_fail) + ' rows ')
+            messages.add_message(request, messages.ERROR, 'Failed to import ' + str(num_fail) + ' rows. ')
         else:
             file_to_parse.state = 'imported'
             file_to_parse.save()
-            messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows ')
+            messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows. ')
         
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
@@ -285,8 +284,8 @@ def validate_rows(request, file_id):
 
         num_success, num_fail = file_handler.validate()
 
-        fail_msg = 'Failed to validate ' + str(num_fail) + ' rows '
-        msg = 'Successfully validated ' + str(num_success) + ' rows '
+        fail_msg = 'Failed to validate ' + str(num_fail) + ' rows. '
+        msg = 'Successfully validated ' + str(num_success) + ' rows. '
 
         if num_fail > 0:
             file_to_validate.state = 'error'
@@ -314,8 +313,8 @@ def process_file(request, file_id):
         
         num_success, num_fail = file_handler.process()
 
-        fail_msg = 'Failed to process ' + str(num_fail) + ' rows '
-        msg = 'Successfully processed ' + str(num_success) + ' rows '
+        fail_msg = 'Failed to process ' + str(num_fail) + ' rows. '
+        msg = 'Successfully processed ' + str(num_success) + ' rows. '
 
         if num_fail > 0:
             messages.add_message(request, messages.WARNING, fail_msg)
@@ -358,15 +357,15 @@ def export_as_csv(request, file_id):
         state = 'error'
 
         if fileinfo.file_type == 'subject':
-            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state=state)
+            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
         elif fileinfo.file_type == 'visit':
-            rows = VisitRow.objects.filter(fileinfo=fileinfo, state=state)
+            rows = VisitRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
         elif fileinfo.file_type == 'transfer_in':
-            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state)
+            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
         elif fileinfo.file_type == 'transfer_out':
-            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
+            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
         elif fileinfo.file_type == 'aliquot':
-            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
+            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = rows[0].model_to_dict().keys()
