@@ -9,3 +9,5 @@ logs
 tmp/
 db_backups/
 *.mo
+
+*.sql3
