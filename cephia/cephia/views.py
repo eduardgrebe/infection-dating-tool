@@ -15,6 +15,7 @@ from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
 from datetime import datetime, timedelta
 import json
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -446,19 +447,21 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
             associate_visit = Visit.objects.get(id=request.POST.get('visit'))
             associate_specimen.visit = associate_visit
             associate_specimen.save()
-            messages.success(request, 'Successfully associated specimen with visit')    
+            messages.success(request, 'Successfully associated specimen with visit')
 
-        context = {'specimen': {}}
-        specimen = Specimen.objects.filter(visit__isnull=True)
-        visits_already_associated = Specimen.objects.values('visit').filter(visit__isnull=False)
-        
-        for x in specimen:
-            from_date = x.reported_draw_date - timedelta(days=14)
-            to_date = x.reported_draw_date + timedelta(days=14)
-            possible_visits = Visit.objects.filter(visit_date__gte=from_date,
-                                                   visit_date__lte=to_date).exclude(pk__in=[z['visit'] for z in visits_already_associated])
-            context['specimen'][x] = possible_visits
-            
+        context = {}
+        subject_labels = Specimen.objects.values('subject_label').filter(visit__isnull=True).distinct()
+        import pdb; pdb.set_trace()
+
+        for x in subject_labels:
+            if not 
+            context[x['subject_label']]['specimen'] = Specimen.objects.filter(subject_label=x)
+
+        for x in subject_labels:
+            context[specimen.subject_label]['visits'] = Visit.objects.filter(subject_label=specimen.subject_label,
+                                                                             visit_date__lte=(specimen.reported_draw_date + timedelta(days=14)),
+                                                                             visit_date__gte=(specimen.reported_draw_date - timedelta(days=14)))
+
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:
         logger.exception(e)

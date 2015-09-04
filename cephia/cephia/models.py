@@ -345,6 +345,7 @@ class Specimen(models.Model):
 
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
     parent_label = models.CharField(max_length=255, null=True, blank=True)
+    subject_label = models.CharField(max_length=255, null=True, blank=True)
     number_of_containers = models.IntegerField(null=True, blank=True)
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
