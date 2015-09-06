@@ -100,6 +100,9 @@ class TransferInFileHandler(FileHandler):
                 except SpecimenType.DoesNotExist:
                     raise Exception("SpecimenType does not exist")
 
+                if not transfer_in_row.subject_label:
+                    raise Exception("Specimen must have a claimed subject")
+
                 if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                     if transfer_in_row.volume_units != 'cards':
                         raise Exception('volume_units must be "cards" for this specimen_type')
@@ -127,11 +130,6 @@ class TransferInFileHandler(FileHandler):
                 if transfer_in_row.specimen_type in ['10.1','10.2']:
                     if transfer_in_row.volume > 90:
                         raise Exception('volume must be greater than 90 for this specimen type')
-
-                try:
-                    SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type)
-                except SpecimenType.DoesNotExist:
-                    raise Exception("SpecimenType does not exist")
 
 
                 transfer_in_row.state = 'validated'
@@ -168,6 +166,7 @@ class TransferInFileHandler(FileHandler):
                         pass
 
                     Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
+                                            subject_label = transfer_in_row.subject_label,
                                             reported_draw_date = self.registered_dates.get('drawdate', None),
                                             transfer_in_date = self.registered_dates.get('transfer_date', None),
                                             transfer_reason = transfer_in_row.transfer_reason,
