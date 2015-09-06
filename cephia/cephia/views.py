@@ -240,7 +240,10 @@ def upload_file(request):
             if form.is_valid():
                 form.save();
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
-                return HttpResponseRedirect(reverse('file_info'))
+            else:
+                messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
+                
+            return HttpResponseRedirect(reverse('file_info'))
 
     except Exception, e:
         logger.exception(e)
@@ -271,7 +274,7 @@ def parse_file(request, file_id):
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Import failed: ' + e.message)
-        file_to_parse.state = 'error'
+        file_to_parse.state = 'file_error'
         file_to_parse.message = e.message
         file_to_parse.save()
         return HttpResponseRedirect(reverse('file_info'))
@@ -288,7 +291,7 @@ def validate_rows(request, file_id):
         msg = 'Successfully validated ' + str(num_success) + ' rows. '
 
         if num_fail > 0:
-            file_to_validate.state = 'error'
+            file_to_validate.state = 'row_error'
         else:
             file_to_validate.state = 'validated'
 
@@ -299,7 +302,7 @@ def validate_rows(request, file_id):
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Validate failed: ' + e.message)
-        file_to_validate.state = 'error'
+        file_to_validate.state = 'file_error'
         file_to_validate.message = e.message
         file_to_validate.save()
         return HttpResponseRedirect(reverse('file_info'))
@@ -331,6 +334,9 @@ def process_file(request, file_id):
     except Exception, e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed to process: ' + e.message)
+        file_to_process.state = 'file_error'
+        file_to_process.message = e.message
+        file_to_process.save()
         return HttpResponseRedirect(reverse('file_info'))
 
 
@@ -450,13 +456,12 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
 
         context = {'specimen': {}}
         specimen = Specimen.objects.filter(visit__isnull=True)
-        visits_already_associated = Specimen.objects.values('visit').filter(visit__isnull=False)
         
         for x in specimen:
             from_date = x.reported_draw_date - timedelta(days=14)
             to_date = x.reported_draw_date + timedelta(days=14)
             possible_visits = Visit.objects.filter(visit_date__gte=from_date,
-                                                   visit_date__lte=to_date).exclude(pk__in=[z['visit'] for z in visits_already_associated])
+                                                   visit_date__lte=to_date)
             context['specimen'][x] = possible_visits
             
         return render_to_response(template, context, context_instance=RequestContext(request))

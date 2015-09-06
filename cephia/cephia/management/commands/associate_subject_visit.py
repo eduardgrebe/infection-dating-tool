@@ -11,9 +11,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         num_associations = 0
 
-        for visit in Visit.objects.filter(subject=None):
+        for visit in Visit.objects.filter(subject__isnull=True):
             try:
-                subject = Subject.objects.get(patient_label=visit.patient_label)
+                subject = Subject.objects.get(subject_label=visit.subject_label)
                 visit.subject = subject
                 visit.save()
             except Subject.DoesNotExist:
