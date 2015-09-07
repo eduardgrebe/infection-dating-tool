@@ -106,29 +106,29 @@ class TransferInFileHandler(FileHandler):
                 if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                     if transfer_in_row.volume_units != 'cards':
                         raise Exception('volume_units must be "cards" for this specimen_type')
-                if int(transfer_in_row.volume) < 20:
+                if int(transfer_in_row.volume or 0) > 20:
                     raise Exception('volume must be less than 20 for this specimen type')
 
                 if transfer_in_row.specimen_type == '2':
                     if transfer_in_row.volume_units != 'grams':
                         raise Exception('volume_units must be "grams" for this specimen')
-                    if int(transfer_in_row.volume) < 100:
+                    if int(transfer_in_row.volume or 0) > 100:
                         raise Exception('volume must be less than 100 for this specimen')
 
                 if transfer_in_row.specimen_type in ['5.1','5.2']:
                     if transfer_in_row.volume_units != 'm cells':
                         raise Exception('volume_units must be "cards" for this specimen_type')
-                    if int(transfer_in_row.volume) < 20:
+                    if int(transfer_in_row.volume or 0) > 20:
                         raise Exception('volume must be less than 20 for this specimen')
 
                 if transfer_in_row.specimen_type == '7':
                     if transfer_in_row.volume_units != 'swabs':
                         raise Exception('volume_units must be "swabs" for this specimen_type')
-                    if int(transfer_in_row.volume) < 20:
+                    if int(transfer_in_row.volume or 0) > 20:
                         raise Exception('volume must be less than 20 for this specimen')
 
                 if transfer_in_row.specimen_type in ['10.1','10.2']:
-                    if int(transfer_in_row.volume) > 90:
+                    if int(transfer_in_row.volume or 0) < 90:
                         raise Exception('volume must be greater than 90 for this specimen type')
 
 
