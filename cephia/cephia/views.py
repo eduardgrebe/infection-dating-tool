@@ -364,15 +364,15 @@ def export_as_csv(request, file_id):
         state = 'error'
 
         if fileinfo.file_type == 'subject':
-            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
+            rows = SubjectRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'visit':
-            rows = VisitRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
+            rows = VisitRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'transfer_in':
-            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
+            rows = TransferInRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'transfer_out':
-            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
+            rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'aliquot':
-            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state, comment__isnull=False)
+            rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = rows[0].model_to_dict().keys()
