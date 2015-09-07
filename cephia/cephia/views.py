@@ -28,8 +28,8 @@ def home(request, file_id=None, template="cephia/home.html"):
         transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
         transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
         aliquot_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
-        subject_process_date = SubjectRow.objects.filter(fileinfo=subject_file).first().date_processed
-        visit_process_date = VisitRow.objects.filter(fileinfo=visit_file).first().date_processed
+        #subject_process_date = SubjectRow.objects.filter(fileinfo=subject_file).first().date_processed
+        #visit_process_date = VisitRow.objects.filter(fileinfo=visit_file).first().date_processed
         transfer_in_process_date = None#TransferInRow.objects.filter(fileinfo=transfer_in_file).first().date_processed
         transfer_out_process_date = None#TransferOutRow.objects.filter(fileinfo=transfer_out_file).first().date_processed
         aliquot_process_date = None#AliquotRow.objects.filter(fileinfo=aliquot_file).first().date_processed
@@ -54,11 +54,11 @@ def home(request, file_id=None, template="cephia/home.html"):
         context['transfer_in_file'] = transfer_in_file
         context['transfer_out_file'] = transfer_out_file
         context['aliquot_file'] = aliquot_file
-        context['subject_process_date'] = subject_process_date
-        context['visit_process_date'] = visit_process_date
-        context['transfer_in_process_date'] = transfer_in_process_date
-        context['transfer_out_process_date'] = transfer_out_process_date
-        context['aliquot_process_date'] = aliquot_process_date
+        #context['subject_process_date'] = subject_process_date
+        #context['visit_process_date'] = visit_process_date
+        #context['transfer_in_process_date'] = transfer_in_process_date
+        #context['transfer_out_process_date'] = transfer_out_process_date
+        #context['aliquot_process_date'] = aliquot_process_date
         context['subject_errors'] = subject_errors
         context['visit_errors'] = visit_errors
         context['aliquot_errors'] = aliquot_errors
@@ -455,28 +455,28 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
             associate_specimen.save()
             messages.success(request, 'Successfully associated specimen with visit')
 
-        context = {}
-        subject_labels = Specimen.objects.values('subject_label').filter(visit__isnull=True).distinct()
-        import pdb; pdb.set_trace()
+        #context = {}
+        #subject_labels = Specimen.objects.values('subject_label').filter(visit__isnull=True).distinct()
+        # import pdb; pdb.set_trace()
 
-        for x in subject_labels:
-            if not x:
-                context[x['subject_label']]['specimen'] = Specimen.objects.filter(subject_label=x)
+        # for x in subject_labels:
+        #     if not x:
+        #         context[x['subject_label']]['specimen'] = Specimen.objects.filter(subject_label=x)
 
-        for x in subject_labels:
-            context[specimen.subject_label]['visits'] = Visit.objects.filter(subject_label=specimen.subject_label,
-                                                                             visit_date__lte=(specimen.reported_draw_date + timedelta(days=14)),
-                                                                             visit_date__gte=(specimen.reported_draw_date - timedelta(days=14)))
+        # for x in subject_labels:
+        #     context[specimen.subject_label]['visits'] = Visit.objects.filter(subject_label=specimen.subject_label,
+        #                                                                      visit_date__lte=(specimen.reported_draw_date + timedelta(days=14)),
+        #                                                                      visit_date__gte=(specimen.reported_draw_date - timedelta(days=14)))
 
-        # context = {'specimen': {}}
-        # specimen = Specimen.objects.filter(visit__isnull=True)
+        context = {'specimen': {}}
+        specimen = Specimen.objects.filter(visit__isnull=True)
         
-        # for x in specimen:
-        #     from_date = x.reported_draw_date - timedelta(days=14)
-        #     to_date = x.reported_draw_date + timedelta(days=14)
-        #     possible_visits = Visit.objects.filter(visit_date__gte=from_date,
-        #                                            visit_date__lte=to_date)
-        #     context['specimen'][x] = possible_visits
+        for x in specimen:
+            from_date = x.reported_draw_date - timedelta(days=14)
+            to_date = x.reported_draw_date + timedelta(days=14)
+            possible_visits = Visit.objects.filter(visit_date__gte=from_date,
+                                                   visit_date__lte=to_date)
+            context['specimen'][x] = possible_visits
             
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:
