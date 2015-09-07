@@ -135,19 +135,20 @@ class VisitFileHandler(FileHandler):
                 with transaction.atomic():
                     self.register_dates(visit_row.model_to_dict())
 
-                    Visit.objects.create(subject_label = visit_row.subject_label,
-                                         visit_date = self.registered_dates.get('visitdate', None),
-                                         visit_hivstatus = visit_row.visit_hivstatus,
-                                         source_study = Study.objects.get(name=visit_row.source_study),
-                                         cd4_count = visit_row.cd4_count or None,
-                                         vl = visit_row.vl or None,
-                                         scopevisit_ec = visit_row.scopevisit_ec or None,
-                                         pregnant = self.get_bool(visit_row.pregnant),
-                                         hepatitis = self.get_bool(visit_row.hepatitis))
+                    visit = Visit.objects.create(subject_label = visit_row.subject_label,
+                                                 visit_date = self.registered_dates.get('visitdate', None),
+                                                 visit_hivstatus = visit_row.visit_hivstatus,
+                                                 source_study = Study.objects.get(name=visit_row.source_study),
+                                                 cd4_count = visit_row.cd4_count or None,
+                                                 vl = visit_row.vl or None,
+                                                 scopevisit_ec = visit_row.scopevisit_ec or None,
+                                                 pregnant = self.get_bool(visit_row.pregnant),
+                                                 hepatitis = self.get_bool(visit_row.hepatitis))
 
                     visit_row.state = 'processed'
                     visit_row.date_processed = timezone.now()
                     visit_row.error_message = ''
+                    visit_row.visit = visit
                     visit_row.save()
                     rows_inserted += 1
 

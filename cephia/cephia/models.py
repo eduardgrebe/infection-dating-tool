@@ -180,6 +180,50 @@ class ImportedRowComment(models.Model):
         return d
 
 
+class Subject(models.Model):
+
+    class Meta:
+        db_table = "cephia_subject"
+
+    GENDER_CHOICES = (
+        ('male','Male'),
+        ('female','Female'),
+        ('unkown','Unkown')
+    )
+
+    STATUS_CHOICES = (
+        ('negative','Negative'),
+        ('positive','Positive'),
+    )
+    
+    subject_label = models.CharField(max_length=255, null=True, blank=True)
+    cohort_entry_date = models.DateField(null=True, blank=True)
+    cohort_entry_hiv_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
+    country = models.ForeignKey(Country, null=True, blank=True)
+    last_negative_date = models.DateField(null=True, blank=True)
+    first_positive_date = models.DateField(null=True, blank=True)
+    ars_onset_date = models.DateField(null=True, blank=True)
+    fiebig_stage_at_firstpos = models.CharField(max_length=10, null=False, blank=False)
+    date_of_birth = models.DateField(null=True, blank=True)
+    date_of_death = models.DateField(null=True, blank=True)
+    sex = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
+    transgender = models.NullBooleanField()
+    population_group = models.ForeignKey(Ethnicity, null=True, blank=True)
+    risk_sex_with_men = models.NullBooleanField()
+    risk_sex_with_women = models.NullBooleanField()
+    risk_idu = models.NullBooleanField()
+    subtype_confirmed = models.NullBooleanField()
+    subtype = models.ForeignKey(Subtype, null=True, blank=True)
+    art_initiation_date = models.DateField(null=True, blank=True)
+    aids_diagnosis_date = models.DateField(null=True, blank=True)
+    art_interruption_date = models.DateField(null=True, blank=True)
+    art_resumption_date = models.DateField(null=True, blank=True)
+    history = HistoricalRecords()
+
+    def __unicode__(self):
+        return self.subject_label
+
+
 class SubjectRow(ImportedRow):
 
     class Meta:
@@ -226,72 +270,7 @@ class SubjectRow(ImportedRow):
     art_resumption_date_mm = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-
-    def __unicode__(self):
-        return self.subject_label
-
-
-class Subject(models.Model):
-
-    class Meta:
-        db_table = "cephia_subject"
-
-    GENDER_CHOICES = (
-        ('male','Male'),
-        ('female','Female'),
-        ('unkown','Unkown')
-    )
-
-    STATUS_CHOICES = (
-        ('negative','Negative'),
-        ('positive','Positive'),
-    )
-    
-    subject_label = models.CharField(max_length=255, null=True, blank=True)
-    cohort_entry_date = models.DateField(null=True, blank=True)
-    cohort_entry_hiv_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
-    country = models.ForeignKey(Country, null=True, blank=True)
-    last_negative_date = models.DateField(null=True, blank=True)
-    first_positive_date = models.DateField(null=True, blank=True)
-    ars_onset_date = models.DateField(null=True, blank=True)
-    fiebig_stage_at_firstpos = models.CharField(max_length=10, null=False, blank=False)
-    date_of_birth = models.DateField(null=True, blank=True)
-    date_of_death = models.DateField(null=True, blank=True)
-    sex = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
-    transgender = models.NullBooleanField()
-    population_group = models.ForeignKey(Ethnicity, null=True, blank=True)
-    risk_sex_with_men = models.NullBooleanField()
-    risk_sex_with_women = models.NullBooleanField()
-    risk_idu = models.NullBooleanField()
-    subtype_confirmed = models.NullBooleanField()
-    subtype = models.ForeignKey(Subtype, null=True, blank=True)
-    art_initiation_date = models.DateField(null=True, blank=True)
-    aids_diagnosis_date = models.DateField(null=True, blank=True)
-    art_interruption_date = models.DateField(null=True, blank=True)
-    art_resumption_date = models.DateField(null=True, blank=True)
-    history = HistoricalRecords()
-
-    def __unicode__(self):
-        return self.subject_label
-
-
-class VisitRow(ImportedRow):
-
-    class Meta:
-        db_table = "cephia_visitrow"
-
-    subject_label = models.CharField(max_length=255, null=False, blank=True)
-    visitdate_yyyy = models.CharField(max_length=255, null=False, blank=True)
-    visitdate_mm = models.CharField(max_length=255, null=False, blank=True)
-    visitdate_dd = models.CharField(max_length=255, null=False, blank=True)
-    visit_hivstatus = models.CharField(max_length=255, null=False, blank=True)
-    source_study = models.CharField(max_length=255, null=False, blank=True)
-    cd4_count = models.CharField(max_length=255, null=False, blank=True)
-    vl = models.CharField(max_length=255, null=False, blank=True)
-    scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
-    pregnant = models.CharField(max_length=255, null=False, blank=True)
-    hepatitis = models.CharField(max_length=255, null=False, blank=True)
-    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
+    subject = models.ForeignKey(Subject, null=True, blank=False)
 
     def __unicode__(self):
         return self.subject_label
@@ -320,6 +299,29 @@ class Visit(models.Model):
     artificial = models.BooleanField(default=False)
     subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
     history = HistoricalRecords()
+
+    def __unicode__(self):
+        return self.subject_label
+
+
+class VisitRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_visitrow"
+
+    subject_label = models.CharField(max_length=255, null=False, blank=True)
+    visitdate_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    visitdate_mm = models.CharField(max_length=255, null=False, blank=True)
+    visitdate_dd = models.CharField(max_length=255, null=False, blank=True)
+    visit_hivstatus = models.CharField(max_length=255, null=False, blank=True)
+    source_study = models.CharField(max_length=255, null=False, blank=True)
+    cd4_count = models.CharField(max_length=255, null=False, blank=True)
+    vl = models.CharField(max_length=255, null=False, blank=True)
+    scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
+    pregnant = models.CharField(max_length=255, null=False, blank=True)
+    hepatitis = models.CharField(max_length=255, null=False, blank=True)
+    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
+    visit = models.ForeignKey(Visit, null=True, blank=False)
 
     def __unicode__(self):
         return self.subject_label
@@ -391,6 +393,8 @@ class TransferInRow(ImportedRow):
     source_study = models.CharField(max_length=255, null=True, blank=True)
     notes = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
+    specimen = models.ForeignKey(Specimen, null=True, blank=False)
+
 
     def __unicode__(self):
         return self.specimen_label
@@ -412,6 +416,7 @@ class TransferOutRow(ImportedRow):
     shipment_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
     destination_site = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
+    specimen = models.ForeignKey(Specimen, null=True, blank=False)
 
     def __unicode__(self):
         return self.specimen_label
@@ -432,6 +437,7 @@ class AliquotRow(ImportedRow):
     aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
     aliquot_reason = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
+    specimen = models.ForeignKey(Specimen, null=True, blank=False)
 
     def __unicode__(self):
         return self.parent_label

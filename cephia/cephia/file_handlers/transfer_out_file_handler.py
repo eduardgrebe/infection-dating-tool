@@ -125,6 +125,7 @@ class TransferOutFileHandler(FileHandler):
                     transfer_out_row.state = 'processed'
                     transfer_out_row.error_message = ''
                     transfer_out_row.date_processed = timezone.now()
+                    transfer_out_row.specimen = specimen
                     transfer_out_row.save()
 
                     rows_inserted += 1

@@ -207,32 +207,33 @@ class SubjectFileHandler(FileHandler):
                 with transaction.atomic():
                     self.register_dates(subject_row.model_to_dict())
                     
-                    Subject.objects.create(subject_label=subject_row.subject_label,
-                                           cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),
-                                           cohort_entry_hiv_status = subject_row.cohort_entry_hiv_status,
-                                           country = Country.objects.get(code=subject_row.country),
-                                           last_negative_date = self.registered_dates.get('last_negative_date', None),
-                                           first_positive_date = self.registered_dates.get('first_positive_date', None),
-                                           ars_onset_date = self.registered_dates.get('ars_onset_date', None),
-                                           fiebig_stage_at_firstpos = subject_row.fiebig_stage_at_firstpos,
-                                           date_of_birth = self.registered_dates.get('date_of_birth', None),
-                                           date_of_death = self.registered_dates.get('date_of_death', None),
-                                           sex = subject_row.sex,
-                                           transgender = self.get_bool(subject_row.transgender),
-                                           population_group = Ethnicity.objects.get(name=subject_row.population_group),
-                                           risk_sex_with_men = self.get_bool(subject_row.risk_sex_with_men),
-                                           risk_sex_with_women = self.get_bool(subject_row.risk_sex_with_women),
-                                           risk_idu = self.get_bool(subject_row.risk_idu),
-                                           subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
-                                           subtype = Subtype.objects.get(name=subject_row.subtype),
-                                           art_initiation_date = self.registered_dates.get('art_initiation_date', None),
-                                           aids_diagnosis_date = self.registered_dates.get('aids_diagnosis_date', None),
-                                           art_interruption_date = self.registered_dates.get('art_interruption_date', None),
-                                           art_resumption_date = self.registered_dates.get('art_resumption_date', None))
+                    subject = Subject.objects.create(subject_label=subject_row.subject_label,
+                                                     cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),
+                                                     cohort_entry_hiv_status = subject_row.cohort_entry_hiv_status,
+                                                     country = Country.objects.get(code=subject_row.country),
+                                                     last_negative_date = self.registered_dates.get('last_negative_date', None),
+                                                     first_positive_date = self.registered_dates.get('first_positive_date', None),
+                                                     ars_onset_date = self.registered_dates.get('ars_onset_date', None),
+                                                     fiebig_stage_at_firstpos = subject_row.fiebig_stage_at_firstpos,
+                                                     date_of_birth = self.registered_dates.get('date_of_birth', None),
+                                                     date_of_death = self.registered_dates.get('date_of_death', None),
+                                                     sex = subject_row.sex,
+                                                     transgender = self.get_bool(subject_row.transgender),
+                                                     population_group = Ethnicity.objects.get(name=subject_row.population_group),
+                                                     risk_sex_with_men = self.get_bool(subject_row.risk_sex_with_men),
+                                                     risk_sex_with_women = self.get_bool(subject_row.risk_sex_with_women),
+                                                     risk_idu = self.get_bool(subject_row.risk_idu),
+                                                     subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
+                                                     subtype = Subtype.objects.get(name=subject_row.subtype),
+                                                     art_initiation_date = self.registered_dates.get('art_initiation_date', None),
+                                                     aids_diagnosis_date = self.registered_dates.get('aids_diagnosis_date', None),
+                                                     art_interruption_date = self.registered_dates.get('art_interruption_date', None),
+                                                     art_resumption_date = self.registered_dates.get('art_resumption_date', None))
 
                     subject_row.state = 'processed'
                     subject_row.error_message = ''
                     subject_row.date_processed = timezone.now()
+                    subject_row.subject = subject
                     rows_inserted += 1
                     subject_row.save()
             except Exception, e:

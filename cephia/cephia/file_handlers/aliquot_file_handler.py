@@ -114,20 +114,21 @@ class AliquotFileHandler(FileHandler):
                         parent_specimen.modified_date = self.registered_dates.get('aliquot_date', None)
                         parent_specimen.save()
 
-                        Specimen.objects.create(specimen_label=aliquot_row.aliquot_label,
-                                                parent_label=aliquot_row.parent_label,
-                                                volume=aliquot_row.volume,
-                                                volume_units=aliquot_row.volume_units,
-                                                specimen_type=parent_specimen.specimen_type,
-                                                reported_draw_date=parent_specimen.reported_draw_date,
-                                                transfer_in_date=parent_specimen.transfer_in_date,
-                                                source_study=parent_specimen.source_study,
-                                                created_date=self.registered_dates.get('aliquot_date', None),
-                                                aliquoting_reason=aliquot_row.aliquot_reason)
+                        specimen = Specimen.objects.create(specimen_label=aliquot_row.aliquot_label,
+                                                           parent_label=aliquot_row.parent_label,
+                                                           volume=aliquot_row.volume,
+                                                           volume_units=aliquot_row.volume_units,
+                                                           specimen_type=parent_specimen.specimen_type,
+                                                           reported_draw_date=parent_specimen.reported_draw_date,
+                                                           transfer_in_date=parent_specimen.transfer_in_date,
+                                                           source_study=parent_specimen.source_study,
+                                                           created_date=self.registered_dates.get('aliquot_date', None),
+                                                           aliquoting_reason=aliquot_row.aliquot_reason)
                         
                     aliquot_row.state = 'processed'
                     aliquot_row.error_message = ''
                     aliquot_row.date_processed = timezone.now()
+                    aliquot_row.specimen = specimen
                     aliquot_row.save()
 
                     rows_inserted += 1
