@@ -61,7 +61,7 @@ def home(request, file_id=None, template="cephia/home.html"):
         context['aliquot_total'] = aliquot_rows.count()
         context['transfer_in_total'] = transfer_in_rows.count()
         context['transfer_out_total'] = transfer_out_rows.count()
-        
+
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required

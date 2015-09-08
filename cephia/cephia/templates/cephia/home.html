@@ -4,9 +4,10 @@
 {% block page_content %}
 
 <div class="page-header">
-  <h2>Welcome to Cephia</h2>
+  <h2>Welcome to Cephia Specimen Repository</h2>
 </div>
 <div class="container">
+  {% if is_staff %}
   <div class="row">
     <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
       <div class="panel-heading">
@@ -116,12 +117,13 @@
       </div>
     </div>
   </div>
+  {% endif %}
 </div>
 
 <script>
  $('.file_priority').on("click", function(){
-   var file_p = $(this).data("file-priority");
-   $('#{{form.priority.auto_id}}').val(file_p);
+     var file_p = $(this).data("file-priority");
+     $('#{{form.priority.auto_id}}').val(file_p);
  });
 </script>
 

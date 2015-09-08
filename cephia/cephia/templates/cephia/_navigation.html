@@ -5,8 +5,10 @@
     <li><a href="{% url 'subjects' %}">Subjects</a></li>
     <li><a href="{% url 'visits' %}">Visits</a></li>
     <li><a href="{% url 'specimen' %}">Specimen</a></li>
+    {% if user.is_staff %}
     <li><a href="{% url 'associate_specimen' %}">Association</a></li>
     <li><a href="{% url 'file_info' %}">Files</a></li>
+    {% endif %}
     {% endif %}
 
   </ul>

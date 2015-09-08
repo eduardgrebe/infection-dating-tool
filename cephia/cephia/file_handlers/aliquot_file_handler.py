@@ -35,7 +35,8 @@ class AliquotFileHandler(FileHandler):
                         aliquot_row = AliquotRow.objects.get(pk=row_dict['id'])
                     else:
                         aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
-                                                                aliquot_label=row_dict['aliquot_label'])
+                                                                aliquot_label=row_dict['aliquot_label'],
+                                                                fileinfo=self.upload_file)
                     
                     aliquot_row.volume=row_dict['volume']
                     aliquot_row.volume_units=row_dict['volume_units']
@@ -43,7 +44,6 @@ class AliquotFileHandler(FileHandler):
                     aliquot_row.aliquoting_date_mm=row_dict['aliquoting_date_mm']
                     aliquot_row.aliquoting_date_dd=row_dict['aliquoting_date_dd']
                     aliquot_row.aliquot_reason=row_dict['reason']
-                    aliquot_row.fileinfo=self.upload_file
                     aliquot_row.state='pending'
                     aliquot_row.error_message = ''
                     aliquot_row.save()
