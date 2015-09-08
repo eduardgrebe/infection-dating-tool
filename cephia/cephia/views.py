@@ -23,54 +23,44 @@ logger = logging.getLogger(__name__)
 def home(request, file_id=None, template="cephia/home.html"):
     if request.method == "GET":
         context = {}
-        subject_file = FileInfo.objects.filter(priority=1).order_by('-created').first()
-        visit_file = FileInfo.objects.filter(priority=2).order_by('-created').first()
-        transfer_in_file = FileInfo.objects.filter(priority=3).order_by('-created').first()
-        transfer_out_file = FileInfo.objects.filter(priority=4).order_by('-created').first()
-        aliquot_file = FileInfo.objects.filter(priority=5).order_by('-created').first()
-        #subject_process_date = SubjectRow.objects.filter(fileinfo=subject_file).first().date_processed
-        #visit_process_date = VisitRow.objects.filter(fileinfo=visit_file).first().date_processed
-        transfer_in_process_date = None#TransferInRow.objects.filter(fileinfo=transfer_in_file).first().date_processed
-        transfer_out_process_date = None#TransferOutRow.objects.filter(fileinfo=transfer_out_file).first().date_processed
-        aliquot_process_date = None#AliquotRow.objects.filter(fileinfo=aliquot_file).first().date_processed
-        subject_errors = SubjectRow.objects.filter(fileinfo=subject_file, state='error').count()
-        visit_errors = VisitRow.objects.filter(fileinfo=visit_file, state='error').count()
-        transfer_in_errors = TransferInRow.objects.filter(fileinfo=transfer_in_file, state='error').count()
-        transfer_out_errors = TransferOutRow.objects.filter(fileinfo=transfer_out_file,state='error').count()
-        aliquot_errors = AliquotRow.objects.filter(fileinfo=aliquot_file, state='error').count()
-
-        subject_success = 44 - subject_errors
-        visit_success = 15 - subject_errors
-        transfer_in_success = 20 - subject_errors
-        transfer_out_success = 12 - subject_errors
-        aliquot_success = 12 - subject_errors
+        subject_file = FileInfo.objects.filter(file_type='subject').order_by('-created').first()
+        visit_file = FileInfo.objects.filter(file_type='visit').order_by('-created').first()
+        transfer_in_file = FileInfo.objects.filter(file_type='transfer_in').order_by('-created').first()
+        aliquot_file = FileInfo.objects.filter(file_type='aliquot').order_by('-created').first()
+        transfer_out_file = FileInfo.objects.filter(file_type='transfer_out').order_by('-created').first()
+        
+        subject_rows = SubjectRow.objects.filter(fileinfo=subject_file)
+        visit_rows = VisitRow.objects.filter(fileinfo=visit_file)
+        transfer_in_rows = TransferInRow.objects.filter(fileinfo=transfer_in_file)
+        aliquot_rows = AliquotRow.objects.filter(fileinfo=aliquot_file)
+        transfer_out_rows = TransferOutRow.objects.filter(fileinfo=transfer_out_file)
 
         form = FileInfoForm()
         
         context['form'] = form
-        context['files'] = []
         context['subject_file'] = subject_file
         context['visit_file'] = visit_file
         context['transfer_in_file'] = transfer_in_file
         context['transfer_out_file'] = transfer_out_file
         context['aliquot_file'] = aliquot_file
-        #context['subject_process_date'] = subject_process_date
-        #context['visit_process_date'] = visit_process_date
-        #context['transfer_in_process_date'] = transfer_in_process_date
-        #context['transfer_out_process_date'] = transfer_out_process_date
-        #context['aliquot_process_date'] = aliquot_process_date
-        context['subject_errors'] = subject_errors
-        context['visit_errors'] = visit_errors
-        context['aliquot_errors'] = aliquot_errors
-        context['transfer_in_errors'] = transfer_in_errors
-        context['transfer_out_errors'] = transfer_out_errors
-        context['subject_success'] = subject_success
-        context['visit_success'] = visit_success
-        context['transfer_in_success'] = transfer_in_success
-        context['transfer_out_success'] = transfer_out_success
-        context['aliquot_success'] = aliquot_success
-        
 
+        context['subject_errors'] = subject_rows.filter(state='error').count()
+        context['visit_errors'] = visit_rows.filter(state='error').count()
+        context['aliquot_errors'] = aliquot_rows.filter(state='error').count()
+        context['transfer_in_errors'] = transfer_in_rows.filter(state='error').count()
+        context['transfer_out_errors'] = transfer_out_rows.filter(state='error').count()
+
+        context['subject_processed'] = subject_rows.filter(state='processed').count()
+        context['visit_processed'] = visit_rows.filter(state='processed').count()
+        context['aliquot_processed'] = aliquot_rows.filter(state='processed').count()
+        context['transfer_in_processed'] = transfer_in_rows.filter(state='processed').count()
+        context['transfer_out_processed'] = transfer_out_rows.filter(state='processed').count()
+
+        context['subject_total'] = subject_rows.count()
+        context['visit_total'] = visit_rows.count()
+        context['aliquot_total'] = aliquot_rows.count()
+        context['transfer_in_total'] = transfer_in_rows.count()
+        context['transfer_out_total'] = transfer_out_rows.count()
         
     return render_to_response(template, context, context_instance=RequestContext(request))
 
