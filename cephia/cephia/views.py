@@ -156,6 +156,7 @@ def specimen_type(request, template="cephia/specimen_type.html"):
 @login_required
 def file_info(request, template="cephia/file_info.html"):
     context = {}
+
     if request.method == "GET":
         upload_form = FileInfoForm()
         filter_form = FileInfoFilterForm(request.GET or None)
@@ -226,14 +227,14 @@ def upload_file(request):
             else:
                 priority = FILE_PRIORITIES[request.POST.get('file_type')]
                 post_data.__setitem__('priority', priority)
-            
+    
             form = FileInfoForm(post_data, request.FILES)
             if form.is_valid():
                 form.save();
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
             else:
                 messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
-                
+    
             return HttpResponseRedirect(reverse('file_info'))
 
     except Exception, e:
@@ -260,7 +261,7 @@ def parse_file(request, file_id):
             file_to_parse.state = 'imported'
             file_to_parse.save()
             messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows. ')
-        
+    
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
         logger.exception(e)
@@ -315,7 +316,7 @@ def process_file(request, file_id):
             file_to_process.state = 'error'
         else:
             file_to_process.state = 'processed'
-            
+    
         messages.add_message(request, messages.SUCCESS, msg)
 
         file_to_process.message = fail_msg + ' ' + msg
@@ -344,7 +345,6 @@ def delete_file(request, file_id):
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Could not delete file')
         return HttpResponseRedirect(reverse('file_info'))
-
 
 
 @login_required
@@ -445,29 +445,15 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
             associate_specimen.save()
             messages.success(request, 'Successfully associated specimen with visit')
 
-        #context = {}
-        #subject_labels = Specimen.objects.values('subject_label').filter(visit__isnull=True).distinct()
-        # import pdb; pdb.set_trace()
+        context = {}
+        subjects = Specimen.objects.values('subject__id').filter(subject__isnull=False).distinct()
 
-        # for x in subject_labels:
-        #     if not x:
-        #         context[x['subject_label']]['specimen'] = Specimen.objects.filter(subject_label=x)
+        context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
+                                 'visits': Visit.objects.filter(subject__id=x['subject__id']),
+                                 'specimens': Specimen.objects.filter(subject__id=x['subject__id'])} for x in subjects ]
 
-        # for x in subject_labels:
-        #     context[specimen.subject_label]['visits'] = Visit.objects.filter(subject_label=specimen.subject_label,
-        #                                                                      visit_date__lte=(specimen.reported_draw_date + timedelta(days=14)),
-        #                                                                      visit_date__gte=(specimen.reported_draw_date - timedelta(days=14)))
+        [ x['visits'] for x in context['subjects'] ]
 
-        context = {'specimen': {}}
-        specimen = Specimen.objects.filter(visit__isnull=True)
-        
-        for x in specimen:
-            from_date = x.reported_draw_date - timedelta(days=14)
-            to_date = x.reported_draw_date + timedelta(days=14)
-            possible_visits = Visit.objects.filter(visit_date__gte=from_date,
-                                                   visit_date__lte=to_date)
-            context['specimen'][x] = possible_visits
-            
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:
         logger.exception(e)
@@ -495,7 +481,7 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
         elif request.method == 'GET':
             if row.comment:
                 form = RowCommentForm(initial=row.comment.model_to_dict())
-                
+        
             context['comment_form'] = form
             context['data'] = {
                 'file_id':file_id,

@@ -160,7 +160,12 @@ class TransferInFileHandler(FileHandler):
                 
                 with transaction.atomic():
                     try:
-                        subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
+                        if transfer_in_row.subject_label == 'Unknown':
+                            subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
+                            subject.aritificial = True
+                            subject.save()
+                        else:
+                            subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
                     except Subject.DoesNotExist:
                         subject = None
                         pass

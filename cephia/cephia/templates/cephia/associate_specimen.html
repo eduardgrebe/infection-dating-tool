@@ -17,22 +17,22 @@
       
       {% block page_content %}
       <div class="row">
-        {% for specimen, visits in specimen.items %}
+        {% for subject in subjects %}
         <div class="col-md-6">
           <div class="container">
             <div class="row">
               <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
                 <div class="panel-heading">
-                  <h3 class="panel-title">Association</h3>
+                  <h3 class="panel-title">Subject - {{subject.subject.subject_label}}</h3>
                 </div>
                 <div class="panel-body">
-                  <form id="form" action="{% url 'associate_specimen_visit' specimen.id %}" role="form" method="POST">
+                  <form id="form" action="{% url 'associate_specimen_visit' 3 %}" role="form" method="POST">
                     {% csrf_token %}
                     <div class="row">
                       <div class="col-md-6">
                         <div class="panel panel-default">
                           <div class="panel-heading">
-                            <h5 class="panel-title">Specimen</h5>
+                            <h5 class="panel-title">Orphaned Specimen</h5>
                           </div>
                           <div class="panel-body">
                             <div class="table-responsive">
@@ -42,10 +42,12 @@
                                   <th>Reported Draw Date</th>
                                 </thead>
                                 <tbody>
+                                  {% for spec in subject.specimens %}
                                   <tr>
-                                    <td>{{specimen.specimen_label}}</td>
-                                    <td>{{specimen.reported_draw_date}}</td>
+                                    <td>{{spec.specimen_label}}</td>
+                                    <td>{{spec.reported_draw_date}}</td>
                                   </tr>
+                                  {% endfor %}
                                 </tbody>
                               </table>
                             </div>
@@ -55,7 +57,7 @@
                       <div class="col-md-6">
                         <div class="panel panel-default">
                           <div class="panel-heading">
-                            <h5 class="panel-title">Available visits in 14 day window</h5>
+                            <h5 class="panel-title">Available Visits</h5>
                           </div>
                           <div class="panel-body">
                             <div class="table-responsive">
@@ -65,7 +67,7 @@
                                   <th>Visit Date</th>
                                 </thead>
                                 <tbody>
-                                  {% for visit in visits %}
+                                  {% for visit in subject.visits %}
                                   <tr>
                                     <td>{{visit.subject_label}}</td>
                                     <td>{{visit.visit_date}}</td>
@@ -82,7 +84,7 @@
                     <div class="row">
                       <div class="container">
                         <div class="btn-group">
-                          <a href="{% url 'artificial_visit' specimen.id %}" class="btn btn-primary" style="text-decoration:none;">Artificial Visit</a>
+                          <a href="{% url 'artificial_visit' 3 %}" class="btn btn-primary" style="text-decoration:none;">Artificial Visit</a>
                         </div>
                         <div class="btn-group">
                           <input type="submit" value="Associate" class="btn btn-primary" style="text-decoration:none;">

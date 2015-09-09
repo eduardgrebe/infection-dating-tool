@@ -218,6 +218,7 @@ class Subject(models.Model):
     aids_diagnosis_date = models.DateField(null=True, blank=True)
     art_interruption_date = models.DateField(null=True, blank=True)
     art_resumption_date = models.DateField(null=True, blank=True)
+    artificial = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __unicode__(self):
