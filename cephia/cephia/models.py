@@ -402,6 +402,7 @@ class TransferInRow(ImportedRow):
     notes = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False)
+    roll_up = models.NullBooleanField()
 
 
     def __unicode__(self):

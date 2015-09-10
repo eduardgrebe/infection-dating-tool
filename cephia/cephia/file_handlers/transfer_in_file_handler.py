@@ -89,6 +89,14 @@ class TransferInFileHandler(FileHandler):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
 
+                exists = Specimen.objects.filter(specimen_label=transfer_in_row.specimen_label,
+                                                 specimen_type_id=transfer_in_row.specimen_type,
+                                                 subject_label=transfer_in_row.subject_label,
+                                                 reported_draw_date=self.registered_dates.get('drawdate')).exists()
+                if exists:
+                    transfer_in_row.roll_up = True
+                    transfer_in_row.save()
+                
                 if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
                     raise Exception('draw_date must be smaller than transfer_date')
 
@@ -159,36 +167,46 @@ class TransferInFileHandler(FileHandler):
                 self.register_dates(transfer_in_row.model_to_dict())
                 
                 with transaction.atomic():
-                    try:
-                        if transfer_in_row.subject_label == 'Unknown':
-                            subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
-                            subject.aritificial = True
-                            subject.save()
-                        else:
-                            subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
-                    except Subject.DoesNotExist:
-                        subject = None
-                        pass
+                    if transfer_in_row.roll_up:
+                        existing_specimen = Specimen.objects.get(specimen_label=transfer_in_row.specimen_label,
+                                                                 specimen_type_id=transfer_in_row.specimen_type,
+                                                                 subject_label=transfer_in_row.subject_label,
+                                                                 reported_draw_date=self.registered_dates.get('drawdate'))
 
-                    specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
-                                                       subject_label = transfer_in_row.subject_label,
-                                                       reported_draw_date = self.registered_dates.get('drawdate', None),
-                                                       transfer_in_date = self.registered_dates.get('transfer_date', None),
-                                                       transfer_reason = transfer_in_row.transfer_reason,
-                                                       subject = subject,
-                                                       specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
-                                                       number_of_containers = (transfer_in_row.number_of_containers or None),
-                                                       initial_claimed_volume = (transfer_in_row.volume or None),
-                                                       volume_units = transfer_in_row.volume_units,
-                                                       source_study = Study.objects.get(name=transfer_in_row.source_study),
-                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
+                        existing_specimen.number_of_containers += (transfer_in_row.number_of_containers or 0)
+                        existing_specimen.initial_claimed_volume += (transfer_in_row.volume or 0)
+                        existing_specimen.save()
+                    else:
+                        try:
+                            if transfer_in_row.subject_label == 'Unknown':
+                                subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
+                                subject.aritificial = True
+                                subject.save()
+                            else:
+                                subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
+                        except Subject.DoesNotExist:
+                            subject = None
+                            pass
 
-                    transfer_in_row.state = 'processed'
-                    transfer_in_row.date_processed = timezone.now()
-                    transfer_in_row.specimen = specimen
-                    transfer_in_row.save()
+                        specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
+                                                           subject_label = transfer_in_row.subject_label,
+                                                           reported_draw_date = self.registered_dates.get('drawdate', None),
+                                                           transfer_in_date = self.registered_dates.get('transfer_date', None),
+                                                           transfer_reason = transfer_in_row.transfer_reason,
+                                                           subject = subject,
+                                                           specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
+                                                           number_of_containers = (transfer_in_row.number_of_containers or None),
+                                                           initial_claimed_volume = (transfer_in_row.volume or None),
+                                                           volume_units = transfer_in_row.volume_units,
+                                                           source_study = Study.objects.get(name=transfer_in_row.source_study),
+                                                           receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
 
-                    rows_inserted += 1
+                        transfer_in_row.state = 'processed'
+                        transfer_in_row.date_processed = timezone.now()
+                        transfer_in_row.specimen = specimen
+                        transfer_in_row.save()
+
+                        rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 transfer_in_row.state = 'error'
