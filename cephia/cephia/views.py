@@ -446,6 +446,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     spec.visit_linkage = 'confirmed'
                     spec.save()
             else:
+                import pdb; pdb.set_trace()
                 associate_specimen = Specimen.objects.get(id=request.POST.get('specimen'))
                 
                 if request.POST.has_key('provisional'):

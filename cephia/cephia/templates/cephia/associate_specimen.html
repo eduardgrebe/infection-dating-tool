@@ -66,7 +66,7 @@
                                     <td>{{spec.visit.subject_label}}</td>
                                     <td>{{spec.visit.visit_date}}</td>
                                     <td>
-                                      <a href="#">
+                                      <a href="#" name="unlink" value="Unlink" onclick="$(this).closest('form').submit()">
                                         {% bootstrap_icon "link" %}
                                       </a>
                                     </td>
@@ -116,7 +116,7 @@
                         {% endif %}
                         {% if subject.specimens_with_prov_visits %}
                         <div class="btn-group">
-                          <input type="submit" value="Confirm Associations" name="confirm" class="btn btn-primary" style="text-decoration:none; display:none;">
+                          <input type="submit" value="Confirm Associations" name="confirm" class="btn btn-primary" style="text-decoration:none;">
                         </div>
                         {% endif %}
                       </div>
