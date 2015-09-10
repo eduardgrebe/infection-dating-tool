@@ -436,13 +436,34 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
-def associate_specimen(request, specimen_id=None, template="cephia/associate_specimen.html"):
+def associate_specimen(request, subject_id=None, template="cephia/associate_specimen.html"):
     try:
         if request.method == 'POST':
-            associate_specimen = Specimen.objects.get(id=specimen_id)
-            associate_visit = Visit.objects.get(id=request.POST.get('visit'))
-            associate_specimen.visit = associate_visit
-            associate_specimen.save()
+            if request.POST.has_key('confirm'):
+                subject = Subject.objects.get(pk=subject_id)
+                specimens = Specimen.objects.filter(visit__isnull=False, subject=subject)
+                for spec in specimens:
+                    spec.visit_linkage = 'confirmed'
+                    spec.save()
+            else:
+                associate_specimen = Specimen.objects.get(id=request.POST.get('specimen'))
+                
+                if request.POST.has_key('provisional'):
+                    associate_visit = Visit.objects.get(id=request.POST.get('visit'))
+                    associate_specimen.visit = associate_visit
+                    associate_specimen.visit_linkage = 'provisional'
+                elif request.POST.has_key('artificial'):
+                    artificial_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
+                                                            subject=associate_specimen.subject,
+                                                            visit_date=associate_specimen.reported_draw_date,
+                                                            artificial=True)
+                    associate_specimen.visit = artificial_visit
+                    associate_specimen.visit_linkage = 'provisional'
+                elif request.POST.has_key('unlink'):
+                    associate_specimen.visit_linkage = None
+                    associate_specimen.visit = None
+
+                associate_specimen.save()
             messages.success(request, 'Successfully associated specimen with visit')
 
         context = {}
@@ -450,9 +471,9 @@ def associate_specimen(request, specimen_id=None, template="cephia/associate_spe
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
-                                 'specimens': Specimen.objects.filter(subject__id=x['subject__id'])} for x in subjects ]
-
-        [ x['visits'] for x in context['subjects'] ]
+                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='provisional'),
+                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='confirmed'),
+                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=True)} for x in subjects ]
 
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:
@@ -494,20 +515,3 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))
-
-@login_required
-def artificial_visit(request, specimen_id=None):
-    try:
-        associate_specimen = Specimen.objects.get(id=specimen_id)
-        associate_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
-                                               visit_date=associate_specimen.reported_draw_date,
-                                               artificial=True)
-        associate_specimen.visit = associate_visit
-        associate_specimen.save()
-        messages.success(request, 'Successfully created artificial visit')
-
-        return HttpResponseRedirect(reverse('associate_specimen'))
-    except Exception, e:
-        logger.exception(e)
-        messages.error(request, 'Failed to create artificial visit')
-        return HttpResponseRedirect(reverse('associate_specimen'))

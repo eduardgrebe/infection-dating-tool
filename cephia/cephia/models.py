@@ -343,6 +343,12 @@ class SpecimenType(models.Model):
 
 class Specimen(models.Model):
 
+    VISIT_LINKAGE_CHOICES = (
+        ('provisional','Provisional'),
+        ('confirmed','Confirmed'),
+        ('artificial','Artificial'),
+    )
+
     class Meta:
         db_table = "cephia_specimen"
 
@@ -356,8 +362,9 @@ class Specimen(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, null=True)
     modified_date = models.DateField(null=True, blank=True)
     transfer_reason = models.CharField(max_length=50, null=True, blank=True)
-    subject = models.ForeignKey(Subject, null=True, blank=True)
-    visit = models.ForeignKey(Visit, null=True, blank=True)
+    subject = models.ForeignKey(Subject, null=True, blank=False)
+    visit = models.ForeignKey(Visit, null=True, blank=False, related_name='visit')
+    visit_linkage = models.CharField(max_length=12, null=True, blank=False, choices=VISIT_LINKAGE_CHOICES)
     specimen_type = models.ForeignKey(SpecimenType, null=True, blank=True)
     volume = models.FloatField(null=True, blank=True)
     volume_units = models.CharField(max_length=20, null=True, blank=True)

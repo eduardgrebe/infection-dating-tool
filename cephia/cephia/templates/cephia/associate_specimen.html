@@ -26,54 +26,75 @@
                   <h3 class="panel-title">Subject - {{subject.subject.subject_label}}</h3>
                 </div>
                 <div class="panel-body">
-                  <form id="form" action="{% url 'associate_specimen_visit' 3 %}" role="form" method="POST">
+                  <form id="form" action="{% url 'associate_specimen_subject' subject_id=subject.subject.id %}" role="form" method="POST">
                     {% csrf_token %}
                     <div class="row">
-                      <div class="col-md-6">
+                      <div class="col-md-12">
                         <div class="panel panel-default">
                           <div class="panel-heading">
-                            <h5 class="panel-title">Orphaned Specimen</h5>
+                            <h5 class="panel-title">Specimen - Visits</h5>
                           </div>
                           <div class="panel-body">
                             <div class="table-responsive">
                               <table class="table-striped table table-hover" style="overflow:auto;">
                                 <thead>
+                                  <th></th>
                                   <th>Specimen</th>
                                   <th>Reported Draw Date</th>
+                                  <th>Specimen Type</th>
+                                  <th>Subject Label</th>
+                                  <th>Visit Date</th>
+                                  <th></th>
                                 </thead>
                                 <tbody>
-                                  {% for spec in subject.specimens %}
-                                  <tr>
+                                  {% for spec in subject.specimens_with_visits %}
+                                  <tr style="background-color:lightgreen;">
+                                    <td></td>
                                     <td>{{spec.specimen_label}}</td>
                                     <td>{{spec.reported_draw_date}}</td>
+                                    <td>{{spec.specimen_type.name}}</td>
+                                    <td>{{spec.visit.subject_label}}</td>
+                                    <td>{{spec.visit.visit_date}}</td>
                                   </tr>
                                   {% endfor %}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="panel panel-default">
-                          <div class="panel-heading">
-                            <h5 class="panel-title">Available Visits</h5>
-                          </div>
-                          <div class="panel-body">
-                            <div class="table-responsive">
-                              <table class="table-striped table table-hover" style="overflow:auto;">
-                                <thead>
-                                  <th>Subject</th>
-                                  <th>Visit Date</th>
-                                </thead>
-                                <tbody>
+                                  {% for spec in subject.specimens_with_prov_visits %}
+                                  <tr style="background-color:pink;">
+                                    <td></td>
+                                    <td>{{spec.specimen_label}}</td>
+                                    <td>{{spec.reported_draw_date}}</td>
+                                    <td>{{spec.specimen_type.name}}</td>
+                                    <td>{{spec.visit.subject_label}}</td>
+                                    <td>{{spec.visit.visit_date}}</td>
+                                    <td>
+                                      <a href="#">
+                                        {% bootstrap_icon "link" %}
+                                      </a>
+                                    </td>
+                                  </tr>
+                                  {% endfor %}
+                                  {% for spec in subject.specimens_without_visits %}
+                                  <tr>
+                                    <td><input type="radio" name="specimen" value="{{spec.id}}"></td>
+                                    <td>{{spec.specimen_label}}</td>
+                                    <td>{{spec.reported_draw_date}}</td>
+                                    <td>{{spec.specimen_type.name}}</td>
+                                    <td></td>
+                                    <td></td>
+                                  </tr>
+                                  {% endfor %}
+                                  {% if subject.specimens_without_visits %}
                                   {% for visit in subject.visits %}
                                   <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
                                     <td>{{visit.subject_label}}</td>
                                     <td>{{visit.visit_date}}</td>
                                     <td><input type="radio" name="visit" value="{{visit.id}}"></td>
                                   </tr>
                                   {% endfor %}
+                                  {% endif %}
                                 </tbody>
                               </table>
                             </div>
@@ -83,12 +104,21 @@
                     </div>
                     <div class="row">
                       <div class="container">
+                        {% if subject.specimens_without_visits %}
                         <div class="btn-group">
-                          <a href="{% url 'artificial_visit' 3 %}" class="btn btn-primary" style="text-decoration:none;">Artificial Visit</a>
+                          <input type="submit" value="Artificial Visit" name="artificial" class="btn btn-primary" style="text-decoration:none;">
                         </div>
+                        {% endif %}
+                        {% if subject.specimens_without_visits %}
                         <div class="btn-group">
-                          <input type="submit" value="Associate" class="btn btn-primary" style="text-decoration:none;">
+                          <input type="submit" value="Provisional Association" name="provisional" class="btn btn-primary" style="text-decoration:none;">
                         </div>
+                        {% endif %}
+                        {% if subject.specimens_with_prov_visits %}
+                        <div class="btn-group">
+                          <input type="submit" value="Confirm Associations" name="confirm" class="btn btn-primary" style="text-decoration:none;">
+                        </div>
+                        {% endif %}
                       </div>
                     </div>
                   </form>

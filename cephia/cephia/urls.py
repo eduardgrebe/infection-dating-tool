@@ -32,8 +32,7 @@ urlpatterns = [
     url(r'^download_subjects_no_visits/$', views.download_subjects_no_visits, name='download_subjects_no_visits'),
     url(r'^download_visits_no_subjects/$', views.download_visits_no_subjects, name='download_visits_no_subjects'),
     url(r'^associate_specimen/$', views.associate_specimen, name='associate_specimen'),
-    url(r'^associate_specimen/(?P<specimen_id>\d+)$', views.associate_specimen, name='associate_specimen_visit'),
-    url(r'^artificial_visit/(?P<specimen_id>\d+)$', views.artificial_visit, name='artificial_visit'),
+    url(r'^associate_specimen/(?P<subject_id>\d+)$', views.associate_specimen, name='associate_specimen_subject'),
     url(r'^row_comment/(?P<file_type>\w+)/(?P<file_id>\d+)/(?P<row_id>\d+)$', views.row_comment, name='row_comment'),
     url(r'^row_comment/$', views.row_comment, name='row_comment'),
 
