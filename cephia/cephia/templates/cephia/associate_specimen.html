@@ -106,17 +106,17 @@
                       <div class="container">
                         {% if subject.specimens_without_visits %}
                         <div class="btn-group">
-                          <input type="submit" value="Artificial Visit" name="artificial" class="btn btn-primary" style="text-decoration:none;">
+                          <input type="submit" value="Artificial Visit" name="artificial" class="btn btn-primary" style="text-decoration:none; display:none;">
                         </div>
                         {% endif %}
                         {% if subject.specimens_without_visits %}
                         <div class="btn-group">
-                          <input type="submit" value="Provisional Association" name="provisional" class="btn btn-primary" style="text-decoration:none;">
+                          <input type="submit" value="Provisional Association" name="provisional" class="btn btn-primary" style="text-decoration:none; display:none;">
                         </div>
                         {% endif %}
                         {% if subject.specimens_with_prov_visits %}
                         <div class="btn-group">
-                          <input type="submit" value="Confirm Associations" name="confirm" class="btn btn-primary" style="text-decoration:none;">
+                          <input type="submit" value="Confirm Associations" name="confirm" class="btn btn-primary" style="text-decoration:none; display:none;">
                         </div>
                         {% endif %}
                       </div>

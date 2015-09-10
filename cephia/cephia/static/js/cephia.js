@@ -40,6 +40,35 @@ $(document).ready(function() {
     $('.navtab').on('click', function(event) {
         $(this).addClass('active');
     });
+
+    $('input[name="visit"]').on('click', function(event) {
+        var artificialButton = $(this).parents().eq(9).find('input[name="artificial"]');
+        var confirmButton = $(this).parents().eq(9).find('input[name="confirm"]');
+        var provisionalButton = $(this).parents().eq(9).find('input[name="provisional"]');
+        var selectedSpecimen = $('input[name="specimen"].selected');
+
+        $('input[name="visit"].selected').removeClass('selected');
+        $(this).addClass('selected');
+
+        if (selectedSpecimen.length > 0) {
+            provisionalButton.show();
+        }
+    });
+
+    $('input[name="specimen"]').on('click', function(event) {
+        var artificialButton = $(this).parents().eq(9).find('input[name="artificial"]');
+        var confirmButton = $(this).parents().eq(9).find('input[name="confirm"]');
+        var provisionalButton = $(this).parents().eq(9).find('input[name="provisional"]');
+        var selectedVisit = $('input[name="visit"].selected');
+        
+        $('input[name="specimen"].selected').removeClass('selected');
+        $(this).addClass('selected');
+        artificialButton.show();
+
+        if (selectedVisit.length > 0) {
+            provisionalButton.show();
+        }
+    });
 });
 
 
