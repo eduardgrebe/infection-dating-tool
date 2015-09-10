@@ -69,6 +69,14 @@ $(document).ready(function() {
             provisionalButton.show();
         }
     });
+
+    // $('.prov-unlink').on('click', function(event) {
+    //     var specimenId = $(this).parent().data('specimen-id');
+    //     var form = $(this).closest('form');
+
+    //     form.append(specimenId);
+    //     form.submit();
+    // });
 });
 
 

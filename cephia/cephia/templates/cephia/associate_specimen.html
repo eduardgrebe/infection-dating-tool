@@ -55,6 +55,7 @@
                                     <td>{{spec.specimen_type.name}}</td>
                                     <td>{{spec.visit.subject_label}}</td>
                                     <td>{{spec.visit.visit_date}}</td>
+                                    <td></td>
                                   </tr>
                                   {% endfor %}
                                   {% for spec in subject.specimens_with_prov_visits %}
@@ -66,7 +67,8 @@
                                     <td>{{spec.visit.subject_label}}</td>
                                     <td>{{spec.visit.visit_date}}</td>
                                     <td>
-                                      <a href="#" name="unlink" value="Unlink" onclick="$(this).closest('form').submit()">
+                                      <input type="radio" name="unlink" value="{{spec.id}}" style="display:none;">
+                                      <a href="#" onclick="$(this).prev().attr('checked', true); $(this).closest('form').submit();">
                                         {% bootstrap_icon "link" %}
                                       </a>
                                     </td>

@@ -446,14 +446,13 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     spec.visit_linkage = 'confirmed'
                     spec.save()
             else:
-                import pdb; pdb.set_trace()
-                associate_specimen = Specimen.objects.get(id=request.POST.get('specimen'))
-                
                 if request.POST.has_key('provisional'):
+                    associate_specimen = Specimen.objects.get(id=request.POST.get('specimen'))
                     associate_visit = Visit.objects.get(id=request.POST.get('visit'))
                     associate_specimen.visit = associate_visit
                     associate_specimen.visit_linkage = 'provisional'
                 elif request.POST.has_key('artificial'):
+                    associate_specimen = Specimen.objects.get(id=request.POST.get('specimen'))
                     artificial_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
                                                             subject=associate_specimen.subject,
                                                             visit_date=associate_specimen.reported_draw_date,
@@ -461,11 +460,12 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     associate_specimen.visit = artificial_visit
                     associate_specimen.visit_linkage = 'provisional'
                 elif request.POST.has_key('unlink'):
+                    associate_specimen = Specimen.objects.get(id=request.POST.get('unlink'))
                     associate_specimen.visit_linkage = None
                     associate_specimen.visit = None
-
+                    
                 associate_specimen.save()
-            messages.success(request, 'Successfully associated specimen with visit')
+            messages.success(request, 'Successful!')
 
         context = {}
         subjects = Specimen.objects.values('subject__id').filter(subject__isnull=False).distinct()
