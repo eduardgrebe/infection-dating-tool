@@ -15,7 +15,7 @@ from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
 from datetime import datetime, timedelta
 import json
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -365,7 +365,7 @@ def export_as_csv(request, file_id):
             rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-        headers = rows[0].model_to_dict().keys()
+        headers = sorted(rows[0].model_to_dict())
 
         headers.append('resolve_action')
         headers.append('resolve_date')
