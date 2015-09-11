@@ -78,7 +78,7 @@ class TransferInFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self):
-        from cephia.models import TransferInRow, SpecimenType
+        from cephia.models import TransferInRow, SpecimenType, Specimen
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -88,10 +88,8 @@ class TransferInFileHandler(FileHandler):
         for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
-
                 exists = Specimen.objects.filter(specimen_label=transfer_in_row.specimen_label,
-                                                 specimen_type_id=transfer_in_row.specimen_type,
-                                                 subject_label=transfer_in_row.subject_label,
+                                                 specimen_type__spec_type=transfer_in_row.specimen_type,
                                                  reported_draw_date=self.registered_dates.get('drawdate')).exists()
                 if exists:
                     transfer_in_row.roll_up = True
@@ -112,31 +110,33 @@ class TransferInFileHandler(FileHandler):
                     raise Exception("Specimen must have a claimed subject")
 
                 if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
-                    if transfer_in_row.volume_units != 'cards':
-                        raise Exception('volume_units must be "cards" for this specimen_type')
-                if int(transfer_in_row.volume or 0) > 20:
+                    if transfer_in_row.volume_units != 'microlitres':
+                        raise Exception('volume_units must be "microlitres" for this specimen_type')
+                if float(transfer_in_row.volume or 0) > 20:
                     raise Exception('volume must be less than 20 for this specimen type')
 
                 if transfer_in_row.specimen_type == '2':
-                    if transfer_in_row.volume_units != 'grams':
-                        raise Exception('volume_units must be "grams" for this specimen')
-                    if int(transfer_in_row.volume or 0) > 100:
+                    if transfer_in_row.volume_units != 'cards':
+                        raise Exception('volume_units must be "cards" for this specimen')
+                    if float(transfer_in_row.volume or 0) > 100:
                         raise Exception('volume must be less than 100 for this specimen')
 
                 if transfer_in_row.specimen_type in ['5.1','5.2']:
-                    if transfer_in_row.volume_units != 'm cells':
-                        raise Exception('volume_units must be "cards" for this specimen_type')
-                    if int(transfer_in_row.volume or 0) > 20:
+                    if transfer_in_row.volume_units != 'grams':
+                        raise Exception('volume_units must be "grams" for this specimen_type')
+                    if float(transfer_in_row.volume or 0) > 20:
                         raise Exception('volume must be less than 20 for this specimen')
 
                 if transfer_in_row.specimen_type == '7':
-                    if transfer_in_row.volume_units != 'swabs':
-                        raise Exception('volume_units must be "swabs" for this specimen_type')
-                    if int(transfer_in_row.volume or 0) > 20:
+                    if transfer_in_row.volume_units != 'm cells':
+                        raise Exception('volume_units must be "m cells" for this specimen_type')
+                    if float(transfer_in_row.volume or 0) > 20:
                         raise Exception('volume must be less than 20 for this specimen')
 
                 if transfer_in_row.specimen_type in ['10.1','10.2']:
-                    if int(transfer_in_row.volume or 0) < 90:
+                    if transfer_in_row.volume_units != 'swabs':
+                        raise Exception('volume_units must be "swabs" for this specimen_type')
+                    if float(transfer_in_row.volume or 0) < 90:
                         raise Exception('volume must be greater than 90 for this specimen type')
 
 
@@ -167,27 +167,26 @@ class TransferInFileHandler(FileHandler):
                 self.register_dates(transfer_in_row.model_to_dict())
                 
                 with transaction.atomic():
+                    try:
+                        if transfer_in_row.subject_label == 'Unknown':
+                            subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
+                            subject.aritificial = True
+                            subject.save()
+                        else:
+                            subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
+                    except Subject.DoesNotExist:
+                        subject = None
+                        pass
+                        
                     if transfer_in_row.roll_up:
                         existing_specimen = Specimen.objects.get(specimen_label=transfer_in_row.specimen_label,
-                                                                 specimen_type_id=transfer_in_row.specimen_type,
-                                                                 subject_label=transfer_in_row.subject_label,
+                                                                 specimen_type__spec_type=transfer_in_row.specimen_type,
                                                                  reported_draw_date=self.registered_dates.get('drawdate'))
 
-                        existing_specimen.number_of_containers += (transfer_in_row.number_of_containers or 0)
-                        existing_specimen.initial_claimed_volume += (transfer_in_row.volume or 0)
+                        existing_specimen.number_of_containers += int(transfer_in_row.number_of_containers)
+                        existing_specimen.initial_claimed_volume += int(transfer_in_row.volume)
                         existing_specimen.save()
                     else:
-                        try:
-                            if transfer_in_row.subject_label == 'Unknown':
-                                subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
-                                subject.aritificial = True
-                                subject.save()
-                            else:
-                                subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
-                        except Subject.DoesNotExist:
-                            subject = None
-                            pass
-
                         specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
                                                            subject_label = transfer_in_row.subject_label,
                                                            reported_draw_date = self.registered_dates.get('drawdate', None),
@@ -201,12 +200,11 @@ class TransferInFileHandler(FileHandler):
                                                            source_study = Study.objects.get(name=transfer_in_row.source_study),
                                                            receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
 
-                        transfer_in_row.state = 'processed'
-                        transfer_in_row.date_processed = timezone.now()
-                        transfer_in_row.specimen = specimen
-                        transfer_in_row.save()
-
-                        rows_inserted += 1
+                    transfer_in_row.state = 'processed'
+                    transfer_in_row.date_processed = timezone.now()
+                    transfer_in_row.specimen = specimen
+                    transfer_in_row.save()
+                    rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 transfer_in_row.state = 'error'

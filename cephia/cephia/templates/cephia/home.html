@@ -29,7 +29,7 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="{{ subject_file.priority }}">Subject</button></td>
+                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="1">Subject</button></td>
 
                     {% if subject_file %}
                     <td>{{ subject_file.filename }}</td>
@@ -42,7 +42,7 @@
 
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="{{ visit_file.priority }}">Visit</button></td>
+                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="2">Visit</button></td>
                     {% if visit_file %}
                     <td>{{ visit_file.filename }}</td>
                     <td>{{ visit_file.created }}</td>
@@ -53,7 +53,7 @@
                     {% endif %}
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="{{ transfer_in_file.priority }}">Transfer In</button></td>
+                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="3">Transfer In</button></td>
                     {% if transfer_in_file %}
                     <td>{{ transfer_in_file.filename }}</td>
                     <td>{{ transfer_in_file.created }}</td>
@@ -64,7 +64,7 @@
                     {% endif %}
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="{{ aliquot_file.priority }}">Aliquot</button></td>
+                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="4">Aliquot</button></td>
                     {% if aliquot_file %}
                     <td>{{ aliquot_file.filename }}</td>
                     <td>{{ aliquot_file.created }}</td>
@@ -75,7 +75,7 @@
                     {% endif %}
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="{{ transfer_out_file.priority }}">Transfer Out</button></td>
+                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="5">Transfer Out</button></td>
                     {% if transfer_out_file %}
                     <td>{{ transfer_out_file.filename }}</td>
                     <td>{{ transfer_out_file.created }}</td>
