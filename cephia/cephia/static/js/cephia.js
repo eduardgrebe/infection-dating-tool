@@ -1,6 +1,6 @@
 $(document).ready(function() {
     //remove alerts after certain amount of time
-    $('.alert').fadeOut(4000);
+    $('.alert').fadeOut(10000);
     $( ".datepicker" ).datepicker();
     //initially disable upload file button
     //$('.upload-btn').attr('disabled', 'disabled');
