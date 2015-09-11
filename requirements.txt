@@ -1,6 +1,7 @@
-Django==1.8.2
-Fabric==1.10.1
+Django==1.8.2                                                                                                                                                                                                                                 
+Fabric==1.10.1                                                                                                                                                                                                                                
 GitPython==1.0.1
+MySQL-python==1.2.5
 argparse==1.2.1
 django-bootstrap3==5.4.0
 django-endless-pagination==2.0
