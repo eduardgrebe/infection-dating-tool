@@ -89,8 +89,7 @@ class TransferInFileHandler(FileHandler):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
                 exists = Specimen.objects.filter(specimen_label=transfer_in_row.specimen_label,
-                                                 specimen_type__spec_type=transfer_in_row.specimen_type,
-                                                 reported_draw_date=self.registered_dates.get('drawdate')).exists()
+                                                 specimen_type__spec_type=transfer_in_row.specimen_type).exists()
                 if exists:
                     transfer_in_row.roll_up = True
                     transfer_in_row.save()
@@ -180,11 +179,10 @@ class TransferInFileHandler(FileHandler):
                         
                     if transfer_in_row.roll_up:
                         existing_specimen = Specimen.objects.get(specimen_label=transfer_in_row.specimen_label,
-                                                                 specimen_type__spec_type=transfer_in_row.specimen_type,
-                                                                 reported_draw_date=self.registered_dates.get('drawdate'))
+                                                                 specimen_type__spec_type=transfer_in_row.specimen_type)
 
                         existing_specimen.number_of_containers += int(transfer_in_row.number_of_containers)
-                        existing_specimen.initial_claimed_volume += int(transfer_in_row.volume)
+                        existing_specimen.initial_claimed_volume += float(transfer_in_row.volume)
                         existing_specimen.save()
                     else:
                         specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,

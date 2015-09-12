@@ -11,7 +11,6 @@ class TestHelper(object):
         super(TestHelper, self).__init__(*args, **kwargs)
 
     def get_file(self, file_type):
-        import pdb; pdb.set_trace()
         return open(settings.TEST_FILE_ROOT + file_type)
     
     def create_fileinfo(self, file_type):

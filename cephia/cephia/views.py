@@ -454,7 +454,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     associate_specimen.visit_linkage = 'provisional'
                 elif request.POST.has_key('artificial'):
                     associate_specimen = Specimen.objects.get(id=request.POST.get('specimen'))
-                    artificial_visit = Visit.objects.create(subject_label='Artificial_' + associate_specimen.specimen_label,
+                    artificial_visit = Visit.objects.create(subject_label=associate_specimen.subject_label,
                                                             subject=associate_specimen.subject,
                                                             visit_date=associate_specimen.reported_draw_date,
                                                             artificial=True)
