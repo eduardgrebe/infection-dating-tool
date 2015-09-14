@@ -368,16 +368,21 @@ def export_as_csv(request, file_id):
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = sorted(rows[0].model_to_dict())
 
+        headers.remove("id")
+        headers.remove("comment")
+        headers.remove("error_message")
+        headers.insert(0, 'id')
+        headers.append("error_message")
         headers.append('resolve_action')
         headers.append('resolve_date')
         headers.append('assigned_to')
+        headers.append('comment')
 
         writer.writerow(headers)
         
         for row in rows:
             model_dict = model_to_dict(row)
             if model_dict['comment']:
-                del model_dict['comment']
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
