@@ -13,7 +13,7 @@ usage = """
 
 --------
 staging       : > fab host_impd deploy:<branch>
-cephia test   : > fab host_cephiatest deploy:<branch>
+cephia test   : > fab host_cephia deploy:<branch>
 
 """
 def help():
@@ -25,7 +25,7 @@ def host_impd():
     env.user = 'impd'
     env.hosts = ['cephia.impd.co.za']
 
-def host_cephiatest():
+def host_cephia():
     env.user = 'impd'
     env.hosts = ['cephia.eduardgrebe.net']
 
