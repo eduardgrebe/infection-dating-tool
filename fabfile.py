@@ -27,12 +27,12 @@ def host_impd():
 
 def host_cephiatest():
     env.user = 'impd'
-    env.hosts = ['cephiatest.eduardgrebe.net']
+    env.hosts = ['cephia.eduardgrebe.net']
 
 # ===== top level commands ======
 
 def deploy(branch_name="master"):
-    if env.host == 'cephiatest.eduardgrebe.net':
+    if env.host == 'cephia.eduardgrebe.net':
         return _deploy_cephia_test(branch_name)
     elif env.host == 'cephia.impd.co.za':
         return _deploy_staging(branch_name)
@@ -63,7 +63,7 @@ def _deploy_cephia_test(branch_name="master"):
         
     _update_cron_jobs()
     
-    print("Deployed to: http://cephiatest.eduardgrebe.net/")
+    print("Deployed to: http://cephia.eduardgrebe.net/")
 
 def _update_cron_jobs():
 
