@@ -493,7 +493,6 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
         
         if request.method == "POST":
             if form.is_valid():
-                import pdb; pdb.set_trace()
                 comment = form.save()
                 messages.add_message(request, messages.SUCCESS,
                                      'Successfully commented on row')
