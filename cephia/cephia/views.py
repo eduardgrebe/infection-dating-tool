@@ -16,6 +16,7 @@ from csv_helper import get_csv_response
 from datetime import datetime, timedelta
 import json
 from collections import defaultdict, OrderedDict
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -379,7 +380,7 @@ def export_as_csv(request, file_id):
                 del model_dict['comment']
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
-                model_dict['resolve_date'] = row.comment.resolve_date
+                model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
                 model_dict['assigned_to'] = row.comment.assigned_to
             else:
                 model_dict['comment'] = None
@@ -492,6 +493,7 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
         
         if request.method == "POST":
             if form.is_valid():
+                import pdb; pdb.set_trace()
                 comment = form.save()
                 messages.add_message(request, messages.SUCCESS,
                                      'Successfully commented on row')

@@ -34,7 +34,7 @@ TEMPLATE_DIRS = (
     os.path.join(PROJECT_HOME, "templates"),
 )
 
-ENDLESS_PAGINATION_PER_PAGE=20
+ENDLESS_PAGINATION_PER_PAGE=10
 ENDLESS_PAGINATION_ADD_NOFOLLOW=True #from endless docs: Set to True if your SEO alchemist wants search engines not to follow pagination links.
 
 
