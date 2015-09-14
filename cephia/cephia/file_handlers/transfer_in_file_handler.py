@@ -93,6 +93,12 @@ class TransferInFileHandler(FileHandler):
                 if exists:
                     transfer_in_row.roll_up = True
                     transfer_in_row.save()
+
+                if not transfer_in_row.volume:
+                    raise Exception('Volume is required')
+                
+                if not transfer_in_row.number_of_containers:
+                    raise Exception('Number of containers is required')    
                 
                 if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
                     raise Exception('draw_date must be smaller than transfer_date')
