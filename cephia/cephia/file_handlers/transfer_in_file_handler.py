@@ -117,8 +117,8 @@ class TransferInFileHandler(FileHandler):
                 if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                     if transfer_in_row.volume_units != 'microlitres':
                         raise Exception('volume_units must be "microlitres" for this specimen_type')
-                if float(transfer_in_row.volume or 0) > 20:
-                    raise Exception('volume must be less than 20 for this specimen type')
+                    if float(transfer_in_row.volume or 0) > 20:
+                        raise Exception('volume must be less than 20 for this specimen type')
 
                 if transfer_in_row.specimen_type == '2':
                     if transfer_in_row.volume_units != 'cards':
