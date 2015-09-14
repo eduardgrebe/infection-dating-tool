@@ -26,7 +26,7 @@ def host_impd():
     env.hosts = ['cephia.impd.co.za']
 
 def host_cephia():
-    env.user = 'root'
+    env.user = 'cephia'
     env.hosts = ['cephia.eduardgrebe.net']
 
 # ===== top level commands ======
