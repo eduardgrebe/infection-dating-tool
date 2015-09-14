@@ -15,7 +15,8 @@ class Command(BaseCommand):
             try:
                 visit = Visit.objects.get(subject=specimen.subject, visit_date=specimen.reported_draw_date)
                 specimen.visit = visit
-                specimen.source_study = visit.study
+                specimen.source_study = visit.source_study
+                specimen.visit_linkage = 'confirmed'
                 specimen.save()
             except Visit.DoesNotExist:
                 continue

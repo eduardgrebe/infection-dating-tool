@@ -3,6 +3,17 @@ from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Site, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow, ImportedRowComment)
 
+class BaseFilterForm(forms.Form):
+
+    def get_bool(self, value):
+        if value == 'True':
+            return True
+        elif value == 'False':
+            return False
+        else:
+            return None
+
+
 class FileInfoForm(forms.ModelForm):
     class Meta:
         model = FileInfo
@@ -37,7 +48,7 @@ class RowCommentForm(forms.ModelForm):
         super(RowCommentForm, self).__init__(*args, **kwargs)
         
 
-class SubjectFilterForm(forms.Form):
+class SubjectFilterForm(BaseFilterForm):
     
     GENDER_CHOICES = (
         ('','---------'),
@@ -103,15 +114,15 @@ class SubjectFilterForm(forms.Form):
         if population_group:
             subjects = subjects.filter(population_group__id=population_group)
         if transgender:
-            subjects = subjects.filter(transgender=transgender)
+            subjects = subjects.filter(transgender=self.get_bool(transgender))
         if risk_sex_with_men:
-            subjects = subjects.filter(risk_sex_with_men=risk_sex_with_men)
+            subjects = subjects.filter(risk_sex_with_men=self.get_bool(risk_sex_with_men))
         if risk_sex_with_women:
-            subjects = subjects.filter(risk_sex_with_women=risk_sex_with_women)
+            subjects = subjects.filter(risk_sex_with_women=self.get_bool(risk_sex_with_women))
         if risk_idu:
-            subjects = subjects.filter(risk_idu=risk_idu)
+            subjects = subjects.filter(risk_idu=self.get_bool(risk_idu))
         if subtype_confirmed:
-            subjects = subjects.filter(subtype_confirmed=subtype_confirmed)
+            subjects = subjects.filter(subtype_confirmed=self.get_bool(subtype_confirmed))
         if has_visits:
             subjects = subjects.exclude(visit__isnull=has_visits)
 
