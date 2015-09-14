@@ -4,7 +4,7 @@ from cephia.lib.fab_deploy_cron import crontab_update, crontab_remove_all_with_m
 
 local_code_dir = os.path.dirname(os.path.realpath(__file__))
 imp_remote_code_staging_dir = "/home/cephia"
-cephia_test_remote_code_staging_dir = "/home/cephia/staging"
+cephia_test_remote_code_staging_dir = "/home/cephia/cephia"
 
 # ===== Usage =====
 
@@ -26,7 +26,7 @@ def host_impd():
     env.hosts = ['cephia.impd.co.za']
 
 def host_cephia():
-    env.user = 'impd'
+    env.user = 'cephia'
     env.hosts = ['cephia.eduardgrebe.net']
 
 # ===== top level commands ======
