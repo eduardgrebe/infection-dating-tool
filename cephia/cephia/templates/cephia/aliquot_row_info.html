@@ -7,12 +7,6 @@
 {% bootstrap_field filter_form.has_comment %}
 {% endblock %}
 
-
-{% block pages %}
-{% paginate rows %}
-{% show_pages %}
-{% endblock %}
-
 {% block filename %}{{file}}{% endblock %}
 {% block table_header %}
 <thead>
@@ -30,6 +24,8 @@
 {% endblock %}
 
 {% block table_body %}
+{% paginate rows %}
+{% show_pages %}
 <tbody>
   {% for row in rows %}
   <tr>
