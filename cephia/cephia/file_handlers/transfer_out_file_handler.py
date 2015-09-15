@@ -33,7 +33,8 @@ class TransferOutFileHandler(FileHandler):
                     if row_dict.get('id', None):
                         transfer_out_row = TransferOutRow.objects.get(pk=row_dict['id'])
                     else:
-                        transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['specimen_label'])
+                        transfer_out_row = TransferOutRow.objects.create(specimen_label=row_dict['specimen_label'],
+                                                                         fileinfo=self.upload_file)
                     
                     transfer_out_row.number_of_containers=row_dict['number_of_containers']
                     transfer_out_row.specimen_type=row_dict['specimen_type']
