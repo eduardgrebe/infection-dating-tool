@@ -214,11 +214,11 @@ class TransferInFileHandler(FileHandler):
                                                            volume_units = transfer_in_row.volume_units,
                                                            source_study = None,
                                                            receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
-
-                        r.state = 'processed'
-                        r.date_processed = timezone.now()
-                        r.specimen = specimen
-                        r.save()
+                        for r in roll_up_rows:
+                            r.state = 'processed'
+                            r.date_processed = timezone.now()
+                            r.specimen = specimen
+                            r.save()
                         rows_inserted += 1
                     else:
                         specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
