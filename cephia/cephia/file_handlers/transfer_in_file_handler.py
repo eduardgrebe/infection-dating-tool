@@ -88,11 +88,18 @@ class TransferInFileHandler(FileHandler):
         for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 self.register_dates(transfer_in_row.model_to_dict())
+
+                row_exists = TransferInRow.objects.filter(specimen_label=transfer_in_row.specimen_label,
+                                                          specimen_type=transfer_in_row.specimen_type,
+                                                          fileinfo=self.upload_file).exists()
+                if row_exists:
+                    transfer_in_row.roll_up = True
+                    transfer_in_row.save()
+
                 exists = Specimen.objects.filter(specimen_label=transfer_in_row.specimen_label,
                                                  specimen_type__spec_type=transfer_in_row.specimen_type).exists()
                 if exists:
-                    transfer_in_row.roll_up = True
-                    transfer_in_row.save()
+                    raise Exception('This specimen already exists')
 
                 if not transfer_in_row.volume:
                     raise Exception('Volume is required')
