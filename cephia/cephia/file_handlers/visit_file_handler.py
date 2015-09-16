@@ -83,7 +83,7 @@ class VisitFileHandler(FileHandler):
                 already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
                 
                 if subject:
-                    if not self.registered_dates['visitdate'] > subject.cohort_entry_date:
+                    if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
                         raise Exception('visit_date must be greater than cohort_entry_date')
 
                     if visit_row.pregnant == 'Y' and subject.sex == 'M':

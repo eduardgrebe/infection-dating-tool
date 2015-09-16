@@ -13,9 +13,9 @@ class TransferInFileHandler(FileHandler):
 
         self.registered_columns = ['specimen_label',
                                    'subject_label',
-                                   'drawdate_year',
-                                   'drawdate_month',
-                                   'drawdate_day',
+                                   'drawdate_yyyy',
+                                   'drawdate_mm',
+                                   'drawdate_dd',
                                    'number_of_containers',
                                    'transfer_date_yyyy',
                                    'transfer_date_mm',
@@ -26,7 +26,7 @@ class TransferInFileHandler(FileHandler):
                                    'volume',
                                    'volume_units',
                                    'source_study',
-                                   'Notes']
+                                   'notes']
 
 
     def parse(self):
@@ -45,9 +45,9 @@ class TransferInFileHandler(FileHandler):
                     else:
                         transfer_in_row = TransferInRow.objects.create(specimen_label=row_dict['specimen_label'],
                                                                        subject_label=row_dict['subject_label'],
-                                                                       drawdate_yyyy=row_dict['drawdate_year'],
-                                                                       drawdate_mm=row_dict['drawdate_month'],
-                                                                       drawdate_dd=row_dict['drawdate_day'],
+                                                                       drawdate_yyyy=row_dict['drawdate_yyyy'],
+                                                                       drawdate_mm=row_dict['drawdate_mm'],
+                                                                       drawdate_dd=row_dict['drawdate_dd'],
                                                                        fileinfo=self.upload_file)
 
                     transfer_in_row.number_of_containers = row_dict['number_of_containers']
@@ -60,7 +60,7 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.volume_units = row_dict['volume_units']
                     transfer_in_row.specimen_type = row_dict['specimen_type']
                     transfer_in_row.source_study = row_dict['source_study']
-                    transfer_in_row.notes = row_dict['Notes']
+                    transfer_in_row.notes = row_dict['notes']
                     transfer_in_row.state = 'pending'
                     transfer_in_row.error_message = ''
                     transfer_in_row.fileinfo=self.upload_file
@@ -107,11 +107,11 @@ class TransferInFileHandler(FileHandler):
                 if not transfer_in_row.number_of_containers:
                     raise Exception('Number of containers is required')    
                 
-                if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
-                    raise Exception('draw_date must be smaller than transfer_date')
+                if not self.registered_dates.get('drawdate', default_less_date) <= self.registered_dates.get('transfer_date', default_more_date):
+                    raise Exception('draw_date must be before transfer_date')
 
-                if not self.registered_dates.get('transfer_date', default_less_date) < datetime.now().date():
-                    raise Exception('transfer_date must be smaller than today')
+                if not self.registered_dates.get('transfer_date', default_less_date) <= datetime.now().date():
+                    raise Exception('transfer_date before today')
 
                 try:
                     SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type)
@@ -124,20 +124,20 @@ class TransferInFileHandler(FileHandler):
                 if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                     if transfer_in_row.volume_units != 'microlitres':
                         raise Exception('volume_units must be "microlitres" for this specimen_type')
-                    if float(transfer_in_row.volume or 0) > 20:
-                        raise Exception('volume must be less than 20 for this specimen type')
+                    if float(transfer_in_row.volume or 0) < 90:
+                        raise Exception('volume must be greater than 90 for this specimen type')
 
                 if transfer_in_row.specimen_type == '2':
                     if transfer_in_row.volume_units != 'cards':
                         raise Exception('volume_units must be "cards" for this specimen')
-                    if float(transfer_in_row.volume or 0) > 100:
-                        raise Exception('volume must be less than 100 for this specimen')
+                    if float(transfer_in_row.volume or 0) > 20:
+                        raise Exception('volume must be less than 20 for this specimen')
 
                 if transfer_in_row.specimen_type in ['5.1','5.2']:
                     if transfer_in_row.volume_units != 'grams':
                         raise Exception('volume_units must be "grams" for this specimen_type')
-                    if float(transfer_in_row.volume or 0) > 20:
-                        raise Exception('volume must be less than 20 for this specimen')
+                    if float(transfer_in_row.volume or 0) > 100:
+                        raise Exception('volume must be less than 100 for this specimen')
 
                 if transfer_in_row.specimen_type == '7':
                     if transfer_in_row.volume_units != 'm cells':
@@ -148,8 +148,8 @@ class TransferInFileHandler(FileHandler):
                 if transfer_in_row.specimen_type in ['10.1','10.2']:
                     if transfer_in_row.volume_units != 'swabs':
                         raise Exception('volume_units must be "swabs" for this specimen_type')
-                    if float(transfer_in_row.volume or 0) < 90:
-                        raise Exception('volume must be greater than 90 for this specimen type')
+                    if float(transfer_in_row.volume or 0) > 10:
+                        raise Exception('volume must be less than or equal to 10 for this specimen type')
 
 
                 transfer_in_row.state = 'validated'
@@ -191,12 +191,35 @@ class TransferInFileHandler(FileHandler):
                         pass
                         
                     if transfer_in_row.roll_up:
-                        specimen = Specimen.objects.get(specimen_label=transfer_in_row.specimen_label,
-                                                                 specimen_type__spec_type=transfer_in_row.specimen_type)
+                        roll_up_containers = 0
+                        roll_up_volume = 0
+                        
+                        roll_up_rows = TransferInRow.objects.filter(specimen_label=transfer_in_row.specimen_label,
+                                                                    specimen_type=transfer_in_row.specimen_type,
+                                                                    fileinfo=self.upload_file)
 
-                        specimen.number_of_containers += int(transfer_in_row.number_of_containers)
-                        specimen.initial_claimed_volume += float(transfer_in_row.volume)
-                        specimen.save()
+                        for r in roll_up_rows:
+                            roll_up_containers += int(r.number_of_containers)
+                            roll_up_volume += int(r.volume)
+
+                        specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
+                                                           subject_label = transfer_in_row.subject_label,
+                                                           reported_draw_date = self.registered_dates.get('drawdate', None),
+                                                           transfer_in_date = self.registered_dates.get('transfer_date', None),
+                                                           transfer_reason = transfer_in_row.transfer_reason,
+                                                           subject = subject,
+                                                           specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
+                                                           number_of_containers = (roll_up_containers or None),
+                                                           initial_claimed_volume = (roll_up_volume or None),
+                                                           volume_units = transfer_in_row.volume_units,
+                                                           source_study = None,
+                                                           receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
+
+                        r.state = 'processed'
+                        r.date_processed = timezone.now()
+                        r.specimen = specimen
+                        r.save()
+                        rows_inserted += 1
                     else:
                         specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
                                                            subject_label = transfer_in_row.subject_label,
@@ -208,14 +231,14 @@ class TransferInFileHandler(FileHandler):
                                                            number_of_containers = (transfer_in_row.number_of_containers or None),
                                                            initial_claimed_volume = (transfer_in_row.volume or None),
                                                            volume_units = transfer_in_row.volume_units,
-                                                           source_study = Study.objects.get(name=transfer_in_row.source_study),
+                                                           source_study = None,
                                                            receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
 
-                    transfer_in_row.state = 'processed'
-                    transfer_in_row.date_processed = timezone.now()
-                    transfer_in_row.specimen = specimen
-                    transfer_in_row.save()
-                    rows_inserted += 1
+                        transfer_in_row.state = 'processed'
+                        transfer_in_row.date_processed = timezone.now()
+                        transfer_in_row.specimen = specimen
+                        transfer_in_row.save()
+                        rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 transfer_in_row.state = 'error'

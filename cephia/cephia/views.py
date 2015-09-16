@@ -369,6 +369,7 @@ def export_as_csv(request, file_id):
         headers = sorted(rows[0].model_to_dict())
 
         headers.remove("id")
+        headers.remove("notes")
         headers.remove("comment")
         headers.remove("error_message")
         headers.insert(0, 'id')

@@ -206,6 +206,11 @@ class SubjectFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     self.register_dates(subject_row.model_to_dict())
+
+                    try:
+                        ethnicity = Ethnicity.objects.get(name=subject_row.population_group)
+                    except Ethnicity.DoesNotExist:
+                        ethnicity = None
                     
                     subject = Subject.objects.create(subject_label=subject_row.subject_label,
                                                      cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),
@@ -219,7 +224,7 @@ class SubjectFileHandler(FileHandler):
                                                      date_of_death = self.registered_dates.get('date_of_death', None),
                                                      sex = subject_row.sex,
                                                      transgender = self.get_bool(subject_row.transgender),
-                                                     population_group = Ethnicity.objects.get(name=subject_row.population_group),
+                                                     population_group = ethnicity,
                                                      risk_sex_with_men = self.get_bool(subject_row.risk_sex_with_men),
                                                      risk_sex_with_women = self.get_bool(subject_row.risk_sex_with_women),
                                                      risk_idu = self.get_bool(subject_row.risk_idu),

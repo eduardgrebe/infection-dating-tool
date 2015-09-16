@@ -12,15 +12,15 @@
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>ID</th>
 	<th>Name</th>
+        <th>Description</th>
     </thead>
 
     <tbody>
 	{% for study in studies %}
 	<tr>
-	    <td>{{study.id}}</td>
 	    <td>{{study.name}}</td>
+            <td>{{study.description}}</td>
 	</tr>
 	{% endfor %}
     </tbody>
