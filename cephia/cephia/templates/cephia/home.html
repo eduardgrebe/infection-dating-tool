@@ -19,70 +19,70 @@
             <div class="table-responsive">
               <table class="table-striped table table-hover home">
                 <thead>
-                  <th>File Type</th>
-	          <th>Last File Uploaded</th>
-	          <th>Time Uploaded</th>
+                  <th style="text-align:left;">File Type</th>
+	          <th style="text-align:left;">Last File Uploaded</th>
+	          <th style="text-align:left;">Time Uploaded</th>
 	          <th>Error</th>
 	          <th>Processed</th>
                   <th>Total</th>
-                  <th>Message</th>
+                  <th style="text-align:left;">Message</th>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="1">Subject</button></td>
+                    <td><button class="btn btn-primary file_priority col-md-8" data-toggle="modal" data-target="#myModal" data-file-priority="1">Subject</button></td>
 
                     {% if subject_file %}
-                    <td>{{ subject_file.filename }}</td>
-                    <td>{{ subject_file.created }}</td>
+                    <td style="text-align:left;">{{ subject_file.filename }}</td>
+                    <td style="text-align:left;">{{ subject_file.created }}</td>
                     <td>{{ subject_errors}}</td>
                     <td>{{ subject_processed}}</td>
                     <td>{{ subject_total}}</td>
-                    <td>{{ subject_file.message|default:'None' }}</td>
+                    <td style="text-align:left;">{{ subject_file.message|default:'None' }}</td>
                     {% endif %}
 
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="2">Visit</button></td>
+                    <td><button class="btn btn-primary file_priority col-md-8" data-toggle="modal" data-target="#myModal" data-file-priority="2">Visit</button></td>
                     {% if visit_file %}
-                    <td>{{ visit_file.filename }}</td>
-                    <td>{{ visit_file.created }}</td>
+                    <td style="text-align:left;"">{{ visit_file.filename }}</td>
+                    <td style="text-align:left;">{{ visit_file.created }}</td>
                     <td>{{ visit_errors }}</td>
                     <td>{{ visit_processed }}</td>
                     <td>{{ visit_total }}</td>
-                    <td>{{ visit_file.message|default:'None' }}</td>
+                    <td style="text-align:left;">{{ visit_file.message|default:'None' }}</td>
                     {% endif %}
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="3">Transfer In</button></td>
+                    <td><button class="btn btn-primary file_priority col-md-8" data-toggle="modal" data-target="#myModal" data-file-priority="3">Transfer In</button></td>
                     {% if transfer_in_file %}
-                    <td>{{ transfer_in_file.filename }}</td>
-                    <td>{{ transfer_in_file.created }}</td>
+                    <td style="text-align:left;">{{ transfer_in_file.filename }}</td>
+                    <td style="text-align:left;">{{ transfer_in_file.created }}</td>
                     <td>{{ transfer_in_errors}}</td>
                     <td>{{ transfer_in_processed }}</td>
                     <td>{{ transfer_in_total }}</td>
-                    <td>{{ transfer_in_file.message|default:'None' }}</td>
+                    <td style="text-align:left;">{{ transfer_in_file.message|default:'None' }}</td>
                     {% endif %}
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="4">Aliquot</button></td>
+                    <td><button class="btn btn-primary file_priority col-md-8" data-toggle="modal" data-target="#myModal" data-file-priority="4">Aliquot</button></td>
                     {% if aliquot_file %}
-                    <td>{{ aliquot_file.filename }}</td>
-                    <td>{{ aliquot_file.created }}</td>
+                    <td style="text-align:left;">{{ aliquot_file.filename }}</td>
+                    <td style="text-align:left;">{{ aliquot_file.created }}</td>
                     <td>{{ aliquot_errors}}</td>
                     <td>{{ aliquot_processed }}</td>
                     <td>{{ aliquot_total }}</td>
-                    <td>{{ aliquot_file.message|default:'None' }}</td>
+                    <td style="text-align:left;">{{ aliquot_file.message|default:'None' }}</td>
                     {% endif %}
                   </tr>
                   <tr>
-                    <td><button class="btn btn-primary file_priority" data-toggle="modal" data-target="#myModal" data-file-priority="5">Transfer Out</button></td>
+                    <td><button class="btn btn-primary file_priority col-md-8" data-toggle="modal" data-target="#myModal" data-file-priority="5">Transfer Out</button></td>
                     {% if transfer_out_file %}
-                    <td>{{ transfer_out_file.filename }}</td>
-                    <td>{{ transfer_out_file.created }}</td>
+                    <td style="text-align:left;">{{ transfer_out_file.filename }}</td>
+                    <td style="text-align:left;">{{ transfer_out_file.created }}</td>
                     <td>{{ transfer_out_errors}}</td>
                     <td>{{ transfer_out_processed }}</td>
                     <td>{{ transfer_out_total }}</td>
-                    <td>{{ transfer_out_file.message|default:'None' }}</td>
+                    <td style="text-align:left;">{{ transfer_out_file.message|default:'None' }}</td>
                     {% endif %}
                   </tr>
 
