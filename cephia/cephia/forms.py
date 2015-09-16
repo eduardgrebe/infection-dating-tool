@@ -124,7 +124,7 @@ class SubjectFilterForm(BaseFilterForm):
         if subtype_confirmed:
             subjects = subjects.filter(subtype_confirmed=self.get_bool(subtype_confirmed))
         if has_visits:
-            subjects = subjects.exclude(visit__isnull=has_visits)
+            subjects = subjects.exclude(visit__isnull=self.get_bool(has_visits))
 
         return subjects
 
@@ -326,15 +326,14 @@ class AssociationFilterForm(forms.Form):
 
     def filter(self):
         qs = FileInfo.objects.all().order_by('-created')
-        file_type = self.cleaned_data['file_type']
-        state = self.cleaned_data['state']
-        created = self.cleaned_data['created']
+        specimen_label = self.cleaned_data['specimen_label']
+        subject_label = self.cleaned_data['subject_label']
 
-        if file_type:
-            qs = qs.filter(file_type=file_type)
-        if state:
-            qs = qs.filter(state=state)
-        if created:
-            qs = qs.filter(created=created)
+        if specimen_label:
+            pass
+            #qs = qs.filter(file_type=file_type)
+        if subject_label:
+            pass
+            #qs = qs.filter(state=state)
             
         return qs

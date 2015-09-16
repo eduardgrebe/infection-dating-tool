@@ -184,12 +184,12 @@ class TransferInFileHandler(FileHandler):
                         pass
                         
                     if transfer_in_row.roll_up:
-                        existing_specimen = Specimen.objects.get(specimen_label=transfer_in_row.specimen_label,
+                        specimen = Specimen.objects.get(specimen_label=transfer_in_row.specimen_label,
                                                                  specimen_type__spec_type=transfer_in_row.specimen_type)
 
-                        existing_specimen.number_of_containers += int(transfer_in_row.number_of_containers)
-                        existing_specimen.initial_claimed_volume += float(transfer_in_row.volume)
-                        existing_specimen.save()
+                        specimen.number_of_containers += int(transfer_in_row.number_of_containers)
+                        specimen.initial_claimed_volume += float(transfer_in_row.volume)
+                        specimen.save()
                     else:
                         specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
                                                            subject_label = transfer_in_row.subject_label,
