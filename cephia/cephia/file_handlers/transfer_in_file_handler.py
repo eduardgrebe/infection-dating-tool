@@ -87,6 +87,7 @@ class TransferInFileHandler(FileHandler):
         
         for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
+                error_msg = ''
                 self.register_dates(transfer_in_row.model_to_dict())
 
                 row_exists = TransferInRow.objects.filter(specimen_label=transfer_in_row.specimen_label,
@@ -99,57 +100,67 @@ class TransferInFileHandler(FileHandler):
                 exists = Specimen.objects.filter(specimen_label=transfer_in_row.specimen_label,
                                                  specimen_type__spec_type=transfer_in_row.specimen_type).exists()
                 if exists:
-                    raise Exception('This specimen already exists')
+                    error_msg += 'This specimen already exists.\n'
 
                 if not transfer_in_row.volume:
-                    raise Exception('Volume is required')
+                    error_msg += 'Volume is required.\n'
+
+                if not transfer_in_row.volume_units:
+                    error_msg += 'Volume units is required.\n'
                 
                 if not transfer_in_row.number_of_containers:
-                    raise Exception('Number of containers is required')    
+                    error_msg += 'Number of containers is required.\n'
                 
-                if not self.registered_dates.get('drawdate', default_less_date) <= self.registered_dates.get('transfer_date', default_more_date):
-                    raise Exception('draw_date must be before transfer_date')
+                if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
+                    error_msg += 'draw_date must be before transfer_date. '
 
                 if not self.registered_dates.get('transfer_date', default_less_date) <= datetime.now().date():
-                    raise Exception('transfer_date before today')
+                    error_msg += 'transfer_date before today.\n'
 
                 try:
                     SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type)
                 except SpecimenType.DoesNotExist:
-                    raise Exception("SpecimenType does not exist")
+                    error_msg += "SpecimenType does not exist.\n"
 
                 if not transfer_in_row.subject_label:
-                    raise Exception("Specimen must have a claimed subject")
+                    error_msg += "Specimen must have a claimed subject.\n"
 
                 if transfer_in_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                     if transfer_in_row.volume_units != 'microlitres':
-                        raise Exception('volume_units must be "microlitres" for this specimen_type')
+                        error_msg += 'volume_units must be "microlitres" for this specimen_type.\n'
                     if float(transfer_in_row.volume or 0) < 90:
-                        raise Exception('volume must be greater than 90 for this specimen type')
+                        error_msg += 'volume must be greater than 90 for this specimen type.\n'
 
                 if transfer_in_row.specimen_type == '2':
-                    if transfer_in_row.volume_units != 'cards':
-                        raise Exception('volume_units must be "cards" for this specimen')
-                    if float(transfer_in_row.volume or 0) > 20:
-                        raise Exception('volume must be less than 20 for this specimen')
+                    if transfer_in_row.volume_units not in ['cards','microlitres']:
+                        error_msg += 'volume_units must be either "cards" or "microlitres" for this specimen.\n'
+                    if transfer_in_row.volume_units == 'cards' and float(transfer_in_row.volume or 0) > 20:
+                        error_msg += 'volume must be less than 20 for this specimen.\n'
+                    if transfer_in_row.volume_units == 'microlitres' and float(transfer_in_row.volume or 0) < 20:
+                        error_msg += 'volume must be greater than 20 for this specimen.\n'
 
                 if transfer_in_row.specimen_type in ['5.1','5.2']:
                     if transfer_in_row.volume_units != 'grams':
-                        raise Exception('volume_units must be "grams" for this specimen_type')
+                        error_msg += 'volume_units must be "grams" for this specimen_type.\n'
                     if float(transfer_in_row.volume or 0) > 100:
-                        raise Exception('volume must be less than 100 for this specimen')
+                        error_msg += 'volume must be less than 100 for this specimen.\n'
 
                 if transfer_in_row.specimen_type == '7':
-                    if transfer_in_row.volume_units != 'm cells':
-                        raise Exception('volume_units must be "m cells" for this specimen_type')
-                    if float(transfer_in_row.volume or 0) > 20:
-                        raise Exception('volume must be less than 20 for this specimen')
+                    if transfer_in_row.volume_units not in ['m cells', 'microlitres']:
+                        error_msg += 'volume_units must be either "m cells" or "microlitres" for this specimen_type.\n'
+                    if transfer_in_row.volume_units == 'm cells' and float(transfer_in_row.volume or 0) > 20:
+                        error_msg += 'volume must be less than 20 for this specimen.\n'
+                    if transfer_in_row.volume_units == 'microlitres' and float(transfer_in_row.volume or 0) < 90:
+                        error_msg += 'volume must be greater than 90 for this specimen.\n'
 
                 if transfer_in_row.specimen_type in ['10.1','10.2']:
                     if transfer_in_row.volume_units != 'swabs':
-                        raise Exception('volume_units must be "swabs" for this specimen_type')
+                        error_msg += 'volume_units must be "swabs" for this specimen_type.\n'
                     if float(transfer_in_row.volume or 0) > 10:
-                        raise Exception('volume must be less than or equal to 10 for this specimen type')
+                        error_msg += 'volume must be less than or equal to 10 for this specimen type.\n'
+
+                if error_msg:
+                    raise Exception(error_msg) 
 
 
                 transfer_in_row.state = 'validated'
@@ -165,8 +176,6 @@ class TransferInFileHandler(FileHandler):
                 continue
 
         return rows_validated, rows_failed
-
-
 
     def process(self):
         from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Site
