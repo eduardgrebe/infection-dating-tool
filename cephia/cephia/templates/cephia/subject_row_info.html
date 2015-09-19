@@ -107,7 +107,7 @@
     <td>{{row.art_resumption_date_mm}}</td>
     <td>{{row.art_resumption_date_dd}}</td>
     <td>{{row.state}}</td>
-    <td>{{row.error_message}}</td>
+    <td><pre>{{row.error_message}}</pre></td>
     <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
       {% if row.state == 'error' %}
       <a href="#" class="btn btn-success btn-comment-modal">
