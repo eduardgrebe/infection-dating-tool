@@ -4,11 +4,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Process files in status - pending'
+    help = 'Process files in status - validated'
 
     def handle(self, *args, **options):
 
-        for file_to_process in FileInfo.objects.filter(state='imported').order_by('priority'):
+        for file_to_process in FileInfo.objects.filter(state='validated').order_by('priority'):
             try:
                 file_handler = file_to_process.get_handler()
         
