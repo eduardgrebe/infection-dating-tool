@@ -62,31 +62,35 @@ class TransferOutFileHandler(FileHandler):
         from cephia.models import TransferOutRow, Specimen, SpecimenType, Site
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
-        #default_more_date = datetime.now().date() + relativedelta(years=75)
+        default_more_date = datetime.now().date() + relativedelta(years=75)
         rows_validated = 0
         rows_failed = 0
         
         for transfer_out_row in TransferOutRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
+                error_msg = ''
                 self.register_dates(transfer_out_row.model_to_dict())
 
                 try:
                     Site.objects.get(name=transfer_out_row.destination_site)
                 except Site.DoesNotExist:
-                    raise Exception("Site does not exist")
+                    error_msg += "Site does not exist.\n"
                 
                 try:
                     specimen_type = SpecimenType.objects.get(spec_type=transfer_out_row.specimen_type)
                 except SpecimenType.DoesNotExist:
-                    raise Exception("SpecimenType does not exist")
+                    error_msg += "SpecimenType does not exist.\n"
                 
                 try:
                     specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, specimen_type=specimen_type)
                 except Specimen.DoesNotExist:
-                    raise Exception("Specimen does not exist")
+                    error_msg += "Specimen does not exist.\n"
 
                 if self.registered_dates['shipment_date'] < (specimen.transfer_in_date or default_less_date):
-                    raise Exception("Shipment date cannot be before transfer in date")
+                    error_msg += "Shipment date cannot be before transfer in date.\n"
+
+                if error_msg:
+                    raise Exception(error_msg)
 
                 transfer_out_row.state = 'validated'
                 transfer_out_row.error_message = ''

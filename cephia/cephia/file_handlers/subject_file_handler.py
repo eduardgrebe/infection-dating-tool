@@ -133,54 +133,58 @@ class SubjectFileHandler(FileHandler):
 
         for subject_row in pending_rows:
             try:
+                error_msg = ''
                 self.register_dates(subject_row.model_to_dict())
 
                 for key, value in self.registered_dates.iteritems():
                     if self.registered_dates.has_key('date_of_birth'):
                         if self.registered_dates['date_of_birth'] > value:
-                            raise Exception('Date of birth cannot be greater than %s' % key)
+                            error_msg += 'Date of birth cannot be greater than %s.\n' % key
 
                     if self.registered_dates.has_key('date_of_death'):
                         if self.registered_dates['date_of_death'] < value:
-                            raise Exception('Date of death cannot be smaller than %s' % key)
+                            error_msg += 'Date of death cannot be smaller than %s.\n' % key
 
                 if not self.registered_dates.get('last_negative_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
-                    raise Exception('last_negative_date must be smaller than first_positive_date')
+                    error_msg += 'last_negative_date must be smaller than first_positive_date.\n'
 
                 if not self.registered_dates.get('ars_onset_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
-                    raise Exception('ars_onset_date must be smaller than first_positive_date')
+                    error_msg += 'ars_onset_date must be smaller than first_positive_date.\n'
 
                 if not self.registered_dates.get('art_initiation_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
-                    raise Exception('art_initiation_date must be larger than first_positive_date')
+                    error_msg += 'art_initiation_date must be larger than first_positive_date.\n'
 
                 if not self.registered_dates.get('art_interruption_date', default_more_date) > self.registered_dates.get('art_initiation_date', default_less_date):
-                    raise Exception('art_interruption_date must be greater than art_initiation_date')
+                    error_msg += 'art_interruption_date must be greater than art_initiation_date.\n'
         
                 if not self.registered_dates.get('art_resumption_date', default_more_date) > self.registered_dates.get('art_interruption_date', default_less_date):
-                    raise Exception('ars_resumption_date must be greater than art_interruption_date')
+                    error_msg += 'ars_resumption_date must be greater than art_interruption_date.\n'
 
                 if not self.registered_dates.get('aids_diagnosis_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
-                    raise Exception('ars_onset_date must be smaller than first_positive_date')
+                    error_msg += 'ars_onset_date must be smaller than first_positive_date.\n'
 
                 exists = Subject.objects.filter(subject_label=subject_row.subject_label).exists()
                 if exists:
-                    raise Exception("Subject already exists")
+                    error_msg += "Subject already exists.\n"
 
                 try:
                     if subject_row.population_group:
                         Ethnicity.objects.get(name=subject_row.population_group)
                 except Ethnicity.DoesNotExist:
-                    raise Exception("Ethnicity does not exist")
+                    error_msg += "Ethnicity does not exist.\n"
 
                 try:
                     Subtype.objects.get_or_create(name=subject_row.subtype)
                 except Subtype.DoesNotExist:
-                    raise Exception("Subtype does not exist")
+                    error_msg += "Subtype does not exist.\n"
             
                 try:
                     country = Country.objects.get(code=subject_row.country)
                 except Country.DoesNotExist:
-                    raise Exception("Country does not exist")
+                    error_msg += "Country does not exist./n"
+
+                if error_msg:
+                    raise Exception(error_msg)
                 
                 subject_row.state = 'validated'
                 subject_row.error_message = ''

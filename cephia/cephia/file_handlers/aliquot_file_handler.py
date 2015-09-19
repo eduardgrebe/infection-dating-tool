@@ -67,15 +67,19 @@ class AliquotFileHandler(FileHandler):
         
         for aliquot_row in AliquotRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
-                #self.register_dates(aliquot_row.model_to_dict())
-
-                # if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
-                #     raise Exception('draw_date must be smaller than transfer_date')
-
+                error_msg = ''
+                self.register_dates(aliquot_row.model_to_dict())
+                
                 try:
-                    Specimen.objects.get(specimen_label=aliquot_row.parent_label, parent_label=None)
+                    specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label, parent_label=None)
                 except Specimen.DoesNotExist:
-                    raise Exception("Parent specimen does not exist")
+                    erorr_msg += "Parent specimen does not exist.\n"
+
+                if not self.registered_dates.get('aliquot_date', default_less_date) < (specimen.transfer_in_date or default_more_date):
+                    error_msg += 'aliquot_date must be after transfer_in_date.\n'
+
+                if error_msg:
+                    raise Exception(error_msg)    
 
                 aliquot_row.state = 'validated'
                 aliquot_row.error_message = ''

@@ -73,6 +73,7 @@ class VisitFileHandler(FileHandler):
         
         for visit_row in VisitRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
+                error_msg = ''
                 self.register_dates(visit_row.model_to_dict())
                 try:
                     subject = Subject.objects.get(subject_label=visit_row.subject_label)
@@ -84,32 +85,30 @@ class VisitFileHandler(FileHandler):
                 
                 if subject:
                     if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
-                        raise Exception('visit_date must be greater than cohort_entry_date')
+                        error_msg += 'visit_date must be greater than cohort_entry_date.\n'
 
                     if visit_row.pregnant == 'Y' and subject.sex == 'M':
-                        raise Exception('Male subjects cannot be marked as pregnant')
+                        error_msg += 'Male subjects cannot be marked as pregnant.\n'
 
                     if subject.cohort_entry_hiv_status == 'P' and visit_row.visit_hivstatus == 'N':
-                        raise Exception('Visits HIV status cannot become "negative" if it was initially "positive"')
+                        error_msg += 'Visits HIV status cannot become "negative" if it was initially "positive".\n'
 
                 if first_visit:
                     if first_visit.source_study.name != visit_row.source_study:
-                        raise Exception('source_study does not match other visits for the patient')
+                        error_msg += 'source_study does not match other visits for the patient.\n'
 
                 if not self.registered_dates['visitdate'] < datetime.now().date():
-                    raise Exception('visit_date must be smaller than today')
+                    error_msg += 'visit_date must be smaller than today.\n'
 
                 if visit_row.scopevisit_ec and visit_row.source_study != 'SCOPE':
-                    raise Exception('scope_visit_ec must be null if source study is not "SCOPE"')
+                    error_msg += 'scope_visit_ec must be null if source study is not "SCOPE".\n'
         
                 if already_exists:
-                    raise Exception("Visit already exists")
+                    error_msg += "Visit already exists.\n"
 
-                # try:
-                #     study = Study.objects.get(name=visit_row.source)
-                # except Study.DoesNotExist:
-                #     raise Exception("Study does not exist")
-
+                if error_msg:
+                    raise Exception(error_msg)
+                
                 visit_row.state = 'validated'
                 visit_row.error_message = ''
                 rows_validated += 1
