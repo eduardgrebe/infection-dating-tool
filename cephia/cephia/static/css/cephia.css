@@ -19,7 +19,12 @@
 
 .home thead th,
 .home{
+    
     text-align:center;
 }
 
 .active { background: #FF9999; }
+
+pre.error-log {
+    max-width:20%;
+}

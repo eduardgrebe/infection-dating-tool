@@ -16,20 +16,22 @@ class Command(BaseCommand):
                     file_to_import.message = msg
 
                 num_success, num_fail = file_handler.parse()
+
+                fail_msg = 'Failed to import %s rows ' % str(num_fail)
+                msg = 'Successfully imported %s rows ' % str(num_success)
             
                 if num_fail > 0:
-                    file_to_import.state = 'error'
-                    file_to_import.save()
-                    continue
+                    file_to_import.state = 'row_error'
                 else:
                     file_to_import.state = 'imported'
-                    file_to_import.message = 'Successfully imported ' + str(num_success) + ' rows '
-                    file_to_import.save()
+
+                file_to_import.message += '\n%s.\n%s' % (fail_msg, msg)
+                file_to_import.save()
 
                 logger.info('Successfully imported file "%s"' % file_to_import)
             except Exception, e:
                 logger.exception(e)
-                file_to_import.state = 'error'
+                file_to_import.state = 'file_error'
                 file_to_import.message = 'Import failed: ' + e.message
                 file_to_import.save()
                 continue

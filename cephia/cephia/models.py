@@ -157,7 +157,7 @@ class ImportedRow(models.Model):
     state = models.CharField(max_length=10, choices=STATE_CHOICES, null=False, blank=False)
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
-    fileinfo = models.ForeignKey(FileInfo)
+    fileinfo = models.ForeignKey(FileInfo, db_index=True)
     history = HistoricalRecords()
 
     def model_to_dict(self):
@@ -196,8 +196,8 @@ class Subject(models.Model):
         ('positive','Positive'),
     )
     
-    subject_label = models.CharField(max_length=255, null=True, blank=True)
-    cohort_entry_date = models.DateField(null=True, blank=True)
+    subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    cohort_entry_date = models.DateField(null=True, blank=True, db_index=True)
     cohort_entry_hiv_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     country = models.ForeignKey(Country, null=True, blank=True)
     last_negative_date = models.DateField(null=True, blank=True)
@@ -213,7 +213,7 @@ class Subject(models.Model):
     risk_sex_with_women = models.NullBooleanField()
     risk_idu = models.NullBooleanField()
     subtype_confirmed = models.NullBooleanField()
-    subtype = models.ForeignKey(Subtype, null=True, blank=True)
+    subtype = models.ForeignKey(Subtype, null=True, blank=True, db_index=True)
     art_initiation_date = models.DateField(null=True, blank=True)
     aids_diagnosis_date = models.DateField(null=True, blank=True)
     art_interruption_date = models.DateField(null=True, blank=True)
@@ -352,9 +352,9 @@ class Specimen(models.Model):
     class Meta:
         db_table = "cephia_specimen"
 
-    specimen_label = models.CharField(max_length=255, null=True, blank=True)
+    specimen_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     parent_label = models.CharField(max_length=255, null=True, blank=True)
-    subject_label = models.CharField(max_length=255, null=True, blank=True)
+    subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     number_of_containers = models.IntegerField(null=True, blank=True)
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
@@ -365,7 +365,7 @@ class Specimen(models.Model):
     subject = models.ForeignKey(Subject, null=True, blank=False)
     visit = models.ForeignKey(Visit, null=True, blank=False, related_name='visit')
     visit_linkage = models.CharField(max_length=12, null=True, blank=False, choices=VISIT_LINKAGE_CHOICES)
-    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=True)
+    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=True, db_index=True)
     volume = models.FloatField(null=True, blank=True)
     volume_units = models.CharField(max_length=20, null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
@@ -436,8 +436,8 @@ class AliquotRow(ImportedRow):
     class Meta:
         db_table = "cephia_aliquot_row"
         
-    parent_label = models.CharField(max_length=255, null=True, blank=True) 
-    aliquot_label = models.CharField(max_length=255, null=True, blank=True)
+    parent_label = models.CharField(max_length=255, null=True, blank=True, db_index=True) 
+    aliquot_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
     volume_units = models.CharField(max_length=255, null=True, blank=True)
     number_of_aliquot = models.CharField(max_length=255, null=True, blank=True)
@@ -446,7 +446,7 @@ class AliquotRow(ImportedRow):
     aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
     aliquot_reason = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-    specimen = models.ForeignKey(Specimen, null=True, blank=False)
+    specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
 
     def __unicode__(self):
         return self.parent_label

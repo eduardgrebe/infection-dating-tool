@@ -2,7 +2,6 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-
 {% block submit_action %}
 {% url 'file_info' %}
 {% endblock %}
@@ -42,16 +41,16 @@
 {% paginate files %}
 <div class="container">
   <div class="row">
-    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;"">
       <div class="panel-heading">
         <h3 class="panel-title">Files</h3>
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="container"
+          <div class="container">
                {% show_pages %}
-            <div class="table-responsive">
-              <table class="table-striped table table-hover">
+            <div class="table-responsive" style="height:auto; max-height:100%x; overflow:auto;">
+              <table class="table-striped table table-hover" style="overflow:auto;">
                 <thead>
 	          <th></th>
 	          <th>Name</th>
@@ -70,7 +69,8 @@
 	            <td>{{file.created}}</td>
 	            <td>{{file.state}}</td>
 	            <td><a href="{% url 'download_file' file.id %}">Download</a></td>
-	            <td data-toggle="tooltip" title="{{file.message}}">{{file.message}}</td>
+	            <td><pre class="error-log">{{file.message}}</pre></td>
+                    {% comment %}
 	            <td>
 	              {% if file.state == 'pending' %}
 	              <a href="{% url 'parse_file' file.id %}" class="btn btn-default btn-sm">Import</a>
@@ -80,20 +80,16 @@
 	              <a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Process</a>
 	              {% endif %}
 	            </td>
+                    {% endcomment %}
 	          </tr>
 	          {% endfor %}
                 </tbody>
               </table>
-
               {% include 'cephia/upload_file.html' with upload_form=upload_form %}
-
-              {% include 'cephia/message_modal.html'%}
-
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

@@ -5,12 +5,15 @@
 {% block content %}
 <div id="wrapper">
   <div class="container">
+
     <div class="heading">
       {% include "cephia/_top_navigation.html" %}
+      <img src="{% static 'images/CEPHIA.jpg' %}" alt="CEPHIA logo" style="float:left;" height="150" title="CEPHIA">
+      <h1 class="site-title"><a href="./Incidence-Estimation.com_files/Incidence-Estimation.com.html">CEPHIA</a></h1>
+      <span class="site-tagline">Consortium for the Evaluation and Performance of HIV Incidence Assays</span>
     </div>
-
+    <br/><br/>
     {% include "cephia/_navigation.html" %}
-
     <div class="outer_container fixed-outer-container">
       {% block left_menu %}
       {% endblock %}
@@ -71,6 +74,22 @@
         <a href="http://www.sacema.org/" target="_blank">
           <img src="{% static 'images/logo.png' %}" style="float:left;" alt="SACEMA logo"
                title="South African Centre for Epidemiological Modelling and Analysis" height="100">
+        </a>
+        <a href="http://www.gatesfoundation.org/" target="_blank">
+          <img src="{% static 'images/BillAndMelindaGatesFoundation.jpg' %}" alt="BMGF logo" height="100"
+               title="Bill and Melinda Gates Foundation">
+        </a>
+        <a href="https://www.gov.uk/government/organisations/public-health-england" target="_blank">
+          <img src="{% static 'images/PublicHealthEngland.png' %}" alt="PHE logo" height="100"
+               title="Public Health England">
+        </a> 
+        <a href="http://www.bsrisf.org/" target="_blank">
+          <img src="{% static 'images/BloodSystemsResearchInstitute.jpg' %}" alt="BSRI logo" height="100"
+               title="Blood Systems Research Institute">
+        </a>
+        <a href="http://www.ucsf.edu/" target="_blank">
+          <img src="{% static 'images/UniversityOfCaliforniaSanFrancisco.jpg' %}" alt="UCSF logo" height="100"
+               title="University of California San Francisco">
         </a>
       </div>
     </div>

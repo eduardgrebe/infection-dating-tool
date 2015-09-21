@@ -46,6 +46,7 @@ class AliquotFileHandler(FileHandler):
                     aliquot_row.aliquot_reason=row_dict['reason']
                     aliquot_row.state='pending'
                     aliquot_row.error_message = ''
+                    aliquot_row.fileinfo=self.upload_file
                     aliquot_row.save()
 
                     rows_inserted += 1

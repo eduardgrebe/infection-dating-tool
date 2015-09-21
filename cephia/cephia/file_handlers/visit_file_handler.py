@@ -82,6 +82,9 @@ class VisitFileHandler(FileHandler):
                     
                 first_visit = Visit.objects.filter(subject_label=visit_row.subject_label).order_by('visit_date').first()
                 already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
+
+                if already_exists:
+                    raise Exception("Visit already exists.")
                 
                 if subject:
                     if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
@@ -103,9 +106,6 @@ class VisitFileHandler(FileHandler):
                 if visit_row.scopevisit_ec and visit_row.source_study != 'SCOPE':
                     error_msg += 'scope_visit_ec must be null if source study is not "SCOPE".\n'
         
-                if already_exists:
-                    error_msg += "Visit already exists.\n"
-
                 if error_msg:
                     raise Exception(error_msg)
                 
