@@ -443,6 +443,27 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+def export_file_data(request, file_id=None):
+    try:
+        rows = TransferInRow.objects.filter(fileinfo__id=file_id)
+        response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+        headers = model_to_dict(rows[0]).keys()
+
+        #headers.remove("notes")
+        writer.writerow(headers)
+        
+        for row in rows:
+            d = model_to_dict(row)
+            content = [ d[x] for x in headers ]
+            writer.writerow(content)
+
+        return response
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to download file')
+        return HttpResponseRedirect(reverse('file_info'))
+
+@login_required
 def associate_specimen(request, subject_id=None, template="cephia/associate_specimen.html"):
     try:
         if request.method == 'POST':

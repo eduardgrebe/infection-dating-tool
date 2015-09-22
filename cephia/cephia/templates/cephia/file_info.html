@@ -69,7 +69,7 @@
 	            <td>{{file.created}}</td>
 	            <td>{{file.state}}</td>
 	            <td><a href="{% url 'download_file' file.id %}">Download</a></td>
-	            <td><pre class="error-log">{{file.message}}</pre></td>
+	            <td><pre style="white-space: pre-wrap; overflow:auto; max-width:600px;">{{file.message}}</pre></td>
                     {% comment %}
 	            <td>
 	              {% if file.state == 'pending' %}

@@ -40,21 +40,21 @@ def add_locations_studies(apps, schema_editor):
                          {'name':'SFMHS',
                           'description':'San Francisco Men’s Health Study'},
                          {'name':'CTS',
-                          'description':'Blood bank - ARC/MS (American Red Cross)'},
-                         {'name':'BCP',
-                          'description':'Blood bank - Blood Centers of the Pacific (BSRI)'},
+                          'description':'Blood bank - Blood Systems Testing Lab (Description to be updated)'},
                          {'name':'BRAZIL',
                           'description':'Blood bank - Brazil'},
                          {'name':'SANBS',
-                          'description':'Blood bank  - SANBS'},
+                          'description':'Blood bank - SANBS'},
                          {'name':'CAPRISA',
-                          'description':'CAPRISA study – South Africa'},
+                          'description':'CAPRISA study - South Africa'},
                          {'name':'FPSHSP',
                           'description':'Fundação Pro-Sangue-Hemocentro de São Paulo, Brazil'},
                          {'name':'GAMA',
                           'description':'CRESIB malaria cohort'},
                          {'name':'IMPACTA',
-                          'description':'Asociación Civil Impacta Saludy Educación'}]
+                          'description':'Asociación Civil Impacta Saludy Educación'},
+                         {'name':'ARC',
+                          'description':'Blood bank - American Red Cross'}]
 
 
     for study in source_study_list:

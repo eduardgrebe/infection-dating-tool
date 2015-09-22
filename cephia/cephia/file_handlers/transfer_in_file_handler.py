@@ -182,10 +182,10 @@ class TransferInFileHandler(FileHandler):
         
         rows_inserted = 0
         rows_failed = 0
-        validated_records = TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated', roll_up=False)
-        validated_records_roll_up = TransferInRow.objects.filter(fileinfo=self.upload_file,
-                                                                 state='validated', roll_up=True).annotate(containers=Sum('volume'),
-                                                                                                           volume=Sum('volume'))
+        validated_records = TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated')#, roll_up=False)
+        # validated_records_roll_up = TransferInRow.objects.filter(fileinfo=self.upload_file,
+        #                                                          state='validated', roll_up=True).annotate(containers=Sum('volume'),
+        #                                                                                                    volume=Sum('volume'))
         
         for transfer_in_row in validated_records:
             try:
@@ -229,47 +229,47 @@ class TransferInFileHandler(FileHandler):
 
                 rows_failed += 1
                 continue
-        import pdb; pdb.set_trace()
-        for transfer_in_row in validated_records_roll_up:
-            try:
-                self.register_dates(transfer_in_row.model_to_dict())
+        # import pdb; pdb.set_trace()
+        # for transfer_in_row in validated_records_roll_up:
+        #     try:
+        #         self.register_dates(transfer_in_row.model_to_dict())
                 
-                with transaction.atomic():
-                    try:
-                        if transfer_in_row.subject_label == 'Unknown':
-                            subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
-                            subject.aritificial = True
-                            subject.save()
-                        else:
-                            subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
-                    except Subject.DoesNotExist:
-                        subject = None
-                        pass
+        #         with transaction.atomic():
+        #             try:
+        #                 if transfer_in_row.subject_label == 'Unknown':
+        #                     subject = Subject.objects.create(subject_label='artificial_' + transfer_in_row.specimen_label)
+        #                     subject.aritificial = True
+        #                     subject.save()
+        #                 else:
+        #                     subject = Subject.objects.get(subject_label=transfer_in_row.subject_label)
+        #             except Subject.DoesNotExist:
+        #                 subject = None
+        #                 pass
 
-                    specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
-                                                       subject_label = transfer_in_row.subject_label,
-                                                       reported_draw_date = self.registered_dates.get('drawdate', None),
-                                                       transfer_in_date = self.registered_dates.get('transfer_date', None),
-                                                       transfer_reason = transfer_in_row.transfer_reason,
-                                                       subject = subject,
-                                                       specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
-                                                       number_of_containers = (transfer_in_row.number_of_containers or None),
-                                                       initial_claimed_volume = (transfer_in_row.volume or None),
-                                                       volume_units = transfer_in_row.volume_units,
-                                                       source_study = None,
-                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
+        #             specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
+        #                                                subject_label = transfer_in_row.subject_label,
+        #                                                reported_draw_date = self.registered_dates.get('drawdate', None),
+        #                                                transfer_in_date = self.registered_dates.get('transfer_date', None),
+        #                                                transfer_reason = transfer_in_row.transfer_reason,
+        #                                                subject = subject,
+        #                                                specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
+        #                                                number_of_containers = (transfer_in_row.number_of_containers or None),
+        #                                                initial_claimed_volume = (transfer_in_row.volume or None),
+        #                                                volume_units = transfer_in_row.volume_units,
+        #                                                source_study = None,
+        #                                                receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
 
-                    transfer_in_row.state = 'processed'
-                    transfer_in_row.date_processed = timezone.now()
-                    transfer_in_row.specimen = specimen
-                    transfer_in_row.save()
-                    rows_inserted += 1
-            except Exception, e:
-                logger.exception(e)
-                transfer_in_row.state = 'row_error'
-                transfer_in_row.error_message = e.message
-                transfer_in_row.save()
+        #             transfer_in_row.state = 'processed'
+        #             transfer_in_row.date_processed = timezone.now()
+        #             transfer_in_row.specimen = specimen
+        #             transfer_in_row.save()
+        #             rows_inserted += 1
+        #     except Exception, e:
+        #         logger.exception(e)
+        #         transfer_in_row.state = 'row_error'
+        #         transfer_in_row.error_message = e.message
+        #         transfer_in_row.save()
 
-                rows_failed += 1
-                continue
+        #         rows_failed += 1
+        #         continue
         return rows_inserted, rows_failed

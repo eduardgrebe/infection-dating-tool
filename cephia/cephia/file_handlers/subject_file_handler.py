@@ -148,8 +148,8 @@ class SubjectFileHandler(FileHandler):
                 if not self.registered_dates.get('last_negative_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
                     error_msg += 'last_negative_date must be smaller than first_positive_date.\n'
 
-                if not self.registered_dates.get('ars_onset_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
-                    error_msg += 'ars_onset_date must be smaller than first_positive_date.\n'
+                # if not self.registered_dates.get('ars_onset_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
+                #     error_msg += 'ars_onset_date must be smaller than first_positive_date.\n'
 
                 if not self.registered_dates.get('art_initiation_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
                     error_msg += 'art_initiation_date must be larger than first_positive_date.\n'
