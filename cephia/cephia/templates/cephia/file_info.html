@@ -70,7 +70,6 @@
 	            <td>{{file.state}}</td>
 	            <td><a href="{% url 'download_file' file.id %}">Download</a></td>
 	            <td><pre style="white-space: pre-wrap; overflow:auto; max-width:600px;">{{file.message}}</pre></td>
-                    {% comment %}
 	            <td>
 	              {% if file.state == 'pending' %}
 	              <a href="{% url 'parse_file' file.id %}" class="btn btn-default btn-sm">Import</a>
@@ -80,7 +79,6 @@
 	              <a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Process</a>
 	              {% endif %}
 	            </td>
-                    {% endcomment %}
 	          </tr>
 	          {% endfor %}
                 </tbody>
