@@ -142,6 +142,10 @@
      var file_p = $(this).data("file-priority");
      $('#{{form.priority.auto_id}}').val(file_p);
  });
+
+setTimeout(function(){
+   window.location.reload(1);
+}, 5000);
 </script>
 
 {% endblock %}
