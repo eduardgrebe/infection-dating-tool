@@ -12,8 +12,6 @@
 <thead>
   <th>Specimen Label</th>
   <th>Shipment Date</th>
-  <th></th>
-  <th></th>
   <th>Number of Containers</th>
   <th>Destination Site</th>
   <th>Specimen Type</th>
@@ -32,9 +30,7 @@
   {% for row in rows %}
   <tr>
     <td>{{row.specimen_label}}</td>
-    <td>{{row.shipment_date_yyyy}}</td>
-    <td>{{row.shipment_date_mm}}</td>
-    <td>{{row.shipment_date_dd}}</td>
+    <td>{{row.shipment_date_yyyy}}-{{row.shipment_date_mm}}-{{row.shipment_date_dd}}</td>
     <td>{{row.number_of_containers}}</td>
     <td>{{row.destination_site}}</td>
     <td>{{row.specimen_type}}</td>

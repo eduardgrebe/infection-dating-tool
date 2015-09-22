@@ -71,6 +71,12 @@ class TransferOutFileHandler(FileHandler):
                 error_msg = ''
                 self.register_dates(transfer_out_row.model_to_dict())
 
+                if not transfer_out_row.volume:
+                    error_msg += 'Volume is required.\n'
+
+                if not transfer_out_row.volume_units:
+                    error_msg += 'Volume units is required.\n'
+
                 try:
                     Site.objects.get(name=transfer_out_row.destination_site)
                 except Site.DoesNotExist:
@@ -81,13 +87,48 @@ class TransferOutFileHandler(FileHandler):
                 except SpecimenType.DoesNotExist:
                     error_msg += "SpecimenType does not exist.\n"
                 
-                try:
-                    specimen = Specimen.objects.get(specimen_label=transfer_out_row.specimen_label, specimen_type=specimen_type)
-                except Specimen.DoesNotExist:
+                specimen = Specimen.objects.filter(specimen_label=transfer_out_row.specimen_label,
+                                                   specimen_type__spec_type=transfer_out_row.specimen_type)
+                if not specimen:
                     error_msg += "Specimen does not exist.\n"
+                else:
+                    specimen = specimen[0]
+                    if self.registered_dates.get('shipment_date', default_more_date) < (specimen.created_date or default_less_date):
+                        error_msg += "Shipment date cannot be before created date.\n"
 
-                if self.registered_dates['shipment_date'] < (specimen.transfer_in_date or default_less_date):
-                    error_msg += "Shipment date cannot be before transfer in date.\n"
+                if transfer_out_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
+                    if transfer_out_row.volume_units != 'microlitres':
+                        error_msg += 'volume_units must be "microlitres" for this specimen_type.\n'
+                    if float(transfer_out_row.volume or 0) < 90:
+                        error_msg += 'volume must be greater than 90 for this specimen type.\n'
+
+                if transfer_out_row.specimen_type == '2':
+                    if transfer_out_row.volume_units not in ['cards','microlitres']:
+                        error_msg += 'volume_units must be either "cards" or "microlitres" for this specimen.\n'
+                    if transfer_out_row.volume_units == 'cards' and float(transfer_out_row.volume or 0) > 20:
+                        error_msg += 'volume must be less than 20 for this specimen.\n'
+                    if transfer_out_row.volume_units == 'microlitres' and float(transfer_out_row.volume or 0) < 20:
+                        error_msg += 'volume must be greater than 20 for this specimen.\n'
+
+                if transfer_out_row.specimen_type in ['5.1','5.2']:
+                    if transfer_out_row.volume_units != 'grams':
+                        error_msg += 'volume_units must be "grams" for this specimen_type.\n'
+                    if float(transfer_out_row.volume or 0) > 100:
+                        error_msg += 'volume must be less than 100 for this specimen.\n'
+
+                if transfer_out_row.specimen_type == '7':
+                    if transfer_out_row.volume_units not in ['m cells', 'microlitres']:
+                        error_msg += 'volume_units must be either "m cells" or "microlitres" for this specimen_type.\n'
+                    if transfer_out_row.volume_units == 'm cells' and float(transfer_out_row.volume or 0) > 20:
+                        error_msg += 'volume must be less than 20 for this specimen.\n'
+                    if transfer_out_row.volume_units == 'microlitres' and float(transfer_out_row.volume or 0) < 90:
+                        error_msg += 'volume must be greater than 90 for this specimen.\n'
+
+                if transfer_out_row.specimen_type in ['10.1','10.2']:
+                    if transfer_out_row.volume_units != 'swabs':
+                        error_msg += 'volume_units must be "swabs" for this specimen_type.\n'
+                    if float(transfer_out_row.volume or 0) > 10:
+                        error_msg += 'volume must be less than or equal to 10 for this specimen type.\n'
 
                 if error_msg:
                     raise Exception(error_msg)

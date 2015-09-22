@@ -51,6 +51,12 @@ def home(request, file_id=None, template="cephia/home.html"):
         context['transfer_in_errors'] = transfer_in_rows.filter(state='error').count()
         context['transfer_out_errors'] = transfer_out_rows.filter(state='error').count()
 
+        context['subject_validated'] = subject_rows.filter(state='validated').count()
+        context['visit_validated'] = visit_rows.filter(state='validated').count()
+        context['aliquot_validated'] = aliquot_rows.filter(state='validated').count()
+        context['transfer_in_validated'] = transfer_in_rows.filter(state='validated').count()
+        context['transfer_out_validated'] = transfer_out_rows.filter(state='validated').count()
+        
         context['subject_processed'] = subject_rows.filter(state='processed').count()
         context['visit_processed'] = visit_rows.filter(state='processed').count()
         context['aliquot_processed'] = aliquot_rows.filter(state='processed').count()

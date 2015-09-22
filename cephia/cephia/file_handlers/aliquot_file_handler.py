@@ -43,6 +43,7 @@ class AliquotFileHandler(FileHandler):
                     aliquot_row.aliquoting_date_yyyy=row_dict['aliquoting_date_yyyy']
                     aliquot_row.aliquoting_date_mm=row_dict['aliquoting_date_mm']
                     aliquot_row.aliquoting_date_dd=row_dict['aliquoting_date_dd']
+                    aliquot_row.specimen_type=row_dict['specimen_type']
                     aliquot_row.aliquot_reason=row_dict['reason']
                     aliquot_row.state='pending'
                     aliquot_row.error_message = ''
@@ -59,7 +60,7 @@ class AliquotFileHandler(FileHandler):
         return rows_inserted, rows_failed
     
     def validate(self):
-        from cephia.models import AliquotRow, Specimen
+        from cephia.models import AliquotRow, Specimen, SpecimenType
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -70,14 +71,61 @@ class AliquotFileHandler(FileHandler):
             try:
                 error_msg = ''
                 self.register_dates(aliquot_row.model_to_dict())
-                
-                try:
-                    specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label, parent_label=None)
-                except Specimen.DoesNotExist:
-                    erorr_msg += "Parent specimen does not exist.\n"
 
-                if not self.registered_dates.get('aliquot_date', default_less_date) < (specimen.transfer_in_date or default_more_date):
-                    error_msg += 'aliquot_date must be after transfer_in_date.\n'
+                try:
+                    SpecimenType.objects.get(spec_type=aliquot_row.specimen_type)
+                except SpecimenType.DoesNotExist:
+                    error_msg += "SpecimenType does not exist.\n"
+
+                if not aliquot_row.volume:
+                    error_msg += 'Volume is required.\n'
+
+                if not aliquot_row.volume_units:
+                    error_msg += 'Volume units is required.\n'
+
+                if aliquot_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
+                    if aliquot_row.volume_units != 'microlitres':
+                        error_msg += 'volume_units must be "microlitres" for this specimen_type.\n'
+                    if float(aliquot_row.volume or 0) < 90:
+                        error_msg += 'volume must be greater than 90 for this specimen type.\n'
+
+                if aliquot_row.specimen_type == '2':
+                    if aliquot_row.volume_units not in ['cards','microlitres']:
+                        error_msg += 'volume_units must be either "cards" or "microlitres" for this specimen.\n'
+                    if aliquot_row.volume_units == 'cards' and float(aliquot_row.volume or 0) > 20:
+                        error_msg += 'volume must be less than 20 for this specimen.\n'
+                    if aliquot_row.volume_units == 'microlitres' and float(aliquot_row.volume or 0) < 20:
+                        error_msg += 'volume must be greater than 20 for this specimen.\n'
+
+                if aliquot_row.specimen_type in ['5.1','5.2']:
+                    if aliquot_row.volume_units != 'grams':
+                        error_msg += 'volume_units must be "grams" for this specimen_type.\n'
+                    if float(aliquot_row.volume or 0) > 100:
+                        error_msg += 'volume must be less than 100 for this specimen.\n'
+
+                if aliquot_row.specimen_type == '7':
+                    if aliquot_row.volume_units not in ['m cells', 'microlitres']:
+                        error_msg += 'volume_units must be either "m cells" or "microlitres" for this specimen_type.\n'
+                    if aliquot_row.volume_units == 'm cells' and float(aliquot_row.volume or 0) > 20:
+                        error_msg += 'volume must be less than 20 for this specimen.\n'
+                    if aliquot_row.volume_units == 'microlitres' and float(aliquot_row.volume or 0) < 90:
+                        error_msg += 'volume must be greater than 90 for this specimen.\n'
+
+                if aliquot_row.specimen_type in ['10.1','10.2']:
+                    if aliquot_row.volume_units != 'swabs':
+                        error_msg += 'volume_units must be "swabs" for this specimen_type.\n'
+                    if float(aliquot_row.volume or 0) > 10:
+                        error_msg += 'volume must be less than or equal to 10 for this specimen type.\n'
+                        
+                specimen = Specimen.objects.filter(specimen_label=aliquot_row.parent_label,
+                                                   parent_label=None,
+                                                   specimen_type__spec_type=aliquot_row.specimen_type)
+                if not specimen:
+                    error_msg += "Parent specimen does not exist.\n"
+                else:
+                    specimen = specimen[0]
+                    if not self.registered_dates.get('aliquot_date', default_less_date) < (specimen.transfer_in_date or default_more_date):
+                        error_msg += 'aliquot_date must be after transfer_in_date.\n'
 
                 if error_msg:
                     raise Exception(error_msg)    

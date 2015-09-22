@@ -23,6 +23,7 @@
 	          <th style="text-align:left;">Last File Uploaded</th>
 	          <th style="text-align:left;">Time Uploaded</th>
 	          <th>Error</th>
+                  <th>Validated</th>
 	          <th>Processed</th>
                   <th>Total</th>
                   <th style="text-align:left;">Message</th>
@@ -35,6 +36,7 @@
                     <td style="text-align:left;">{{ subject_file.filename }}</td>
                     <td style="text-align:left;">{{ subject_file.created }}</td>
                     <td>{{ subject_errors}}</td>
+                    <td>{{ subject_validated}}</td>
                     <td>{{ subject_processed}}</td>
                     <td>{{ subject_total}}</td>
                     <td style="text-align:left;">
@@ -51,6 +53,7 @@
                     <td style="text-align:left;"">{{ visit_file.filename }}</td>
                     <td style="text-align:left;">{{ visit_file.created }}</td>
                     <td>{{ visit_errors }}</td>
+                    <td>{{ visit_validated }}</td>
                     <td>{{ visit_processed }}</td>
                     <td>{{ visit_total }}</td>
                     <td style="text-align:left;">
@@ -64,6 +67,7 @@
                     <td style="text-align:left;">{{ transfer_in_file.filename }}</td>
                     <td style="text-align:left;">{{ transfer_in_file.created }}</td>
                     <td>{{ transfer_in_errors}}</td>
+                    <td>{{ transfer_in_validated}}</td>
                     <td>{{ transfer_in_processed }}</td>
                     <td>{{ transfer_in_total }}</td>
                     <td style="text-align:left;">
@@ -77,6 +81,7 @@
                     <td style="text-align:left;">{{ aliquot_file.filename }}</td>
                     <td style="text-align:left;">{{ aliquot_file.created }}</td>
                     <td>{{ aliquot_errors}}</td>
+                    <td>{{ aliquot_validated}}</td>
                     <td>{{ aliquot_processed }}</td>
                     <td>{{ aliquot_total }}</td>
                     <td style="text-align:left;">
@@ -90,6 +95,7 @@
                     <td style="text-align:left;">{{ transfer_out_file.filename }}</td>
                     <td style="text-align:left;">{{ transfer_out_file.created }}</td>
                     <td>{{ transfer_out_errors}}</td>
+                    <td>{{ transfer_out_validated}}</td>
                     <td>{{ transfer_out_processed }}</td>
                     <td>{{ transfer_out_total }}</td>
                     <td style="text-align:left;">
@@ -128,7 +134,6 @@
         </div>
       </div>
     </div>
-  </div>
   {% endif %}
 </div>
 

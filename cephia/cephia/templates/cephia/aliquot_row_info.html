@@ -12,11 +12,10 @@
 <thead>
   <th>Parent Label</th>
   <th>Aliquot Label</th>
+  <th>Specimen Type</th>
   <th>Volume</th>
   <th>Volume Units</th>
   <th>Aliquoting Date</th>
-  <th></th>
-  <th></th>
   <th>Reason</th>
   <th>State</th>
   <th>Message</th>
@@ -31,11 +30,10 @@
   <tr>
     <td>{{row.parent_label}}</td>
     <td>{{row.aliquot_label}}</td>
+    <td>{{row.specimen_type}}</td>
     <td>{{row.volume}}</td>
     <td>{{row.volume_units}}</td>
-    <td>{{row.aliquoting_date_yyyy}}</td>
-    <td>{{row.aliquoting_date_mm}}</td>
-    <td>{{row.aliquoting_date_dd}}</td>
+    <td>{{row.aliquoting_date_yyyy}}-{{row.aliquoting_date_mm}}-{{row.aliquoting_date_dd}}</td>
     <td>{{row.aliquot_reason}}</td>
     <td>{{row.state}}</td>
     <td><pre>{{row.error_message}}</pre></td>

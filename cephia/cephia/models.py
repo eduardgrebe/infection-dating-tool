@@ -445,6 +445,7 @@ class AliquotRow(ImportedRow):
     aliquoting_date_mm = models.CharField(max_length=255, null=True, blank=True)
     aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
     aliquot_reason = models.CharField(max_length=255, null=True, blank=True)
+    specimen_type = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
 
