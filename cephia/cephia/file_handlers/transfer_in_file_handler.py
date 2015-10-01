@@ -170,7 +170,7 @@ class TransferInFileHandler(FileHandler):
                 transfer_in_row.save()
             except Exception, e:
                 logger.exception(e)
-                transfer_in_row.state = 'row_error'
+                transfer_in_row.state = 'error'
                 transfer_in_row.error_message = e.message
                 rows_failed += 1
                 transfer_in_row.save()
@@ -239,7 +239,7 @@ class TransferInFileHandler(FileHandler):
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                transfer_in_row.state = 'row_error'
+                transfer_in_row.state = 'error'
                 transfer_in_row.error_message = e.message
                 transfer_in_row.save()
 

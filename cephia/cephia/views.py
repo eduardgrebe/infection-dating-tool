@@ -449,18 +449,141 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
-def export_file_data(request, file_id=None):
+def export_file_data(request, file_id=None, state=None):
     try:
-        rows = TransferInRow.objects.filter(fileinfo__id=file_id)
-        response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-        headers = model_to_dict(rows[0]).keys()
+        fileinfo = FileInfo.objects.get(pk=file_id)
 
-        #headers.remove("notes")
+        if state == 'all':
+            state = ['pending',
+                     'validated',
+                     'imported',
+                     'processed',
+                     'error']
+        else:
+            state = ['error']
+
+        if fileinfo.file_type == 'subject':
+            rows = SubjectRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['subject_label',
+                       'source_study',
+                       'cohort_entry_date_yyyy',
+                       'cohort_entry_date_mm',
+                       'cohort_entry_date_dd',
+                       'country',
+                       'cohort_entry_hiv_status',
+                       'last_negative_date_yyyy',
+                       'last_negative_date_mm',
+                       'last_negative_date_dd',
+                       'first_positive_date_yyyy',
+                       'first_positive_date_mm',
+                       'first_positive_date_dd',
+                       'fiebig_stage_at_firstpos',
+                       'ars_onset_date_yyyy',
+                       'ars_onset_date_mm',
+                       'ars_onset_date_dd',
+                       'date_of_birth_yyyy',
+                       'date_of_birth_mm',
+                       'date_of_birth_dd',
+                       'sex',
+                       'transgender',
+                       'population_group',
+                       'risk_sex_with_men',
+                       'risk_sex_with_women',
+                       'risk_idu',
+                       'subtype',
+                       'subtype_confirmed',
+                       'aids_diagnosis_date_yyyy',
+                       'aids_diagnosis_date_mm',
+                       'aids_diagnosis_date_dd',
+                       'art_initiation_date_yyyy',
+                       'art_initiation_date_mm',
+                       'art_initiation_date_dd',
+                       'art_interruption_date_yyyy',
+                       'art_interruption_date_mm',
+                       'art_interruption_date_dd',
+                       'art_resumption_date_yyyy',
+                       'art_resumption_date_mm',
+                       'art_resumption_date_dd']
+        elif fileinfo.file_type == 'visit':
+            rows = VisitRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['subject_label',
+                       'visitdate_yyyy',
+                       'visitdate_mm',
+                       'visitdate_dd',
+                       'visit_hivstatus',
+                       'source_study',
+                       'cd4_count',
+                       'vl',
+                       'scopevisit_ec',
+                       'pregnant',
+                       'hepatitis']
+        elif fileinfo.file_type == 'transfer_in':
+            rows = TransferInRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['specimen_label',
+                       'subject_label',
+                       'drawdate_yyyy',
+                       'drawdate_mm',
+                       'drawdate_dd',
+                       'number_of_containers',
+                       'transfer_date_yyyy',
+                       'transfer_date_mm',
+                       'transfer_date_dd',
+                       'receiving_site',
+                       'transfer_reason',
+                       'specimen_type',
+                       'volume',
+                       'volume_units',
+                       'source_study',
+                       'notes']
+        elif fileinfo.file_type == 'transfer_out':
+            rows = TransferOutRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['specimen_label',
+                       'number_of_containers',
+                       'specimen_type',
+                       'volume',
+                       'volume_units',
+                       'shipped_in_panel',
+                       'shipment_date_yyyy',
+                       'shipment_date_mm',
+                       'shipment_date_dd',
+                       'destination_site']
+        elif fileinfo.file_type == 'aliquot':
+            rows = AliquotRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['parent_label',
+                       'aliquot_label',
+                       'aliquoting_date_yyyy',
+                       'aliquoting_date_mm',
+                       'aliquoting_date_dd',
+                       'specimen_type',
+                       'volume',
+                       'volume_units',
+                       'reason']
+
+        response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+
+        headers.insert(0, 'id')
+        headers.append("error_message")
+        headers.append('resolve_action')
+        headers.append('resolve_date')
+        headers.append('assigned_to')
+        headers.append('comment')
+
         writer.writerow(headers)
         
         for row in rows:
-            d = model_to_dict(row)
-            content = [ d[x] for x in headers ]
+            model_dict = model_to_dict(row)
+            if model_dict['comment']:
+                model_dict['comment'] = row.comment.comment
+                model_dict['resolve_action'] = row.comment.resolve_action
+                model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
+                model_dict['assigned_to'] = row.comment.assigned_to
+            else:
+                model_dict['comment'] = None
+                model_dict['resolve_action'] = None
+                model_dict['resolve_date'] = None
+                model_dict['assigned_to'] = None
+
+            content = [ model_dict[x] for x in headers ]
             writer.writerow(content)
 
         return response

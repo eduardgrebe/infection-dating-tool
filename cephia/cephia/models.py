@@ -21,7 +21,7 @@ class CephiaUser(AbstractUser):
     modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return "%s" % (self.username)
 
 
 class Region(models.Model):
