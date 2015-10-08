@@ -27,7 +27,7 @@ def host_impd():
 
 def host_cephia():
     env.user = 'cephia'
-    env.hosts = ['cephia.eduardgrebe.net']
+    env.hosts = ['cephiadb.incidence-estimation.org']
 
 # ===== top level commands ======
 
