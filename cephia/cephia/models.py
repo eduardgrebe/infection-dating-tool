@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class CephiaUser(AbstractUser):
     class Meta:
-        db_table = "cephia_user"
+        db_table = "cephia_users"
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -27,7 +27,7 @@ class CephiaUser(AbstractUser):
 class Region(models.Model):
 
     class Meta:
-        db_table = "cephia_region"
+        db_table = "cephia_regions"
 
     name = models.CharField(max_length=100, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
@@ -40,7 +40,7 @@ class Region(models.Model):
 class Country(models.Model):
 
     class Meta:
-        db_table = "cephia_country"
+        db_table = "cephia_countries"
 
     code = models.CharField(max_length=5, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -52,9 +52,19 @@ class Country(models.Model):
         return self.code
 
 
-class Site(models.Model):
+class Laboratory(models.Model):
     class Meta:
-        db_table = "cephia_site"
+        db_table = "cephia_laboratories"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+    description = models.CharField(max_length=255, null=False, blank=False)
+    
+    def __unicode__(self):
+        return self.name
+
+class Location(models.Model):
+    class Meta:
+        db_table = "cephia_locations"
 
     name = models.CharField(max_length=255, null=False, blank=False)
     description = models.CharField(max_length=255, null=False, blank=False)
@@ -65,7 +75,7 @@ class Site(models.Model):
 
 class Study(models.Model):
     class Meta:
-        db_table = "cephia_study"
+        db_table = "cephia_studies"
 
     name = models.CharField(max_length=255, null=False, blank=False)
     description = models.CharField(max_length=255, null=False, blank=False)
@@ -77,14 +87,14 @@ class Study(models.Model):
 class Ethnicity(models.Model):
 
     class Meta:
-        db_table = "cephia_ethnicity"
+        db_table = "cephia_ethnicities"
 
     name = models.CharField(max_length=30, null=False, blank=False)
 
 class Subtype(models.Model):
 
     class Meta:
-        db_table = "cephia_subtype"
+        db_table = "cephia_subtypes"
 
     name = models.CharField(max_length=30, null=False, blank=False)
 
@@ -168,7 +178,7 @@ class ImportedRow(models.Model):
 class ImportedRowComment(models.Model):
 
     class Meta:
-        db_table = "cephia_importedrow_comment"
+        db_table = "cephia_importedrow_comments"
 
     comment = models.TextField(blank=False, null=False)
     resolve_date = models.DateTimeField(blank=False, null=False)
@@ -183,7 +193,7 @@ class ImportedRowComment(models.Model):
 class Subject(models.Model):
 
     class Meta:
-        db_table = "cephia_subject"
+        db_table = "cephia_subjects"
 
     GENDER_CHOICES = (
         ('male','Male'),
@@ -228,7 +238,7 @@ class Subject(models.Model):
 class SubjectRow(ImportedRow):
 
     class Meta:
-        db_table = "cephia_subjectrow"
+        db_table = "cephia_subjectrows"
 
     subject_label = models.CharField(max_length=255, null=False, blank=True)
     source_study = models.CharField(max_length=255, null=False, blank=True)
@@ -280,7 +290,7 @@ class SubjectRow(ImportedRow):
 class Visit(models.Model):
 
     class Meta:
-        db_table = "cephia_visit"
+        db_table = "cephia_visits"
 
     STATUS_CHOICES = (
         ('negative','Negative'),
@@ -308,7 +318,7 @@ class Visit(models.Model):
 class VisitRow(ImportedRow):
 
     class Meta:
-        db_table = "cephia_visitrow"
+        db_table = "cephia_visitrows"
 
     subject_label = models.CharField(max_length=255, null=False, blank=True)
     visitdate_yyyy = models.CharField(max_length=255, null=False, blank=True)
@@ -331,7 +341,7 @@ class VisitRow(ImportedRow):
 class SpecimenType(models.Model):
 
     class Meta:
-        db_table = "cephia_specimen_type"
+        db_table = "cephia_specimen_types"
 
     name = models.CharField(max_length=255, null=False, blank=False)
     spec_type = models.CharField(max_length=10, null=False, blank=False)
@@ -350,7 +360,7 @@ class Specimen(models.Model):
     )
 
     class Meta:
-        db_table = "cephia_specimen"
+        db_table = "cephia_specimens"
 
     specimen_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     parent_label = models.CharField(max_length=255, null=True, blank=True)
@@ -370,7 +380,8 @@ class Specimen(models.Model):
     volume_units = models.CharField(max_length=20, null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
-    receiving_site = models.ForeignKey(Site, null=True, blank=True)
+    laboratory = models.ForeignKey(Laboratory, null=True, blank=True)
+    shipped_to = models.ForeignKey(Location, null=True, blank=True)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
     history = HistoricalRecords()
 
@@ -382,7 +393,7 @@ class Specimen(models.Model):
 class TransferInRow(ImportedRow):
 
     class Meta:
-        db_table = "cephia_transfer_in_row"
+        db_table = "cephia_transfer_in_rows"
 
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
     subject_label = models.CharField(max_length=255, null=True, blank=True)
@@ -412,7 +423,7 @@ class TransferInRow(ImportedRow):
 class TransferOutRow(ImportedRow):
 
     class Meta:
-        db_table = "cephia_transfer_out_row"
+        db_table = "cephia_transfer_out_rows"
         
     specimen_label = models.CharField(max_length=255, null=True, blank=True) 
     number_of_containers = models.CharField(max_length=255, null=True, blank=True)
@@ -434,7 +445,7 @@ class TransferOutRow(ImportedRow):
 class AliquotRow(ImportedRow):
 
     class Meta:
-        db_table = "cephia_aliquot_row"
+        db_table = "cephia_aliquot_rows"
         
     parent_label = models.CharField(max_length=255, null=True, blank=True, db_index=True) 
     aliquot_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)

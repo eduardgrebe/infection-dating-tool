@@ -286,15 +286,15 @@ def validate_rows(request, file_id):
 
         num_success, num_fail = file_handler.validate()
 
-        fail_msg = 'Failed to validate ' + str(num_fail) + ' rows. '
-        msg = 'Successfully validated ' + str(num_success) + ' rows. '
+        fail_msg = 'Failed to validate ' + str(num_fail) + ' rows.'
+        msg = 'Successfully validated ' + str(num_success) + ' rows.'
 
         if num_fail > 0:
             file_to_validate.state = 'row_error'
         else:
             file_to_validate.state = 'validated'
 
-        file_to_validate.message = fail_msg + ' ' + msg
+        file_to_validate.message = fail_msg + '\n' + msg + '\n'
         file_to_validate.save()
         
         return HttpResponseRedirect(reverse('file_info'))
@@ -315,8 +315,8 @@ def process_file(request, file_id):
         
         num_success, num_fail = file_handler.process()
 
-        fail_msg = 'Failed to process ' + str(num_fail) + ' rows. '
-        msg = 'Successfully processed ' + str(num_success) + ' rows. '
+        fail_msg = 'Failed to process ' + str(num_fail) + ' rows.'
+        msg = 'Successfully processed ' + str(num_success) + ' rows.'
 
         if num_fail > 0:
             messages.add_message(request, messages.WARNING, fail_msg)
@@ -326,7 +326,7 @@ def process_file(request, file_id):
     
         messages.add_message(request, messages.SUCCESS, msg)
 
-        file_to_process.message = fail_msg + ' ' + msg
+        file_to_process.message = fail_msg + '\n' + msg + '\n'
         file_to_process.save()
 
         return HttpResponseRedirect(reverse('file_info'))
