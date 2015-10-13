@@ -6,7 +6,7 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
-                    VisitRow, Site, Specimen, SpecimenType, TransferInRow,
+                    VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
@@ -102,9 +102,9 @@ def studies(request, template="cephia/studies.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
-def sites(request, template="cephia/sites.html"):
+def labs(request, template="cephia/sites.html"):
     context = {}
-    sites = Site.objects.all()
+    sites = Laboratory.objects.all()
     context['sites'] = sites
     
     return render_to_response(template, context, context_instance=RequestContext(request))

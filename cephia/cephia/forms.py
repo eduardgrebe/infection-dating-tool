@@ -1,6 +1,6 @@
 from django import forms
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
-                    VisitRow, Site, Specimen, SpecimenType, TransferInRow,
+                    VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow, ImportedRowComment)
 
 class BaseFilterForm(forms.Form):

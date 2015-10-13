@@ -12,14 +12,12 @@
 
 <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
-	<th>ID</th>
 	<th>Description</th>
     </thead>
 
     <tbody>
 	{% for ethnicity in ethnicities %}
 	<tr>
-	    <td>{{ethnicity.id}}</td>
 	    <td>{{ethnicity.name}}</td>
 	</tr>
 	{% endfor %}
