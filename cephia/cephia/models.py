@@ -102,7 +102,7 @@ class Subtype(models.Model):
 class FileInfo(models.Model):
 
     class Meta:
-        db_table = "cephia_fileinfo"
+        db_table = "cephia_datafiles"
 
     STATE_CHOICES = (
         ('pending','Pending'),
