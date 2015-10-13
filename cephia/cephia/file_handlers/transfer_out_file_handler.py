@@ -59,7 +59,7 @@ class TransferOutFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self):
-        from cephia.models import TransferOutRow, Specimen, SpecimenType, Site
+        from cephia.models import TransferOutRow, Specimen, SpecimenType, Laboratory
         
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -78,9 +78,9 @@ class TransferOutFileHandler(FileHandler):
                     error_msg += 'Volume units is required.\n'
 
                 try:
-                    Site.objects.get(name=transfer_out_row.destination_site)
-                except Site.DoesNotExist:
-                    error_msg += "Site does not exist.\n"
+                    Laboratory.objects.get(name=transfer_out_row.destination_site)
+                except Laboratory.DoesNotExist:
+                    error_msg += "Laboratory does not exist.\n"
                 
                 try:
                     specimen_type = SpecimenType.objects.get(spec_type=transfer_out_row.specimen_type)
@@ -149,7 +149,7 @@ class TransferOutFileHandler(FileHandler):
 
     def process(self):
         
-        from cephia.models import TransferOutRow, Specimen, SpecimenType, Site
+        from cephia.models import TransferOutRow, Specimen, SpecimenType, Laboratory
         
         rows_inserted = 0
         rows_failed = 0
@@ -165,7 +165,7 @@ class TransferOutFileHandler(FileHandler):
                     specimen.number_of_containers = transfer_out_row.number_of_containers
                     specimen.transfer_out_date = self.registered_dates.get('shipment_date', None)
                     specimen.modified_date = timezone.now()
-                    specimen.receiving_site = Site.objects.get(name=transfer_out_row.destination_site)
+                    specimen.receiving_site = Laboratory.objects.get(name=transfer_out_row.destination_site)
                     specimen.save()
 
                     transfer_out_row.state = 'processed'

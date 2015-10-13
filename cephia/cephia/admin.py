@@ -1,6 +1,6 @@
 from django.contrib import admin
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
-                    VisitRow, Site, Specimen, SpecimenType, TransferInRow,
+                    VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow, CephiaUser)
 
 admin.site.register(CephiaUser)
@@ -11,7 +11,7 @@ admin.site.register(Subject)
 admin.site.register(Ethnicity)
 admin.site.register(Visit)
 admin.site.register(VisitRow)
-admin.site.register(Site)
+admin.site.register(Laboratory)
 admin.site.register(Specimen)
 admin.site.register(SpecimenType)
 admin.site.register(TransferInRow),

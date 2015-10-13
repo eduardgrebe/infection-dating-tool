@@ -179,7 +179,7 @@ class TransferInFileHandler(FileHandler):
         return rows_validated, rows_failed
 
     def process(self):
-        from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Site
+        from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Laboratory
         
         rows_inserted = 0
         rows_failed = 0
@@ -230,7 +230,7 @@ class TransferInFileHandler(FileHandler):
                                                        initial_claimed_volume = (transfer_in_row.volume or None),
                                                        volume_units = transfer_in_row.volume_units,
                                                        source_study = None,
-                                                       receiving_site = Site.objects.get(name=transfer_in_row.receiving_site))
+                                                       receiving_site = Laboratory.objects.get(name=transfer_in_row.receiving_site))
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = timezone.now()
@@ -273,7 +273,7 @@ class TransferInFileHandler(FileHandler):
                                                        initial_claimed_volume = transfer_in_row['vol'],
                                                        volume_units = transfer_in_row['volume_units'],
                                                        source_study = None,
-                                                       receiving_site = Site.objects.get(name=transfer_in_row['receiving_site']))
+                                                       receiving_site = Laboratory.objects.get(name=transfer_in_row['receiving_site']))
 
                     TransferInRow.objects.filter(fileinfo=self.upload_file,
                                                  state='validated',
