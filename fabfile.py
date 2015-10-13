@@ -32,7 +32,7 @@ def host_cephia():
 # ===== top level commands ======
 
 def deploy(branch_name="master"):
-    if env.host == 'cephia.eduardgrebe.net':
+    if env.host == 'cephiadb.incidence-estimation.org':
         return _deploy_cephia_test(branch_name)
     elif env.host == 'cephia.impd.co.za':
         return _deploy_staging(branch_name)
@@ -63,7 +63,7 @@ def _deploy_cephia_test(branch_name="master"):
         
     _update_cron_jobs()
     
-    print("Deployed to: http://cephia.eduardgrebe.net/")
+    print("Deployed to: http://cephiadb.incidence-estimation.org/")
 
 def _update_cron_jobs():
 
