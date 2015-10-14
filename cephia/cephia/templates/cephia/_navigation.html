@@ -4,9 +4,9 @@
     {% if user.id %}
     <li><a class="navtab" href="{% url 'subjects' %}">Subjects</a></li>
     <li><a class="navtab" href="{% url 'visits' %}">Visits</a></li>
-    <li><a class="navtab" href="{% url 'specimen' %}">Specimen</a></li>
+    <li><a class="navtab" href="{% url 'specimen' %}">Specimens</a></li>
     {% if user.is_staff %}
-    <li><a class="navtab" href="{% url 'associate_specimen' %}">Association</a></li>
+    <li><a class="navtab" href="{% url 'associate_specimen' %}">Specimen-Visit Association</a></li>
     <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
     {% endif %}
     {% endif %}
