@@ -404,7 +404,7 @@ class TransferInRow(ImportedRow):
     transfer_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
     transfer_date_mm = models.CharField(max_length=255, null=True, blank=True)
     transfer_date_dd = models.CharField(max_length=255, null=True, blank=True)
-    receiving_site = models.CharField(max_length=255, null=True, blank=True)
+    laboratory = models.CharField(max_length=255, null=True, blank=True)
     transfer_reason = models.CharField(max_length=255, null=True, blank=True)
     specimen_type = models.CharField(max_length=255, null=True, blank=True)
     volume = models.CharField(max_length=255, null=True, blank=True)

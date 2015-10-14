@@ -56,7 +56,7 @@ class TransferInFileHandler(FileHandler):
                     transfer_in_row.transfer_date_yyyy = row_dict['transfer_date_yyyy']
                     transfer_in_row.transfer_date_mm = row_dict['transfer_date_mm']
                     transfer_in_row.transfer_date_dd = row_dict['transfer_date_dd']
-                    transfer_in_row.receiving_site = row_dict['receiving_site']
+                    transfer_in_row.laboratory = row_dict['receiving_site']
                     transfer_in_row.transfer_reason = row_dict['transfer_reason']
                     transfer_in_row.volume = row_dict['volume']
                     transfer_in_row.volume_units = row_dict['volume_units']
@@ -230,7 +230,7 @@ class TransferInFileHandler(FileHandler):
                                                        initial_claimed_volume = (transfer_in_row.volume or None),
                                                        volume_units = transfer_in_row.volume_units,
                                                        source_study = None,
-                                                       receiving_site = Laboratory.objects.get(name=transfer_in_row.receiving_site))
+                                                       laboratory = Laboratory.objects.get(name=transfer_in_row.laboratory))
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = timezone.now()
@@ -273,7 +273,7 @@ class TransferInFileHandler(FileHandler):
                                                        initial_claimed_volume = transfer_in_row['vol'],
                                                        volume_units = transfer_in_row['volume_units'],
                                                        source_study = None,
-                                                       receiving_site = Laboratory.objects.get(name=transfer_in_row['receiving_site']))
+                                                       laboratory = Laboratory.objects.get(name=transfer_in_row['laboratory']))
 
                     TransferInRow.objects.filter(fileinfo=self.upload_file,
                                                  state='validated',

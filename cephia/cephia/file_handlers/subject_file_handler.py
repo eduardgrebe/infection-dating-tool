@@ -179,7 +179,7 @@ class SubjectFileHandler(FileHandler):
                     error_msg += "Subtype does not exist.\n"
             
                 try:
-                    country = Country.objects.get(code=subject_row.country)
+                    Country.objects.get(code=subject_row.country)
                 except Country.DoesNotExist:
                     error_msg += "Country does not exist./n"
 
