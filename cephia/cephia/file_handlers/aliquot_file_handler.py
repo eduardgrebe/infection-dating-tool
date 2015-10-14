@@ -160,11 +160,11 @@ class AliquotFileHandler(FileHandler):
                     
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
                         parent_specimen.volume = aliquot_row.volume
-                        parent_specimen.modified_date = self.registered_dates.get('aliquot_date', None)
+                        parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
                         parent_specimen.reason = aliquot_row.aliquot_reason
                         parent_specimen.save()
                     else:
-                        parent_specimen.modified_date = self.registered_dates.get('aliquot_date', None)
+                        parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
                         parent_specimen.save()
 
                         specimen = Specimen.objects.create(specimen_label=aliquot_row.aliquot_label,
@@ -175,7 +175,7 @@ class AliquotFileHandler(FileHandler):
                                                            reported_draw_date=parent_specimen.reported_draw_date,
                                                            transfer_in_date=parent_specimen.transfer_in_date,
                                                            source_study=parent_specimen.source_study,
-                                                           created_date=self.registered_dates.get('aliquot_date', None),
+                                                           created_date=self.registered_dates.get('aliquoting_date', None),
                                                            aliquoting_reason=aliquot_row.aliquot_reason)
                         
                     aliquot_row.state = 'processed'
