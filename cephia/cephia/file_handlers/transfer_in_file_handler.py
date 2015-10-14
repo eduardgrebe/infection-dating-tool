@@ -275,21 +275,24 @@ class TransferInFileHandler(FileHandler):
                                                        source_study = None,
                                                        laboratory = Laboratory.objects.get(name=transfer_in_row['laboratory']))
 
-                    TransferInRow.objects.filter(fileinfo=self.upload_file,
+                    rows_to_update = TransferInRow.objects.filter(fileinfo=self.upload_file,
                                                  state='validated',
                                                  roll_up=True,
                                                  specimen_label=transfer_in_row['specimen_label'],
-                                                 specimen_type=transfer_in_row['specimen_type']).update(state = 'processed',
-                                                                                                        date_processed = timezone.now(),
-                                                                                                        specimen = specimen)
-                    rows_inserted += 1
+                                                 specimen_type=transfer_in_row['specimen_type'])
+                    
+                    rows_to_update.update(state = 'processed',
+                                          date_processed = timezone.now(),
+                                          specimen = specimen)
+                    
+                    rows_inserted += rows_to_update.count()
             except Exception, e:
                 logger.exception(e)
                 TransferInRow.objects.filter(fileinfo=self.upload_file,
                                              state='validated',
                                              roll_up=True,
                                              specimen_label=transfer_in_row['specimen_label'],
-                                             specimen_type=transfer_in_row['specimen_type']).update(state = 'processed',
+                                             specimen_type=transfer_in_row['specimen_type']).update(state = 'row_error',
                                                                                                     error_message=e.message)
                 rows_failed += 1
                 continue

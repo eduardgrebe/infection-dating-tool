@@ -140,7 +140,7 @@ class VisitFileHandler(FileHandler):
                                                  source_study = Study.objects.get(name=visit_row.source_study),
                                                  cd4_count = visit_row.cd4_count or None,
                                                  vl = visit_row.vl or None,
-                                                 scopevisit_ec = visit_row.scopevisit_ec or None,
+                                                 scopevisit_ec = visit_row.scopevisit_ec or False,
                                                  pregnant = self.get_bool(visit_row.pregnant),
                                                  hepatitis = self.get_bool(visit_row.hepatitis))
 
