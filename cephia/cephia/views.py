@@ -261,13 +261,19 @@ def parse_file(request, file_id):
             messages.add_message(request, messages.WARNING, msg)
 
         num_success, num_fail = file_handler.parse()
-        
+
+        fail_msg = 'Failed to import ' + str(num_fail) + ' rows.'
+        msg = 'Successfully imported ' + str(num_success) + ' rows.'
+
         if num_fail > 0:
-            messages.add_message(request, messages.ERROR, 'Failed to import ' + str(num_fail) + ' rows. ')
+            file_to_parse.state = 'file_error'
+            #messages.add_message(request, messages.ERROR, 'Failed to import ' + str(num_fail) + ' rows. ')
         else:
             file_to_parse.state = 'imported'
-            file_to_parse.save()
-            messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows. ')
+            #messages.add_message(request, messages.SUCCESS, 'Successfully imported ' + str(num_success) + ' rows. ')
+
+        file_to_parse.message += fail_msg + '\n' + msg + '\n'
+        file_to_parse.save()
     
         return HttpResponseRedirect(reverse('file_info'))
     except Exception, e:
@@ -294,7 +300,7 @@ def validate_rows(request, file_id):
         else:
             file_to_validate.state = 'validated'
 
-        file_to_validate.message = fail_msg + '\n' + msg + '\n'
+        file_to_validate.message += fail_msg + '\n' + msg + '\n'
         file_to_validate.save()
         
         return HttpResponseRedirect(reverse('file_info'))
@@ -326,7 +332,7 @@ def process_file(request, file_id):
     
         messages.add_message(request, messages.SUCCESS, msg)
 
-        file_to_process.message = fail_msg + '\n' + msg + '\n'
+        file_to_process.message += fail_msg + '\n' + msg + '\n'
         file_to_process.save()
 
         return HttpResponseRedirect(reverse('file_info'))

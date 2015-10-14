@@ -193,7 +193,7 @@ class TransferInFileHandler(FileHandler):
                                                                  'transfer_date_yyyy',
                                                                  'transfer_date_mm',
                                                                  'transfer_date_dd',
-                                                                 'receiving_site',
+                                                                 'laboratory',
                                                                  'transfer_reason',
                                                                  'specimen_type',
                                                                  'volume',
