@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0004_auto_20151014_1045'),
+        ('cephia', '0003_auto_20150821_1358'),
     ]
 
     operations = [
@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='transferinrow',
-            name='laboratory',
+            name='receiving_site',
         ),
         migrations.AddField(
             model_name='historicalspecimen',
@@ -67,6 +67,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='specimen',
             name='shipped_to',
-            field=models.ForeignKey(blank=True, to='cephia.Laboratory', null=True),
+            field=models.ForeignKey(related_name='shipped_to', blank=True, to='cephia.Laboratory', null=True),
         ),
     ]

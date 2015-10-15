@@ -380,7 +380,7 @@ class Specimen(models.Model):
     volume_units = models.CharField(max_length=20, null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
     source_study = models.ForeignKey(Study, null=True, blank=True)
-    shipped_to = models.ForeignKey(Laboratory, null=True, blank=True)
+    shipped_to = models.ForeignKey(Laboratory, related_name='shipped_to', null=True, blank=True)
     location = models.ForeignKey(Location, null=True, blank=True)
     parent = models.ForeignKey('Specimen', null=True, blank=False, default=None)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)

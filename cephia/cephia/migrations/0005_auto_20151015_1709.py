@@ -19,9 +19,10 @@ def add_locations(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0005_auto_20151015_1609'),
+        ('cephia', '0004_auto_20151015_1654'),
     ]
 
     operations = [
         migrations.RunPython(add_locations),
     ]
+
