@@ -11,14 +11,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         num_associations = 0
 
-        for specimen in Specimen.objects.filter(visit=None):
+        for specimen in Specimen.objects.filter(visit=None, subject__isnull=False):
             try:
-                visit = Visit.objects.filter(subject=specimen.subject, visit_date=specimen.reported_draw_date)
+                visit = Visit.objects.get(subject=specimen.subject, visit_date=specimen.reported_draw_date)
                 if visit.count() > 1:
                     import pdb; pdb.set_trace()
                 specimen.visit = visit
                 specimen.source_study = visit.source_study
-                specimen.visit_linkage = 'confirmed'
+                specimen.visit_linkage = 'provisional'
                 specimen.save()
             except Visit.DoesNotExist:
                 continue
