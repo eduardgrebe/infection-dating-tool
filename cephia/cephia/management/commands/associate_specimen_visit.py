@@ -14,8 +14,6 @@ class Command(BaseCommand):
         for specimen in Specimen.objects.filter(visit=None, subject__isnull=False):
             try:
                 visit = Visit.objects.get(subject=specimen.subject, visit_date=specimen.reported_draw_date)
-                if visit.count() > 1:
-                    import pdb; pdb.set_trace()
                 specimen.visit = visit
                 specimen.source_study = visit.source_study
                 specimen.visit_linkage = 'provisional'
