@@ -179,7 +179,7 @@ class TransferInFileHandler(FileHandler):
         return rows_validated, rows_failed
 
     def process(self):
-        from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Laboratory
+        from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Laboratory, Location
         
         rows_inserted = 0
         rows_failed = 0
