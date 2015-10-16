@@ -52,13 +52,13 @@ class TransferInFileHandler(FileHandler):
                                                                        drawdate_dd=row_dict['drawdate_dd'],
                                                                        fileinfo=self.upload_file)
 
-                    transfer_in_row.number_of_containers = row_dict['number_of_containers'] or 0
+                    transfer_in_row.number_of_containers = row_dict['number_of_containers']
                     transfer_in_row.transfer_date_yyyy = row_dict['transfer_date_yyyy']
                     transfer_in_row.transfer_date_mm = row_dict['transfer_date_mm']
                     transfer_in_row.transfer_date_dd = row_dict['transfer_date_dd']
                     transfer_in_row.location = row_dict['receiving_site']
                     transfer_in_row.transfer_reason = row_dict['transfer_reason']
-                    transfer_in_row.volume = row_dict['volume'] or 0
+                    transfer_in_row.volume = row_dict['volume']
                     transfer_in_row.volume_units = row_dict['volume_units']
                     transfer_in_row.specimen_type = row_dict['specimen_type']
                     transfer_in_row.source_study = row_dict['source_study']
@@ -239,7 +239,7 @@ class TransferInFileHandler(FileHandler):
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                transfer_in_row.state = 'error'
+                transfer_in_row.state = 'row_error'
                 transfer_in_row.error_message = e.message
                 transfer_in_row.save()
 
