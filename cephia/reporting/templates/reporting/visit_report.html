@@ -1,2 +1,31 @@
-The visit report
+{% extends "cephia/tms_base.html" %}
 
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block site-title %} Visit Report {% endblock %}
+
+{% block page_content %}
+
+<i>Showing first {{num_rows}} rows only </i>
+
+{% comment %}<a class="btn btn-secondary" target="_blank" url="{% 'reporting:visit_report' %}">Download</a>{% endcomment %}
+
+<table class="table-striped table table-hover" style="overflow:auto;">
+  <thead>
+    {% for header in report.headers %}
+    <th>{{header}}</th>
+    {% endfor %}
+  </thead>
+  <tbody>
+    {% for row in report.rows %}
+    <tr>
+      {% for value in row.values %}
+      <td>{{value}}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
