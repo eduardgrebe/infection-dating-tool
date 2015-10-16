@@ -3,6 +3,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 admin.autodiscover()
 import views
+import reporting
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf.urls.static import static
 
@@ -10,6 +11,8 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.home, name='home'),
     url(r'^tms/$', views.table_management, name='table_management'),
+
+    url(r'^reports/', include('reporting.urls', namespace='reporting')),
     
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),

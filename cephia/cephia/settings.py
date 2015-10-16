@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     'bootstrap3',
     'endless_pagination',
     'cephia',
+    'reporting',
 )
 
 MIDDLEWARE_CLASSES = (

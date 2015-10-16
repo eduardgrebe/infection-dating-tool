@@ -8,6 +8,7 @@
     {% if user.is_staff %}
     <li><a class="navtab" href="{% url 'associate_specimen' %}">Specimen-Visit Association</a></li>
     <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
+    <li><a class="navtab" href="{% url 'reporting:visit_report' %}">Visit Report</a></li>
     {% endif %}
     {% endif %}
 
