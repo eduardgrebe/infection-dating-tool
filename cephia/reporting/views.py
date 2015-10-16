@@ -46,11 +46,26 @@ def visit_report(request, template="reporting/visit_report.html"):
     ORDER BY SC_int_size , SubjectLabel , visit_date;
     """
 
-    context['num_rows'] = 100000
+    context['num_rows'] = 1000
 
     report = Report()
     report.prepare_report(sql, num_rows=context['num_rows'])
     context['report'] = report
+
+    running_row = None
+    rolled_rows = []
+    for row in report.rows:
+        if running_row is None:
+            running_row = row
+        if running_row['VisitId'] != row['VisitId']:
+            rolled_rows.append(running_row)
+
+        num_spec_types = running_row.get('spectypes', 0)
+        if num_spec_types == 0:
+            report.add_header(row['SpecimenType'])
+        running_row[row['SpecimenType']] = num_spec_types+1
+
+    report.set_rows(rolled_rows)
     
     return render_to_response(template, context, context_instance=RequestContext(request))
     

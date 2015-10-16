@@ -18,6 +18,13 @@ class Report(object):
     def headers(self):
         return self._headers
 
+    def add_header(self, header):
+        if header not in self._headers:
+            self._headers.append(header)
+        
+    def set_rows(self, new_rows):
+        self._rows = new_rows
+    
     @property
     def rows(self):
         return self._rows
