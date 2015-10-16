@@ -2,7 +2,7 @@ from file_handler import FileHandler
 from handler_imports import *
 import logging
 import os
-from django.db.models import Sum
+from django.db.models import Sum, Max
 
 logger = logging.getLogger(__name__)
 
@@ -112,8 +112,8 @@ class TransferInFileHandler(FileHandler):
                 # if not transfer_in_row.number_of_containers:
                 #     error_msg += 'Number of containers is required.\n'
                 
-                if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
-                    error_msg += 'draw_date must be before transfer_date. '
+                # if not self.registered_dates.get('drawdate', default_less_date) < self.registered_dates.get('transfer_date', default_more_date):
+                #     error_msg += 'draw_date must be before transfer_date. '
 
                 if not self.registered_dates.get('transfer_date', default_less_date) <= datetime.now().date():
                     error_msg += 'transfer_date before today.\n'
@@ -185,21 +185,21 @@ class TransferInFileHandler(FileHandler):
         rows_failed = 0
         validated_records = TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated', roll_up=False)
         validated_records_roll_up = TransferInRow.objects.values('specimen_label',
-                                                                 'subject_label',
-                                                                 'drawdate_yyyy',
-                                                                 'drawdate_mm',
-                                                                 'drawdate_dd',
-                                                                 'transfer_date_yyyy',
-                                                                 'transfer_date_mm',
-                                                                 'transfer_date_dd',
-                                                                 'location',
-                                                                 'transfer_reason',
-                                                                 'specimen_type',
-                                                                 'volume_units',
-                                                                 'source_study').filter(fileinfo=self.upload_file,
-                                                                                        state='validated',
-                                                                                        roll_up=True).annotate(containers=Sum('number_of_containers'),
-                                                                                                               vol=Sum('volume'))
+                                                                 'specimen_type').filter(fileinfo=self.upload_file,
+                                                                                         state='validated',
+                                                                                         roll_up=True).annotate(containers=Sum('number_of_containers'),
+                                                                                                                transfer_date_dd=Max('transfer_date_dd'),
+                                                                                                                transfer_date_mm=Max('transfer_date_mm'),
+                                                                                                                transfer_date_yyyy=Max('transfer_date_yyyy'),
+                                                                                                                drawdate_yyyy=Max('drawdate_yyyy'),
+                                                                                                                drawdate_mm=Max('drawdate_mm'),
+                                                                                                                drawdate_dd=Max('drawdate_dd'),
+                                                                                                                subject_label=Max('subject_label'),
+                                                                                                                location=Max('location'),
+                                                                                                                transfer_reason=Max('transfer_reason'),
+                                                                                                                volume_units=Max('volume_units'),
+                                                                                                                source_study=Max('source_study'),
+                                                                                                                vol=Sum('volume'))
 
         for transfer_in_row in validated_records:
             try:
