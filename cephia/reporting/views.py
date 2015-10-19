@@ -60,21 +60,47 @@ def visit_report(request, template="reporting/visit_report.html"):
     report.prepare_report(sql, num_rows=context['num_rows'])
     context['report'] = report
 
+    report.remove_header('SpecimenType')
+    report.remove_header('vol_recd')
+    report.remove_header('volume_units')
+
+    specimen_type_headers = []
+    
     running_row = None
     rolled_rows = []
     for row in report.rows:
         if running_row is None:
             running_row = row
         if running_row['VisitId'] != row['VisitId']:
+            del running_row['SpecimenType']
+            del running_row['vol_recd']
+            del running_row['volume_units']
             rolled_rows.append(running_row)
             running_row = row
 
         header_name = "Number of %s" % row['SpecimenType']
+        vol_header_name = "Volume of %s" % row['SpecimenType']
+        vol_units_header_name = "Units of %s" % row['SpecimenType']
         num_spec_types = running_row.get('spectypes', 0)
         if num_spec_types == 0:
             report.add_header(header_name)
-        running_row[header_name] = num_spec_types+1
+            report.add_header(vol_header_name)
+            report.add_header(vol_units_header_name)
+            # specimen_type_headers.append( (header_name, vol_header_name, vol_units_header_name) )
 
+        vol = running_row.get(vol_header_name, 0)
+        vol += row['vol_recd'] or 0
+            
+        running_row[header_name] = num_spec_types+1
+        running_row[vol_header_name] = vol
+        running_row[vol_units_header_name] = row['volume_units']
+
+
+    # for header_name, vol_header, vol_units_header_name in specimen_type_headers:
+    #     report.add_header(header_name)
+    #     report.add_header(vol_header_name)
+    #     report.add_header(vol_units_header_name)
+        
     report.set_rows(rolled_rows)
 
     if as_csv:

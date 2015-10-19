@@ -1,5 +1,6 @@
 {% extends "cephia/base.html" %}
 
+{% load reporting_tags %}
 {% load bootstrap3 %}
 {% load endless %}
 
@@ -20,8 +21,8 @@
   <tbody>
     {% for row in report.rows %}
     <tr>
-      {% for value in row.values %}
-      <td>{{value|default:""}}</td>
+      {% for header in report.headers %}
+      <td>{{ row|get_item:header|default:"" }}</td>
       {% endfor %}
     </tr>
     {% endfor %}

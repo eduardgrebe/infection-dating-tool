@@ -23,7 +23,10 @@ class Report(object):
     def add_header(self, header):
         if header not in self._headers:
             self._headers.append(header)
-        
+
+    def remove_header(self, header):
+        del self._headers[self._headers.index(header)]
+            
     def set_rows(self, new_rows):
         self._rows = new_rows
     
