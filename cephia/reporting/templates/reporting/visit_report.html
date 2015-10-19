@@ -21,7 +21,7 @@
     {% for row in report.rows %}
     <tr>
       {% for value in row.values %}
-      <td>{{value}}</td>
+      <td>{{value|default:""}}</td>
       {% endfor %}
     </tr>
     {% endfor %}
