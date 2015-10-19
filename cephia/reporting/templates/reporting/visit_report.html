@@ -9,7 +9,7 @@
 
 <i>Showing first {{num_rows}} rows only </i>
 
-{% comment %}<a class="btn btn-secondary" target="_blank" url="{% 'reporting:visit_report' %}">Download</a>{% endcomment %}
+<a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_report' %}?csv=1">Download</a>
 
 <table class="table-striped table table-hover" style="overflow:auto;">
   <thead>

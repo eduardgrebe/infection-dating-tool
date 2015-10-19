@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import json
 from collections import defaultdict, OrderedDict
 from django.utils import timezone
+from cephia.csv_helper import get_csv_response
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,11 @@ def visit_report(request, template="reporting/visit_report.html"):
     ORDER BY SC_int_size , SubjectLabel , visit_date;
     """
 
-    context['num_rows'] = 100000
+    as_csv = request.GET.get('csv', False)
+    if not as_csv:
+        context['num_rows'] = 1000
+    else:
+        context['num_rows'] = None
 
     report = Report()
     report.prepare_report(sql, num_rows=context['num_rows'])
@@ -68,6 +73,13 @@ def visit_report(request, template="reporting/visit_report.html"):
         running_row[header_name] = num_spec_types+1
 
     report.set_rows(rolled_rows)
+
+    if as_csv:
+        response, writer = get_csv_response("VisitReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
+        writer.writerow(report.headers)
+        for row in report.rows:
+            writer.writerow( [ row[x] for x in report.headers ] )
+        return response
     
     return render_to_response(template, context, context_instance=RequestContext(request))
     
