@@ -42,11 +42,14 @@ def visit_report(request, template="reporting/visit_report.html"):
     INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
     INNER JOIN cephia_specimens AS specimens ON visits.id = specimens.visit_id
     INNER JOIN cephia_specimen_types AS spectypes ON specimens.specimen_type_id = spectypes.id
-    WHERE (visits.visit_date >= '2009-02-01') AND (specimens.parent_label is NULL)
+    WHERE (visits.visit_date >= 'MIN_DATE') AND (specimens.parent_label is NULL)
     GROUP BY visits.id , spectypes.id
     ORDER BY SC_int_size , SubjectLabel , visit_date;
     """
 
+    min_date = request.GET.get('min_date', '2013-02-01')
+    sql = sql.replace("MIN_DATE", min_date)
+    
     as_csv = request.GET.get('csv', False)
     if not as_csv:
         context['num_rows'] = 1000
