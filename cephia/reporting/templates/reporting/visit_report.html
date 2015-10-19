@@ -12,21 +12,33 @@
 
 <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_report' %}?csv=1">Download</a>
 
-<table class="table-striped table table-hover" style="overflow:auto;">
-  <thead>
-    {% for header in report.headers %}
-    <th>{{header}}</th>
-    {% endfor %}
-  </thead>
-  <tbody>
-    {% for row in report.rows %}
-    <tr>
+<a href="#" class="btn btn-primary show-specimen">
+  Show specimen
+</a>
+
+<form id="specimen-form" action="{% url 'reporting:visit_specimen_report' %}" role="form" method="POST">
+  {% csrf_token %}
+  <table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
       {% for header in report.headers %}
-      <td>{{ row|get_item:header|default:"" }}</td>
+      <th>{{header}}</th>
       {% endfor %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {% for row in report.rows %}
+      <tr>
+        {% for header in report.headers %}
+        <td class="{{header}}">
+          {% if header == 'VisitId' or header == 'SubjectId' %}
+          <input name="{{header}}" type="checkbox" class="{{header}}-checkbox" value="{{ row|get_item:header|default:'' }}">
+          {% endif %}
+          {{ row|get_item:header|default:"" }}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</form>
 
 {% endblock %}

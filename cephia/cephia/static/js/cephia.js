@@ -70,13 +70,24 @@ $(document).ready(function() {
         }
     });
 
-    // $('.prov-unlink').on('click', function(event) {
-    //     var specimenId = $(this).parent().data('specimen-id');
-    //     var form = $(this).closest('form');
+    $('a.show-specimen').on('click', function(event) {
+        event.preventDefault();
+        
+        $('#specimen-form').submit(function() {
+            var url = "reports/visit_specimen_report/";
+            var post_data = $('#specimen-form').serialize();
 
-    //     form.append(specimenId);
-    //     form.submit();
-    // });
+            $.post(url, function(data, post_data, status) {
+                var response = JSON.parse(data);
+                debugger;
+                if (status == "success") {
+                    $(".specimen-modal").html(response.response);
+                    $("#myModal").modal();
+                }
+            });
+        });
+        $('#specimen-form').submit();
+    });
 });
 
 
