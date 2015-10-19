@@ -78,7 +78,7 @@ def visit_report(request, template="reporting/visit_report.html"):
         response, writer = get_csv_response("VisitReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
         writer.writerow(report.headers)
         for row in report.rows:
-            writer.writerow( [ row[x] for x in report.headers ] )
+            writer.writerow( [ row.get(x, None) for x in report.headers ] )
         return response
     
     return render_to_response(template, context, context_instance=RequestContext(request))
