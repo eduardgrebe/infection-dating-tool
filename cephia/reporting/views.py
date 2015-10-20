@@ -15,6 +15,7 @@ from django.utils import timezone
 from cephia.csv_helper import get_csv_response
 from cephia.models import Specimen
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -121,15 +122,31 @@ def visit_specimen_report(request, template="reporting/visit_specimen_modal.html
 
     visit_ids = request.POST.getlist('VisitId', None)
     subject_ids = request.POST.getlist('SubjectId', None)
+    as_csv = request.POST.get('csv', False)
 
-    if visit_ids:
-        specimens = Specimen.objects.filter(visit__id__in=visit_ids)
-    elif subject_ids:
+    if visit_ids and subject_ids:
+        specimens = Specimen.objects.filter(Q(visit__id__in=visit_ids) | Q(subject__id__in=subject_ids))
+    elif subject_ids and not visit_ids:
         specimens = Specimen.objects.filter(subject__id__in=subject_ids)
+    elif visit_ids and not subject_ids:
+        specimens = Specimen.objects.filter(visit__id__in=visit_ids)
     else:
         specimens = None
 
     context['specimens'] = specimens
 
+    if as_csv:
+        response, writer = get_csv_response('visit_specimens_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+        headers = ['VisitId','SubjectId','SpecimenId','SpecimenLabel','VolumeUnits','InitialVolume','VolumeRemaining']
+        for specimen in specimens:
+            writer.writerow( [ specimen.visit.id,
+                               specimen.subject.id,
+                               specimen.id,
+                               specimen.specimen_label,
+                               specimen.volume_units,
+                               specimen.initial_claimed_volume,
+                               specimen.volume] )
+        return response
+    
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))

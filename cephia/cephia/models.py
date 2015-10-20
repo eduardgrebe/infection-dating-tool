@@ -390,6 +390,10 @@ class Specimen(models.Model):
     def __unicode__(self):
         return self.specimen_label
 
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
+
 
 class TransferInRow(ImportedRow):
 

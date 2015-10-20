@@ -79,10 +79,21 @@ $(document).ready(function() {
         $.post(url, post_data, function(data, status) {
             var response = JSON.parse(data);
             if (status == "success") {
-                $(".specimen-modal").html(response.response);
+                $(".specimens-modal-body").html(response.response);
                 $("#specimenModal").modal();
             }
         });
+    });
+
+    $('button.export-specimen').on('click', function(event) {
+        event.preventDefault();
+        
+        var url = "/reports/visit_specimen_report/";
+        var post_data = $('#specimen-form').serializeArray();
+        var csv = {name:'csv', value:true};
+        post_data.push(csv);
+        
+        $.post(url, post_data);
     });
 });
 
