@@ -14,6 +14,7 @@ from collections import defaultdict, OrderedDict
 from django.utils import timezone
 from cephia.csv_helper import get_csv_response
 from cephia.models import Specimen
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +113,8 @@ def visit_report(request, template="reporting/visit_report.html"):
         return response
     
     return render_to_response(template, context, context_instance=RequestContext(request))
-    
+
+@csrf_exempt
 @login_required
 def visit_specimen_report(request, template="reporting/visit_specimen_modal.html"):
     context = {}
@@ -120,15 +122,14 @@ def visit_specimen_report(request, template="reporting/visit_specimen_modal.html
     visit_ids = request.POST.getlist('VisitId', None)
     subject_ids = request.POST.getlist('SubjectId', None)
 
-    specimens = Specimen.objects.all()
-
     if visit_ids:
-        specimens = specimens.filter(visit__id__in=visit_ids)
-    if subject_ids:
-        specimens = specimens.filter(subject__id__in=subject_ids)
+        specimens = Specimen.objects.filter(visit__id__in=visit_ids)
+    elif subject_ids:
+        specimens = Specimen.objects.filter(subject__id__in=subject_ids)
+    else:
+        specimens = None
 
     context['specimens'] = specimens
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
-    import pdb; pdb.set_trace()
     return HttpResponse(json.dumps({'response': response.content}))

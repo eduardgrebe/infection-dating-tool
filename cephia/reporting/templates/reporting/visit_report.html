@@ -16,8 +16,7 @@
   Show specimen
 </a>
 
-<form id="specimen-form" action="{% url 'reporting:visit_specimen_report' %}" role="form" method="POST">
-  {% csrf_token %}
+<form id="specimen-form" role="form" method="POST">
   <table class="table-striped table table-hover" style="overflow:auto;">
     <thead>
       {% for header in report.headers %}
@@ -40,5 +39,8 @@
     </tbody>
   </table>
 </form>
+
+<div class="specimen-modal">
+</div>
 
 {% endblock %}

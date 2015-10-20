@@ -73,20 +73,16 @@ $(document).ready(function() {
     $('a.show-specimen').on('click', function(event) {
         event.preventDefault();
         
-        $('#specimen-form').submit(function() {
-            var url = "reports/visit_specimen_report/";
-            var post_data = $('#specimen-form').serialize();
+        var url = "/reports/visit_specimen_report/";
+        var post_data = $('#specimen-form').serializeArray();
 
-            $.post(url, function(data, post_data, status) {
-                var response = JSON.parse(data);
-                debugger;
-                if (status == "success") {
-                    $(".specimen-modal").html(response.response);
-                    $("#myModal").modal();
-                }
-            });
+        $.post(url, post_data, function(data, status) {
+            var response = JSON.parse(data);
+            if (status == "success") {
+                $(".specimen-modal").html(response.response);
+                $("#specimenModal").modal();
+            }
         });
-        $('#specimen-form').submit();
     });
 });
 
