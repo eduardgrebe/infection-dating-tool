@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         num_associations = 0
 
-        for specimen in Specimen.objects.filter(visit=None, subject__isnull=False):
+        for specimen in Specimen.objects.filter(visit__isnull=True, subject__isnull=False, parent__isnull=True):
             try:
                 visit = Visit.objects.get(subject=specimen.subject, visit_date=specimen.reported_draw_date)
                 specimen.visit = visit

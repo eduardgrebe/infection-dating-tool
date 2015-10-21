@@ -175,6 +175,8 @@ class AliquotFileHandler(FileHandler):
                                                            reported_draw_date=parent_specimen.reported_draw_date,
                                                            transfer_in_date=parent_specimen.transfer_in_date,
                                                            parent=parent_specimen,
+                                                           visit=parent_specimen.visit,
+                                                           subject=parent_specimen.subject,
                                                            source_study=parent_specimen.source_study,
                                                            created_date=self.registered_dates.get('aliquoting_date', None),
                                                            aliquoting_reason=aliquot_row.aliquot_reason)
