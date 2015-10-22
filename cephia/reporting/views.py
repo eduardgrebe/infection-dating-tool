@@ -16,7 +16,7 @@ from cephia.csv_helper import get_csv_response
 from cephia.models import Specimen
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-from reporting.forms import VisitReportFilterForm
+from reporting.forms import VisitReportFilterForm, GenericReportFilterForm
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def visit_material(request, template="reporting/visit_material.html"):
     INNER JOIN cephia_specimens AS specimens ON visits.id = specimens.visit_id
     INNER JOIN cephia_specimen_types AS spectypes ON specimens.specimen_type_id = spectypes.id
     LEFT JOIN cephia_subtypes AS subtypes ON subjects.subtype_id = subtypes.id
-    WHERE (visits.visit_date >= '2013-02-01') AND (specimens.parent_label is NULL)
+    WHERE (visits.visit_date >= 'MIN_DATE') AND (specimens.parent_label is NULL)
     GROUP BY visits.id , spectypes.id
     ORDER BY SC_int_size DESC, SubjectLabel , visit_date;
     """
@@ -216,25 +216,32 @@ def all_subject_material(request, template="reporting/all_subject_material.html"
 @login_required
 def generic_report(request, template="reporting/generic_report.html"):
     context = {}
-    query_form = GenericReportFilterForm(request.GET or None)
-
+    query_form = GenericReportFilterForm(request.POST or None)
+    save = request.GET.get('saved', None)
+    as_csv = request.GET.get('csv', False)
+    import pdb; pdb.set_trace()
     if query_form.is_valid():
+        if save:
+            query_form.save()
+            template = "reporting/report_landing_page.html"
+            return render_to_response(template, context, context_instance=RequestContext(request))
+
         sql = query_form.cleaned_data['query']
     else:
-        sql = ""
+        sql = None
 
-    as_csv = request.GET.get('csv', False)
-    
+    context['query_form'] = query_form
+
     if not as_csv:
         context['num_rows'] = 1000
     else:
         context['num_rows'] = None
 
-    report = Report()
-    report.prepare_report(sql, num_rows=context['num_rows'])
-    context['report'] = report
-    context['query_form'] = query_form
-
+    if sql:
+        report = Report()
+        report.prepare_report(sql, num_rows=context['num_rows'])
+        context['report'] = report
+    
     if as_csv:
         response, writer = get_csv_response("GenericReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
         writer.writerow(report.headers)

@@ -1,4 +1,5 @@
 from django import forms
+from reporting.models import Report
 
 class VisitReportFilterForm(forms.Form):
 
@@ -9,15 +10,11 @@ class VisitReportFilterForm(forms.Form):
         self.fields['visit_date'].widget = forms.DateInput()
         self.fields['visit_date'].widget.attrs.update({'class':'datepicker'})
 
-    def filter(self, qs_data):
-        visit_date = self.cleaned_data['visit_date']
 
-
-
-class GenericReportFilterForm(forms.Form):
-
-    query = forms.CharField(required=True, widget=forms.Textarea)
-
+class GenericReportFilterForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['name','description', 'query']
     def __init__(self, *args, **kwargs):
         super(GenericReportFilterForm, self).__init__(*args, **kwargs)
         
