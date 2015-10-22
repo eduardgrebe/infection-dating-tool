@@ -1,4 +1,4 @@
-{% extends "cephia/report_base.html" %}
+{% extends "cephia/base.html" %}
 
 {% load reporting_tags %}
 {% load bootstrap3 %}
@@ -6,9 +6,14 @@
 
 {% block site-title %} Visit Report {% endblock %}
 
+{% block filter_col_a %}
+{% bootstrap_field filter_form.visit_date %} 
+{% endblock %}
+
 {% block page_content %}
 
 <i>Showing first {{num_rows}} rows only </i>
+
 
 <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_report' %}?csv=1">Download</a>
 

@@ -8,7 +8,16 @@
     {% if user.is_staff %}
     <li><a class="navtab" href="{% url 'associate_specimen' %}">Specimen-Visit Association</a></li>
     <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
-    <li><a class="navtab" href="{% url 'reporting:visit_report' %}">Visit Report</a></li>
+    <li>
+      <a href="/page/cephia" class="dropDownMenu">Standard Reports</a>
+      <ul> 
+        <li class="childItems">
+          <a href="{% url 'reporting:visit_report' %}">Visit Report</a>
+          <a href="{% url 'reporting:visit_report_new' %}">Visit Report - New</a>
+          <a href="{% url 'reporting:generic_report' %}">Generic Report</a>
+        </li>
+      </ul>
+    </li>
     {% endif %}
     {% endif %}
 

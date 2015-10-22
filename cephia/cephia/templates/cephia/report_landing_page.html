@@ -1,0 +1,12 @@
+{% extends "cephia/report_base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block submit_action %}
+{% endblock %}
+
+{% block page_content %}
+<a href="{% url 'reporting:visit_report' %}">Visit Report</a>
+<a href="{% url 'reporting:visit_report_new' %}">Visit Report - New</a>
+<a href="{% url 'reporting:generic_report' %}">Generic Report</a>
+{% endblock %}
