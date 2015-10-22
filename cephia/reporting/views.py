@@ -55,7 +55,7 @@ def visit_report(request, template="reporting/visit_report.html"):
     
     as_csv = request.GET.get('csv', False)
     if not as_csv:
-        context['num_rows'] = 1000
+        context['num_rows'] = None
     else:
         context['num_rows'] = None
 
@@ -89,7 +89,6 @@ def visit_report(request, template="reporting/visit_report.html"):
             report.add_header(header_name)
             report.add_header(vol_header_name)
             report.add_header(vol_units_header_name)
-            # specimen_type_headers.append( (header_name, vol_header_name, vol_units_header_name) )
 
         vol = running_row.get(vol_header_name, 0)
         vol += row['vol_recd'] or 0
@@ -97,12 +96,6 @@ def visit_report(request, template="reporting/visit_report.html"):
         running_row[header_name] = num_spec_types+1
         running_row[vol_header_name] = vol
         running_row[vol_units_header_name] = row['volume_units']
-
-
-    # for header_name, vol_header, vol_units_header_name in specimen_type_headers:
-    #     report.add_header(header_name)
-    #     report.add_header(vol_header_name)
-    #     report.add_header(vol_units_header_name)
         
     report.set_rows(rolled_rows)
 
@@ -122,8 +115,29 @@ def visit_specimen_report(request, template="reporting/visit_specimen_modal.html
 
     visit_ids = request.POST.getlist('VisitId', None)
     subject_ids = request.POST.getlist('SubjectId', None)
-    as_csv = request.POST.get('csv', False)
+                              
+    if visit_ids and subject_ids:
+        specimens = Specimen.objects.filter(Q(visit__id__in=visit_ids) | Q(subject__id__in=subject_ids))
+    elif subject_ids and not visit_ids:
+        specimens = Specimen.objects.filter(subject__id__in=subject_ids)
+    elif visit_ids and not subject_ids:
+        specimens = Specimen.objects.filter(visit__id__in=visit_ids)
+    else:
+        specimens = None
 
+    context['specimens'] = specimens
+    
+    response = render_to_response(template, context, context_instance=RequestContext(request))
+    return HttpResponse(json.dumps({'response': response.content}))
+
+@csrf_exempt
+@login_required
+def visit_specimen_report_download(request):
+    context = {}
+
+    visit_ids = request.POST.getlist('VisitId', None)
+    subject_ids = request.POST.getlist('SubjectId', None)
+                              
     if visit_ids and subject_ids:
         specimens = Specimen.objects.filter(Q(visit__id__in=visit_ids) | Q(subject__id__in=subject_ids))
     elif subject_ids and not visit_ids:
@@ -135,18 +149,14 @@ def visit_specimen_report(request, template="reporting/visit_specimen_modal.html
 
     context['specimens'] = specimens
 
-    if as_csv:
-        response, writer = get_csv_response('visit_specimens_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-        headers = ['VisitId','SubjectId','SpecimenId','SpecimenLabel','VolumeUnits','InitialVolume','VolumeRemaining']
-        for specimen in specimens:
-            writer.writerow( [ specimen.visit.id,
-                               specimen.subject.id,
-                               specimen.id,
-                               specimen.specimen_label,
-                               specimen.volume_units,
-                               specimen.initial_claimed_volume,
-                               specimen.volume] )
-        return response
-    
-    response = render_to_response(template, context, context_instance=RequestContext(request))
-    return HttpResponse(json.dumps({'response': response.content}))
+    response, writer = get_csv_response('visit_specimens_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+    headers = ['VisitId','SubjectId','SpecimenId','SpecimenLabel','VolumeUnits','InitialVolume','VolumeRemaining']
+    for specimen in specimens:
+        writer.writerow( [ specimen.visit.id,
+                           specimen.subject.id,
+                           specimen.id,
+                           specimen.specimen_label,
+                           specimen.volume_units,
+                           specimen.initial_claimed_volume,
+                           specimen.volume] )
+    return response

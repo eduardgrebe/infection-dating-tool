@@ -1,30 +1,49 @@
-<div class="table-responsive" style="overflow:auto; max-height:500px;"">
-  <table class="table-striped table table-hover">
-    <thead>
-      <th>Visit ID</th>
-      <th>Subject ID</th>
-      <th>Specimen ID</th>
-      <th>Specimen Label</th>
-      <th>Specimen Type</th>
-      <th>Volume Units</th>
-      <th>Initial Volume</th>
-      <th>Volume Remaining</th>
-    </thead>
-    <tbody>
-      {% for specimen in specimens %}
-      <tr>
-        <td>{{specimen.visit.id}}</td>
-        <td>{{specimen.subject.id}}</td>
-        <td>{{specimen.id}}</td>
-        <td>{{specimen.specimen_label}}</td>
-        <td>{{specimen.specimen_type.name}}</td>
-        <td>{{specimen.volume_units}}</td>
-        <td>{{specimen.initial_claimed_volume}}</td>
-        <td>{{specimen.volume}}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="container">
+  <div class="modal fade" id="specimenModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Specimens for selected visits/subjects</h4>
+        </div>
+        <div class="modal-body specimens-modal-body">
+          <div class="table-responsive" style="overflow:auto; max-height:500px;"">
+            <table class="table-striped table table-hover">
+              <thead>
+                <th>Visit ID</th>
+                <th>Subject ID</th>
+                <th>Specimen ID</th>
+                <th>Specimen Label</th>
+                <th>Specimen Type</th>
+                <th>Volume Units</th>
+                <th>Initial Volume</th>
+                <th>Reported Volume</th>
+              </thead>
+              <tbody>
+                {% for specimen in specimens %}
+                <tr>
+                  <td>{{specimen.visit.id}}</td>
+                  <td>{{specimen.subject.id}}</td>
+                  <td>{{specimen.id}}</td>
+                  <td>{{specimen.specimen_label}}</td>
+                  <td>{{specimen.specimen_type.name}}</td>
+                  <td>{{specimen.volume_units}}</td>
+                  <td>{{specimen.initial_claimed_volume}}</td>
+                  <td>{{specimen.volume}}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <a type="button" target="_blank" href="#" class="btn btn-primary export-specimen">Export to CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
 
 
