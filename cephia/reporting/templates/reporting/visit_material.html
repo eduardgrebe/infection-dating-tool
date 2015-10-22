@@ -1,0 +1,67 @@
+{% extends "cephia/base.html" %}
+
+{% load reporting_tags %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block site-title %} Visit Report {% endblock %}
+
+
+
+{% block filter_col_a %}
+{% bootstrap_field filter_form.visit_date %}
+{% endblock %}
+
+{% block page_content %}
+
+<h3>
+  Listing of material received per visit, filtered by visit being after the specified date. Results ordered by seroconversion interval (smallest at top, with unknown seroconversion intervals at bottom)
+  
+  Filter: show visits occurring on or after (box date)
+</h3>
+
+<i>Showing first {{num_rows}} rows only </i>
+
+
+<a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_material' %}?csv=1">Download</a>
+
+<a href="#" class="btn btn-primary show-specimen">
+  Show specimen
+</a>
+
+<div class="row">
+  <div class="col-md-1">
+    {% bootstrap_button "Filter" button_type="reset" button_class="btn-primary" %}
+  </div>
+</div>
+
+<form id="specimen-form" role="form" method="POST">
+  <table class="table-striped table table-hover" style="overflow:auto;">
+    <thead>
+      {% for header in report.headers %}
+      <th>{{header}}</th>
+      {% endfor %}
+    </thead>
+    <tbody>
+      {% for row in report.rows %}
+      <tr>
+        {% for header in report.headers %}
+        <td class="{{header}}">
+          {% if header == 'VisitId' or header == 'SubjectId' %}
+          <input name="{{header}}" type="checkbox" class="{{header}}-checkbox" value="{{ row|get_item:header|default:'' }}">
+          {% endif %}
+          {{ row|get_item:header|default:"" }}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</form>
+
+<div class="specimens-modal">
+
+</div>
+
+
+{% endblock %}
