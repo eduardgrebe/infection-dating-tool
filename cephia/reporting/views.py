@@ -21,7 +21,7 @@ from reporting.forms import VisitReportFilterForm
 logger = logging.getLogger(__name__)
 
 @login_required
-def visit_report(request, template="reporting/visit_report.html"):
+def visit_material(request, template="reporting/visit_material.html"):
     context = {}
 
     sql = """
@@ -37,7 +37,7 @@ def visit_report(request, template="reporting/visit_report.html"):
     ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date)) AS SC_int_size ,
     DATE_ADD(subjects.last_negative_date, INTERVAL (ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date)) / 2) DAY) AS SC_int_midpoint,
     TRUNCATE(DATEDIFF(visits.visit_date,subjects.first_positive_date)+(ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date))/2), 0) AS DaysSinceSCi_mp,
-	DATEDIFF(visits.visit_date,subjects.last_negative_date) AS DaysSinceLN,
+    DATEDIFF(visits.visit_date,subjects.last_negative_date) AS DaysSinceLN,
     DATEDIFF(visits.visit_date,subjects.first_positive_date) AS DaysSinceFP ,
     DATEDIFF(visits.visit_date,subjects.cohort_entry_date) AS DaysSinceEntry ,
     subtypes.name as subtype,
@@ -120,7 +120,7 @@ def visit_report(request, template="reporting/visit_report.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
-def visit_report_new(request, template="reporting/visit_report.html"):
+def all_subject_material(request, template="reporting/all_subject_material.html"):
     context = {}
 
     sql = """
@@ -214,7 +214,7 @@ def visit_report_new(request, template="reporting/visit_report.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
-def generic_report(request, template="reporting/visit_report.html"):
+def generic_report(request, template="reporting/generic_report.html"):
     context = {}
     query_form = GenericReportFilterForm(request.GET or None)
 
