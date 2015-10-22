@@ -485,7 +485,7 @@ class Panel(models.Model):
     volume = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.parent_label
+        return self.name
 
 class PanelMemberships(models.Model):
 
