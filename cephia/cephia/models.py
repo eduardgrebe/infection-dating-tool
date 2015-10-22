@@ -384,6 +384,7 @@ class Specimen(models.Model):
     location = models.ForeignKey(Location, null=True, blank=True)
     parent = models.ForeignKey('Specimen', null=True, blank=False, default=None)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
+    is_available = models.BooleanField(default=True)
     history = HistoricalRecords()
 
 
