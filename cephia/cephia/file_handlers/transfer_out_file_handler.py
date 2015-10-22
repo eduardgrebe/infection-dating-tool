@@ -164,6 +164,7 @@ class TransferOutFileHandler(FileHandler):
                     
                     specimen.number_of_containers = transfer_out_row.number_of_containers
                     specimen.transfer_out_date = self.registered_dates.get('shipment_date', None)
+                    specimen.shipped_in_panel = transfer_out_row.shipped_in_panel
                     specimen.modified_date = timezone.now()
                     specimen.receiving_site = Laboratory.objects.get(name=transfer_out_row.destination_site)
                     specimen.is_available = False

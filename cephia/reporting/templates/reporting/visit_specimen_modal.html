@@ -1,6 +1,8 @@
+{% load bootstrap3 %}
+
 <div class="container">
   <div class="modal fade" id="specimenModal">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
@@ -14,13 +16,14 @@
                 <th>Subject ID</th>
                 <th>Specimen ID</th>
                 <th>Specimen Label</th>
+                <th>Parent Label</th>
                 <th>Specimen Type</th>
                 <th>Visit Date</th>
                 <th>Create Date</th>
-                <th>Is Available</th>
                 <th>Volume Units</th>
                 <th>Initial Volume</th>
                 <th>Reported Volume</th>
+                <th>Is Available</th>
               </thead>
               <tbody>
                 {% for specimen in specimens %}
@@ -29,13 +32,14 @@
                   <td>{{specimen.subject.id}}</td>
                   <td>{{specimen.id}}</td>
                   <td>{{specimen.specimen_label}}</td>
+                  <td>{{specimen.parent_label}}</td>
                   <td>{{specimen.specimen_type.name}}</td>
-                  <td>{{specimen.visit_date}}</td>
+                  <td>{{specimen.visit.visit_date}}</td>
                   <td>{{specimen.create_date}}</td>
-                  <td>{{specimen.is_available}}</td>
                   <td>{{specimen.volume_units}}</td>
                   <td>{{specimen.initial_claimed_volume}}</td>
                   <td>{{specimen.volume}}</td>
+                  <td>{% if specimen.is_available %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
                 </tr>
                 {% endfor %}
               </tbody>
