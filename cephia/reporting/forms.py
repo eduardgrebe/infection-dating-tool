@@ -11,3 +11,13 @@ class VisitReportFilterForm(forms.Form):
 
     def filter(self, qs_data):
         visit_date = self.cleaned_data['visit_date']
+
+
+
+class GenericReportFilterForm(forms.Form):
+
+    query = forms.CharField(required=True, widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super(GenericReportFilterForm, self).__init__(*args, **kwargs)
+        

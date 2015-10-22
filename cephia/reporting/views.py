@@ -211,7 +211,32 @@ def visit_report_new(request, template="reporting/visit_report.html"):
 @login_required
 def generic_report(request, template="reporting/visit_report.html"):
     context = {}
+    query_form = GenericReportFilterForm(request.GET or None)
 
+    if query_form.is_valid():
+        sql = query_form.cleaned_data['query']
+    else:
+        sql = ""
+
+    as_csv = request.GET.get('csv', False)
+    
+    if not as_csv:
+        context['num_rows'] = 1000
+    else:
+        context['num_rows'] = None
+
+    report = Report()
+    report.prepare_report(sql, num_rows=context['num_rows'])
+    context['report'] = report
+    context['query_form'] = query_form
+
+    if as_csv:
+        response, writer = get_csv_response("GenericReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
+        writer.writerow(report.headers)
+        for row in report.rows:
+            writer.writerow( [ row.get(x, None) for x in report.headers ] )
+        return response
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required

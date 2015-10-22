@@ -7,9 +7,9 @@
     <li><a class="navtab" href="{% url 'specimen' %}">Specimens</a></li>
     {% if user.is_staff %}
     <li><a class="navtab" href="{% url 'associate_specimen' %}">Specimen-Visit Association</a></li>
-    <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
     <li>
-      <a href="/page/cephia" class="dropDownMenu">Standard Reports</a>
+      <a href="{% url 'reporting:report_landing_page' %}" class="dropDownMenu">Standard Reports</a>
+      {% comment %}
       <ul> 
         <li class="childItems">
           <a href="{% url 'reporting:visit_report' %}">Visit Report</a>
@@ -17,10 +17,11 @@
           <a href="{% url 'reporting:generic_report' %}">Generic Report</a>
         </li>
       </ul>
+      {% endcomment %}
     </li>
+    <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
     {% endif %}
     {% endif %}
-
   </ul>
 </div>
 
