@@ -9,50 +9,59 @@
 <div class="container">
   <div class="row">
     <h3>
-      Listing of material received per visit, filtered by visit being after the specified date.
+      Listing of material received per visit, filtered by visit being between two specified dates.
       Results ordered by seroconversion interval (smallest at top, with unknown seroconversion intervals at bottom)
     </h3>
   </div>
 
   <div class="row">
-    <form id="form" action="{% block submit_action %}{% endblock %}" role="form" method="GET">
-      <div class="row col-md-12">
-        <i>Show visit occuring on or after: </i>{{ filter_form.visit_date }}
-        {% bootstrap_button "Submit" button_type="submit" button_class="btn-primary" %}
-        <i>Showing first {{num_rows}} rows only </i>
-        <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_material' %}?csv=1">Download</a>
-        <a href="#" class="btn btn-primary show-specimen">
-          Show specimen
-        </a>
+    <form id="form" action="{% block submit_action %}{% endblock %}" role="form" method="POST">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-md-12">
+          <i>Show visits occuring from: </i>{{ filter_form.from_date }}<i> to: </i>{{ filter_form.to_date }}
+          {% bootstrap_button "Submit" button_type="submit" button_class="btn-primary" %}
+          <div class="btn-group pull-right">
+            <a href="#" class="btn btn-primary show-specimen">Show specimen details for selection</a>
+          </div>
+          <div class="btn-group pull-right">
+            <a href="#" class="btn btn-primary download-specimen-detail">Download all specimen details</a>
+          </div>
+          <div class="btn-group pull-right">
+            <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_material' %}?csv=1">Download All</a>
+          </div>
+          <div class="btn-group pull-right">
+            <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_material' %}?all=1">Show All</a>
+          </div>
+        </div>
       </div>
     </form>
   </div>
   
   <div class="row">
     <form id="specimen-form" role="form" method="POST">
-      <div class="table-responsive" style="overflow:auto;">
-        <table class="table-striped table table-hover" style="overflow:auto;">
-          <thead>
+      <table class="table-striped table table-hover">
+        <p>(First {{num_rows}} root specimens previewed below)</p>
+        <thead>
+          {% for header in report.headers %}
+          <th>{{header}}</th>
+          {% endfor %}
+        </thead>
+        <tbody>
+          {% for row in report.rows %}
+          <tr>
             {% for header in report.headers %}
-            <th>{{header}}</th>
+            <td class="{{header}}">
+              {% if header == 'VisitId' or header == 'SubjectId' %}
+              <input name="{{header}}" type="checkbox" class="{{header}}-checkbox" value="{{ row|get_item:header|default:'' }}">
+              {% endif %}
+              {{ row|get_item:header|default:"" }}
+            </td>
             {% endfor %}
-          </thead>
-          <tbody>
-            {% for row in report.rows %}
-            <tr>
-              {% for header in report.headers %}
-              <td class="{{header}}">
-                {% if header == 'VisitId' or header == 'SubjectId' %}
-                <input name="{{header}}" type="checkbox" class="{{header}}-checkbox" value="{{ row|get_item:header|default:'' }}">
-                {% endif %}
-                {{ row|get_item:header|default:"" }}
-              </td>
-              {% endfor %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </form>
   </div>
   <div class="specimens-modal">

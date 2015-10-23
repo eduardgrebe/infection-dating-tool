@@ -42,32 +42,42 @@ def visit_material(request, template="reporting/visit_material.html"):
     DATEDIFF(visits.visit_date,subjects.cohort_entry_date) AS DaysSinceEntry ,
     subtypes.name as subtype,
     subjects.subtype_confirmed as st_conf,
+    IF(panels.panel_id = 1, 'yes', 'no') as HRBS,
     spectypes.name AS SpecimenType,
     COUNT(specimens.id) AS n_specs ,
     SUM(specimens.initial_claimed_volume) AS vol_recd ,
     specimens.volume_units
     FROM cephia_subjects AS subjects 
     INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
+    LEFT JOIN cephia_panel_memberships AS panels ON visits.id = panels.visit_id
     INNER JOIN cephia_specimens AS specimens ON visits.id = specimens.visit_id
     INNER JOIN cephia_specimen_types AS spectypes ON specimens.specimen_type_id = spectypes.id
     LEFT JOIN cephia_subtypes AS subtypes ON subjects.subtype_id = subtypes.id
-    WHERE (visits.visit_date >= 'MIN_DATE') AND (specimens.parent_label is NULL)
+    WHERE (visits.visit_date >= 'MIN_DATE' OR visits.visit_date <= 'MAX_DATE')
+    AND specimens.parent_label is NULL
     GROUP BY visits.id , spectypes.id
-    ORDER BY SC_int_size DESC, SubjectLabel , visit_date;
+    ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date;
     """
+    if request.method == 'POST':
+        filter_form = VisitReportFilterForm(request.POST or None)
+        if filter_form.is_valid():
+            from_date = filter_form.cleaned_data['from_date'].strftime('%Y-%m-%d')
+            to_date = filter_form.cleaned_data['to_date'].strftime('%Y-%m-%d')
+    else:
+        from_date = '2000-01-01'
+        to_date = datetime.now().date().strftime('%Y-%m-%d')
+        filter_form = VisitReportFilterForm(data={'from_date':from_date, 'to_date':to_date})
 
-    filter_form = VisitReportFilterForm(request.GET or None)
-    if filter_form.is_valid():
-        min_date = filter_form.cleaned_data['visit_date'].strftime('%Y-%m-%d')
-    else:
-        min_date = '2013-02-01'
-    sql = sql.replace("MIN_DATE", min_date)
-    
     as_csv = request.GET.get('csv', False)
-    if not as_csv:
-        context['num_rows'] = 1000
-    else:
+    show_all = request.GET.get('all', False)
+
+    sql = sql.replace("FROM_DATE", from_date)
+    sql = sql.replace("TO_DATE", to_date)
+
+    if show_all or as_csv:
         context['num_rows'] = None
+    else:
+        context['num_rows'] = 1000
 
     report = Report()
     report.prepare_report(sql, num_rows=context['num_rows'])
@@ -77,6 +87,7 @@ def visit_material(request, template="reporting/visit_material.html"):
     report.remove_header('SpecimenType')
     report.remove_header('vol_recd')
     report.remove_header('volume_units')
+    report.remove_header('n_specs')
 
     specimen_type_headers = []
     
@@ -89,6 +100,7 @@ def visit_material(request, template="reporting/visit_material.html"):
             del running_row['SpecimenType']
             del running_row['vol_recd']
             del running_row['volume_units']
+            del running_row['n_specs']
             rolled_rows.append(running_row)
             running_row = row
 
@@ -158,10 +170,12 @@ def all_subject_material(request, template="reporting/all_subject_material.html"
     sql = sql.replace("MIN_DATE", min_date)
     
     as_csv = request.GET.get('csv', False)
-    if not as_csv:
-        context['num_rows'] = 1000
-    else:
+    show_all = request.GET.get('all', False)
+
+    if show_all or as_csv:
         context['num_rows'] = None
+    else:
+        context['num_rows'] = 1000
 
     report = Report()
     report.prepare_report(sql, num_rows=context['num_rows'])
@@ -216,10 +230,11 @@ def all_subject_material(request, template="reporting/all_subject_material.html"
 @login_required
 def generic_report(request, template="reporting/generic_report.html"):
     context = {}
-    query_form = GenericReportFilterForm(request.POST or None)
-    save = request.GET.get('saved', None)
-    as_csv = request.GET.get('csv', False)
-    import pdb; pdb.set_trace()
+    if request.method == 'POST':
+        query_form = GenericReportQueryForm(request.POST or None)
+
+    save = request.GET.get('save', None)
+
     if query_form.is_valid():
         if save:
             query_form.save()
@@ -262,7 +277,7 @@ def report_landing_page(request, template="reporting/report_landing_page.html"):
 @login_required
 def visit_specimen_report(request, template="reporting/visit_specimen_modal.html"):
     context = {}
-    import pdb; pdb.set_trace()
+
     visit_ids = request.POST.getlist('VisitId', None)
     subject_ids = request.POST.getlist('SubjectId', None)
                               
