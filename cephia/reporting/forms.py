@@ -16,7 +16,7 @@ class VisitReportFilterForm(forms.Form):
 
 class GenericReportFilterForm(forms.Form):
 
-    query = forms.CharField(required=False)
+    query = forms.CharField(required=False, widget=forms.Textarea)
     
     def __init__(self, *args, **kwargs):
         super(GenericReportFilterForm, self).__init__(*args, **kwargs)

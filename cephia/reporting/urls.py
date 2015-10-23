@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^generic_report/', views.generic_report, name='generic_report'),
     url(r'^report_landing_page/', views.report_landing_page, name='report_landing_page'),
     url(r'^visit_specimen_report/', views.visit_specimen_report, name='visit_specimen_report'),
+    url(r'^visit_specimen_detail_download/', views.visit_specimen_detail_download, name='visit_specimen_detail_download'),
 ]

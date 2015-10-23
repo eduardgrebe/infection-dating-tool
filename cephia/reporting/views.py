@@ -16,7 +16,7 @@ from cephia.csv_helper import get_csv_response
 from cephia.models import Specimen
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-from reporting.forms import VisitReportFilterForm, GenericReportFilterForm
+from reporting.forms import VisitReportFilterForm, GenericReportFilterForm, GenericReportSaveForm
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,7 @@ def visit_material(request, template="reporting/visit_material.html"):
     GROUP BY visits.id , spectypes.id
     ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date;
     """
+    
     if request.method == 'POST':
         filter_form = VisitReportFilterForm(request.POST or None)
         if filter_form.is_valid():
@@ -230,39 +231,28 @@ def all_subject_material(request, template="reporting/all_subject_material.html"
 @login_required
 def generic_report(request, template="reporting/generic_report.html"):
     context = {}
-    if request.method == 'POST':
-        query_form = GenericReportQueryForm(request.POST or None)
+    query_form = GenericReportFilterForm(request.POST or None)
+    save_form = GenericReportSaveForm(request.POST or None)
 
-    save = request.GET.get('save', None)
-
-    if query_form.is_valid():
+    if save_form.is_valid():
         if save:
             query_form.save()
             template = "reporting/report_landing_page.html"
+            
             return render_to_response(template, context, context_instance=RequestContext(request))
-
+    elif query_form.is_valid():
         sql = query_form.cleaned_data['query']
     else:
         sql = None
 
     context['query_form'] = query_form
-
-    if not as_csv:
-        context['num_rows'] = 1000
-    else:
-        context['num_rows'] = None
+    context['save_form'] = save_form
+    context['num_rows'] = 1000
 
     if sql:
         report = Report()
         report.prepare_report(sql, num_rows=context['num_rows'])
         context['report'] = report
-    
-    if as_csv:
-        response, writer = get_csv_response("GenericReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
-        writer.writerow(report.headers)
-        for row in report.rows:
-            writer.writerow( [ row.get(x, None) for x in report.headers ] )
-        return response
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -301,7 +291,6 @@ def visit_specimen_report(request, template="reporting/visit_specimen_modal.html
 def visit_specimen_report_download(request):
     context = {}
 
-    # GET a preset list of ids from somewhere
     visit_ids = request.POST.getlist('VisitId', None)
     subject_ids = request.POST.getlist('SubjectId', None)
                               
@@ -314,16 +303,86 @@ def visit_specimen_report_download(request):
     else:
         specimens = None
 
-    context['specimens'] = specimens
-
-    response, writer = get_csv_response('visit_specimens_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-    headers = ['VisitId','SubjectId','SpecimenId','SpecimenLabel','VolumeUnits','InitialVolume','VolumeRemaining']
+    response, writer = get_csv_response('selected_specimen_details_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+    headers = ['SubjectId','VisitId', 'VisitDate', 'SpecimenId','SpecimenLabel', 'ParentLabel', 'SpecimenType',
+               'CreateDate', 'VolumeUnits','InitialVolume','ReportedVolume', 'IsAvailable']
+    
+    writer.writerow(headers)
     for specimen in specimens:
-        writer.writerow( [ specimen.visit.id,
-                           specimen.subject.id,
+        writer.writerow( [ specimen.subject.id,
+                           specimen.visit.id,
+                           specimen.visit.visit_date,
                            specimen.id,
                            specimen.specimen_label,
+                           specimen.parent_label,
+                           specimen.specimen_type,
+                           specimen.created_date,
                            specimen.volume_units,
                            specimen.initial_claimed_volume,
-                           specimen.volume] )
+                           specimen.volume,
+                           specimen.is_available ] )
+    return response
+
+@login_required
+def visit_specimen_detail_download(request):
+    context = {}
+
+    sql = """
+    select distinct x.VisitId
+    from (SELECT 
+    subjects.id AS SubjectId ,
+    visits.id AS VisitId ,
+    subjects.subject_label AS SubjectLabel,
+    visits.visit_date AS VisitDate,
+    subjects.cohort_entry_date AS EntryDate ,
+    subjects.cohort_entry_hiv_status AS EntryStatus ,
+    subjects.last_negative_date AS LNDate ,
+    subjects.first_positive_date AS FPDate ,
+    ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date)) AS SC_int_size ,
+    DATE_ADD(subjects.last_negative_date, INTERVAL (ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date)) / 2) DAY) AS SC_int_midpoint,
+    TRUNCATE(DATEDIFF(visits.visit_date,subjects.first_positive_date)+(ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date))/2), 0) AS DaysSinceSCi_mp,
+    DATEDIFF(visits.visit_date,subjects.last_negative_date) AS DaysSinceLN,
+    DATEDIFF(visits.visit_date,subjects.first_positive_date) AS DaysSinceFP ,
+    DATEDIFF(visits.visit_date,subjects.cohort_entry_date) AS DaysSinceEntry ,
+    subtypes.name as subtype,
+    subjects.subtype_confirmed as st_conf,
+    IF(panels.panel_id = 1, 'yes', 'no') as HRBS,
+    spectypes.name AS SpecimenType,
+    COUNT(specimens.id) AS n_specs ,
+    SUM(specimens.initial_claimed_volume) AS vol_recd ,
+    specimens.volume_units
+    FROM cephia_subjects AS subjects 
+    INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
+    LEFT JOIN cephia_panel_memberships AS panels ON visits.id = panels.visit_id
+    INNER JOIN cephia_specimens AS specimens ON visits.id = specimens.visit_id
+    INNER JOIN cephia_specimen_types AS spectypes ON specimens.specimen_type_id = spectypes.id
+    LEFT JOIN cephia_subtypes AS subtypes ON subjects.subtype_id = subtypes.id
+    WHERE specimens.parent_label is NULL
+    GROUP BY visits.id , spectypes.id
+    ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date) as x;
+    """
+
+    report = Report()
+    report.prepare_report(sql, num_rows=100)
+    visit_ids = [ x['VisitId'] for x in report.rows ]
+    specimens = Specimen.objects.filter(visit__id__in=visit_ids).order_by('subject', 'visit__visit_date')
+
+    response, writer = get_csv_response('all_specimen_details_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+    headers = ['SubjectId','VisitId', 'VisitDate', 'SpecimenId','SpecimenLabel', 'ParentLabel', 'SpecimenType',
+               'CreateDate', 'VolumeUnits','InitialVolume','ReportedVolume', 'IsAvailable']
+    
+    writer.writerow(headers)
+    for specimen in specimens:
+        writer.writerow( [ specimen.subject.id,
+                           specimen.visit.id,
+                           specimen.visit.visit_date,
+                           specimen.id,
+                           specimen.specimen_label,
+                           specimen.parent_label,
+                           specimen.specimen_type,
+                           specimen.created_date,
+                           specimen.volume_units,
+                           specimen.initial_claimed_volume,
+                           specimen.volume,
+                           specimen.is_available ] )
     return response
