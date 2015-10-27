@@ -58,7 +58,7 @@ def visit_material(request, template="reporting/visit_material.html"):
     INNER JOIN cephia_specimen_types AS spectypes ON specimens.specimen_type_id = spectypes.id
     LEFT JOIN cephia_subtypes AS subtypes ON subjects.subtype_id = subtypes.id
     LEFT JOIN cephia_countries AS countries ON subjects.country_id = countries.id
-    WHERE (visits.visit_date >= 'MIN_DATE' OR visits.visit_date <= 'MAX_DATE')
+    WHERE visits.visit_date >= 'MIN_DATE' AND visits.visit_date <= 'MAX_DATE'
     AND specimens.parent_label is NULL
     GROUP BY visits.id , spectypes.id
     ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date;
