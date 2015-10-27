@@ -40,8 +40,12 @@ def visit_material(request, template="reporting/visit_material.html"):
     DATEDIFF(visits.visit_date,subjects.last_negative_date) AS DaysSinceLN,
     DATEDIFF(visits.visit_date,subjects.first_positive_date) AS DaysSinceFP ,
     DATEDIFF(visits.visit_date,subjects.cohort_entry_date) AS DaysSinceEntry ,
+    subjects.art_initiation_date AS ARTInitDate,
+    subjects.art_interruption_date AS ARTInterruptDate,
+    subjects.art_resumption_date AS ARTResumptionDate,
     subtypes.name as subtype,
     subjects.subtype_confirmed as st_conf,
+    countries.name as Country,
     IF(panels.panel_id = 1, 'yes', 'no') as HRBS,
     spectypes.name AS SpecimenType,
     COUNT(specimens.id) AS n_specs ,
@@ -53,6 +57,7 @@ def visit_material(request, template="reporting/visit_material.html"):
     INNER JOIN cephia_specimens AS specimens ON visits.id = specimens.visit_id
     INNER JOIN cephia_specimen_types AS spectypes ON specimens.specimen_type_id = spectypes.id
     LEFT JOIN cephia_subtypes AS subtypes ON subjects.subtype_id = subtypes.id
+    LEFT JOIN cephia_countries AS countries ON subjects.country_id = countries.id
     WHERE (visits.visit_date >= 'MIN_DATE' OR visits.visit_date <= 'MAX_DATE')
     AND specimens.parent_label is NULL
     GROUP BY visits.id , spectypes.id
