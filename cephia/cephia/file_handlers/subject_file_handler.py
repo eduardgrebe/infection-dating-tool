@@ -139,29 +139,26 @@ class SubjectFileHandler(FileHandler):
                 for key, value in self.registered_dates.iteritems():
                     if self.registered_dates.has_key('date_of_birth'):
                         if self.registered_dates['date_of_birth'] > value:
-                            error_msg += 'Date of birth cannot be greater than %s.\n' % key
+                            error_msg += 'Date of birth cannot be after %s.\n' % key
 
                     if self.registered_dates.has_key('date_of_death'):
                         if self.registered_dates['date_of_death'] < value:
-                            error_msg += 'Date of death cannot be smaller than %s.\n' % key
+                            error_msg += 'Date of death cannot be before %s.\n' % key
 
                 if not self.registered_dates.get('last_negative_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
-                    error_msg += 'last_negative_date must be smaller than first_positive_date.\n'
+                    error_msg += 'last_negative_date must be before first_positive_date.\n'
 
-                # if not self.registered_dates.get('ars_onset_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
-                #     error_msg += 'ars_onset_date must be smaller than first_positive_date.\n'
-
-                if not self.registered_dates.get('art_initiation_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
-                    error_msg += 'art_initiation_date must be larger than first_positive_date.\n'
+                if not self.registered_dates.get('art_initiation_date', default_more_date) >= self.registered_dates.get('first_positive_date', default_less_date):
+                    error_msg += 'art_initiation_date must not be before first_positive_date.\n'
 
                 if not self.registered_dates.get('art_interruption_date', default_more_date) > self.registered_dates.get('art_initiation_date', default_less_date):
-                    error_msg += 'art_interruption_date must be greater than art_initiation_date.\n'
+                    error_msg += 'art_interruption_date must be after art_initiation_date.\n'
         
                 if not self.registered_dates.get('art_resumption_date', default_more_date) > self.registered_dates.get('art_interruption_date', default_less_date):
-                    error_msg += 'ars_resumption_date must be greater than art_interruption_date.\n'
+                    error_msg += 'art_resumption_date must be after art_interruption_date.\n'
 
-                if not self.registered_dates.get('aids_diagnosis_date', default_more_date) > self.registered_dates.get('first_positive_date', default_less_date):
-                    error_msg += 'ars_onset_date must be smaller than first_positive_date.\n'
+                if not self.registered_dates.get('aids_diagnosis_date', default_more_date) >= self.registered_dates.get('first_positive_date', default_less_date):
+                    error_msg += 'aids_diagnosis_date cannot be before first_positive_date.\n'
 
                 exists = Subject.objects.filter(subject_label=subject_row.subject_label).exists()
                 if exists:
@@ -171,17 +168,17 @@ class SubjectFileHandler(FileHandler):
                     if subject_row.population_group:
                         Ethnicity.objects.get(name=subject_row.population_group)
                 except Ethnicity.DoesNotExist:
-                    error_msg += "Ethnicity does not exist.\n"
+                    error_msg += "Reported ethnicity not in ethnicities table.\n"
 
                 try:
                     Subtype.objects.get_or_create(name=subject_row.subtype)
                 except Subtype.DoesNotExist:
-                    error_msg += "Subtype does not exist.\n"
+                    error_msg += "Reported subtype not in subtypes table.\n"
             
                 try:
                     Country.objects.get(code=subject_row.country)
                 except Country.DoesNotExist:
-                    error_msg += "Country does not exist./n"
+                    error_msg += "Reported country not in countries table.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
