@@ -468,6 +468,7 @@ def export_file_data(request, file_id=None, state=None):
         else:
             state = ['error']
 
+
         if fileinfo.file_type == 'subject':
             rows = SubjectRow.objects.filter(fileinfo__id=file_id, state__in=state)
             headers = ['subject_label',
@@ -534,7 +535,7 @@ def export_file_data(request, file_id=None, state=None):
                        'transfer_date_yyyy',
                        'transfer_date_mm',
                        'transfer_date_dd',
-                       'receiving_site',
+                       'location',
                        'transfer_reason',
                        'specimen_type',
                        'volume',
