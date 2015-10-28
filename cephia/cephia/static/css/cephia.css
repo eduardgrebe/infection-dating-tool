@@ -43,6 +43,7 @@ pre.error-log {
 
 .instructions li {
     margin-bottom: 20px;
+    border-bottom: 1px solid #aaaaaa;
 }
 
 .instructions textarea {
@@ -52,4 +53,6 @@ pre.error-log {
     font-family:courier;
     margin-top: 20px;
     margin-bottom: 30px;
+    min-height: 100px;
+    max-height: 250px;
 }

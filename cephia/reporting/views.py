@@ -394,8 +394,32 @@ def visit_specimen_detail_download(request):
 
 @login_required
 def fixed_query_template(request, template="reporting/fixed_query_template.html"):
-    """ a sample query """
-
     context = {}
-    response = render_to_response(template, context, context_instance=RequestContext(request))
+
+    sql = """
+      select * from cephia_users
+    """
+
+    as_csv = request.GET.get('csv', False)
+
+    if as_csv:
+        context['num_rows'] = None
+    else:
+        context['num_rows'] = 1000
+    
+    report = Report()
+    report.prepare_report(sql, num_rows=context['num_rows'])
+    context['report'] = report
+
+    for row in report.rows:
+        row['password'] = 'not shown'
+
+    if as_csv:
+        response, writer = get_csv_response("FixedQueryTemplateReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
+        writer.writerow(report.headers)
+        for row in report.rows:
+            writer.writerow( [ row.get(x, None) for x in report.headers ] )
+    else:
+        response = render_to_response(template, context, context_instance=RequestContext(request))
     return response
+

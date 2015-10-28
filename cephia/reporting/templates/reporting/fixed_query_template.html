@@ -10,35 +10,36 @@
   <div class="row">
     <h3>
       This is the fixed query template report. 
-
-      <div class="instructions">
-        
-        <div class="btn btn-info title" onclick="$(this).parent().find('.content').slideToggle(); $(this).hide();">Instructions</div>
-        <div class="content" style="display:none">
-          <div class="btn btn-info" onclick="$(this).parent().slideToggle(function() { $(this).parents('.instructions').find('.title').show();  });">Hide</div>
-          These instructions are for developers to add a new report similar to this one.
-          <ul>
-            <li>
-              Edit reportings/urls.py and add a new line, similar to this one:
-              <textarea readonly>
-url(r'^fixed_query_template/', views.fixed_query_template, name='fixed_query_template'),
-              </textarea>
-            </li>
-            <li>
-              Edit reporting/templates/reporting/report_landing_page.html and add a new section, similar to this one:
-              <textarea readonly>
-<li>
-  <a href="{% url 'reporting:fixed_query_template' %}">Fixed query template</a>
-</li>
-              </textarea>
-            </li>
-          </ul>
-        </div>
-
-      </div>
-
-      
     </h3>
+
+    {% include "reporting/_instructions.html" %}
+    <br/>
+
+    <div class="row">
+      <div class="table responsive" style="overflow:auto; max-height:400px;">
+        <table class="table-striped table table-hover">
+          <p>(First {{num_rows}} rows previewed below)</p>
+          <thead>
+            {% for header in report.headers %}
+            <th>{{header}}</th>
+            {% endfor %}
+          </thead>
+          <tbody>
+            {% for row in report.rows %}
+            <tr>
+              {% for header in report.headers %}
+              <td class="{{header}}">
+                {{ row|get_item:header|default:"" }}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <a class="btn btn-primary" target="_blank" href="?csv=1">Download</a>
   </div>
 </div>
 

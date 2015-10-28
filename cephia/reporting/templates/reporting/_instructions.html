@@ -1,0 +1,73 @@
+<div class="instructions">
+  
+  <div class="btn btn-info title" onclick="$(this).parent().find('.content').slideToggle(); $(this).hide();">Instructions</div>
+  <div class="content" style="display:none">
+    <div class="btn btn-info" onclick="$(this).parent().slideToggle(function() { $(this).parents('.instructions').find('.title').show();  });">Hide</div>
+    These instructions are for developers to add a new report similar to this one.
+    <ol>
+
+      <li>
+        Edit reporting/urls.py and add a new line, similar to this one:
+        <textarea readonly>
+url(r'^fixed_query_template/', views.fixed_query_template, name='fixed_query_template'),
+        </textarea>
+      </li>
+
+      <li>
+        Edit reporting/templates/reporting/report_landing_page.html and add a new section, similar to this one:
+        <textarea readonly>
+{% verbatim %}
+          <li>
+            <a href="{% url 'reporting:fixed_query_template' %}">Fixed query template</a>
+          </li>
+{% endverbatim %}
+        </textarea>
+      </li>
+
+      <li>
+        Edit reporting/views.py and add a new function, similar
+        to this one. Note the name of the function must be
+        unique, the name used in this example is the name of the
+        report you're looking at rightnow.
+        <textarea readonly>
+
+@login_required
+def fixed_query_template(request, template="reporting/fixed_query_template.html"):
+    context = {}
+    response = render_to_response(template, context, context_instance=RequestContext(request))
+    return response
+        </textarea>
+      </li>
+
+      <li>
+        Add a new file reporting/templates/reporting/fixed_query_template.html. Note that the name of this file will match the name used for the <i>template</i> variable
+        in the view function above.
+
+        <textarea readonly>
+
+{% verbatim %}
+{% extends "cephia/report_base.html" %}
+
+{% load reporting_tags %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block page_content %}
+
+          <div class="container">
+            <div class="row">
+              <h3>
+                This is my new report
+              </h3>
+            </div>
+          </div>
+{% endverbatim %}
+        </textarea>
+
+      </li>
+
+
+    </ol>
+  </div>
+
+</div>
