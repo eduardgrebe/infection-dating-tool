@@ -395,3 +395,45 @@ def visit_specimen_detail_download(request):
                            specimen.volume,
                            specimen.is_available ] )
     return response
+
+@login_required
+def fixed_query_template(request, template="reporting/fixed_query_template.html"):
+    context = {}
+
+    sql = """
+            SELECT
+              subjects.id AS SubjectId ,
+              visits.visit_date AS VisitDate,
+              DATEDIFF(visits.visit_date, subjects.first_positive_date) AS DaysSinceFirstPositive
+            FROM 
+              cephia_subjects AS subjects 
+              INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
+            WHERE
+              subjects.id > 500
+            ORDER BY 
+              IF(ISNULL(DaysSinceFirstPositive), 1, 0), subjects.subject_label, visit_date;
+    """
+
+    as_csv = request.GET.get('csv', False)
+
+    if as_csv:
+        context['num_rows'] = None
+    else:
+        context['num_rows'] = 200
+    
+    report = Report()
+    report.prepare_report(sql, num_rows=context['num_rows'])
+    context['report'] = report
+
+    for row in report.rows:
+        row['password'] = 'not shown'
+
+    if as_csv:
+        response, writer = get_csv_response("FixedQueryTemplateReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
+        writer.writerow(report.headers)
+        for row in report.rows:
+            writer.writerow( [ row.get(x, None) for x in report.headers ] )
+    else:
+        response = render_to_response(template, context, context_instance=RequestContext(request))
+    return response
+

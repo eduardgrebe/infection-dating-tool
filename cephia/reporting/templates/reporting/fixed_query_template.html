@@ -1,0 +1,46 @@
+{% extends "cephia/report_base.html" %}
+
+{% load reporting_tags %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block page_content %}
+
+<div class="container">
+  <div class="row">
+    <h3>
+      This is the fixed query template report. 
+    </h3>
+
+    {% include "reporting/_instructions.html" %}
+    <br/>
+
+    <div class="row">
+      <p>(First {{num_rows}} rows previewed below)</p>
+      <div class="table responsive" style="overflow:auto; max-height:400px;">
+        <table class="table-striped table table-hover">
+          <thead>
+            {% for header in report.headers %}
+            <th>{{header}}</th>
+            {% endfor %}
+          </thead>
+          <tbody>
+            {% for row in report.rows %}
+            <tr>
+              {% for header in report.headers %}
+              <td class="{{header}}">
+                {{ row|get_item:header}}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <a class="btn btn-primary" target="_blank" href="?csv=1">Download</a>
+  </div>
+</div>
+
+{% endblock %}
