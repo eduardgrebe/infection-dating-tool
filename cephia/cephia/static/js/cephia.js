@@ -1,7 +1,7 @@
 $(document).ready(function() {
     //remove alerts after certain amount of time
     $('.alert').fadeOut(10000);
-    $( ".datepicker" ).datepicker();
+    $( ".datepicker" ).datepicker({ dateFormat: 'yy-mm-dd' });
     //initially disable upload file button
     //$('.upload-btn').attr('disabled', 'disabled');
 
@@ -30,7 +30,7 @@ $(document).ready(function() {
             var response = JSON.parse(data);
             if (status == "success") {
                 $(".comment-modal").html(response.response);
-                $( ".datepicker" ).datepicker();
+                $( ".datepicker" ).datepicker({ dateFormat: 'yy-mm-dd' });
                 $("#myModal").modal();
             }
         })
