@@ -13,10 +13,12 @@ from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    FileInfoFilterForm)
 from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from django.utils import timezone
+import os
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -680,3 +682,49 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))
+
+
+def release_notes(request, template="cephia/release_notes.html"):
+    context = {}
+    try:
+        raw_release_note_lines = open(os.path.join(settings.PROJECT_HOME, "..", "..", "release_notes.txt")).readlines()
+        for line in raw_release_note_lines:
+            line = line.strip().lower()
+            if line.startswith("#"):
+                continue
+            if len(line) == 0:
+                continue
+            name, date, person, description = line.split("|")
+            if "issue" in name:
+                issue_number = name.strip().replace("issue","")
+            else:
+                issue_number = None
+            release_note_line = {'issue_number': issue_number,
+                                 'issue_name': name,
+                                 'date': date,
+                                 'system': 'cephia',
+                                 'person': person,
+                                 'description': description}
+            if name.startswith('release'):
+                release_note_line['type'] = 'release'
+                release_note_line['version'] = name
+            elif name.startswith('issue'):
+                release_note_line['type'] = 'issue'
+            else:
+                logger.error("Unknown release note type: %s" % name)
+                release_note_line['type'] = 'issue'
+
+            release_note_lines.setdefault( date, []).append(release_note_line)
+
+        sorted_release_note_lines = OrderedDict()
+        keys = release_note_lines.keys()
+        keys.reverse()
+        for k in keys:
+            sorted_release_note_lines[k] = release_note_lines[k]
+            
+        context['release_note_lines'] = sorted_release_note_lines
+                    
+        return render_to_response(template, context, context_instance=RequestContext(request))
+    except Exception, ex:
+        logger.exception(ex)
+        return HttpResponse("Failed to load page: %s" % ex)
