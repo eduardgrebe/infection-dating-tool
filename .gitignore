@@ -10,3 +10,7 @@ tmp/
 db_backups/
 *.mo
 *.sql3
+
+*.sql3-journal
+
+*.swp

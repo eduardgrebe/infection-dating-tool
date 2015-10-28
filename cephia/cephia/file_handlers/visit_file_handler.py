@@ -88,20 +88,21 @@ class VisitFileHandler(FileHandler):
                 
                 if subject:
                     if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
-                        error_msg += 'visit_date must be greater than cohort_entry_date.\n'
+                        error_msg += 'visit_date cannot be before cohort_entry_date.\n'
 
                     if visit_row.pregnant == 'Y' and subject.sex == 'M':
                         error_msg += 'Male subjects cannot be marked as pregnant.\n'
 
                     if subject.cohort_entry_hiv_status == 'P' and visit_row.visit_hivstatus == 'N':
-                        error_msg += 'Visits HIV status cannot become "negative" if it was initially "positive".\n'
+                        error_msg += 'visit_hiv_status cannot be "negative" if subject has a positive cohort_entry_hiv_status.\n'
 
-                if first_visit:
-                    if first_visit.source_study.name != visit_row.source_study:
-                        error_msg += 'source_study does not match other visits for the patient.\n'
+                    # This should be replaced by a check that the source_study field corresponds to the subject's source_study.
+                    #if first_visit:
+                    #    if first_visit.source_study.name != visit_row.source_study:
+                    #        error_msg += 'Reported source_study for visit does not match source_study of first visit for subject.\n'
 
                 if not self.registered_dates['visitdate'] < datetime.now().date():
-                    error_msg += 'visit_date must be smaller than today.\n'
+                    error_msg += 'visit_date must be before today.\n'
 
                 if visit_row.scopevisit_ec and visit_row.source_study != 'SCOPE':
                     error_msg += 'scope_visit_ec must be null if source study is not "SCOPE".\n'

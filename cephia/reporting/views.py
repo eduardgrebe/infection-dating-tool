@@ -32,14 +32,18 @@ def visit_material(request, template="reporting/visit_material.html"):
     visits.visit_date AS VisitDate,
     subjects.cohort_entry_date AS EntryDate ,
     subjects.cohort_entry_hiv_status AS EntryStatus ,
-    subjects.last_negative_date AS LNDate ,
-    subjects.first_positive_date AS FPDate ,
+    subjects.last_negative_date AS LNDate,
+    subjects.first_positive_date AS FPDate,
+    subjects.fiebig_stage_at_firstpos AS FiebigFP,
     ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date)) AS SC_int_size ,
     DATE_ADD(subjects.last_negative_date, INTERVAL (ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date)) / 2) DAY) AS SC_int_midpoint,
     TRUNCATE(DATEDIFF(visits.visit_date,subjects.first_positive_date)+(ABS(DATEDIFF(subjects.last_negative_date,subjects.first_positive_date))/2), 0) AS DaysSinceSCi_mp,
+    subjects.edsc_reported AS Reported_EDSC,
+    DATEDIFF(visits.visit_date,subjects.edsc_reported) AS DaysSinceRepEDSC,
     DATEDIFF(visits.visit_date,subjects.last_negative_date) AS DaysSinceLN,
     DATEDIFF(visits.visit_date,subjects.first_positive_date) AS DaysSinceFP ,
     DATEDIFF(visits.visit_date,subjects.cohort_entry_date) AS DaysSinceEntry ,
+    visits.scopevisit_ec as SCOPE_EC,
     subjects.art_initiation_date AS ARTInitDate,
     subjects.art_interruption_date AS ARTInterruptDate,
     subjects.art_resumption_date AS ARTResumptionDate,
@@ -63,24 +67,20 @@ def visit_material(request, template="reporting/visit_material.html"):
     GROUP BY visits.id , spectypes.id
     ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date;
     """
-    
-    if request.method == 'POST':
-        filter_form = VisitReportFilterForm(request.POST or None)
-        if filter_form.is_valid():
-            from_date = filter_form.cleaned_data['from_date'].strftime('%Y-%m-%d')
-            to_date = filter_form.cleaned_data['to_date'].strftime('%Y-%m-%d')
+
+    filter_form = VisitReportFilterForm(request.POST or None)
+    if filter_form.is_valid() and 'show' not in request.POST:
+        from_date = filter_form.cleaned_data['from_date'].strftime('%Y-%m-%d')
+        to_date = filter_form.cleaned_data['to_date'].strftime('%Y-%m-%d')
     else:
         from_date = '2000-01-01'
         to_date = datetime.now().date().strftime('%Y-%m-%d')
         filter_form = VisitReportFilterForm(data={'from_date':from_date, 'to_date':to_date})
-
-    as_csv = request.GET.get('csv', False)
-    show_all = request.GET.get('all', False)
-
+    
     sql = sql.replace("FROM_DATE", from_date)
     sql = sql.replace("TO_DATE", to_date)
 
-    if show_all or as_csv:
+    if 'show' in request.POST or 'download' in request.POST:
         context['num_rows'] = None
     else:
         context['num_rows'] = 1000
@@ -128,7 +128,7 @@ def visit_material(request, template="reporting/visit_material.html"):
         
     report.set_rows(rolled_rows)
 
-    if as_csv:
+    if 'download' in request.POST:
         response, writer = get_csv_response("VisitReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
         writer.writerow(report.headers)
         for row in report.rows:
@@ -391,3 +391,45 @@ def visit_specimen_detail_download(request):
                            specimen.volume,
                            specimen.is_available ] )
     return response
+
+@login_required
+def fixed_query_template(request, template="reporting/fixed_query_template.html"):
+    context = {}
+
+    sql = """
+            SELECT
+              subjects.id AS SubjectId ,
+              visits.visit_date AS VisitDate,
+              DATEDIFF(visits.visit_date, subjects.first_positive_date) AS DaysSinceFirstPositive
+            FROM 
+              cephia_subjects AS subjects 
+              INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
+            WHERE
+              subjects.id > 500
+            ORDER BY 
+              IF(ISNULL(DaysSinceFirstPositive), 1, 0), subjects.subject_label, visit_date;
+    """
+
+    as_csv = request.GET.get('csv', False)
+
+    if as_csv:
+        context['num_rows'] = None
+    else:
+        context['num_rows'] = 200
+    
+    report = Report()
+    report.prepare_report(sql, num_rows=context['num_rows'])
+    context['report'] = report
+
+    for row in report.rows:
+        row['password'] = 'not shown'
+
+    if as_csv:
+        response, writer = get_csv_response("FixedQueryTemplateReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
+        writer.writerow(report.headers)
+        for row in report.rows:
+            writer.writerow( [ row.get(x, None) for x in report.headers ] )
+    else:
+        response = render_to_response(template, context, context_instance=RequestContext(request))
+    return response
+
