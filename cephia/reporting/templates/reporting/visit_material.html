@@ -15,7 +15,7 @@
   </div>
 
   <div class="row">
-    <form id="form" action="{% block submit_action %}{% endblock %}" role="form" method="POST">
+    <form id="form" role="form" method="POST">
       {% csrf_token %}
       <div class="row">
         <div class="col-md-12">
@@ -28,10 +28,10 @@
             <a href="{% url 'reporting:visit_specimen_detail_download' %}" class="btn btn-primary download-specimen-detail" style="text-decoration: none;">Download all specimen details</a>
           </div>
           <div class="btn-group pull-right">
-            <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_material' %}?csv=1" style="text-decoration: none;">Download All</a>
+            <button class="btn btn-primary" name="download" style="text-decoration: none;">Download All</button>
           </div>
           <div class="btn-group pull-right">
-            <a class="btn btn-primary" target="_blank" href="{% url 'reporting:visit_material' %}?all=1" style="text-decoration: none;">Show All</a>
+            <button class="btn btn-primary" name="show" style="text-decoration: none;">Show All</button>
           </div>
         </div>
       </div>

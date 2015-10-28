@@ -1,10 +1,11 @@
 from django import forms
 from reporting.models import Report
+from django.conf import settings
 
 class VisitReportFilterForm(forms.Form):
 
-    from_date = forms.DateField(required=False)
-    to_date = forms.DateField(required=False)
+    from_date = forms.DateField(required=False, input_formats=settings.DATE_INPUT_FORMATS)
+    to_date = forms.DateField(required=False, input_formats=settings.DATE_INPUT_FORMATS)
 
     def __init__(self, *args, **kwargs):
         super(VisitReportFilterForm, self).__init__(*args, **kwargs)

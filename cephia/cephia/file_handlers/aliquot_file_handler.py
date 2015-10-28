@@ -156,7 +156,8 @@ class AliquotFileHandler(FileHandler):
                 with transaction.atomic():
                     self.register_dates(aliquot_row.model_to_dict())
 
-                    parent_specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label, parent_label=None)
+                    parent_specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label, parent_label=None,
+                                                           specimen_type__spec_type=aliquot_row.specimen_type)
                     
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
                         parent_specimen.volume = aliquot_row.volume
@@ -173,7 +174,7 @@ class AliquotFileHandler(FileHandler):
                                                            volume_units=aliquot_row.volume_units,
                                                            specimen_type=parent_specimen.specimen_type,
                                                            reported_draw_date=parent_specimen.reported_draw_date,
-                                                           transfer_in_date=parent_specimen.transfer_in_date,
+                                                           #transfer_in_date=parent_specimen.transfer_in_date,
                                                            parent=parent_specimen,
                                                            visit=parent_specimen.visit,
                                                            subject=parent_specimen.subject,
