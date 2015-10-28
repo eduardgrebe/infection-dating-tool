@@ -28,3 +28,28 @@
 pre.error-log {
     max-width:20%;
 }
+
+.instructions .content {
+    background: #ededed;
+    width: 50%;
+    position: fixed;
+    right: 0px;
+    height: 80%;
+    top: 10%;
+    overflow: auto;
+    padding: 10px;
+    
+}
+
+.instructions li {
+    margin-bottom: 20px;
+}
+
+.instructions textarea {
+    padding: 10px;
+    width: 100%;
+    color: #121212;
+    font-family:courier;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}

@@ -391,3 +391,11 @@ def visit_specimen_detail_download(request):
                            specimen.volume,
                            specimen.is_available ] )
     return response
+
+@login_required
+def fixed_query_template(request, template="reporting/fixed_query_template.html"):
+    """ a sample query """
+
+    context = {}
+    response = render_to_response(template, context, context_instance=RequestContext(request))
+    return response
