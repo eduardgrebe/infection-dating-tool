@@ -1,8 +1,8 @@
 <div class="instructions">
   
-  <div class="btn btn-info title" onclick="$(this).parent().find('.content').slideToggle(); $(this).hide();">Instructions</div>
+  <div class="btn btn-info title" onclick="$(this).parent().find('.content').slideToggle();">Instructions</div>
   <div class="content" style="display:none">
-    <div class="btn btn-info" onclick="$(this).parent().slideToggle(function() { $(this).parents('.instructions').find('.title').show();  });">Hide</div>
+    <div class="btn btn-info hide_button" onclick="$(this).parent().slideToggle(function() { $(this).parents('.instructions').find('.title').show();  });">Hide</div>
     These instructions are for developers to add a new report similar to this one.
     <ol>
 
@@ -26,7 +26,7 @@ url(r'^fixed_query_template/', views.fixed_query_template, name='fixed_query_tem
 
       <li>
         Edit reporting/views.py and add a new function, similar
-        to this one. Note the name of the function must be
+        to this one (fixed_query_template). Note the name of the function must be
         unique, the name used in this example is the name of the
         report you're looking at rightnow.
         <textarea readonly>
@@ -40,8 +40,17 @@ def fixed_query_template(request, template="reporting/fixed_query_template.html"
       </li>
 
       <li>
+        <p>
         Add a new file reporting/templates/reporting/fixed_query_template.html. Note that the name of this file will match the name used for the <i>template</i> variable
-        in the view function above.
+        in the view function above. Note the sample below is only a partial copy, the easiest thing is to copy the existing file and make modifications.
+        </p>
+        
+        <p>
+          Comment out the line below to not include the instructions in your new report:
+          {% verbatim %}
+            {% include "reporting/_instructions.html" %}
+          {% endverbatim %}
+        </p>
 
         <textarea readonly>
 
@@ -57,7 +66,7 @@ def fixed_query_template(request, template="reporting/fixed_query_template.html"
           <div class="container">
             <div class="row">
               <h3>
-                This is my new report
+                This is the fixed query template report. 
               </h3>
             </div>
           </div>

@@ -16,9 +16,9 @@
     <br/>
 
     <div class="row">
+      <p>(First {{num_rows}} rows previewed below)</p>
       <div class="table responsive" style="overflow:auto; max-height:400px;">
         <table class="table-striped table table-hover">
-          <p>(First {{num_rows}} rows previewed below)</p>
           <thead>
             {% for header in report.headers %}
             <th>{{header}}</th>
@@ -29,7 +29,7 @@
             <tr>
               {% for header in report.headers %}
               <td class="{{header}}">
-                {{ row|get_item:header|default:"" }}
+                {{ row|get_item:header}}
               </td>
               {% endfor %}
             </tr>

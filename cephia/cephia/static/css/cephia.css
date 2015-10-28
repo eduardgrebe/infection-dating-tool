@@ -29,7 +29,14 @@ pre.error-log {
     max-width:20%;
 }
 
+.instructions {
+}
+
 .instructions .content {
+    -webkit-box-shadow: 2px 2px 2px 1px rgba(107,103,107,1);
+    -moz-box-shadow: 2px 2px 2px 1px rgba(107,103,107,1);
+    box-shadow: 2px 2px 2px 1px rgba(107,103,107,1);   
+    border: 1px solid #ababab;
     background: #ededed;
     width: 50%;
     position: fixed;
@@ -55,4 +62,9 @@ pre.error-log {
     margin-bottom: 30px;
     min-height: 100px;
     max-height: 250px;
+}
+
+.instructions .hide_button {
+    position: fixed;
+    right: 20px;
 }

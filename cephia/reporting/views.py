@@ -397,7 +397,17 @@ def fixed_query_template(request, template="reporting/fixed_query_template.html"
     context = {}
 
     sql = """
-      select * from cephia_users
+            SELECT
+              subjects.id AS SubjectId ,
+              visits.visit_date AS VisitDate,
+              DATEDIFF(visits.visit_date, subjects.first_positive_date) AS DaysSinceFirstPositive
+            FROM 
+              cephia_subjects AS subjects 
+              INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
+            WHERE
+              subjects.id > 500
+            ORDER BY 
+              IF(ISNULL(DaysSinceFirstPositive), 1, 0), subjects.subject_label, visit_date;
     """
 
     as_csv = request.GET.get('csv', False)
@@ -405,7 +415,7 @@ def fixed_query_template(request, template="reporting/fixed_query_template.html"
     if as_csv:
         context['num_rows'] = None
     else:
-        context['num_rows'] = 1000
+        context['num_rows'] = 200
     
     report = Report()
     report.prepare_report(sql, num_rows=context['num_rows'])
