@@ -67,24 +67,20 @@ def visit_material(request, template="reporting/visit_material.html"):
     GROUP BY visits.id , spectypes.id
     ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date;
     """
-    
-    if request.method == 'POST':
-        filter_form = VisitReportFilterForm(request.POST or None)
-        if filter_form.is_valid():
-            from_date = filter_form.cleaned_data['from_date'].strftime('%Y-%m-%d')
-            to_date = filter_form.cleaned_data['to_date'].strftime('%Y-%m-%d')
+
+    filter_form = VisitReportFilterForm(request.POST or None)
+    if filter_form.is_valid() and 'show' not in request.POST:
+        from_date = filter_form.cleaned_data['from_date'].strftime('%Y-%m-%d')
+        to_date = filter_form.cleaned_data['to_date'].strftime('%Y-%m-%d')
     else:
         from_date = '2000-01-01'
         to_date = datetime.now().date().strftime('%Y-%m-%d')
         filter_form = VisitReportFilterForm(data={'from_date':from_date, 'to_date':to_date})
-
-    as_csv = request.GET.get('csv', False)
-    show_all = request.GET.get('all', False)
-
+    
     sql = sql.replace("FROM_DATE", from_date)
     sql = sql.replace("TO_DATE", to_date)
 
-    if show_all or as_csv:
+    if 'show' in request.POST or 'download' in request.POST:
         context['num_rows'] = None
     else:
         context['num_rows'] = 1000
@@ -132,7 +128,7 @@ def visit_material(request, template="reporting/visit_material.html"):
         
     report.set_rows(rolled_rows)
 
-    if as_csv:
+    if 'download' in request.POST:
         response, writer = get_csv_response("VisitReport_%s.csv" % datetime.today().strftime("%D%b%Y_%H%M"))
         writer.writerow(report.headers)
         for row in report.rows:
