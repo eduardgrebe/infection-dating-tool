@@ -71,6 +71,7 @@ class TransferOutFileHandler(FileHandler):
                 error_msg = ''
                 self.register_dates(transfer_out_row.model_to_dict())
 
+                # we are proposing leaving this switched off.
                 # if not transfer_out_row.volume:
                 #     error_msg += 'Volume is required.\n'
 
@@ -80,7 +81,7 @@ class TransferOutFileHandler(FileHandler):
                 try:
                     Laboratory.objects.get(name=transfer_out_row.destination_site)
                 except Laboratory.DoesNotExist:
-                    error_msg += "Laboratory does not exist.\n"
+                    error_msg += "Reported desintation not in laboratories lookup table.\n"
                 
                 try:
                     specimen_type = SpecimenType.objects.get(spec_type=transfer_out_row.specimen_type)
@@ -95,7 +96,8 @@ class TransferOutFileHandler(FileHandler):
                     specimen = specimen[0]
                     if self.registered_dates.get('shipment_date', default_more_date) < (specimen.created_date.date() or default_less_date):
                         error_msg += "Shipment date cannot be before created date.\n"
-
+                
+                # ditto for these
                 # if transfer_out_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                 #     if transfer_out_row.volume_units != 'microlitres':
                 #         error_msg += 'volume_units must be "microlitres" for this specimen_type.\n'

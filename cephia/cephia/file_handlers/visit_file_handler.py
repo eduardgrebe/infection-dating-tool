@@ -96,9 +96,10 @@ class VisitFileHandler(FileHandler):
                     if subject.cohort_entry_hiv_status == 'P' and visit_row.visit_hivstatus == 'N':
                         error_msg += 'visit_hiv_status cannot be "negative" if subject has a positive cohort_entry_hiv_status.\n'
 
-                if first_visit:
-                    if first_visit.source_study.name != visit_row.source_study:
-                        error_msg += 'Reported source_study for visit does not match source_study of first visit for subject.\n'
+                    # This should be replaced by a check that the source_study field corresponds to the subject's source_study.
+                    #if first_visit:
+                    #    if first_visit.source_study.name != visit_row.source_study:
+                    #        error_msg += 'Reported source_study for visit does not match source_study of first visit for subject.\n'
 
                 if not self.registered_dates['visitdate'] < datetime.now().date():
                     error_msg += 'visit_date must be before today.\n'
