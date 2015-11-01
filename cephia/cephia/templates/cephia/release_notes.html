@@ -1,0 +1,59 @@
+{% extends "cephia/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block page_content %}
+
+<div class="section" style="display:block">
+
+  <div class="wrap release_notes">
+    <table>
+
+      {% for date, lines in release_note_lines.items %}
+
+      {% for line in lines %}
+
+      {% if line.type == 'release' %}
+      <tr>
+        <td colspan="10">
+          <hr/>
+        </td>
+      </tr>
+      <tr>
+        <td class='system'>{{line.system}}</td>
+        <td>
+          <i>{{line.version}}</i>
+        </td>
+        <td></td>
+        <td>{{line.date}}</td>
+        <td class='description'>{{line.description}}</td>
+      </tr>
+
+      {% elif line.type == 'issue' %}
+
+      <tr>
+        <td class='system'>{{line.system}}</td>
+        <td></td>
+        <td>
+          {% if line.issue_number %}
+          <a target="_blank" href="http://imptime.impd.co.za/timepiece/open_issue/orca/{{line.issue_number}}">
+            {% endif %}
+            {{line.issue_name}}
+            {% if line.issue_number %}
+          </a>
+          {% endif %}
+        </td>
+        <td>{{line.date}}</td>
+        <td class='description'>{{line.description}}</td>
+      </tr>
+
+      {% endif %}
+
+      {% endfor %}
+      {% endfor %}
+
+    </table>
+
+  </div>
+</div>
+{% endblock  %}

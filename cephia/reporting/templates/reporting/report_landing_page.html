@@ -19,5 +19,11 @@
   <li>
     <a href="{% url 'reporting:fixed_query_template' %}">Fixed query template</a>
   </li>
+  {% for report in reports %}
+  <li>
+    <a href="{% url 'reporting:saved_report' report_id=report.id %}">{{report.name}}</a>
+  </li>
+  {% endfor %}
 </ul>
+
 {% endblock %}

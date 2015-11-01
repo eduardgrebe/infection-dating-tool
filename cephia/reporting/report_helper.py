@@ -2,7 +2,7 @@ from django.db import connection
 from collections import OrderedDict
 
 class Report(object):
-
+            
     def prepare_report(self, raw_sql, num_rows=None):
         self.raw_sql = raw_sql
         self.num_rows = num_rows

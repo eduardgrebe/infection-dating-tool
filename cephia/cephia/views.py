@@ -635,7 +635,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
             messages.success(request, 'Successful!')
 
         context = {}
-        subjects = Specimen.objects.values('subject__id').filter(subject__isnull=False).distinct()
+        subjects = Specimen.objects.values('subject__id').filter(subject__isnull=False, visit__isnull=True).distinct()
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
@@ -688,6 +688,8 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
 def release_notes(request, template="cephia/release_notes.html"):
     context = {}
     try:
+        release_note_lines = {}
+        
         raw_release_note_lines = open(os.path.join(settings.PROJECT_HOME, "..", "..", "release_notes.txt")).readlines()
         for line in raw_release_note_lines:
             line = line.strip().lower()

@@ -12,7 +12,7 @@ urlpatterns = [
     url(r'^all_subject_material/', views.all_subject_material, name='all_subject_material'), # under construction
     
     url(r'^generic_report/', views.generic_report, name='generic_report'),
-    
+    url(r'^saved_report/(?P<report_id>\d+)/$', views.saved_report, name='saved_report'),
     url(r'^visit_material/', views.visit_material, name='visit_material'), # main report page for view and csv
     url(r'^visit_specimen_report/', views.visit_specimen_report, name='visit_specimen_report'), #popup
     url(r'^visit_specimen_detail_download/', views.visit_specimen_detail_download, name='visit_specimen_detail_download'), # popup download
