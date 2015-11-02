@@ -1,6 +1,7 @@
 import logging
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect, HttpResponse
 from report_helper import Report
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -145,8 +146,8 @@ def generic_report(request, template="reporting/generic_report.html"):
     if 'save' in request.POST:
         if save_form.is_valid():
             save_form.save()
-            template = "reporting/report_landing_page.html"
-            redirect()
+            return HttpResponseRedirect(reverse('reporting:report_landing_page'))
+
         return render_to_response(template, context, context_instance=RequestContext(request))
     elif query_form.is_valid():
         sql = query_form.cleaned_data['query']

@@ -32,7 +32,10 @@ class AliquotFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
                     if row_dict.get('id', None):
-                        aliquot_row = AliquotRow.objects.get(pk=row_dict['id'])
+                        try:
+                            aliquot_row = AliquotRow.objects.get(pk=row_dict['id'], status__in=['error', 'pending', 'validated', 'imported'])
+                        except AliquotRow.DoesNotExist, e:
+                            continue
                     else:
                         aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
                                                                 aliquot_label=row_dict['aliquot_label'],
@@ -160,6 +163,10 @@ class AliquotFileHandler(FileHandler):
                                                            specimen_type__spec_type=aliquot_row.specimen_type)
                     
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
+                        
+                        if float(aliquot_row.volume) == 0:
+                            parent_specimen.is_available = False
+                            
                         parent_specimen.volume = aliquot_row.volume
                         parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
                         parent_specimen.reason = aliquot_row.aliquot_reason

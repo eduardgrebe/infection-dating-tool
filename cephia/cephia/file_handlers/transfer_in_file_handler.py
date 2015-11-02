@@ -228,7 +228,8 @@ class TransferInFileHandler(FileHandler):
                                                        initial_claimed_volume = (transfer_in_row.volume or None),
                                                        volume_units = transfer_in_row.volume_units,
                                                        source_study = None,
-                                                       location = Location.objects.get(name=transfer_in_row.location))
+                                                       location = Location.objects.get(name=transfer_in_row.location),
+                                                       is_available=True)
 
                     transfer_in_row.state = 'processed'
                     transfer_in_row.date_processed = timezone.now()
@@ -271,7 +272,8 @@ class TransferInFileHandler(FileHandler):
                                                        initial_claimed_volume = transfer_in_row['vol'],
                                                        volume_units = transfer_in_row['volume_units'],
                                                        source_study = None,
-                                                       location = Location.objects.get(name=transfer_in_row['location']))
+                                                       location = Location.objects.get(name=transfer_in_row['location']),
+                                                       is_available=True)
 
                     rows_to_update = TransferInRow.objects.filter(fileinfo=self.upload_file,
                                                  state='validated',

@@ -34,7 +34,10 @@ class VisitFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     if row_dict.get('id', None):
-                        visit_row = VisitRow.objects.get(pk=row_dict['id'])
+                        try:
+                            visit_row = VisitRow.objects.get(pk=row_dict['id'], status__in=['error', 'pending', 'validated', 'imported'])
+                        except VisitRow.DoesNotExist, e:
+                            continue
                     else:
                         visit_row = VisitRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
 
