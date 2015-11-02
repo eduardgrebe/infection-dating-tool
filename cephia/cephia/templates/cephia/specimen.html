@@ -53,6 +53,7 @@
                   <th>Shipped To</th>
                   <th>Source Study</th>
                   <th>Aliquoting Reason</th>
+                  <th>Available</th>
                 </thead>
 
                 <tbody>
@@ -76,11 +77,12 @@
                     <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
                     <td>{% if spec.transfer_reason %}{{spec.transfer_reason}}{% endif %}</td>
                     <td>{{spec.specimen_type.name}}</td>
-                    <td>{% if spec.volume %}{{spec.volume}}{% endif %}</td>
+                    <td>{{spec.volume}}</td>
                     <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
                     <td>{{spec.receiving_site.name}}</td>
                     <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
                     <td>{{spec.aliquoting_reason.name}}</td>
+                    <td>{% if spec.is_available %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
                   </tr>
                   {% endfor %}
                 </tbody>

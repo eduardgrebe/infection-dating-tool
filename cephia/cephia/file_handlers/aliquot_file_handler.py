@@ -47,7 +47,7 @@ class AliquotFileHandler(FileHandler):
                     aliquot_row.aliquoting_date_mm=row_dict['aliquoting_date_mm']
                     aliquot_row.aliquoting_date_dd=row_dict['aliquoting_date_dd']
                     aliquot_row.specimen_type=row_dict['specimen_type']
-                    aliquot_row.aliquot_reason=row_dict['reason']
+                    aliquot_row.reason=row_dict['reason']
                     aliquot_row.state='pending'
                     aliquot_row.error_message = ''
                     aliquot_row.fileinfo=self.upload_file
@@ -89,7 +89,7 @@ class AliquotFileHandler(FileHandler):
                 if aliquot_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
                     if aliquot_row.volume_units != 'microlitres':
                         error_msg += 'volume_units must be "microlitres" for this specimen_type.\n'
-                    if float(aliquot_row.volume or 0) < 90:
+                    if float(aliquot_row.volume or 0) < 90 and float(aliquot_row.volume or 0) != 0:
                         error_msg += 'volume must be greater than 90 for this specimen_type.\n'
 
                 if aliquot_row.specimen_type == '2':
@@ -163,14 +163,15 @@ class AliquotFileHandler(FileHandler):
                                                            specimen_type__spec_type=aliquot_row.specimen_type)
                     
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
-                        
+                        import pdb; pdb.set_trace()
                         if float(aliquot_row.volume) == 0:
                             parent_specimen.is_available = False
                             
                         parent_specimen.volume = aliquot_row.volume
                         parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
-                        parent_specimen.reason = aliquot_row.aliquot_reason
+                        parent_specimen.reason = aliquot_row.reason
                         parent_specimen.save()
+                        specimen = parent_specimen
                     else:
                         parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
                         parent_specimen.save()
@@ -187,7 +188,7 @@ class AliquotFileHandler(FileHandler):
                                                            subject=parent_specimen.subject,
                                                            source_study=parent_specimen.source_study,
                                                            created_date=self.registered_dates.get('aliquoting_date', None),
-                                                           aliquoting_reason=aliquot_row.aliquot_reason)
+                                                           aliquoting_reason=aliquot_row.reason)
                         
                     aliquot_row.state = 'processed'
                     aliquot_row.error_message = ''
