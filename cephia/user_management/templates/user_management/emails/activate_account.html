@@ -1,0 +1,10 @@
+<p>Good day</p>
+
+<p>Your account is created. Please click the link below to you enter a password and activate your account.</p>
+<p>Your username is: {{ user.username }}.</p>
+{% url "users:activate_account" user.activation_key as activation_url %}
+<p><a href="{{ BASE_URL }}{{ activation_url }}">{{ BASE_URL }}{{ activation_url }}</a></p>
+
+<p>Best regards</p>
+
+

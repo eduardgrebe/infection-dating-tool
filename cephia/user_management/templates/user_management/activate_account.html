@@ -1,0 +1,38 @@
+{% extends "backend/base.html" %}
+
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block page_heading %}Activate your account{% endblock %}
+
+{% block content %}
+
+<div class="content">
+  {% if password_changed %}
+    <h3>Your password was changed successfully. Click the link below to log in.</h3>
+    <a class="btn btn-default" href="{% url 'home' %}">Home</a>
+  {% elif not token_errors %}
+    <h3>Set up your password to activate your account</h3>
+    
+    <form method="post">
+      {% csrf_token %}
+      <div class="row">
+	<div class="col-md-3">
+	  {% bootstrap_form form %}
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-3">
+	  <button class="btn btn-primary">Submit</button>
+	  <a class="btn btn-default" href="{% url 'home' %}">Home</a>
+	</div>
+      </div>
+    </form>
+  {% else %}
+    <h3 class="text-danger">Error: {{ token_errors }}</h3>
+    <a href="{% url 'home' %}">Home</a>
+  {% endif %}
+  
+</div>
+
+{% endblock  %}

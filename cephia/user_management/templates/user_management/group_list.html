@@ -1,0 +1,47 @@
+{% extends "backend/base.html" %}
+
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block page_heading %}Groups ({{ group_count|default:"0" }}){% endblock %}
+
+{% block content %}
+
+{% paginate groups %}
+
+<div class="content">
+
+  {% show_pages %}
+  <table class="table-striped table table-hover">
+
+    <thead>
+
+      <tr class="header">
+        <th>Name</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for row in groups %}
+      <tr>
+        <td>{{row.name}}</td>
+	<td>
+	  <a href="{% url "users:group_edit" row.id %}"><img src="{{STATIC_URL}}images/pencil.png"/></a>
+	</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td style="font-style:italic" colspan="6">No group</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+  {% show_pages %}
+  <br>
+  <a href="{% url 'users:group_add' %}"  id="click" class="btn btn-default">New group</a>
+  
+</div>
+<br>
+
+{% endblock  %}

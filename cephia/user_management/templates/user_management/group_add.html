@@ -1,0 +1,19 @@
+{% extends "backend/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block page_heading %}New group{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+  <form action="{% url 'users:group_add' %}" method="post" enctype="multipart/form-data" class="form">
+    {% csrf_token %}
+    {% include "user_management/_group_form.html" %}
+  </form>
+
+</div>
+
+{% endblock %}
+
