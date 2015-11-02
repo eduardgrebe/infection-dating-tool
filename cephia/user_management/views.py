@@ -17,12 +17,10 @@ from django.shortcuts import resolve_url
 from django.http import HttpResponse
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm, PasswordChangeForm
 
-from api import api
-from api.decorators import api_login_required, fix_ssl_url
-from forms import (
-    UserEditForm, HRUserEditForm, UserProfileForm, 
-    GroupEditForm, LoginForm, ActivateUserForm
-)
+# from forms import (
+#     UserEditForm, HRUserEditForm, UserProfileForm, 
+#     GroupEditForm, LoginForm, ActivateUserForm
+# )
 logger = logging.getLogger(__name__)
 
 def login(request, template="admin/login.html", redirect_field_name='next'):

@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'endless_pagination',
     'cephia',
     'reporting',
+    'user_management',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -2,7 +2,6 @@
 import os
 from lib.fields import ProtectedForeignKey
 from django.contrib.auth import load_backend, login, logout
-from api import api, apidate
 import subprocess
 from django.contrib.auth import get_user_model
 from django.core.files import File 
@@ -36,7 +35,7 @@ class BaseUser(AbstractUser, BaseModel):
         if self.temporary_locked_out_at is None:
             return False
         lock_expires_at = self.temporary_locked_out_at + timedelta(minutes=settings.LOCKOUT_TIME_IN_MINUTES)
-        if apidate.today_in_utc() > lock_expires_at:
+        if datetime.now() > lock_expires_at:
             self.login_ok()
             return False
         else:
