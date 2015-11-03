@@ -65,7 +65,9 @@ class SubjectFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-
+                    if not row_dict:
+                        continue
+                    
                     if row_dict.get('id', None):
                         try:
                             subject_row = SubjectRow.objects.get(pk=row_dict['id'], status__in=['error', 'pending', 'validated', 'imported'])
@@ -88,8 +90,8 @@ class SubjectFileHandler(FileHandler):
                     subject_row.first_positive_date_mm = row_dict['first_positive_date_mm']
                     subject_row.first_positive_date_dd = row_dict['first_positive_date_dd']
                     subject_row.edsc_reported_yyyy = row_dict['edsc_reported_yyyy']
-                    subject_row.edsc_reported_mm = row_dict['edsc_reported_mm'],
-                    subject_row.edsc_reported_dd = row_dict['edsc_reported_dd'],
+                    subject_row.edsc_reported_mm = row_dict['edsc_reported_mm']
+                    subject_row.edsc_reported_dd = row_dict['edsc_reported_dd']
                     subject_row.fiebig_stage_at_firstpos = row_dict['fiebig_stage_at_firstpos']
                     subject_row.ars_onset_date_yyyy = row_dict['ars_onset_date_yyyy']
                     subject_row.ars_onset_date_mm = row_dict['ars_onset_date_mm']
