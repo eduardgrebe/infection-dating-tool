@@ -242,7 +242,7 @@ class SubjectFileHandler(FileHandler):
                                                      risk_idu = self.get_bool(subject_row.risk_idu),
                                                      subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                                      subtype = Subtype.objects.get(name=subject_row.subtype),
-                                                     edsc_report = self.registered_dates.get('edsc_reported', None),
+                                                     edsc_reported = self.registered_dates.get('edsc_reported', None),
                                                      art_initiation_date = self.registered_dates.get('art_initiation_date', None),
                                                      aids_diagnosis_date = self.registered_dates.get('aids_diagnosis_date', None),
                                                      art_interruption_date = self.registered_dates.get('art_interruption_date', None),
