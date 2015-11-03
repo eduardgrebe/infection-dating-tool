@@ -23,6 +23,9 @@ class SubjectFileHandler(FileHandler):
                                    'first_positive_date_yyyy',
                                    'first_positive_date_mm',
                                    'first_positive_date_dd',
+                                   'edsc_reported_yyyy',
+                                   'edsc_reported_mm',
+                                   'edsc_reported_dd',
                                    'fiebig_stage_at_firstpos',
                                    'ars_onset_date_yyyy',
                                    'ars_onset_date_mm',
@@ -84,6 +87,9 @@ class SubjectFileHandler(FileHandler):
                     subject_row.first_positive_date_yyyy = row_dict['first_positive_date_yyyy']
                     subject_row.first_positive_date_mm = row_dict['first_positive_date_mm']
                     subject_row.first_positive_date_dd = row_dict['first_positive_date_dd']
+                    subject_row.edsc_reported_yyyy = row_dict['edsc_reported_yyyy']
+                    subject_row.edsc_reported_mm = row_dict['edsc_reported_mm'],
+                    subject_row.edsc_reported_dd = row_dict['edsc_reported_dd'],
                     subject_row.fiebig_stage_at_firstpos = row_dict['fiebig_stage_at_firstpos']
                     subject_row.ars_onset_date_yyyy = row_dict['ars_onset_date_yyyy']
                     subject_row.ars_onset_date_mm = row_dict['ars_onset_date_mm']
@@ -234,6 +240,7 @@ class SubjectFileHandler(FileHandler):
                                                      risk_idu = self.get_bool(subject_row.risk_idu),
                                                      subtype_confirmed = self.get_bool(subject_row.subtype_confirmed),
                                                      subtype = Subtype.objects.get(name=subject_row.subtype),
+                                                     edsc_report = self.registered_dates.get('edsc_reported', None),
                                                      art_initiation_date = self.registered_dates.get('art_initiation_date', None),
                                                      aids_diagnosis_date = self.registered_dates.get('aids_diagnosis_date', None),
                                                      art_interruption_date = self.registered_dates.get('art_interruption_date', None),
