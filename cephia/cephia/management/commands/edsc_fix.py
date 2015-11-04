@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Add edsc reported below and above the line for exiting rows'
+    help = 'Add edsc reported below and above the line for existing rows'
 
     def handle(self, *args, **options):
         upload_file = FileInfo.objects.get(pk=20)
@@ -22,7 +22,8 @@ class Command(BaseCommand):
 
                 if row_dict['edsc_reported_yyyy']:
                     try:
-                        subject_row = SubjectRow.objects.get(subject_label=row_dict['subject_label'], state='processed')
+                        subject_row = SubjectRow.objects.get(subject_label=row_dict['subject_label'],
+                                                             state='processed')
                     except SubjectRow.DoesNotExist:
                         continue
 
@@ -37,6 +38,9 @@ class Command(BaseCommand):
                     subject.edsc_reported = edsc_reported or None
                     subject.save()
 
+        upload_file.state = 'processed'
+        upload_file.message = 'edsc fix'
+        upload_file.save()
         logger.info('EDSC fix - Success!')
 
 
