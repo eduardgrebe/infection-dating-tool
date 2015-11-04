@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = 'Add edsc reported below and above the line for existing rows'
 
     def handle(self, *args, **options):
-        upload_file = FileInfo.objects.get(pk=20)
+        upload_file = FileInfo.objects.get(pk=8)
         handler = FileHandler(upload_file)
         
         for row_num in range(handler.num_rows):
