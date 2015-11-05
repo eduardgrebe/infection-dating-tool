@@ -117,6 +117,7 @@ class FileInfo(models.Model):
         ('transfer_in','Transfer In'),
         ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
+        ('assay','Assay'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
