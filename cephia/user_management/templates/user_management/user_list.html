@@ -1,11 +1,9 @@
-{% extends "backend/base.html" %}
+{% extends "base.html" %}
 
 {% load bootstrap3 %}
 {% load endless %}
-{% load user_tags %}
-{% load staticfiles %}
 
-{% block backend/page_heading %}User list ({{ user_count|default:"0" }}){% endblock %}
+{% block page_heading %}User list ({{ user_count|default:"0" }}){% endblock %}
 
 {% block content %}
 
@@ -23,9 +21,8 @@
         <th>First name</th>
         <th>Last name</th>
         <th>Groups</th>
-        <th>Enabled</th>
+        <th>Active</th>
         <th>Unlocked</th>
-        <th>Lead facilitator</th>
         <th>Last modified</th>
         <th>Last login</th>
         <th></th>
@@ -47,23 +44,22 @@
         </td>
         <td>
           {% if row.is_active %}
-          <img width="25px" src="{% static 'images/tick.png' %}"/>
+          <img width="25px" src="{{STATIC_URL}}images/tick.png"/>
           {% else %}
-          <img width="25px" src="{% static 'images/cross.png' %}"/>
+          <img width="25px" src="{{STATIC_URL}}images/cross.png"/>
           {% endif %}
         </td>
         <td>
           {% if row.temporary_locked_out_at %}
-          <img width="25px" src="{% static 'images/cross.png' %}"/>
+          <img width="25px" src="{{STATIC_URL}}images/cross.png"/>
           {% else %}
-          <img width="25px" src="{% static 'images/tick.png' %}"/>
+          <img width="25px" src="{{STATIC_URL}}images/tick.png"/>
           {% endif %}
         </td>
-        <td>{{row.lead_facilitator.name}}</td>
         <td>{{row.modified}}</td>
         <td>{{row.last_login}}</td>
 	<td>
-	  <a href="{% url "users:user_edit" row.id %}"><img src="{% static 'images/pencil.png' %}"/></a>
+	  <a href="{% url "users:user_edit" row.id %}"><img src="{{STATIC_URL}}images/pencil.png"/></a>
 	</td>
       </tr>
       {% empty %}
@@ -80,4 +76,5 @@
   
 </div>
 <br>
+
 {% endblock  %}

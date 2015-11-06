@@ -1,4 +1,4 @@
-{% extends "backend/base.html" %}
+{% extends "base.html" %}
 
 {% load bootstrap3 %}
 
@@ -10,7 +10,7 @@
 
   <div class="medium-4 columns">
 
-    <form action="{% url 'users:user_edit' user_id %}" method="post" class="form">
+    <form action="{% url 'users:user_edit' form.instance.id %}" method="post" class="form">
       {% csrf_token %}
       {% include "user_management/_user_form.html" %}
     </form>
