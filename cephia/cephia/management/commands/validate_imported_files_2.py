@@ -6,10 +6,10 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
 
-    help = 'Validate subject, visit and transfer in files in status - imported'
+    help = 'Validate aliquot and transfer out files in status - imported'
 
     def handle(self, *args, **options):
-        for file_to_validate in FileInfo.objects.filter(state='imported', priority__in=[1,2,3]).order_by('priority'):
+        for file_to_validate in FileInfo.objects.filter(state='imported', priority__in=[4,5]).order_by('priority'):
             try:
                 file_handler = file_to_validate.get_handler()
 
