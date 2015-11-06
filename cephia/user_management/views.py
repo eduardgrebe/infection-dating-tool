@@ -1,13 +1,11 @@
 import os
 from collections import namedtuple
 import json
-
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
-from django.template.response import TemplateResponse
 from django.shortcuts import render_to_response, redirect
 from django.db.models import Sum, Count, Q, F, Max, Min
 from django.contrib import messages
@@ -27,15 +25,9 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, Set
 from django.contrib.sites.models import get_current_site
 from django.utils.http import base36_to_int, is_safe_url, urlsafe_base64_decode, urlsafe_base64_encode
 from django.shortcuts import resolve_url
-from django_remote_forms.forms import RemoteForm
 from django.forms.models import model_to_dict
-from django.template.loader import render_to_string
-
 from ssl_decorators import fix_ssl_url
 from mailqueue.mailqueue_helper import queue_admin_email, queue_email
-
-from api.decorators import copy_json_to_post, token_login
-from api import api
 from forms import UserEditForm, UserProfileForm, GroupEditForm, ActivateUserForm
 import datetime
 from core.models import *
@@ -44,15 +36,6 @@ from user_management.models import AuthenticationToken
 import logging
 logger = logging.getLogger(__name__)
 
-@csrf_exempt
-@copy_json_to_post
-def is_logged_in(request):
-    context = {}
-    if api.token_login(request):
-        api.set_response_ok(context)
-    else:
-        api.set_response_fail(context, 'Not logged in')
-    return HttpResponse(api.dump_for_response(context))
 
 @csrf_exempt
 @copy_json_to_post
@@ -61,29 +44,22 @@ def login(request):
 
     form = AuthenticationForm(request, data=request.POST)
     if form.is_valid():
-
         user = form.get_user()
 
         if user.is_locked_out():
             msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
-            logger.warning(msg)
-            queue_admin_email("User login on a locked out account", msg)
-            context['status'] = 'failed'
-            context['error_msg'] = "This account is locked"
+            #add locked out message here
         else:
             auth_login(request, user)
             user.login_ok()
             token = AuthenticationToken.create_token(user)
 
             context['api_token'] = token.token
-            context['user'] = user.model_to_dict()
-            context['status'] = 'ok'
     else:
-        context['status'] = 'failed'
-        context['error_msg'] = "Invalid credentials"
+        # add invalid credentials msg here
         _check_for_login_hack_attempt(request, context)
 
-    return HttpResponse(api.dump_for_response(context))
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 def _check_for_login_hack_attempt(request, context):
     if request.POST.get('username'):
@@ -94,14 +70,15 @@ def _check_for_login_hack_attempt(request, context):
         if user.is_locked_out():
             msg = "Failed login attempt on an already locked out user : %s" % user.username
             logger.warning(msg)
-            queue_admin_email(subject="Locked account login failure: %s is already locked out" % user.username, 
-                             msg="Number of login failures: %d. Locked out at %s" % (user.num_login_failures, user.temporary_locked_out_at))
-            context['error_msg'] = "This account is locked"
+            # queue_admin_email(subject="Locked account login failure: %s is already locked out" % user.username, 
+            #                  msg="Number of login failures: %d. Locked out at %s" % (user.num_login_failures, user.temporary_locked_out_at))
+            # locked account message
+            #context['error_msg'] = "This account is locked"
             
         if user.on_login_failure():
             logger.warning("Locking for Repeated login failure: %s has been locked out" % user.username)
-            queue_admin_email(subject="Locking for Repeated login failure: %s has been locked out" % user.username, 
-                             msg="Number of login failures: %d. Locked out at %s" % (user.num_login_failures, user.temporary_locked_out_at))
+            # queue_admin_email(subject="Locking for Repeated login failure: %s has been locked out" % user.username, 
+            #                  msg="Number of login failures: %d. Locked out at %s" % (user.num_login_failures, user.temporary_locked_out_at))
             context['error_msg'] = "This account has been locked"
 
 def logout(request, login_url=None, current_app=None, extra_context=None):
@@ -120,17 +97,13 @@ def user_list(request):
 
     try:
         users = get_user_model().objects.all().order_by("username")
-
-        api.set_response_ok(context)
-
         flattened_users = list(users.values())
-
         context = { 'data' : { 'users' : flattened_users,
                                'user_count': users.count() },
                     'errors' : [] }
     except Exception, ex:
         logger.exception(ex)
-        api.set_response_fail(context, str(ex))
+        # fail message here
 
     return HttpResponse(api.dump_for_response(context))
 
@@ -163,7 +136,7 @@ def unactivated_users(request):
 @csrf_exempt
 @copy_json_to_post
 @token_login
-@user_passes_test(lambda u: u.is_superuser or u.has_perm("riley.add_users"))
+@user_passes_test(lambda u: u.is_superuser)
 def user_add(request, template="user_management/user_add.html"):
     context = { 'data': {} }
 
@@ -185,7 +158,7 @@ def user_add(request, template="user_management/user_add.html"):
         logger.exception(ex)
         api.set_response_fail(context, str(ex))
 
-    return HttpResponse(api.dump_for_response(context))
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 @csrf_exempt
 @copy_json_to_post
@@ -202,25 +175,19 @@ def user_edit(request):
             form = UserEditForm(request.POST or None, instance=user)
             if form.is_valid():
                 user = form.save()
-                api.set_response_ok(context)
             else:
-                api.set_response_fail(context, "Form is not valid : %s" % form.errors)
-            remote_form = RemoteForm(form)
-            context.update(remote_form.as_dict())
+                # fail message
         else:
             user_id = request.DATA['user_id']
             user = get_user_model().objects.get(pk=user_id)
 
             context['data']['user'] = user_profile_to_dict(user)
             context['data']['groups'] = [model_to_dict(x) for x in Group.objects.all().order_by("name")]
-            context['data']['languages'] = [model_to_dict(x) for x in Language.objects.all().order_by("language_name")]
-            api.set_response_ok(context)
-
     except Exception, ex:
         logger.exception(ex)
-        api.set_response_fail(context, str(ex))
+        # fail msg here
 
-    return HttpResponse(api.dump_for_response(context))
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @csrf_exempt
@@ -302,7 +269,6 @@ def group_edit(request):
 
             if form.is_valid():
                 group = form.save()
-                api.set_response_ok(context)
             else:
                 api.set_response_fail(context, "Form is not valid : %s" % form.errors)
 
@@ -316,7 +282,6 @@ def group_edit(request):
             permissions = Permission.objects.all().exclude(name__contains="Can add").exclude(name__contains="Can delete").exclude(name__contains="Can change").order_by("name")
 
             context['data']['permissions'] = [model_to_dict(p) for p in permissions]
-            api.set_response_ok(context)
 
     except Exception, ex:
         logger.exception(ex)
@@ -374,14 +339,14 @@ def generate_activation_key(request):
     user_id = request.POST.get('user_id')
     context = {}
     try:
-        user = RileyUser.objects.get(pk=user_id)
-    except RileyUser.DoesNotExist:
-        api.set_response_fail(context, "User does not exist")
+        user = CephiaUser.objects.get(pk=user_id)
+    except CephiaUser.DoesNotExist:
+        # does not exist message here
     else:
         user.generate_activation_key()
         user.save()
         context['activation_key'] = user.activation_key
-        api.set_response_ok(context)
+
     return HttpResponse(api.dump_for_response(context))    
 
 @csrf_exempt
