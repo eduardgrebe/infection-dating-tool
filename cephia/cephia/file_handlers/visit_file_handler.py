@@ -49,7 +49,7 @@ class VisitFileHandler(FileHandler):
                     visit_row.source_study = row_dict['source_study']
                     visit_row.cd4_count = row_dict['cd4_count']
                     visit_row.vl = row_dict['vl']
-                    visit_row.sopevisit_ec = row_dict['scopevisit_ec']
+                    visit_row.scopevisit_ec = row_dict['scopevisit_ec']
                     visit_row.pregnant = row_dict['pregnant']
                     visit_row.hepatitis = row_dict['hepatitis']
 
@@ -144,7 +144,7 @@ class VisitFileHandler(FileHandler):
                                                  source_study = Study.objects.get(name=visit_row.source_study),
                                                  cd4_count = visit_row.cd4_count or None,
                                                  vl = visit_row.vl or None,
-                                                 scopevisit_ec = visit_row.scopevisit_ec or False,
+                                                 scopevisit_ec = self.get_bool(visit_row.scopevisit_ec) or False,
                                                  pregnant = self.get_bool(visit_row.pregnant),
                                                  hepatitis = self.get_bool(visit_row.hepatitis))
 
