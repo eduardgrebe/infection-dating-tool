@@ -55,8 +55,6 @@ def _deploy_staging(branch_name="master"):
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_impd.sh")
 
-    _update_cron_jobs()
-    
     print("Deployed to: http://cephia.impd.co.za/")
 
 def _deploy_cephia_test(branch_name="master"):
@@ -90,14 +88,13 @@ def _update_cron_jobs():
     crontab_remove_all_with_marker()
 
     def create_cron_line(script_name, stars):
-        crontab_update("{stars} /home/cephia/scripts/{script_name}.sh > /home/cephia/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
+        crontab_update("{stars} /home/cephia/cephia/scripts/{script_name}.sh > /home/cephia/cephia/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
+                       marker=script_name)
+
+    def create_cron_line_prod(script_name, stars):
+        crontab_update("{stars} /home/cephia/cephia_prod/scripts/{script_name}.sh > /home/cephia/cephia_prod/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
                        marker=script_name)
         
     ## Every minute
-    #create_cron_line(script_name='run_commands', stars="* * * * *")
-    create_cron_line(script_name='import_pending_files', stars="* * * * *")
-    create_cron_line(script_name='validate_imported_files', stars="* * * * *")
-    create_cron_line(script_name='process_validated_files', stars="* * * * *")
-    create_cron_line(script_name='associate_subject_visit', stars="* * * * *")
-    create_cron_line(script_name='associate_specimen_subject', stars="* * * * *")
-    create_cron_line(script_name='associate_specimen_visit', stars="* * * * *")
+    create_cron_line(script_name='run_commands', stars="* * * * *")
+    create_cron_line_prod(script_name='run_commands', stars="* * * * *")
