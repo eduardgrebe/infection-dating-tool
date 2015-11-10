@@ -48,7 +48,7 @@ def login(request):
 
         if user.is_locked_out():
             msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
-            #add locked out message here
+            messages.add_message(request, messages.WARNING, msg)
         else:
             auth_login(request, user)
             user.login_ok()
@@ -56,7 +56,7 @@ def login(request):
 
             context['api_token'] = token.token
     else:
-        # add invalid credentials msg here
+        messages.add_message(request, messages.WARNING, "Invalid credentials")
         _check_for_login_hack_attempt(request, context)
 
     return render_to_response(template, context, context_instance=RequestContext(request))
@@ -70,16 +70,11 @@ def _check_for_login_hack_attempt(request, context):
         if user.is_locked_out():
             msg = "Failed login attempt on an already locked out user : %s" % user.username
             logger.warning(msg)
-            # queue_admin_email(subject="Locked account login failure: %s is already locked out" % user.username, 
-            #                  msg="Number of login failures: %d. Locked out at %s" % (user.num_login_failures, user.temporary_locked_out_at))
-            # locked account message
-            #context['error_msg'] = "This account is locked"
+            messages.add_message(request, messages.INFO, msg)
             
         if user.on_login_failure():
             logger.warning("Locking for Repeated login failure: %s has been locked out" % user.username)
-            # queue_admin_email(subject="Locking for Repeated login failure: %s has been locked out" % user.username, 
-            #                  msg="Number of login failures: %d. Locked out at %s" % (user.num_login_failures, user.temporary_locked_out_at))
-            context['error_msg'] = "This account has been locked"
+            messages.add_message(request, messages.INFO, "This account has been locked")
 
 def logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
@@ -103,7 +98,7 @@ def user_list(request):
                     'errors' : [] }
     except Exception, ex:
         logger.exception(ex)
-        # fail message here
+        messages.add_message(request, messages.INFO, "Could not get user list")
 
     return HttpResponse(api.dump_for_response(context))
 
@@ -176,7 +171,7 @@ def user_edit(request):
             if form.is_valid():
                 user = form.save()
             else:
-                # fail message
+                messages.add_message(request, messages.INFO, "Failed to edit user")
         else:
             user_id = request.DATA['user_id']
             user = get_user_model().objects.get(pk=user_id)
@@ -185,7 +180,7 @@ def user_edit(request):
             context['data']['groups'] = [model_to_dict(x) for x in Group.objects.all().order_by("name")]
     except Exception, ex:
         logger.exception(ex)
-        # fail msg here
+        messages.add_message(request, messages.WARNING, ex)
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 
