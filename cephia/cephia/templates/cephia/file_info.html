@@ -70,15 +70,6 @@
 	            <td>{{file.state}}</td>
 	            <td><a href="{% url 'download_file' file.id %}">Download</a></td>
 	            <td><pre style="white-space: pre-wrap; overflow:auto; max-width:600px;">{{file.message}}</pre></td>
-	            <td>
-	              {% if file.state == 'pending' %}
-	              <a href="{% url 'parse_file' file.id %}" class="btn btn-default btn-sm">Import</a>
-	              {% elif file.state == 'imported' %}
-	              <a href="{% url 'validate_rows' file.id %}" class="btn btn-default btn-sm">Validate</a>
-	              {% elif file.state == 'validated' or file.state == 'row_error' %}
-	              <a href="{% url 'process_file' file.id %}" class="btn btn-default btn-sm">Process</a>
-	              {% endif %}
-	            </td>
 	          </tr>
 	          {% endfor %}
                 </tbody>

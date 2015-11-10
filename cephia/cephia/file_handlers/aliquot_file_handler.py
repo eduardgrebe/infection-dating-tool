@@ -163,7 +163,6 @@ class AliquotFileHandler(FileHandler):
                                                            specimen_type__spec_type=aliquot_row.specimen_type)
                     
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
-
                         if float(aliquot_row.volume) == 0:
                             parent_specimen.is_available = False
                             
