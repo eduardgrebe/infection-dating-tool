@@ -1,11 +1,6 @@
 # encoding: utf-8
-import os
 from lib.fields import ProtectedForeignKey
-from django.contrib.auth import load_backend, login, logout
-import subprocess
-from django.contrib.auth import get_user_model
-from django.core.files import File 
-import uuid
+from django.contrib.auth import load_backend, login
 from datetime import datetime, timedelta
 from django.db import models
 from django.conf import settings
