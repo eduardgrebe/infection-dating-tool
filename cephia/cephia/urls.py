@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^tms/$', views.table_management, name='table_management'),
 
     url(r'^reports/', include('reporting.urls', namespace='reporting')),
-    url(r'^users/', include('user_management.urls', namespace='users')),
+    url(r'^accounts/', include('user_management.urls', namespace='users')),
     
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
