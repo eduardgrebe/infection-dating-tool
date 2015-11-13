@@ -1,5 +1,6 @@
 from django.db import models
 from django.forms.models import model_to_dict as _model_to_dict
+from datetime import datetime
 
 class BaseModel(models.Model):
     class Meta:
@@ -10,7 +11,7 @@ class BaseModel(models.Model):
     modified = models.DateTimeField()
 
     def save(self, *args, **kwargs):
-        self.modified = apidate.today_in_utc()
+        self.modified = datetime.now()
         if self.id is None:
             self.created = self.modified
         super(BaseModel, self).save(*args, **kwargs)

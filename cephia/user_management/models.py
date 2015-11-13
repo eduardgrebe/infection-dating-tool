@@ -6,6 +6,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from lib.models import BaseModel
+import uuid
 
 import logging
 logger = logging.getLogger(__name__)
@@ -44,40 +45,40 @@ class BaseUser(AbstractUser, BaseModel):
         self.save()
 
 
-# class AuthenticationToken(models.Model):
-#     created = models.DateTimeField(auto_now_add=True)
-#     modified = models.DateTimeField(auto_now=True)
-#     user = ProtectedForeignKey(settings.AUTH_USER_MODEL, db_index=True, blank=False, null=False, related_name="authentication_token")
-#     token = models.CharField(max_length=200, blank=False, null=False, db_index=True)
+class AuthenticationToken(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    user = ProtectedForeignKey(settings.AUTH_USER_MODEL, db_index=True, blank=False, null=False, related_name="authentication_token")
+    token = models.CharField(max_length=200, blank=False, null=False, db_index=True)
     
-#     @classmethod
-#     def create_token(self, user):
-#         AuthenticationToken.objects.filter(user=user).delete()
-#         token = str(uuid.uuid4()).replace("-","").replace("_","")
-#         return AuthenticationToken.objects.create(user=user, token=token)
+    @classmethod
+    def create_token(self, user):
+        AuthenticationToken.objects.filter(user=user).delete()
+        token = str(uuid.uuid4()).replace("-","").replace("_","")
+        return AuthenticationToken.objects.create(user=user, token=token)
 
-#     @classmethod
-#     def clear_token(self, user):
-#         AuthenticationToken.objects.filter(user=user).delete()
+    @classmethod
+    def clear_token(self, user):
+        AuthenticationToken.objects.filter(user=user).delete()
         
-#     @classmethod
-#     def try_login_with_token(self, request, token):
+    @classmethod
+    def try_login_with_token(self, request, token):
 
-#         def override_login(request, user):
-#             if not hasattr(user, 'backend'):
-#                 for backend in settings.AUTHENTICATION_BACKENDS:
-#                     if user == load_backend(backend).get_user(user.pk):
-#                         user.backend = backend
-#                         break
-#             if hasattr(user, 'backend'):
-#                 return login(request, user)
+        def override_login(request, user):
+            if not hasattr(user, 'backend'):
+                for backend in settings.AUTHENTICATION_BACKENDS:
+                    if user == load_backend(backend).get_user(user.pk):
+                        user.backend = backend
+                        break
+            if hasattr(user, 'backend'):
+                return login(request, user)
 
-#         try:
-#             authtoken = AuthenticationToken.objects.get(token=token)
-#             override_login(request, authtoken.user)
-#             return True
-#         except AuthenticationToken.DoesNotExist:
-#             logger.warning("No authentication token found for %s" % token)
-#             return False
+        try:
+            authtoken = AuthenticationToken.objects.get(token=token)
+            override_login(request, authtoken.user)
+            return True
+        except AuthenticationToken.DoesNotExist:
+            logger.warning("No authentication token found for %s" % token)
+            return False
 
 

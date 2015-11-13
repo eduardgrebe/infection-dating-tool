@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib import messages
 from django.template import RequestContext
@@ -12,6 +13,7 @@ from django.shortcuts import resolve_url
 from ssl_decorators import fix_ssl_url
 from forms import UserEditForm
 from user_management.models import AuthenticationToken
+from django.core.urlresolvers import reverse
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,7 +34,7 @@ def login(request, template='admin/cephia_login.html'):
                 auth_login(request, user)
                 user.login_ok()
                 token = AuthenticationToken.create_token(user)
-                context['api_token'] = token.token
+                return HttpResponseRedirect(reverse("home"))
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
@@ -47,7 +49,7 @@ def _check_for_login_hack_attempt(request, context):
         except get_user_model().DoesNotExist:
             return
         if user.is_locked_out():
-            msg = "Failed login attempt on an already locked out user : %s" % user.username
+            msg = "Failed login attempt on an already locked ouuser : %s" % user.username
             logger.warning(msg)
             messages.add_message(request, messages.INFO, msg)
             
