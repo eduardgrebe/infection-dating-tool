@@ -19,6 +19,7 @@ from collections import OrderedDict
 from django.utils import timezone
 import os
 from django.conf import settings
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -635,7 +636,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
             messages.success(request, 'Successful!')
 
         context = {}
-        subjects = Specimen.objects.values('subject__id').filter(subject__isnull=False, visit__isnull=True).distinct()
+        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) & Q(visit__isnull=True) | Q(visit_linkage='provisional')).distinct()
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
