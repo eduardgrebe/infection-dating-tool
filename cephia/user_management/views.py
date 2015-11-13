@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-def login(request):
+def login(request, template_name=None):
     context = {}
     import pdb; pdb.set_trace()
-    form = AuthenticationForm(request, data=request.POST)
+    form = AuthenticationForm(request, data=request.POST or None)
     if form.is_valid():
         user = form.get_user()
 
