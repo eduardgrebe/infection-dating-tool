@@ -18,26 +18,26 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-def login(request, template_name=None):
+def login(request, template='admin/cephia_login.html'):
     context = {}
-    import pdb; pdb.set_trace()
     form = AuthenticationForm(request, data=request.POST or None)
-    if form.is_valid():
-        user = form.get_user()
+    if request.method == 'POST':
+        if form.is_valid():
+            user = form.get_user()
 
-        if user.is_locked_out():
-            msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
-            messages.add_message(request, messages.WARNING, msg)
+            if user.is_locked_out():
+                msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
+                messages.add_message(request, messages.WARNING, msg)
+            else:
+                auth_login(request, user)
+                user.login_ok()
+                token = AuthenticationToken.create_token(user)
+                context['api_token'] = token.token
         else:
-            auth_login(request, user)
-            user.login_ok()
-            token = AuthenticationToken.create_token(user)
+            messages.add_message(request, messages.WARNING, "Invalid credentials")
+            _check_for_login_hack_attempt(request, context)
 
-            context['api_token'] = token.token
-    else:
-        messages.add_message(request, messages.WARNING, "Invalid credentials")
-        _check_for_login_hack_attempt(request, context)
-
+    context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 def _check_for_login_hack_attempt(request, context):
