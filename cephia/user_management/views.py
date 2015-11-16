@@ -10,7 +10,6 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import resolve_url
-from ssl_decorators import fix_ssl_url
 from forms import UserEditForm
 from user_management.models import AuthenticationToken
 from django.core.urlresolvers import reverse
@@ -59,9 +58,7 @@ def _check_for_login_hack_attempt(request, context):
 
 def logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
-        login_url = settings.LOGIN_URL
-    login_url = resolve_url(login_url)
-    login_url = fix_ssl_url(request, login_url)
+        login_url = settings.LOGIN_REDIRECT_URL
     return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
 
 @csrf_exempt

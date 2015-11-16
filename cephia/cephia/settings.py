@@ -13,6 +13,8 @@ LOG_FILENAME="cephia.log"
 LOG_LEVEL="INFO"
 
 LOGIN_REDIRECT_URL = "/"
+MAX_NUM_FAILED_LOGINS = 3
+LOCKOUT_TIME_IN_MINUTES = 5
 REVISION = git.Repo(os.path.join(PROJECT_HOME, "..", "..")).head.commit.hexsha
 
 # SECURITY WARNING: keep the secret key used in production secret!

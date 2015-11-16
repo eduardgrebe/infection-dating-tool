@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from lib.models import BaseModel
 import uuid
+from django.utils import timezone
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ class BaseUser(AbstractUser, BaseModel):
         if self.temporary_locked_out_at is None:
             return False
         lock_expires_at = self.temporary_locked_out_at + timedelta(minutes=settings.LOCKOUT_TIME_IN_MINUTES)
-        if datetime.now() > lock_expires_at:
+        if timezone.now() > lock_expires_at:
             self.login_ok()
             return False
         else:
