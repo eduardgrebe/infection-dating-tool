@@ -13,7 +13,7 @@ class UserEditForm(ModelForm):
     class Meta:
         model = get_user_model()
         fields=["username", "first_name", "last_name", "email", "password", "verify_password", "is_superuser",
-                "is_active", 'force_unlock', 'groups']
+                "is_active", 'is_staff', 'force_unlock', 'groups']
 
     def __init__(self, *args, **kwargs):
         super(UserEditForm, self).__init__(*args, **kwargs)
