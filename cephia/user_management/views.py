@@ -56,54 +56,65 @@ def _check_for_login_hack_attempt(request, context):
             logger.warning("Locking for Repeated login failure: %s has been locked out" % user.username)
             messages.add_message(request, messages.INFO, "This account has been locked")
 
+
 def logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
         login_url = settings.LOGIN_REDIRECT_URL
     return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
 
+
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
-def user_add(request, template="user_management/user_add.html"):
-    context = { 'data': {} }
-
+def user_list(request, template="user_management/user_list.html"):
+    context = {}
     try:
-        if request.method == 'POST':
-            form = UserEditForm(request.POST or None)
-            if form.is_valid():
-                user = form.save()
-                messages.add_message(request, messages.SUCCESS, "User created")
-            else:
-                messages.add_message(request, messages.WARNING, "Form is not valid : %s" % form.errors)
-        else:
-            context['groups'] = [ x for x in Group.objects.all().order_by("name")]
-            context['languages'] = [ x for x in Language.objects.all().order_by("language_name")]
+        users = get_user_model().objects.all().order_by("username")
+        flattened_users = list(users.values())
+        context = {'users' : flattened_users,
+                   'user_count': users.count() }
     except Exception, ex:
         logger.exception(ex)
-        messages.add_message(request, messages.ERROR, ex)
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
-def user_edit(request):
+def user_add(request, template="user_management/user_add.html"):
     context = {}
-
     try:
+        form = UserEditForm(request.POST or None)
         if request.method == 'POST':
-            user_id = request.POST['user_id']
-            user = get_user_model().objects.get(pk=user_id)
+            if form.is_valid():
+                user = form.save()
+                messages.add_message(request, messages.SUCCESS, "User created")
+            else:
+                messages.add_message(request, messages.WARNING, "Form is not valid : %s" % form.errors)
+            return HttpResponseRedirect(reverse("users:user_list"))
+        else:
+            context['groups'] = [ x for x in Group.objects.all().order_by("name")]
+    except Exception, ex:
+        logger.exception(ex)
+        messages.add_message(request, messages.ERROR, ex)
 
-            form = UserEditForm(request.POST or None, instance=user)
+    context['form'] = form
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@csrf_exempt
+@user_passes_test(lambda u: u.is_superuser)
+def user_edit(request, user_id=None, template="user_management/user_edit.html"):
+    context = {}
+    try:
+        user = get_user_model().objects.get(pk=user_id)
+        form = UserEditForm(request.POST or None, instance=user)
+
+        if request.method == "POST":
             if form.is_valid():
                 user = form.save()
             else:
                 messages.add_message(request, messages.INFO, "Failed to edit user")
-        else:
-            user_id = request.DATA['user_id']
-            user = get_user_model().objects.get(pk=user_id)
 
-            context['user'] = user_profile_to_dict(user)
-            context['groups'] = [x for x in Group.objects.all().order_by("name")]
+            return HttpResponseRedirect(reverse("users:user_list"))
+        context['form'] = form
     except Exception, ex:
         logger.exception(ex)
         messages.add_message(request, messages.WARNING, ex)

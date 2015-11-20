@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+{% extends "cephia/accounts_base.html" %}
 
 {% load bootstrap3 %}
 {% load endless %}
 
 {% block page_heading %}User list ({{ user_count|default:"0" }}){% endblock %}
 
-{% block content %}
+{% block page_content %}
 
 {% paginate users %}
 
@@ -59,7 +59,7 @@
         <td>{{row.modified}}</td>
         <td>{{row.last_login}}</td>
 	<td>
-	  <a href="{% url "users:user_edit" row.id %}"><img src="{{STATIC_URL}}images/pencil.png"/></a>
+	  <a href="{% url 'users:user_edit' row.id %}"><img src="{{STATIC_URL}}images/pencil.png"/></a>
 	</td>
       </tr>
       {% empty %}
