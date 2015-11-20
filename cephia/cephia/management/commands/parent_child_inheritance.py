@@ -31,4 +31,4 @@ class Command(BaseCommand):
 
             num_inherited += 1
 
-        logger.info('Successfully associated "%s" visits with subjects' % num_associations)
+        logger.info('Successfully associated "%s" visits with subjects' % num_inherited)
