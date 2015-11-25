@@ -39,7 +39,8 @@
 {{form.errors}}
 
 <div id="content-main" class="login">
-    <form action="{{ app_path }}" method="post" class="login_form" id="login-form">{% csrf_token %}
+  {{app_path}}
+    <form action="{% url 'users:auth_login' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
         <div class="row username" id="username">
 
             {% if not form.this_is_the_login_form.errors %}{{ form.username.errors }}{% endif %}

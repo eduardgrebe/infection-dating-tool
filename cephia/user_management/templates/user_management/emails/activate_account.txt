@@ -1,0 +1,9 @@
+Good day
+
+Your account is created. Please click the link below to you enter a password and activate your account.
+
+Your username is: {{ user.username }}.
+
+{{ BASE_URL }}{% url "users:activate_account" user.activation_key %}
+
+Best regards

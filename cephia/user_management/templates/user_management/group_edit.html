@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% block foot_extra %}
+  {{ form.media }}
+{% endblock %}
+
+{% block page_heading %}Edit group{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+  <form action="{% url 'users:group_edit' form.instance.id %}" method="post" class="form">
+    {% csrf_token %}
+    {% include "user_management/_group_form.html" %}
+  </form>
+
+</div>
+
+{% endblock %}
+

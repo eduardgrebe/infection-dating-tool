@@ -7,6 +7,7 @@
     <li><a class="navtab" href="{% url 'specimen' %}">Specimens</a></li>
     {% if user.is_staff %}
     <li><a class="navtab" href="{% url 'associate_specimen' %}">Specimen-Visit Association</a></li>
+    {% endif %}
     <li>
       <a href="{% url 'reporting:report_landing_page' %}" class="dropDownMenu">Standard Reports</a>
       {% comment %}
@@ -19,6 +20,7 @@
       </ul>
       {% endcomment %}
     </li>
+    {% if user.is_staff %}
     <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
     {% endif %}
     {% endif %}

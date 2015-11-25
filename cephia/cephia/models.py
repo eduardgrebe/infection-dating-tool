@@ -1,6 +1,5 @@
 # encoding: utf-8
 from lib.fields import ProtectedForeignKey
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django import forms
 from django.conf import settings
@@ -10,15 +9,13 @@ import logging
 from django.forms.models import model_to_dict
 from simple_history.models import HistoricalRecords
 import collections
+from user_management.models import BaseUser
 
 logger = logging.getLogger(__name__)
 
-class CephiaUser(AbstractUser):
+class CephiaUser(BaseUser):
     class Meta:
         db_table = "cephia_users"
-
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return "%s" % (self.username)

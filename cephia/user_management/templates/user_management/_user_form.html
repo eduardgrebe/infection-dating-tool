@@ -1,0 +1,17 @@
+{% load bootstrap3 %}
+
+{{ form.errors }}
+
+{% bootstrap_form form %}
+
+{% buttons %}
+
+  <button type="submit" class="btn btn-primary">
+    {% bootstrap_icon "star" %} Save
+  </button>
+
+  <a href="{% url 'users:user_list' %}" class="btn btn-cancel">
+    {% bootstrap_icon "star" %} Cancel
+  </a>
+
+{% endbuttons %}

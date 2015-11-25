@@ -1,0 +1,80 @@
+{% extends "cephia/accounts_base.html" %}
+
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block page_heading %}User list ({{ user_count|default:"0" }}){% endblock %}
+
+{% block page_content %}
+
+{% paginate users %}
+
+<div class="content">
+
+  {% show_pages %}
+  <table class="table-striped table table-hover">
+
+    <thead>
+
+      <tr class="header">
+        <th>Username</th>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Groups</th>
+        <th>Active</th>
+        <th>Unlocked</th>
+        <th>Last modified</th>
+        <th>Last login</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for row in users %}
+      <tr>
+        <td>{{row.username}}</td>
+	<td>{{row.first_name}}</td>
+        <td>{{row.last_name}}</td>
+        <td>
+          {% if row.is_superuser %}
+            Admin
+          {% else %}
+            {{row.groups.all|join:","}}
+          {% endif %}
+        </td>
+        <td>
+          {% if row.is_active %}
+          <img width="25px" src="{{STATIC_URL}}images/tick.png"/>
+          {% else %}
+          <img width="25px" src="{{STATIC_URL}}images/cross.png"/>
+          {% endif %}
+        </td>
+        <td>
+          {% if row.temporary_locked_out_at %}
+          <img width="25px" src="{{STATIC_URL}}images/cross.png"/>
+          {% else %}
+          <img width="25px" src="{{STATIC_URL}}images/tick.png"/>
+          {% endif %}
+        </td>
+        <td>{{row.modified}}</td>
+        <td>{{row.last_login}}</td>
+	<td>
+	  <a href="{% url 'users:user_edit' row.id %}"><img src="{{STATIC_URL}}images/pencil.png"/></a>
+	</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td style="font-style:italic" colspan="6">No users</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+  {% show_pages %}
+  <br>
+  <a href="{% url 'users:user_add' %}"  id="click" class="btn btn-default">New user</a>
+  
+</div>
+<br>
+
+{% endblock  %}

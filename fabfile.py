@@ -28,18 +28,18 @@ def host_impd():
 
 def host_cephia():
     env.user = 'cephia'
-    env.hosts = ['cephiadb.incidence-estimation.org']
+    env.hosts = ['cephiadb2.incidence-estimation.org']
 
 def host_cephia_prod():
     env.user = 'cephia'
-    env.hosts = ['cephiadb2.incidence-estimation.org']
+    env.hosts = ['cephiadb.incidence-estimation.org']
 
 # ===== top level commands ======
 
 def deploy(branch_name="master"):
-    if env.host == 'cephiadb.incidence-estimation.org':
+    if env.host == 'cephiadb2.incidence-estimation.org':
         return _deploy_cephia_test(branch_name)
-    elif env.host == 'cephiadb2.incidence-estimation.org':
+    elif env.host == 'cephiadb.incidence-estimation.org':
         return _deploy_cephia_prod(branch_name)
     elif env.host == 'cephia.impd.co.za':
         return _deploy_staging(branch_name)
@@ -68,7 +68,7 @@ def _deploy_cephia_test(branch_name="master"):
         
     _update_cron_jobs()
     
-    print("Deployed to: http://cephiadb.incidence-estimation.org/")
+    print("Deployed to: http://cephiadb2.incidence-estimation.org/")
 
 def _deploy_cephia_prod(branch_name="master"):
     print("   Deploying: ** %s **" % branch_name)
@@ -81,7 +81,7 @@ def _deploy_cephia_prod(branch_name="master"):
         
     _update_cron_jobs()
     
-    print("Deployed to: http://cephiadb2.incidence-estimation.org/")
+    print("Deployed to: http://cephiadb.incidence-estimation.org/")
 
 def _update_cron_jobs():
 

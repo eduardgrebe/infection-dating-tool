@@ -1,6 +1,8 @@
 from django.test import TestCase
 import logging
-from cephi.models import FileInfo
+from cephia.models import *
+from cephia.file_handlers.file_handler_register import *
+from django.core.files import File
 
 logger = logging.getLogger(__name__)
 
@@ -11,13 +13,19 @@ class TestHelper(object):
         super(TestHelper, self).__init__(*args, **kwargs)
 
     def get_file(self, file_type):
-        return open(settings.TEST_FILE_ROOT + file_type)
+        return File(open(settings.TEST_FILES_ROOT + file_type + '.xlsx'))
     
     def create_fileinfo(self, file_type):
-        excel_file = self.get_file(file_type)
-        return FileInfo.objects.create(data_file=excel_file,
+        file_info = self.get_file(file_type)
+        return FileInfo.objects.create(data_file=file_info,
                                        file_type=file_type,
                                        state='pending')
+
+    def create_admin_user(self, username="admin", password="password"):
+        user = CephiaUser.objects.get_or_create(username=username, first_name='adminfirst', last_name='adminlast', is_superuser=True)[0]
+        user.set_password(password)
+        user.save()
+        return user
 
 
 class TestBase(TestCase, TestHelper):

@@ -19,6 +19,8 @@ from collections import OrderedDict
 from django.utils import timezone
 import os
 from django.conf import settings
+from django.db.models import Q
+from django.contrib.auth.decorators import user_passes_test
 
 logger = logging.getLogger(__name__)
 
@@ -74,11 +76,13 @@ def home(request, file_id=None, template="cephia/home.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def table_management(request, template="cephia/tms_home.html"):
     context = {}
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def countries(request, template="cephia/countries.html"):
     context = {}
     countries = Country.objects.all().order_by("name")
@@ -88,6 +92,7 @@ def countries(request, template="cephia/countries.html"):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def ethnicities(request, template="cephia/ethnicities.html"):
     context = {}
     ethnicities = Ethnicity.objects.all()
@@ -96,6 +101,7 @@ def ethnicities(request, template="cephia/ethnicities.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def studies(request, template="cephia/studies.html"):
     context = {}
     studies = Study.objects.all()
@@ -104,6 +110,7 @@ def studies(request, template="cephia/studies.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def labs(request, template="cephia/sites.html"):
     context = {}
     sites = Laboratory.objects.all()
@@ -163,6 +170,7 @@ def specimen_type(request, template="cephia/specimen_type.html"):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def file_info(request, template="cephia/file_info.html"):
     context = {}
 
@@ -182,6 +190,7 @@ def file_info(request, template="cephia/file_info.html"):
 
    
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def row_info(request, file_id, template=None):
     if request.method == 'GET':
         context = {}
@@ -217,6 +226,7 @@ def download_file(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def upload_file(request):
     try:
         FILE_PRIORITIES = {
@@ -253,6 +263,7 @@ def upload_file(request):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def parse_file(request, file_id):
     try:
         file_to_parse = FileInfo.objects.get(pk=file_id)
@@ -287,6 +298,7 @@ def parse_file(request, file_id):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def validate_rows(request, file_id):
     try:
         file_to_validate = FileInfo.objects.get(pk=file_id)
@@ -316,6 +328,7 @@ def validate_rows(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def process_file(request, file_id):
     try:
         file_to_process = FileInfo.objects.get(pk=file_id)
@@ -348,6 +361,7 @@ def process_file(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def delete_file(request, file_id):
     try:
         file_info = FileInfo.objects.get(pk=file_id)
@@ -457,6 +471,7 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def export_file_data(request, file_id=None, state=None):
 
     try:
@@ -603,6 +618,7 @@ def export_file_data(request, file_id=None, state=None):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def associate_specimen(request, subject_id=None, template="cephia/associate_specimen.html"):
     try:
         if request.method == 'POST':
@@ -635,7 +651,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
             messages.success(request, 'Successful!')
 
         context = {}
-        subjects = Specimen.objects.values('subject__id').filter(subject__isnull=False, visit__isnull=True).distinct()
+        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) & Q(visit__isnull=True) | Q(visit_linkage='provisional')).distinct()
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
@@ -650,6 +666,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
         return HttpResponseRedirect(reverse('specimen'))
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def row_comment(request, file_type=None, file_id=None, row_id=None, template="cephia/comment_modal.html"):
     try:
         context = {}
