@@ -78,7 +78,7 @@ INSTALLED_APPS = (
     'endless_pagination',
     'cephia',
     'reporting',
-    'assay'
+    'assay',
     'user_management',
 )
 

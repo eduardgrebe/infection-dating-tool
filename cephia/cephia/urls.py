@@ -14,6 +14,7 @@ urlpatterns = [
 
     url(r'^reports/', include('reporting.urls', namespace='reporting')),
     url(r'^accounts/', include('user_management.urls', namespace='users')),
+    url(r'^assay/', include('assay.urls', namespace='assay')),
     
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),
@@ -41,14 +42,5 @@ urlpatterns = [
     url(r'^row_comment/(?P<file_type>\w+)/(?P<file_id>\d+)/(?P<row_id>\d+)$', views.row_comment, name='row_comment'),
     url(r'^row_comment/$', views.row_comment, name='row_comment'),
     url(r'^release_notes/$', views.release_notes, name='release_notes'),
-
-    # url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/cephia_login.html'}, name='auth_login'),
-    # url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
-    # url(r'^accounts/password-change/$', 'django.contrib.auth.views.password_change', name='change_password'),
-    # url(r'^accounts/password-change/done/$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
-    # url(r'^accounts/password-reset/$', 'django.contrib.auth.views.password_reset', name='reset_password'),
-    # url(r'^accounts/password-reset/done/$', 'django.contrib.auth.views.password_reset_done', name='password_reset_done'),
-    # url(r'^accounts/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm', name='password_reset_confirm'),
-    # url(r'^accounts/reset/done/$', 'django.contrib.auth.views.password_reset_complete'),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

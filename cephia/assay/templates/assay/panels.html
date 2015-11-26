@@ -1,0 +1,61 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block submit_action %}
+{% url 'specimen' %}
+{% endblock %}
+
+{% block filter_col_a %}
+{% endblock %}
+
+{% block filter_col_b %}
+{% endblock %}
+
+{% block filter_col_c %}
+{% endblock %}
+
+{% block filter_col_d %}
+{% endblock %}
+
+{% block page_content %}
+
+{% paginate panels %}
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Panels</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="container"
+               {% show_pages %}
+            <div class="table-responsive">
+              <table class="table-striped table table-hover" style="overflow:auto;">
+                <thead>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Specimen Type</th>
+                  <th>Volume</th>
+                </thead>
+                <tbody>
+                  {% for panel in panels %}
+                  <tr>
+                    <td>{{panel.name}}</td>
+                    <td>{{panel.description}}</td>
+                    <td>{{panel.specimen_type.name}}</td>
+                    <td>{{panel.volume}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'assay/panel_capture.html' with panel_capture_form=panel_capture_form %}
+{% endblock %}

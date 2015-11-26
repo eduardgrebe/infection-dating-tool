@@ -472,24 +472,4 @@ class AliquotRow(ImportedRow):
     def __unicode__(self):
         return self.parent_label
 
-class Panel(models.Model):
 
-    class Meta:
-        db_table = "cephia_panels"
-
-    name = models.CharField(max_length=255, null=True, blank=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
-    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=False, db_index=True)
-    volume = models.FloatField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
-
-class PanelMemberships(models.Model):
-
-    class Meta:
-        db_table = "cephia_panel_memberships"
-
-    visit = models.ForeignKey(Visit, null=True, blank=False, db_index=True)
-    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
-    replicates = models.IntegerField(null=True, blank=True)
