@@ -85,5 +85,5 @@ class TestFiles(TestBase):
         #Check that 5 specimen were transfered out
         self.assertEqual(5, Specimen.objects.filter(shipped_to__isnull=False).count())
 
-        #Check that the 6 transfered out have been marked unavailable
+        #Check that the 5 transfered out and 1 update to zero-volume have been marked unavailable
         self.assertEqual(6, Specimen.objects.filter(is_available=False).count())
