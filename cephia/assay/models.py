@@ -1,6 +1,6 @@
 # encoding: utf-8
 from django.db import models
-from cephia.models import Visit, Specimen, SpecimenType
+from cephia.models import Visit, Specimen, SpecimenType, ImportedRow
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,20 @@ class Panel(models.Model):
         return self.name
 
 
-class PanelMemberships(models.Model):
+class PanelMembershipRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_panel_membership_rows"
+
+    visit = models.CharField(max_length=255, null=False, blank=True)
+    panel = models.CharField(max_length=255, null=False, blank=True)
+    replicates = models.CharField(max_length=255, null=False, blank=True)
+    
+    def __unicode__(self):
+        return self.visit
+
+
+class PanelMembership(models.Model):
 
     class Meta:
         db_table = "cephia_panel_memberships"
@@ -43,6 +56,20 @@ class PanelMemberships(models.Model):
     
     def __unicode__(self):
         return self.visit
+
+
+class PanelShipmentRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_panel_shipment_rows"
+
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    panel = models.CharField(max_length=255, null=False, blank=True)
+    replicates = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
 
 class PanelShipment(models.Model):
 

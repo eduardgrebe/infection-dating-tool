@@ -2,20 +2,7 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-{% block submit_action %}
-{% url 'specimen' %}
-{% endblock %}
-
-{% block filter_col_a %}
-{% endblock %}
-
-{% block filter_col_b %}
-{% endblock %}
-
-{% block filter_col_c %}
-{% endblock %}
-
-{% block filter_col_d %}
+{% block filter_content %}
 {% endblock %}
 
 {% block page_content %}
@@ -38,6 +25,8 @@
                   <th>Description</th>
                   <th>Specimen Type</th>
                   <th>Volume</th>
+                  <th></th>
+                  <th></th>
                 </thead>
                 <tbody>
                   {% for panel in panels %}
@@ -46,6 +35,8 @@
                     <td>{{panel.description}}</td>
                     <td>{{panel.specimen_type.name}}</td>
                     <td>{{panel.volume}}</td>
+                    <td><a href="{% url '' %}" class="btn btn-default">Upload Memberships</a></td>
+                    <td><a href="{% url '' %}" class="btn btn-default">Upload Shipments</a></td>
                   </tr>
                   {% endfor %}
                 </tbody>
