@@ -71,7 +71,7 @@ class SubjectFileHandler(FileHandler):
                     
                     if row_dict.get('id', None):
                         try:
-                            subject_row = SubjectRow.objects.get(pk=row_dict['id'], status__in=['error', 'pending', 'validated', 'imported'])
+                            subject_row = SubjectRow.objects.get(pk=row_dict['id'], state__in=['error', 'pending', 'validated', 'imported'])
                         except SubjectRow.DoesNotExist, e:
                             continue 
                     else:
