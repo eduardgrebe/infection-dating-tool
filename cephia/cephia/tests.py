@@ -87,7 +87,7 @@ class TestCase001(TestBase):
 class TestCase002(TestBase):
     def setUp(self):
         super(TestCase002, self).setUp()
-        
+
         self.subjects = self.create_fileinfo('subject.docx', 'test_case_002')
 
     def test_case_002(self):
@@ -97,4 +97,79 @@ class TestCase002(TestBase):
             self.assertEqual("Invalid file type. Only .csv and .xls/x are supported.", e.message)
 
 
+class TestCase003(TestBase):
+    def setUp(self):
+        super(TestCase003, self).setUp()
 
+        self.subjects = self.create_fileinfo('subject.xlsx', 'test_case_003')
+        self.visits = self.create_fileinfo('visit.xlsx', 'test_case_003')
+
+    def test_case_003(self):
+        self.subjects.get_handler().parse()
+        self.subjects.get_handler().validate()
+        self.subjects.get_handler().process()
+        self.visits.get_handler().parse()
+        self.visits.get_handler().validate()
+        self.visits.get_handler().process()
+
+        call_command('associate_subject_visit')
+
+        self.assertEqual(1, Visit.objects.filter(subject__isnull=False).count())
+        self.assertEqual(1, Visit.objects.filter(subject__isnull=True).count())
+
+class TestSpecimenVisitExactMatch(TestBase):
+    def setUp(self):
+        super(TestSpecimenVisitExactMatch, self).setUp()
+
+        self.subjects = self.create_fileinfo('subject.xlsx', 'test_case_004')
+        self.visits = self.create_fileinfo('visit.xlsx', 'test_case_004')
+        self.transfer_ins = self.create_fileinfo('transfer_in.xlsx', 'test_case_004')
+
+    def test_exact_matches(self):
+        self.subjects.get_handler().parse()
+        self.subjects.get_handler().validate()
+        self.subjects.get_handler().process()
+        self.visits.get_handler().parse()
+        self.visits.get_handler().validate()
+        self.visits.get_handler().process()
+        self.transfer_ins.get_handler().parse()
+        self.transfer_ins.get_handler().validate()
+        self.transfer_ins.get_handler().process()
+
+        call_command('associate_subject_visit')
+        call_command('associate_specimen_subject')
+        call_command('associate_specimen_visit')
+
+        self.assertEqual(2, Specimen.objects.filter(subject__isnull=False).count())
+        self.assertEqual(1, Specimen.objects.filter(visit__isnull=False).count())
+        self.assertEqual(1, Specimen.objects.filter(specimen_label='AS10-10544', visit__isnull=False).count())
+        self.assertEqual(1, Specimen.objects.filter(specimen_label='AS11-08365', visit__isnull=True).count())
+
+
+class TestSpecimenVisitApproximateMatch(TestBase):
+    def setUp(self):
+        super(TestSpecimenVisitApproximateMatch, self).setUp()
+
+        self.subjects = self.create_fileinfo('subject.xlsx', 'test_case_005')
+        self.visits = self.create_fileinfo('visit.xlsx', 'test_case_005')
+        self.transfer_ins = self.create_fileinfo('transfer_in.xlsx', 'test_case_005')
+        
+    def test_approximate_matches(self):
+        self.subjects.get_handler().parse()
+        self.subjects.get_handler().validate()
+        self.subjects.get_handler().process()
+        self.visits.get_handler().parse()
+        self.visits.get_handler().validate()
+        self.visits.get_handler().process()
+        self.transfer_ins.get_handler().parse()
+        self.transfer_ins.get_handler().validate()
+        self.transfer_ins.get_handler().process()
+        
+        call_command('associate_subject_visit')
+        call_command('associate_specimen_subject')
+        call_command('associate_specimen_visit')
+
+        self.assertEqual(Visit.objects.get(visit_date='2014-11-10').pk, Specimen.objects.get(specimen_label='AS10-10544').visit.pk)
+        self.assertEqual(Visit.objects.get(visit_date='2014-12-01').pk, Specimen.objects.get(specimen_label='AS11-08365').visit.pk)
+        self.assertEqual(Visit.objects.get(visit_date='2014-12-01').pk, Specimen.objects.get(specimen_label='AS11-08366').visit.pk)
+        self.assertEqual(Visit.objects.get(visit_date='2014-07-01').pk, Specimen.objects.get(specimen_label='AS11-08367').visit.pk)
