@@ -67,7 +67,7 @@ def _deploy_cephia_test(branch_name="master"):
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_cephia_test.sh")
         
-    _update_cron_jobs()
+    #_update_cron_jobs()
     
     print("Deployed to: http://cephiadb2.incidence-estimation.org/")
 
