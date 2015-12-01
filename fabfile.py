@@ -14,7 +14,8 @@ usage = """
 
 --------
 staging       : > fab host_impd deploy:<branch>
-cephia test   : > fab host_cephia deploy:<branch>
+cephia test   : > fab host_cephia_test deploy:<branch>
+cephia prod   : > fab host_cephia_prod deploy:<branch>
 
 """
 def help():
@@ -26,7 +27,7 @@ def host_impd():
     env.user = 'impd'
     env.hosts = ['cephia.impd.co.za']
 
-def host_cephia():
+def host_cephia_test():
     env.user = 'cephia'
     env.hosts = ['cephiadb2.incidence-estimation.org']
 
