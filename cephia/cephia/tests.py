@@ -5,21 +5,18 @@ from django.core.management import call_command
 
 logger = logging.getLogger(__name__)
 
-class TestFiles(TestBase):
+class TestCase001(TestBase):
     def setUp(self):
-        super(TestFiles, self).setUp()
+        super(TestCase001, self).setUp()
+        
+        self.subjects = self.create_fileinfo('subject.xlsx', 'test_case_001')
+        self.visits = self.create_fileinfo('visit.xlsx', 'test_case_001')
+        self.transfer_ins = self.create_fileinfo('transfer_in.xlsx', 'test_case_001')
+        self.aliquots = self.create_fileinfo('aliquot.xlsx', 'test_case_001')
+        self.transfer_outs = self.create_fileinfo('transfer_out.xlsx', 'test_case_001')
 
-        # self.user = self.create_user()
-        # self.login = self.client.login(username=self.user.username,
-        #                                password=user_factory.PASSWORD)
         
-        self.subjects = self.create_fileinfo('subject')
-        self.visits = self.create_fileinfo('visit')
-        self.transfer_ins = self.create_fileinfo('transfer_in')
-        self.aliquots = self.create_fileinfo('aliquot')
-        self.transfer_outs = self.create_fileinfo('transfer_out')
-        
-    def test_files(self):
+    def test_case_001(self):
         self.subjects.get_handler().parse()
         self.assertEqual(1, SubjectRow.objects.filter(fileinfo=self.subjects, state='pending').count())
 
@@ -82,8 +79,22 @@ class TestFiles(TestBase):
         self.assertEqual(5, TransferOutRow.objects.filter(fileinfo=self.transfer_outs, state='processed').count())
         self.assertEqual(7, Specimen.objects.all().count())
 
-        #Check that 5 specimen were transfered out
         self.assertEqual(5, Specimen.objects.filter(shipped_to__isnull=False).count())
 
-        #Check that the 5 transfered out and 1 update to zero-volume have been marked unavailable
         self.assertEqual(6, Specimen.objects.filter(is_available=False).count())
+
+
+class TestCase002(TestBase):
+    def setUp(self):
+        super(TestCase002, self).setUp()
+        
+        self.subjects = self.create_fileinfo('subject.docx', 'test_case_002')
+
+    def test_case_002(self):
+        try:
+            handler = self.subjects.get_handler()
+        except Exception, e:
+            self.assertEqual("Invalid file type. Only .csv and .xls/x are supported.", e.message)
+
+
+
