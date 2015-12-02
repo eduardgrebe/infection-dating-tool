@@ -205,7 +205,7 @@ class TestTransferinVolumeArithmetic(TestBase):
 
         self.assertEqual(1, Specimen.objects.filter(specimen_label='AS10-10546').count())
         self.assertEqual(5, Specimen.objects.get(specimen_label='AS10-10546').number_of_containers)
-        self.assertEqual(5000, Specimen.objects.get(specimen_label='AS10-10546').initial_claimed_volume)
+        self.assertEqual(4600, Specimen.objects.get(specimen_label='AS10-10546').initial_claimed_volume)
 
 
 
