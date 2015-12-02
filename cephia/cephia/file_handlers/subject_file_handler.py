@@ -71,7 +71,7 @@ class SubjectFileHandler(FileHandler):
                     
                     if row_dict.get('id', None):
                         try:
-                            subject_row = SubjectRow.objects.get(pk=row_dict['id'], status__in=['error', 'pending', 'validated', 'imported'])
+                            subject_row = SubjectRow.objects.get(pk=row_dict['id'], state__in=['error', 'pending', 'validated', 'imported'])
                         except SubjectRow.DoesNotExist, e:
                             continue 
                     else:
@@ -160,8 +160,8 @@ class SubjectFileHandler(FileHandler):
                 if not self.registered_dates.get('last_negative_date', default_less_date) < self.registered_dates.get('first_positive_date', default_more_date):
                     error_msg += 'last_negative_date must be before first_positive_date.\n'
 
-                if not self.registered_dates.get('art_initiation_date', default_more_date) >= self.registered_dates.get('first_positive_date', default_less_date):
-                    error_msg += 'art_initiation_date must not be before first_positive_date.\n'
+                # if not self.registered_dates.get('art_initiation_date', default_more_date) >= self.registered_dates.get('first_positive_date', default_less_date):
+                #     error_msg += 'art_initiation_date must not be before first_positive_date.\n'
 
                 if not self.registered_dates.get('art_interruption_date', default_more_date) > self.registered_dates.get('art_initiation_date', default_less_date):
                     error_msg += 'art_interruption_date must be after art_initiation_date.\n'

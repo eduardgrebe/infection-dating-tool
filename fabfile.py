@@ -14,7 +14,8 @@ usage = """
 
 --------
 staging       : > fab host_impd deploy:<branch>
-cephia test   : > fab host_cephia deploy:<branch>
+cephia test   : > fab host_cephia_test deploy:<branch>
+cephia prod   : > fab host_cephia_prod deploy:<branch>
 
 """
 def help():
@@ -26,7 +27,7 @@ def host_impd():
     env.user = 'impd'
     env.hosts = ['cephia.impd.co.za']
 
-def host_cephia():
+def host_cephia_test():
     env.user = 'cephia'
     env.hosts = ['cephiadb2.incidence-estimation.org']
 
@@ -85,15 +86,15 @@ def _deploy_cephia_prod(branch_name="master"):
 
 def _update_cron_jobs():
 
-    crontab_remove_all_with_marker()
-
-    def create_cron_line(script_name, stars):
+    def create_cron_line(script_name, stars, marker_tag="CEPHIATEST"):
+        crontab_remove_all_with_marker(marker_tag="CEPHIATEST")
         crontab_update("{stars} /home/cephia/cephia/scripts/{script_name}.sh > /home/cephia/cephia/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
-                       marker=script_name)
+                       marker=marker_tag)
 
-    def create_cron_line_prod(script_name, stars):
+    def create_cron_line_prod(script_name, stars, marker_tag="CEPHIAPROD"):
+        crontab_remove_all_with_marker(marker_tag="CEPHIAPROD")
         crontab_update("{stars} /home/cephia/cephia_prod/scripts/{script_name}.sh > /home/cephia/cephia_prod/logs/{script_name}.log 2>&1".format(stars=stars,script_name=script_name),
-                       marker=script_name)
+                       marker=marker_tag)
         
     ## Every minute
     create_cron_line(script_name='run_commands', stars="* * * * *")

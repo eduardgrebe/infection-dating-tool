@@ -12,13 +12,13 @@ class TestHelper(object):
     def __init__(self, *args, **kwargs):
         super(TestHelper, self).__init__(*args, **kwargs)
 
-    def get_file(self, file_type):
-        return File(open(settings.TEST_FILES_ROOT + file_type + '.xlsx'))
+    def get_file(self, file_name, case_name):
+        return File(open(settings.TEST_FILES_ROOT + case_name + '/' + file_name))
     
-    def create_fileinfo(self, file_type):
-        file_info = self.get_file(file_type)
+    def create_fileinfo(self, file_name, case_name):
+        file_info = self.get_file(file_name, case_name)
         return FileInfo.objects.create(data_file=file_info,
-                                       file_type=file_type,
+                                       file_type=file_name.split('.')[0],
                                        state='pending')
 
     def create_admin_user(self, username="admin", password="password"):

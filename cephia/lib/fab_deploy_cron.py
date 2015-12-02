@@ -29,13 +29,13 @@ def crontab_add(content, marker=None):
     old_crontab = _get_current()
     crontab_set(old_crontab + '\n' + content + _marker(marker))
 
-def crontab_remove_all_with_marker():
-    lines = [line for line in _get_current().splitlines() if MARKER_TAG not in line]
+def crontab_remove_all_with_marker(marker_tag=None):
+    lines = [line for line in _get_current().splitlines() if marker_tag not in line]
     crontab_set("\n".join(lines))
     
 def crontab_remove(marker):
     """ Removes a line added and marked using crontab_add. """
-    lines = [line for line in _get_current().splitlines() if line and not line.endswith(_marker(marker))]
+    lines = [line for line in _get_current().splitlines() if line and not line.endswith(marker)]
     crontab_set("\n".join(lines))
 
 def crontab_update(content, marker):

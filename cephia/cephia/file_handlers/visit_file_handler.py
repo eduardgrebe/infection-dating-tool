@@ -35,7 +35,7 @@ class VisitFileHandler(FileHandler):
 
                     if row_dict.get('id', None):
                         try:
-                            visit_row = VisitRow.objects.get(pk=row_dict['id'], status__in=['error', 'pending', 'validated', 'imported'])
+                            visit_row = VisitRow.objects.get(pk=row_dict['id'], state__in=['error', 'pending', 'validated', 'imported'])
                         except VisitRow.DoesNotExist, e:
                             continue
                     else:
