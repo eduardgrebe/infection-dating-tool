@@ -227,6 +227,7 @@ class Subject(models.Model):
     art_interruption_date = models.DateField(null=True, blank=True)
     art_resumption_date = models.DateField(null=True, blank=True)
     artificial = models.BooleanField(default=False)
+    source_study = models.ForeignKey(Study, null=True, blank=True)
     history = HistoricalRecords()
 
     def __unicode__(self):

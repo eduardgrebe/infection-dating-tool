@@ -226,6 +226,7 @@ class SubjectFileHandler(FileHandler):
                         ethnicity = None
                     
                     subject = Subject.objects.create(subject_label=subject_row.subject_label,
+                                                     source_study=subject_row.source_study,
                                                      cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),
                                                      cohort_entry_hiv_status = subject_row.cohort_entry_hiv_status,
                                                      country = Country.objects.get(code=subject_row.country),
