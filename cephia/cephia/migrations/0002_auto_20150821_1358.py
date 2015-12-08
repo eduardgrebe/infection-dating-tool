@@ -35,11 +35,7 @@ def add_studies(apps, schema_editor):
 
     model = apps.get_model("cephia", "Study")
 
-    source_study_list = [{'name':'SIPP',
-                          'description':'Options study - SIPP samples (large volume collections)'},
-                         {'name':'ARCHIVE',
-                          'description':'Options study - Archive samples (remnants from the old archive)'},
-                         {'name':'IAVI',
+    source_study_list = [{'name':'IAVI',
                           'description':'IAVI study - from core lab in London'},
                          {'name':'UCSD',
                           'description':'UCSD study, San Diego, CA'},

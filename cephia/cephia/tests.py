@@ -185,7 +185,7 @@ class TestVolumeArithmetic(TestBase):
         self.transfer_ins.get_handler().parse()
         self.transfer_ins.get_handler().validate()
         self.transfer_ins.get_handler().process()
-        
+
         self.assertEqual(1, Specimen.objects.filter(specimen_label='AS10-10544').count())
         self.assertEqual(4, Specimen.objects.get(specimen_label='AS10-10544').number_of_containers)
         self.assertEqual(10000, Specimen.objects.get(specimen_label='AS10-10544').initial_claimed_volume)

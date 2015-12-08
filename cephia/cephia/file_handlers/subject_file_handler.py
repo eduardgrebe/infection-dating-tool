@@ -210,7 +210,7 @@ class SubjectFileHandler(FileHandler):
         return rows_validated, rows_failed
         
     def process(self):
-        from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow
+        from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow, Study
         
         rows_inserted = 0
         rows_failed = 0
@@ -226,6 +226,7 @@ class SubjectFileHandler(FileHandler):
                         ethnicity = None
                     
                     subject = Subject.objects.create(subject_label=subject_row.subject_label,
+                                                     source_study=Study.objects.get(name=subject_row.source_study),
                                                      cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),
                                                      cohort_entry_hiv_status = subject_row.cohort_entry_hiv_status,
                                                      country = Country.objects.get(code=subject_row.country),
