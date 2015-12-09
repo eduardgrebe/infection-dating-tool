@@ -211,7 +211,6 @@ class TransferInFileHandler(FileHandler):
         GROUP BY specimen_label, specimen_type;
         """ % (self.upload_file.id)
 
-        from django.db import connection
         cursor = connection.cursor()
         cursor.execute(sql)
 
