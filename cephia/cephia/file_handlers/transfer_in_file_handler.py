@@ -3,6 +3,7 @@ from handler_imports import *
 import logging
 import os
 from django.db.models import Sum, Max
+from django.db import connection
 
 logger = logging.getLogger(__name__)
 
@@ -180,26 +181,40 @@ class TransferInFileHandler(FileHandler):
 
     def process(self):
         from cephia.models import TransferInRow, Subject, Study, SpecimenType, Specimen, Laboratory, Location
-        
+
         rows_inserted = 0
         rows_failed = 0
         validated_records = TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated', roll_up=False)
-        validated_records_roll_up = TransferInRow.objects.values('specimen_label',
-                                                                 'specimen_type').filter(fileinfo=self.upload_file,
-                                                                                         state='validated',
-                                                                                         roll_up=True).annotate(containers=Sum('number_of_containers'),
-                                                                                                                transfer_date_dd=Max('transfer_date_dd'),
-                                                                                                                transfer_date_mm=Max('transfer_date_mm'),
-                                                                                                                transfer_date_yyyy=Max('transfer_date_yyyy'),
-                                                                                                                drawdate_yyyy=Max('drawdate_yyyy'),
-                                                                                                                drawdate_mm=Max('drawdate_mm'),
-                                                                                                                drawdate_dd=Max('drawdate_dd'),
-                                                                                                                subject_label=Max('subject_label'),
-                                                                                                                location=Max('location'),
-                                                                                                                transfer_reason=Max('transfer_reason'),
-                                                                                                                volume_units=Max('volume_units'),
-                                                                                                                source_study=Max('source_study'),
-                                                                                                                vol=Sum('volume'))
+
+        sql = """
+        SELECT
+        specimen_label,
+        specimen_type,
+        SUM(volume * number_of_containers) as actual_volume,
+        SUM(number_of_containers) as number_of_containers,
+        SUM(volume) as volume,
+        MAX(transfer_date_dd) as transfer_date_dd,
+        MAX(transfer_date_mm) as transfer_date_mm,
+        MAX(transfer_date_yyyy) as transfer_date_yyyy,
+        MAX(drawdate_yyyy) as drawdate_yyyy,
+        MAX(drawdate_mm) as drawdate_mm,
+        MAX(drawdate_dd) as drawdate_dd,
+        MAX(subject_label) as subject_label,
+        MAX(location) as location,
+        MAX(transfer_reason) as transfer_reason,
+        MAX(volume_units) as volume_units,
+        MAX(source_study) as source_study
+        FROM cephia_transfer_in_rows
+        WHERE state='validated'
+        AND roll_up = 1
+        AND fileinfo_id = %s
+        GROUP BY specimen_label, specimen_type;
+        """ % (self.upload_file.id)
+
+        cursor = connection.cursor()
+        cursor.execute(sql)
+
+        validated_records_roll_up = self.dictfetchall(cursor)
 
         for transfer_in_row in validated_records:
             try:
@@ -225,7 +240,7 @@ class TransferInFileHandler(FileHandler):
                                                        subject = subject,
                                                        specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row.specimen_type),
                                                        number_of_containers = (transfer_in_row.number_of_containers or None),
-                                                       initial_claimed_volume = (transfer_in_row.volume or None),
+                                                       initial_claimed_volume = (float(transfer_in_row.volume) * float(transfer_in_row.number_of_containers)),
                                                        volume_units = transfer_in_row.volume_units,
                                                        source_study = None,
                                                        location = Location.objects.get(name=transfer_in_row.location),
@@ -268,8 +283,8 @@ class TransferInFileHandler(FileHandler):
                                                        transfer_reason = transfer_in_row['transfer_reason'],
                                                        subject = subject,
                                                        specimen_type = SpecimenType.objects.get(spec_type=transfer_in_row['specimen_type']),
-                                                       number_of_containers = transfer_in_row['containers'],
-                                                       initial_claimed_volume = transfer_in_row['vol'],
+                                                       number_of_containers = transfer_in_row['number_of_containers'],
+                                                       initial_claimed_volume = transfer_in_row['actual_volume'],
                                                        volume_units = transfer_in_row['volume_units'],
                                                        source_study = None,
                                                        location = Location.objects.get(name=transfer_in_row['location']),

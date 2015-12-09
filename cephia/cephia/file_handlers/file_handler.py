@@ -102,3 +102,11 @@ class FileHandler(object):
         except (IOError, ValueError):
             print "Couldn't read from file %s. Exiting" % (to_read)
             raise
+
+    def dictfetchall(self, cursor):
+        "Return all rows from a cursor as a dict"
+        columns = [col[0] for col in cursor.description]
+        return [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
