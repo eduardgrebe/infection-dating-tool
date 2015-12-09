@@ -11,6 +11,13 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = 'Recalculate volume from below the line and push result above the line'
 
+    def dictfetchall(self, cursor):
+        columns = [col[0] for col in cursor.description]
+        return [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
+
     def handle(self, *args, **options):
         rows = TransferInRow.objects.filter(state='processed', roll_up=False)
 
@@ -39,17 +46,14 @@ class Command(BaseCommand):
         """
 
         cursor = connection.cursor()
-        cursor.execute(sql)
+        cursor.execute(roll_up_sql)
 
         rows_roll_up = self.dictfetchall(cursor)
 
-        try:
-            for row in rows:
-                row.specimen.initial_claimed_volume = (float(row.volume) * float(row.number_of_containers))
+        for row in rows:
+            row.specimen.initial_claimed_volume = (float(row.volume) * float(row.number_of_containers))
 
-            for row in rows_roll_up:
-                row.specimen.initial_claimed_volume = float(row['actual_volume'])
-        except Exception, e:
-            continue
+        for row in rows_roll_up:
+            row.specimen.initial_claimed_volume = float(row['actual_volume'])
 
         logger.info('Success!')
