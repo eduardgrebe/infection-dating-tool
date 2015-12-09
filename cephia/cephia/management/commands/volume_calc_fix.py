@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from cephia.file_handlers.file_handler import FileHandler
 from datetime import datetime, date
 from cephia.file_handlers.handler_imports import *
-from cephia.models import TransferInRow
+from cephia.models import TransferInRow, Specimen, SpecimenType
 from django.db import connection
 import logging
 
@@ -48,12 +48,18 @@ class Command(BaseCommand):
         cursor = connection.cursor()
         cursor.execute(roll_up_sql)
 
+        import pdb; pdb.set_trace()
+
         rows_roll_up = self.dictfetchall(cursor)
 
         for row in rows:
             row.specimen.initial_claimed_volume = (float(row.volume) * float(row.number_of_containers))
+            row.specimen.save()
 
         for row in rows_roll_up:
-            row.specimen.initial_claimed_volume = float(row['actual_volume'])
+            specimen = Specimen.objects.get(specimen_label=row['specimen_label'],
+                                            specimen_type=SpecimenType.objects.get(spec_type=row['specimen_type']))
+            specimen.initial_claimed_volume = float(row['actual_volume'])
+            specimen.save()
 
         logger.info('Success!')
