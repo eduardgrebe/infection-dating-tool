@@ -35,8 +35,12 @@
                     <td>{{panel.description}}</td>
                     <td>{{panel.specimen_type.name}}</td>
                     <td>{{panel.volume}}</td>
-                    <td><a href="{% url '' %}" class="btn btn-default">Upload Memberships</a></td>
-                    <td><a href="{% url '' %}" class="btn btn-default">Upload Shipments</a></td>
+                    <td>
+                      <button class="btn btn-primary" data-toggle="modal" data-target="#membershipModal">Upload membership file</button>
+                    </td>
+                    <td>
+                      <button class="btn btn-primary" data-toggle="modal" data-target="#shipmentModal">Upload shipment file</button>
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -49,4 +53,6 @@
   </div>
 </div>
 {% include 'assay/panel_capture.html' with panel_capture_form=panel_capture_form %}
+{% include 'assay/shipment_modal.html' with panel_file_form=panel_file_form %}
+{% include 'assay/membership_modal.html' with panel_file_form=panel_file_form %}
 {% endblock %}

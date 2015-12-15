@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
 from models import Panel
-from forms import PanelCaptureForm
+from forms import PanelCaptureForm, PanelFileForm
 from cephia.forms import FileInfoForm
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def panels(request, template="assay/panels.html"):
     context = {}
     panel_capture_form = PanelCaptureForm(request.POST or None)
-    fileinfo_form = FileInfoForm(request.POST or None)
+    panel_file_form = PanelFileForm(request.POST or None)
     
     if request.method == 'POST':
         if panel_capture_form.is_valid():
@@ -25,30 +25,36 @@ def panels(request, template="assay/panels.html"):
     elif request.method == 'GET':
         context['panels'] = Panel.objects.all()
         context['panel_capture_form'] = panel_capture_form
-    
+        context['panel_file_form'] = panel_file_form
+        
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 def panel_file_upload(request, panel_id=None):
     context = {}
-    
+
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data.__setitem__('priority', 0)
         if 'shipment' in request.POST:
             post_data.__setitem__('file_type', 'panel_shipment')
         elif 'membership' in request.POST:
-            post_data.__setitem__('file_type', 'panel_memberships')
+            post_data.__setitem__('file_type', 'panel_membership')
             
-        fileinfo_form = FileInfoForm(post_data, request.FILES)
-        if fileinfo_form.is_valid():
-            fileinfo_form.save()
+        panel_file_form = PanelFileForm(post_data, request.FILES)
+        if panel_file_form.is_valid():
+            panel_file = panel_file_form.save()
+            panel_file.get_handler().parse()
+            panel_file.get_handler().validate()
+            panel_file.get_handler().process()
+                
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
             
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
+        panel_file_form = PanelFileForm()
         context['panels'] = Panel.objects.all()
-        context['fileinfo_form'] = fileinfo_form
+        context['panel_file_form'] = panel_file_form
     
         return render_to_response(template, context, context_instance=RequestContext(request))

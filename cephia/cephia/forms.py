@@ -2,6 +2,7 @@ from django import forms
 from models import (FileInfo, SubjectRow, Ethnicity,
                     VisitRow, Specimen, TransferInRow,
                     TransferOutRow, AliquotRow, ImportedRowComment)
+from assay.models import PanelMembershipRow, PanelShipmentRow
 
 class BaseFilterForm(forms.Form):
 
@@ -261,6 +262,12 @@ class RowFilterForm(forms.Form):
         elif fileinfo.file_type == 'transfer_out':
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo)
             template = 'cephia/transfer_out_row_info.html'
+        elif fileinfo.file_type == 'panel_membership':
+            rows = PanelMembershipRow.objects.filter(fileinfo=fileinfo)
+            template = 'assay/panel_membership_row_info.html'
+        elif fileinfo.file_type == 'panel_shipment':
+            rows = PanelShipmentRow.objects.filter(fileinfo=fileinfo)
+            template = 'assay/panel_shipment_row_info.html'
 
         if state:
             rows = rows.filter(state=state)

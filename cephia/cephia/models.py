@@ -115,10 +115,13 @@ class FileInfo(models.Model):
         ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
         ('assay','Assay'),
+        ('panel_shipment','Panel Shipment'),
+        ('panel_membership','Panel Membership'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
+    panel_type = models.CharField(max_length=20, null=True, blank=False, default=None) 
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
