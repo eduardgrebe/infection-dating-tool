@@ -1,7 +1,6 @@
 # encoding: utf-8
 from lib.fields import ProtectedForeignKey
 from django.db import models
-from django import forms
 from django.conf import settings
 import os
 from file_handlers.file_handler_register import *
@@ -96,6 +95,19 @@ class Subtype(models.Model):
     name = models.CharField(max_length=30, null=False, blank=False)
 
 
+class Assay(models.Model):
+    class Meta:
+        db_table = "cephia_assay"
+
+    short_name = models.CharField(max_length=255, null=False, blank=False)
+    long_name = models.CharField(max_length=255, null=False, blank=False)
+    developer = models.CharField(max_length=255, null=False, blank=False)
+    description = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return "%s" % (self.name)
+
+
 class FileInfo(models.Model):
 
     class Meta:
@@ -121,7 +133,7 @@ class FileInfo(models.Model):
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
-    panel_type = models.CharField(max_length=20, null=True, blank=False, default=None) 
+    assay = models.ForeignKey(Assay, db_index=True, default=None, null=True)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
@@ -140,14 +152,23 @@ class FileInfo(models.Model):
     def get_row(self, row_id):
         if self.file_type == 'subject':
             return SubjectRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'visit':
+        elif self.file_type == 'visit':
             return VisitRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'transfer_in':
+        elif self.file_type == 'transfer_in':
             return TransferInRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'aliquot':
+        elif self.file_type == 'aliquot':
             return AliquotRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'transfer_out':
+        elif self.file_type == 'transfer_out':
             return TransferOutRow.objects.get(fileinfo__id=self.id, id=row_id)
+        elif self.file_type == 'panel_membership':
+            return PanelMembershipRow.objects.get(fileinfo__id=self.id, id=row_id)
+        elif self.file_type == 'panel_shipment':
+            return PanelShipmentRow.objects.get(fileinfo__id=self.id, id=row_id)
+        elif self.file_type == 'assay':
+            if self.assay.name == 'lag':
+                return LagResultRow.objects.get(fileinfo__id=self.id, id=row_id)
+            elif self.assay.name == 'biorad':
+                return BioradResultRow.objects.get(fileinfo__id=self.id, id=row_id)
 
     def get_extension(self):
         return self.filename().split('.')[-1]
@@ -475,5 +496,4 @@ class AliquotRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_label
-
 

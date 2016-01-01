@@ -5,19 +5,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class Assay(models.Model):
-    class Meta:
-        db_table = "cephia_assays"
-
-    short_name = models.CharField(max_length=255, null=False, blank=False)
-    long_name = models.CharField(max_length=255, null=False, blank=False)
-    developer = models.CharField(max_length=255, null=False, blank=False)
-    description = models.CharField(max_length=255, null=False, blank=False)
-
-    def __unicode__(self):
-        return "%s" % (self.name)
-
-
 class Panel(models.Model):
 
     class Meta:
@@ -87,6 +74,197 @@ class LagResultRow(ImportedRow):
 
     class Meta:
         db_table = "lag_result_row"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+class LagResult(models.Model):
+
+    class Meta:
+        db_table = "lag_result"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+class BioradResultRow(ImportedRow):
+
+    class Meta:
+        db_table = "biorad_result_row"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+class BioradResult(models.Model):
+
+    class Meta:
+        db_table = "biorad_result"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+
+class ArchitectResultRow(ImportedRow):
+
+    class Meta:
+        db_table = "architect_result_row"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+class ArchitectResult(models.Model):
+
+    class Meta:
+        db_table = "architect_result"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+
+class VitrosResultRow(ImportedRow):
+
+    class Meta:
+        db_table = "vitros_result_row"
+        
+    specimen = models.CharField(max_length=255, null=False, blank=True)
+    assay = models.CharField(max_length=255, null=False, blank=True)
+    sample_type = models.CharField(max_length=255, null=False, blank=True)
+    site = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    operator = models.CharField(max_length=255, null=False, blank=True)
+    assay_kit_lot_id = models.CharField(max_length=255, null=False, blank=True)
+    plate_id = models.CharField(max_length=255, null=False, blank=True)
+    test_mode = models.CharField(max_length=255, null=False, blank=True)
+    well = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_1 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_2 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_3 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_4 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_5 = models.CharField(max_length=255, null=False, blank=True)
+    intermediate_6 = models.CharField(max_length=255, null=False, blank=True)
+    final_result = models.CharField(max_length=255, null=False, blank=True)
+    panel_type = models.CharField(max_length=255, null=False, blank=True)
+
+    def __unicode__(self):
+        return self.specimen
+
+class VitrosResult(models.Model):
+
+    class Meta:
+        db_table = "vitros_result"
         
     specimen = models.CharField(max_length=255, null=False, blank=True)
     assay = models.CharField(max_length=255, null=False, blank=True)
