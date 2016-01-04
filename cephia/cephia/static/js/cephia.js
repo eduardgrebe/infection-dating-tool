@@ -2,6 +2,7 @@ $(document).ready(function() {
     //remove alerts after certain amount of time
     $('.alert').fadeOut(10000);
     $( ".datepicker" ).datepicker({ dateFormat: 'yy-mm-dd' });
+    $('div.upload-assay').hide();
     //initially disable upload file button
     //$('.upload-btn').attr('disabled', 'disabled');
 
@@ -36,6 +37,20 @@ $(document).ready(function() {
         })
     });
     //
+
+    $('.btn-result-file-modal').on('click', function(event) {
+        event.preventDefault();
+        var panelId = $(this).parent().data('panel-id');
+        var url = "/assay/result_file_upload/" + String(panelId);
+
+        $.get(url, function(data, status) {
+            var response = JSON.parse(data);
+            if (status == "success") {
+                $(".result-modal").html(response.response);
+                $("#resultModal").modal();
+            }
+        })
+    });
 
     $('.navtab').on('click', function(event) {
         $(this).addClass('active');
@@ -85,22 +100,17 @@ $(document).ready(function() {
             }
         });
     });
+    
+    $('div.upload-file-type select').on('change', function(event) {
+        var fileType = $('div.upload-file-type select option:selected').val();
 
-    // $('a.export-specimen').on('click', function(event) {
-    //     event.preventDefault();
-
-    //     var url = "/reports/visit_specimen_report/";
-    //     var post_data = $('#specimen-form').serializeArray();
-    //     var csv = {name:'csv', value:true};
-    //     post_data.push(csv);
-
-    //     $.post(url, post_data, function(data, status) {
-    //         var response = JSON.parse(data);
-    //         if (status == "success") {
-    //             var win = window.open('','_blank');
-    //         }
-    //     });
-    // });
+        if (fileType == 'assay') {
+            $('div.upload-assay').show();
+        } else {
+            $('div.upload-assay').hide();
+        }
+    });
+    
 });
 
 

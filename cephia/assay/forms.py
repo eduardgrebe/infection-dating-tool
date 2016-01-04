@@ -1,10 +1,9 @@
 from django import forms
-from models import Panel
-from cephia.models import FileInfo
+from cephia.models import FileInfo, Panels
 
 class PanelCaptureForm(forms.ModelForm):
     class Meta:
-        model = Panel
+        model = Panels
         fields = ['name','description', 'specimen_type', 'volume']
     
     def __init__(self, *args, **kwargs):

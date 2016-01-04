@@ -1,0 +1,73 @@
+{% extends "cephia/row_info_base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block filter_fields %}
+{% bootstrap_field filter_form.state %}
+{% bootstrap_field filter_form.has_comment %}
+{% endblock %}
+
+{% block filename %}{{file}}{% endblock %}
+{% block table_header %}
+<thead>
+  <th>Specimen ID</th>
+  <th>Assay</th>
+  <th>Sample Type</th>
+  <th>Site</th>
+  <th>Test Date</th>
+  <th>Operator</th>
+  <th>Assay Kit Lot ID</th>
+  <th>Run/Plate ID</th>
+  <th>Test Mode</th>
+  <th>Well</th>
+  <th>Intermediate 1</th>
+  <th>Intermediate 2</th>
+  <th>Intermediate 3</th>
+  <th>Intermediate 4</th>
+  <th>Intermediate 5</th>
+  <th>Intermediate 6</th>
+  <th>Final Result</th>
+  <th>Panel Type</th>
+  <th>State</th>
+  <th>Message</th>
+</thead>
+{% endblock %}
+
+{% block table_body %}
+{% paginate rows %}
+{% show_pages %}
+<tbody>
+  {% for row in rows %}
+  <tr>
+    <td>{{row.specimen_id}}</td>
+    <td>{{row.assay}}</td>
+    <td>{{row.sample_type}}</td>
+    <td>{{row.site}}</td>
+    <td>{{row.test_date}}</td>
+    <td>{{row.operator}}</td>
+    <td>{{row.assay_kit_lot_id}}</td>
+    <td>{{row.plate_id}}</td>
+    <td>{{row.test_mode}}</td>
+    <td>{{row.well}}</td>
+    <td>{{row.intermediate_1}}</td>
+    <td>{{row.intermediate_2}}</td>
+    <td>{{row.intermediate_3}}</td>
+    <td>{{row.intermediate_4}}</td>
+    <td>{{row.intermediate_5}}</td>
+    <td>{{row.intermediate_6}}</td>
+    <td>{{row.final_result}}</td>
+    <td>{{row.panel_type}}</td>
+    <td>{{row.message}}</td>
+    <td>{{row.state}}</td>
+    <td><pre>{{row.error_message}}</pre></td>
+    <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
+      {% if row.state == 'error' %}
+      <button class="btn btn-success btn-comment-modal">
+        {% bootstrap_icon "comment" %}
+      </button>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+{% endblock %}

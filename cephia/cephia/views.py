@@ -230,6 +230,7 @@ def download_file(request, file_id):
 def upload_file(request):
     try:
         FILE_PRIORITIES = {
+            'assay': 0,
             'subject': 1,
             'visit': 2,
             'transfer_in': 3,
@@ -239,6 +240,7 @@ def upload_file(request):
 
         if request.method == "POST":
             post_data = request.POST.copy()
+            import pdb; pdb.set_trace()
             if post_data.get("priority"):
                 priority = post_data.get("priority")
                 file_type = [k for k , v in FILE_PRIORITIES.iteritems() if u"%s" % v == priority][0]

@@ -99,13 +99,38 @@ class Assay(models.Model):
     class Meta:
         db_table = "cephia_assay"
 
-    short_name = models.CharField(max_length=255, null=False, blank=False)
+    name = models.CharField(max_length=255, null=False, blank=False)
     long_name = models.CharField(max_length=255, null=False, blank=False)
     developer = models.CharField(max_length=255, null=False, blank=False)
     description = models.CharField(max_length=255, null=False, blank=False)
 
     def __unicode__(self):
         return "%s" % (self.name)
+
+class SpecimenType(models.Model):
+
+    class Meta:
+        db_table = "cephia_specimen_types"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+    spec_type = models.CharField(max_length=10, null=False, blank=False)
+    spec_group = models.IntegerField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+class Panels(models.Model):
+
+    class Meta:
+        db_table = "cephia_panel"
+
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=False, db_index=True)
+    volume = models.FloatField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class FileInfo(models.Model):
@@ -134,6 +159,7 @@ class FileInfo(models.Model):
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
     assay = models.ForeignKey(Assay, db_index=True, default=None, null=True)
+    panel = models.ForeignKey(Panels, db_index=True, default=None, null=True)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
@@ -167,6 +193,8 @@ class FileInfo(models.Model):
         elif self.file_type == 'assay':
             if self.assay.name == 'lag':
                 return LagResultRow.objects.get(fileinfo__id=self.id, id=row_id)
+            elif self.assay.name == 'biorad':
+                return BioradResultRow.objects.get(fileinfo__id=self.id, id=row_id)
             elif self.assay.name == 'biorad':
                 return BioradResultRow.objects.get(fileinfo__id=self.id, id=row_id)
 
@@ -365,17 +393,7 @@ class VisitRow(ImportedRow):
         return self.subject_label
 
 
-class SpecimenType(models.Model):
 
-    class Meta:
-        db_table = "cephia_specimen_types"
-
-    name = models.CharField(max_length=255, null=False, blank=False)
-    spec_type = models.CharField(max_length=10, null=False, blank=False)
-    spec_group = models.IntegerField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
 
 
 class Specimen(models.Model):
@@ -496,4 +514,3 @@ class AliquotRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_label
-

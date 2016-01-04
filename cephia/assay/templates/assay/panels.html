@@ -36,10 +36,13 @@
                     <td>{{panel.specimen_type.name}}</td>
                     <td>{{panel.volume}}</td>
                     <td>
-                      <button class="btn btn-primary" data-toggle="modal" data-target="#membershipModal">Upload membership file</button>
+                      <button class="btn btn-primary btn-panel-file-modal" data-toggle="modal" data-target="#membershipModal">Upload membership file</button>
                     </td>
                     <td>
-                      <button class="btn btn-primary" data-toggle="modal" data-target="#shipmentModal">Upload shipment file</button>
+                      <button class="btn btn-primary btn-panel-file-modal" data-toggle="modal" data-target="#shipmentModal">Upload shipment file</button>
+                    </td>
+                    <td data-panel-id="{{panel.id}}">
+                      <button class="btn btn-primary btn-result-file-modal" data-toggle="modal">Upload results file</button>
                     </td>
                   </tr>
                   {% endfor %}
@@ -51,6 +54,8 @@
       </div>
     </div>
   </div>
+</div>
+<div class="result-modal">
 </div>
 {% include 'assay/panel_capture.html' with panel_capture_form=panel_capture_form %}
 {% include 'assay/shipment_modal.html' with panel_file_form=panel_file_form %}
