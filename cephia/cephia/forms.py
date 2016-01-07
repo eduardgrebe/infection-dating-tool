@@ -3,7 +3,7 @@ from models import (FileInfo, SubjectRow, Ethnicity,
                     VisitRow, Specimen, TransferInRow,
                     TransferOutRow, AliquotRow, ImportedRowComment, Assay)
 from assay.models import (PanelMembershipRow, PanelShipmentRow, LagResultRow,
-                          GeeniusResultRow, BEDResultRow)
+                          GeeniusResultRow, BEDResultRow, ArchitectResultRow)
 
 class BaseFilterForm(forms.Form):
 

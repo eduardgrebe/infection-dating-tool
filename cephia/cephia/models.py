@@ -125,7 +125,7 @@ class Panels(models.Model):
         db_table = "cephia_panel"
 
     name = models.CharField(max_length=255, null=True, blank=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=False, blank=False)
     specimen_type = models.ForeignKey(SpecimenType, null=True, blank=False, db_index=True)
     volume = models.FloatField(null=True, blank=True)
 

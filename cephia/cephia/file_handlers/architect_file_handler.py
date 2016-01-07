@@ -83,7 +83,7 @@ class ArchitectFileHandler(FileHandler):
 
     def validate(self):
         from cephia.models import Specimen
-        from assay.models import ArchitectResultRow
+        from assay.models import ArchitectResultRow, ArchitectResult
         
         rows_validated = 0
         rows_failed = 0
@@ -128,9 +128,9 @@ class ArchitectFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self):
-        from cephia.models import Specimen
-        from assay.models import ArchitectResultRow, ArchitectResult
+    def process(self, panel_id):
+        from cephia.models import Specimen, Laboratory, Assay, Panels
+        from assay.models import ArchitectResultRow, ArchitectResult, AssayResult
         
         rows_inserted = 0
         rows_failed = 0
@@ -138,24 +138,30 @@ class ArchitectFileHandler(FileHandler):
         for architect_result_row in ArchitectResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    architect_result = ArchitectResult.objects.create(specimen=Specimen.objects.get(pk=architect_result_row.specimen),
-                                                          assay=Assay.objects.get(pk=architect_result_row.assay),
-                                                          sample_type=architect_result_row.sample_type,
-                                                          site=Site.objects.get(name=architect_result_row.site),
-                                                          test_date=self.registered_dates(),
-                                                          operator=architect_result_row.operator,
-                                                          assay_kit_lot_id=architect_result_row.assay_kit_lot_id,
-                                                          plate_id=architect_result_row.plate_id,
-                                                          test_mode=architect_result_row.test_mode,
-                                                          well=architect_result_row.well,
-                                                          intermediate_1=architect_result_row.intermediate_1,
-                                                          intermediate_2=architect_result_row.intermediate_2,
-                                                          intermediate_3=architect_result_row.intermediate_3,
-                                                          intermediate_4=architect_result_row.intermediate_4,
-                                                          intermediate_5=architect_result_row.intermediate_5,
-                                                          intermediate_6=architect_result_row.intermediate_6,
-                                                          final_result=architect_result_row.final_result,
-                                                          panel_type=architect_result_row.panel_type)
+                    architect_result = ArchitectResult.objects.create(specimen=Specimen.objects.get(specimen_label=architect_result_row.specimen),
+                                                                      assay=Assay.objects.get(name=architect_result_row.assay),
+                                                                      sample_type=architect_result_row.sample_type,
+                                                                      laboratory=Laboratory.objects.get(name=architect_result_row.site),
+                                                                      test_date=self.float_as_date(float(architect_result_row.test_date)),
+                                                                      operator=architect_result_row.operator,
+                                                                      assay_kit_lot_id=architect_result_row.assay_kit_lot_id,
+                                                                      plate_id=architect_result_row.plate_id,
+                                                                      test_mode=architect_result_row.test_mode,
+                                                                      well=architect_result_row.well,
+                                                                      intermediate_1=architect_result_row.intermediate_1,
+                                                                      intermediate_2=architect_result_row.intermediate_2,
+                                                                      intermediate_3=architect_result_row.intermediate_3,
+                                                                      intermediate_4=architect_result_row.intermediate_4,
+                                                                      intermediate_5=architect_result_row.intermediate_5,
+                                                                      intermediate_6=architect_result_row.intermediate_6,
+                                                                      final_result=architect_result_row.final_result,
+                                                                      panel_type=architect_result_row.panel_type)
+
+                    AssayResult.objects.create(panel=Panels.objects.get(pk=panel_id),
+                                               assay=Assay.objects.get(name=architect_result_row.assay),
+                                               specimen=Specimen.objects.get(specimen_label=architect_result_row.specimen),
+                                               test_date=self.float_as_date(float(architect_result_row.test_date)),
+                                               result=architect_result_row.final_result)
                     
                     architect_result_row.state = 'processed'
                     architect_result_row.date_processed = timezone.now()
@@ -164,6 +170,7 @@ class ArchitectFileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
+                import pdb; pdb.set_trace()
                 logger.exception(e)
                 architect_result_row.state = 'error'
                 architect_result_row.error_message = e.message
