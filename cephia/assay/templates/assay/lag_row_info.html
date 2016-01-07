@@ -10,7 +10,7 @@
 {% block filename %}{{file}}{% endblock %}
 {% block table_header %}
 <thead>
-  <th>Specimen ID</th>
+  <th>Specimen</th>
   <th>Assay</th>
   <th>Sample Type</th>
   <th>Site</th>
@@ -39,7 +39,7 @@
 <tbody>
   {% for row in rows %}
   <tr>
-    <td>{{row.specimen_id}}</td>
+    <td>{{row.specimen}}</td>
     <td>{{row.assay}}</td>
     <td>{{row.sample_type}}</td>
     <td>{{row.site}}</td>

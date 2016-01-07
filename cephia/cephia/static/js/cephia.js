@@ -19,7 +19,7 @@ $(document).ready(function() {
         }
     });
     //
-
+    //COMMENT MOODAL CALL
     $('.btn-comment-modal').on('click', function(event) {
         event.preventDefault();
         var rowId = $(this).parent().data('row-id');
@@ -37,7 +37,7 @@ $(document).ready(function() {
         })
     });
     //
-
+    //RESULT FILE MODAL CALL
     $('.btn-result-file-modal').on('click', function(event) {
         event.preventDefault();
         var panelId = $(this).parent().data('panel-id');
@@ -51,7 +51,35 @@ $(document).ready(function() {
             }
         })
     });
+    //MEMBERSHIP FILE MODAL CALL
+    $('.btn-membership-file-modal').on('click', function(event) {
+        event.preventDefault();
+        var panelId = $(this).parent().data('panel-id');
+        var url = "/assay/membership_file_upload/" + String(panelId);
 
+        $.get(url, function(data, status) {
+            var response = JSON.parse(data);
+            if (status == "success") {
+                $(".membership-modal").html(response.response);
+                $("#membershipModal").modal();
+            }
+        })
+    });
+    //SHIPMENT FILE MODAL CALL
+    $('.btn-shipment-file-modal').on('click', function(event) {
+        event.preventDefault();
+        var panelId = $(this).parent().data('panel-id');
+        var url = "/assay/shipment_file_upload/" + String(panelId);
+
+        $.get(url, function(data, status) {
+            var response = JSON.parse(data);
+            if (status == "success") {
+                $(".shipment-modal").html(response.response);
+                $("#shipmentModal").modal();
+            }
+        })
+    });
+    //MAKE CURRENT NAV TAB ACTIVE
     $('.navtab').on('click', function(event) {
         $(this).addClass('active');
     });
@@ -84,7 +112,7 @@ $(document).ready(function() {
             provisionalButton.show();
         }
     });
-
+    //AJAX CALL TO SHOW SPECIMEN DETAIL ON REPORT
     $('a.show-specimen').on('click', function(event) {
         event.preventDefault();
 
@@ -100,7 +128,7 @@ $(document).ready(function() {
             }
         });
     });
-    
+    //SHOW AND HIDE ASSAY TYPE DROPDOWN ON FILE UPLOAD
     $('div.upload-file-type select').on('change', function(event) {
         var fileType = $('div.upload-file-type select option:selected').val();
 

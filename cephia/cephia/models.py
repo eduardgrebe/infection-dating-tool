@@ -173,7 +173,10 @@ class FileInfo(models.Model):
         return os.path.basename(self.data_file.name)
 
     def get_handler(self):
-        return get_file_handler_for_type(self.file_type)(self)
+        if self.assay:
+            return get_file_handler_for_type(self.file_type, self.assay.name)(self)
+        else:
+            return get_file_handler_for_type(self.file_type, None)(self)
 
     def get_row(self, row_id):
         if self.file_type == 'subject':

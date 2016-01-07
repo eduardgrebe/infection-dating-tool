@@ -56,6 +56,7 @@
 	          <th>Name</th>
 	          <th>Type</th>
                   <th>Panel</th>
+                  <th>Assay</th>
 	          <th>Created</th>
 	          <th>State</th>
 	          <th>Download</th>
@@ -68,6 +69,7 @@
 	            <td>{{file.filename}}</td>
 	            <td>{{file.file_type}}</td>
                     <td>{{file.panel.name}}</td>
+                    <td>{{file.assay.name}}</td>
 	            <td>{{file.created}}</td>
 	            <td>{{file.state}}</td>
 	            <td><a href="{% url 'download_file' file.id %}">Download</a></td>

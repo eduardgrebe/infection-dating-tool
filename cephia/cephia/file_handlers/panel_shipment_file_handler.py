@@ -26,14 +26,13 @@ class PanelShipmentFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
                     panel_shipment_row = PanelShipmentRow.objects.create(specimen=row_dict['specimen'],
-                                                                             panel=row_dict['panel'],
-                                                                             replicates=row_dict['replicates'],
-                                                                             state='pending',
-                                                                             fileinfo=self.upload_file)
+                                                                         panel=row_dict['panel'],
+                                                                         replicates=row_dict['replicates'],
+                                                                         state='pending',
+                                                                         fileinfo=self.upload_file)
 
                     rows_inserted += 1
             except Exception, e:
-                import pdb; pdb.set_trace()
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
@@ -78,7 +77,6 @@ class PanelShipmentFileHandler(FileHandler):
                 rows_validated += 1
                 shipment_row.save()
             except Exception, e:
-                import pdb; pdb.set_trace()
                 logger.exception(e)
                 shipment_row.state = 'error'
                 shipment_row.error_message = e.message
@@ -97,8 +95,8 @@ class PanelShipmentFileHandler(FileHandler):
         self.upload_file.save()
 
     def process(self):
-        from cephia.models import Specimen
-        from assay.models import PanelShipmentRow, PanelShipment, Panel
+        from cephia.models import Specimen, Panels
+        from assay.models import PanelShipmentRow, PanelShipment
         
         rows_inserted = 0
         rows_failed = 0
@@ -107,7 +105,7 @@ class PanelShipmentFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     panel_shipment = PanelShipment.objects.create(specimen=Specimen.objects.get(pk=panel_shipment_row.specimen),
-                                                                  panel=Panel.objects.get(pk=panel_shipment_row.panel),
+                                                                  panel=Panels.objects.get(pk=panel_shipment_row.panel),
                                                                   replicates=panel_shipment_row.replicates)
 
                     panel_shipment_row.state = 'processed'
@@ -117,7 +115,6 @@ class PanelShipmentFileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
-                import pdb; pdb.set_trace()
                 logger.exception(e)
                 panel_shipment_row.state = 'error'
                 panel_shipment_row.error_message = e.message

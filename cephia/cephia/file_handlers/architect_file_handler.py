@@ -31,7 +31,7 @@ class ArchitectFileHandler(FileHandler):
 
 
     def parse(self):
-        from cephia.models import ArchitectResultRow
+        from assay.models import ArchitectResultRow
         
         rows_inserted = 0
         rows_failed = 0
@@ -39,6 +39,7 @@ class ArchitectFileHandler(FileHandler):
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
+                    self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
                     architect_result_row = ArchitectResultRow.objects.create(specimen=row_dict['Specimen ID'],
@@ -64,6 +65,7 @@ class ArchitectFileHandler(FileHandler):
 
                     rows_inserted += 1
             except Exception, e:
+                import pdb; pdb.set_trace()
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
@@ -81,7 +83,7 @@ class ArchitectFileHandler(FileHandler):
 
     def validate(self):
         from cephia.models import Specimen
-        from assay.models import ArchitectResultRow, ArchitectResult
+        from assay.models import ArchitectResultRow
         
         rows_validated = 0
         rows_failed = 0
@@ -108,6 +110,7 @@ class ArchitectFileHandler(FileHandler):
                 rows_validated += 1
                 architect_result_row.save()
             except Exception, e:
+                import pdb; pdb.set_trace()
                 logger.exception(e)
                 architect_result_row.state = 'error'
                 architect_result_row.error_message = e.message

@@ -95,8 +95,8 @@ class PanelMembershipFileHandler(FileHandler):
         self.upload_file.save()
 
     def process(self):
-        from cephia.models import Visit
-        from assay.models import PanelMembershipRow, PanelMembership, Panel
+        from cephia.models import Visit, Panels
+        from assay.models import PanelMembershipRow, PanelMembership
         
         rows_inserted = 0
         rows_failed = 0
@@ -105,7 +105,7 @@ class PanelMembershipFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     panel_membership = PanelMembership.objects.create(visit=Visit.objects.get(pk=panel_membership_row.visit),
-                                                                      panel=Panel.objects.get(pk=panel_membership_row.panel),
+                                                                      panel=Panels.objects.get(pk=panel_membership_row.panel),
                                                                       replicates=panel_membership_row.replicates)
 
                     panel_membership_row.state = 'processed'

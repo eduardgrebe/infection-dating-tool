@@ -240,7 +240,7 @@ def upload_file(request):
 
         if request.method == "POST":
             post_data = request.POST.copy()
-            import pdb; pdb.set_trace()
+
             if post_data.get("priority"):
                 priority = post_data.get("priority")
                 file_type = [k for k , v in FILE_PRIORITIES.iteritems() if u"%s" % v == priority][0]
@@ -251,7 +251,7 @@ def upload_file(request):
     
             form = FileInfoForm(post_data, request.FILES)
             if form.is_valid():
-                form.save();
+                form.save()
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
             else:
                 messages.add_message(request, messages.ERROR, 'Failed to uploaded file')

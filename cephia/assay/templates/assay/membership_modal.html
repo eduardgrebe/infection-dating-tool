@@ -2,7 +2,7 @@
   <div class="modal fade" id="membershipModal">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form id="form" action="{% url 'assay:panel_file_upload' %}" enctype="multipart/form-data" role="form" method="POST">
+        <form id="form" action="{% url 'assay:membership_file_upload' panel_id=data.panel_id %}" enctype="multipart/form-data" role="form" method="POST">
 	  {% csrf_token %}
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
@@ -10,7 +10,6 @@
           </div>
           <div class="modal-body">
 	    {{panel_file_form.data_file}}
-	    {{panel_file_form.file_type}}
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

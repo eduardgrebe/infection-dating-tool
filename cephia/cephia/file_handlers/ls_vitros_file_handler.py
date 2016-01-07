@@ -4,11 +4,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class ArchitectFileHandler(FileHandler):
+class LSVitrosFileHandler(FileHandler):
     upload_file = None
     
     def __init__(self, upload_file):
-        super(ArchitectFileHandler, self).__init__(upload_file)
+        super(LSVitrosFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['Specimen ID',
                                    'Assay',
@@ -31,7 +31,7 @@ class ArchitectFileHandler(FileHandler):
 
 
     def parse(self):
-        from cephia.models import ArchitectResultRow
+        from cephia.models import LSVitrosResultRow
         
         rows_inserted = 0
         rows_failed = 0
@@ -41,7 +41,7 @@ class ArchitectFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
-                    architect_result_row = ArchitectResultRow.objects.create(specimen=row_dict['Specimen ID'],
+                    ls_vitros_result_row = LSVitrosResultRow.objects.create(specimen=row_dict['Specimen ID'],
                                                                  assay=row_dict['Assay'],
                                                                  sample_type=row_dict['Sample Type'],
                                                                  site=row_dict['Site'],
@@ -81,38 +81,38 @@ class ArchitectFileHandler(FileHandler):
 
     def validate(self):
         from cephia.models import Specimen
-        from assay.models import ArchitectResultRow, ArchitectResult
+        from assay.models import LSVitrosResultRow, LSVitrosResult
         
         rows_validated = 0
         rows_failed = 0
         
-        for architect_result_row in ArchitectResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for ls_vitros_result_row in LSVitrosResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 
                 # try:
-                #     Specimen.objects.get(pk=architect_result_row.specimen)
+                #     Specimen.objects.get(pk=ls_vitros_result_row.specimen)
                 # except Specimen.DoesNotExist:
                 #     error_msg += "Specimen not recognised.\n"
 
                 # try:
-                #     Panel.objects.get(pk=architect_result_row.panel)
+                #     Panel.objects.get(pk=ls_vitros_result_row.panel)
                 # except Panel.DoesNotExist:
                 #     error_msg += "Panel not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
                 
-                architect_result_row.state = 'validated'
-                architect_result_row.error_message = ''
+                ls_vitros_result_row.state = 'validated'
+                ls_vitros_result_row.error_message = ''
                 rows_validated += 1
-                architect_result_row.save()
+                ls_vitros_result_row.save()
             except Exception, e:
                 logger.exception(e)
-                architect_result_row.state = 'error'
-                architect_result_row.error_message = e.message
+                ls_vitros_result_row.state = 'error'
+                ls_vitros_result_row.error_message = e.message
                 rows_failed += 1
-                architect_result_row.save()
+                ls_vitros_result_row.save()
                 continue
         
         if rows_failed > 0:
@@ -127,44 +127,44 @@ class ArchitectFileHandler(FileHandler):
 
     def process(self):
         from cephia.models import Specimen
-        from assay.models import ArchitectResultRow, ArchitectResult
+        from assay.models import LSVitrosResultRow, LSVitrosResult
         
         rows_inserted = 0
         rows_failed = 0
 
-        for architect_result_row in ArchitectResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+        for ls_vitros_result_row in LSVitrosResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    architect_result = ArchitectResult.objects.create(specimen=Specimen.objects.get(pk=architect_result_row.specimen),
-                                                          assay=Assay.objects.get(pk=architect_result_row.assay),
-                                                          sample_type=architect_result_row.sample_type,
-                                                          site=Site.objects.get(name=architect_result_row.site),
+                    ls_vitros_result = LSVitrosResult.objects.create(specimen=Specimen.objects.get(pk=ls_vitros_result_row.specimen),
+                                                          assay=Assay.objects.get(pk=ls_vitros_result_row.assay),
+                                                          sample_type=ls_vitros_result_row.sample_type,
+                                                          site=Site.objects.get(name=ls_vitros_result_row.site),
                                                           test_date=self.registered_dates(),
-                                                          operator=architect_result_row.operator,
-                                                          assay_kit_lot_id=architect_result_row.assay_kit_lot_id,
-                                                          plate_id=architect_result_row.plate_id,
-                                                          test_mode=architect_result_row.test_mode,
-                                                          well=architect_result_row.well,
-                                                          intermediate_1=architect_result_row.intermediate_1,
-                                                          intermediate_2=architect_result_row.intermediate_2,
-                                                          intermediate_3=architect_result_row.intermediate_3,
-                                                          intermediate_4=architect_result_row.intermediate_4,
-                                                          intermediate_5=architect_result_row.intermediate_5,
-                                                          intermediate_6=architect_result_row.intermediate_6,
-                                                          final_result=architect_result_row.final_result,
-                                                          panel_type=architect_result_row.panel_type)
+                                                          operator=ls_vitros_result_row.operator,
+                                                          assay_kit_lot_id=ls_vitros_result_row.assay_kit_lot_id,
+                                                          plate_id=ls_vitros_result_row.plate_id,
+                                                          test_mode=ls_vitros_result_row.test_mode,
+                                                          well=ls_vitros_result_row.well,
+                                                          intermediate_1=ls_vitros_result_row.intermediate_1,
+                                                          intermediate_2=ls_vitros_result_row.intermediate_2,
+                                                          intermediate_3=ls_vitros_result_row.intermediate_3,
+                                                          intermediate_4=ls_vitros_result_row.intermediate_4,
+                                                          intermediate_5=ls_vitros_result_row.intermediate_5,
+                                                          intermediate_6=ls_vitros_result_row.intermediate_6,
+                                                          final_result=ls_vitros_result_row.final_result,
+                                                          panel_type=ls_vitros_result_row.panel_type)
                     
-                    architect_result_row.state = 'processed'
-                    architect_result_row.date_processed = timezone.now()
-                    architect_result_row.error_message = ''
-                    architect_result_row.save()
+                    ls_vitros_result_row.state = 'processed'
+                    ls_vitros_result_row.date_processed = timezone.now()
+                    ls_vitros_result_row.error_message = ''
+                    ls_vitros_result_row.save()
                     rows_inserted += 1
 
             except Exception, e:
                 logger.exception(e)
-                architect_result_row.state = 'error'
-                architect_result_row.error_message = e.message
-                architect_result_row.save()
+                ls_vitros_result_row.state = 'error'
+                ls_vitros_result_row.error_message = e.message
+                ls_vitros_result_row.save()
                 rows_failed += 1
                 continue
 

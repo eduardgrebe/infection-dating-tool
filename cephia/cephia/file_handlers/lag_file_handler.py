@@ -31,7 +31,7 @@ class LagFileHandler(FileHandler):
 
 
     def parse(self):
-        from cephia.models import LagResultRow
+        from assay.models import LagResultRow
         
         rows_inserted = 0
         rows_failed = 0
@@ -39,8 +39,9 @@ class LagFileHandler(FileHandler):
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
+                    self.header = [ x.strip() for x in self.header ]
+                        
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
                     lag_result_row = LagResultRow.objects.create(specimen=row_dict['Specimen ID'],
                                                                  assay=row_dict['Assay'],
                                                                  sample_type=row_dict['Sample Type'],
@@ -85,20 +86,15 @@ class LagFileHandler(FileHandler):
         
         rows_validated = 0
         rows_failed = 0
-        
+
         for lag_result_row in LagResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 
-                # try:
-                #     Specimen.objects.get(pk=lag_result_row.specimen)
-                # except Specimen.DoesNotExist:
-                #     error_msg += "Specimen not recognised.\n"
-
-                # try:
-                #     Panel.objects.get(pk=lag_result_row.panel)
-                # except Panel.DoesNotExist:
-                #     error_msg += "Panel not recognised.\n"
+                try:
+                    Specimen.objects.get(specimen_label=lag_result_row.specimen)
+                except Specimen.DoesNotExist:
+                    error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -125,9 +121,9 @@ class LagFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self):
-        from cephia.models import Specimen
-        from assay.models import LagResultRow, LagResult
+    def process(self, panel_id):
+        from cephia.models import Specimen, Laboratory, Assay, Panels
+        from assay.models import LagResultRow, LagResult, AssayResult
         
         rows_inserted = 0
         rows_failed = 0
@@ -135,11 +131,11 @@ class LagFileHandler(FileHandler):
         for lag_result_row in LagResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    lag_result = LagResult.objects.create(specimen=Specimen.objects.get(pk=lag_result_row.specimen),
-                                                          assay=Assay.objects.get(pk=lag_result_row.assay),
+                    lag_result = LagResult.objects.create(specimen=Specimen.objects.get(specimen_label=lag_result_row.specimen),
+                                                          assay=Assay.objects.get(name=lag_result_row.assay),
                                                           sample_type=lag_result_row.sample_type,
-                                                          site=Site.objects.get(name=lag_result_row.site),
-                                                          test_date=self.registered_dates(),
+                                                          laboratory=Laboratory.objects.get(name=lag_result_row.site),
+                                                          test_date=self.float_as_date(float(lag_result_row.test_date)),
                                                           operator=lag_result_row.operator,
                                                           assay_kit_lot_id=lag_result_row.assay_kit_lot_id,
                                                           plate_id=lag_result_row.plate_id,
@@ -153,7 +149,13 @@ class LagFileHandler(FileHandler):
                                                           intermediate_6=lag_result_row.intermediate_6,
                                                           final_result=lag_result_row.final_result,
                                                           panel_type=lag_result_row.panel_type)
-                    
+
+                    AssayResult.objects.create(panel=Panels.objects.get(pk=panel_id),
+                                               assay=Assay.objects.get(name=lag_result_row.assay),
+                                               specimen=Specimen.objects.get(specimen_label=lag_result_row.specimen),
+                                               test_date=self.float_as_date(float(lag_result_row.test_date)),
+                                               result=lag_result_row.final_result)
+                               
                     lag_result_row.state = 'processed'
                     lag_result_row.date_processed = timezone.now()
                     lag_result_row.error_message = ''
@@ -161,6 +163,7 @@ class LagFileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
+                import pdb; pdb.set_trace()
                 logger.exception(e)
                 lag_result_row.state = 'error'
                 lag_result_row.error_message = e.message

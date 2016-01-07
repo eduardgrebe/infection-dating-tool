@@ -25,8 +25,9 @@
                   <th>Description</th>
                   <th>Specimen Type</th>
                   <th>Volume</th>
-                  <th></th>
-                  <th></th>
+                  <th>Memberships</th>
+                  <th>Shipments</th>
+                  <th>Results</th>
                 </thead>
                 <tbody>
                   {% for panel in panels %}
@@ -35,14 +36,17 @@
                     <td>{{panel.description}}</td>
                     <td>{{panel.specimen_type.name}}</td>
                     <td>{{panel.volume}}</td>
-                    <td>
-                      <button class="btn btn-primary btn-panel-file-modal" data-toggle="modal" data-target="#membershipModal">Upload membership file</button>
-                    </td>
-                    <td>
-                      <button class="btn btn-primary btn-panel-file-modal" data-toggle="modal" data-target="#shipmentModal">Upload shipment file</button>
+                    <td data-panel-id="{{panel.id}}">
+                      <a href="{% url 'assay:panel_memberships' panel_id=panel.id %}" target="_blank" class="btn btn-default">View</a>
+                      <button class="btn btn-default btn-membership-file-modal">Upload</button>
                     </td>
                     <td data-panel-id="{{panel.id}}">
-                      <button class="btn btn-primary btn-result-file-modal" data-toggle="modal">Upload results file</button>
+                      <a href="{% url 'assay:panel_shipments' panel_id=panel.id %}" target="_blank" class="btn btn-default">View</a>
+                      <button class="btn btn-default btn-shipment-file-modal">Upload</button>
+                    </td>
+                    <td data-panel-id="{{panel.id}}">
+                      <a href="{% url 'assay:panel_results' panel_id=panel.id %}" target="_blank" class="btn btn-default">View</a>
+                      <button class="btn btn-default btn-result-file-modal">Upload</button>
                     </td>
                   </tr>
                   {% endfor %}
@@ -57,7 +61,9 @@
 </div>
 <div class="result-modal">
 </div>
+<div class="membership-modal">
+</div>
+<div class="shipment-modal">
+</div>
 {% include 'assay/panel_capture.html' with panel_capture_form=panel_capture_form %}
-{% include 'assay/shipment_modal.html' with panel_file_form=panel_file_form %}
-{% include 'assay/membership_modal.html' with panel_file_form=panel_file_form %}
 {% endblock %}

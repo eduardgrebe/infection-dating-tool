@@ -2,7 +2,8 @@ from django import forms
 from models import (FileInfo, SubjectRow, Ethnicity,
                     VisitRow, Specimen, TransferInRow,
                     TransferOutRow, AliquotRow, ImportedRowComment, Assay)
-from assay.models import PanelMembershipRow, PanelShipmentRow, LagResultRow
+from assay.models import (PanelMembershipRow, PanelShipmentRow, LagResultRow,
+                          GeeniusResultRow, BEDResultRow)
 
 class BaseFilterForm(forms.Form):
 
@@ -27,9 +28,11 @@ class FileInfoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FileInfoForm, self).__init__(*args, **kwargs)
-        
         for key in self.fields:
             self.fields[key].required = True
+            
+        self.fields['panel'].required = False
+        self.fields['assay'].required = False
 
 
 class RowCommentForm(forms.ModelForm):
