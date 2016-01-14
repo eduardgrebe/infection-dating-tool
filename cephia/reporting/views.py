@@ -330,4 +330,3 @@ def fixed_query_template(request, template="reporting/fixed_query_template.html"
     else:
         response = render_to_response(template, context, context_instance=RequestContext(request))
     return response
-

@@ -79,6 +79,7 @@ INSTALLED_APPS = (
     'cephia',
     'reporting',
     'user_management',
+    'diagnostics',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -2,6 +2,7 @@ from django import forms
 from models import (FileInfo, SubjectRow, Ethnicity,
                     VisitRow, Specimen, TransferInRow,
                     TransferOutRow, AliquotRow, ImportedRowComment)
+from diagnostics.models import DiagnosticTestHistoryRow
 
 class BaseFilterForm(forms.Form):
 
@@ -261,6 +262,9 @@ class RowFilterForm(forms.Form):
         elif fileinfo.file_type == 'transfer_out':
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo)
             template = 'cephia/transfer_out_row_info.html'
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo)
+            template = 'diagnostics/test_history_row_info.html'
 
         if state:
             rows = rows.filter(state=state)
@@ -290,6 +294,10 @@ class FileInfoFilterForm(forms.Form):
         ('transfer_in','Transfer In'),
         ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
+        ('diagnostic_test','Diagnostic Test'),
+        ('protocol_lookup','Protocol Lookup'),
+        ('test_history','Diagnostic Test History'),
+        ('test_property','Diagnostic Test Properties'),
     )
 
     file_type = forms.ChoiceField(choices=FILE_TYPE_CHOICES, required=False)

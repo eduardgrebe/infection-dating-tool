@@ -230,6 +230,10 @@ def download_file(request, file_id):
 def upload_file(request):
     try:
         FILE_PRIORITIES = {
+            'diagnostic_test': 0,
+            'protocol_lookup': 0,
+            'test_history': 0,
+            'test_property': 0,
             'subject': 1,
             'visit': 2,
             'transfer_in': 3,
@@ -249,7 +253,13 @@ def upload_file(request):
     
             form = FileInfoForm(post_data, request.FILES)
             if form.is_valid():
-                form.save();
+                new_file = form.save()
+                if new_file.file_type == 'test_history':
+                    new_file.get_handler().parse()
+                    new_file.get_handler().validate()
+                    new_file.get_handler().process()
+                elif new_file.file_type in ['diagnostic_test','protocol_lookup', 'test_property']:
+                    new_file.get_handler().process()
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
             else:
                 messages.add_message(request, messages.ERROR, 'Failed to uploaded file')

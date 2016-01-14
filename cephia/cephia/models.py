@@ -109,11 +109,16 @@ class FileInfo(models.Model):
     )
 
     FILE_TYPE_CHOICES = (
+        ('','---------'),
         ('subject','Subject'),
         ('visit','Visit'),
         ('transfer_in','Transfer In'),
         ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
+        ('diagnostic_test','Diagnostic Test'),
+        ('protocol_lookup','Protocol Lookup'),
+        ('test_history','Diagnostic Test History'),
+        ('test_property','Diagnostic Test Properties'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -187,6 +192,15 @@ class ImportedRowComment(models.Model):
         return d
 
 
+class SubjectEDDI(models.Model):
+    class Meta:
+        db_table = "cephia_subject_eddi"
+        
+    tci_begin = models.DateField(null=True, blank=True)
+    tci_end = models.DateField(null=True, blank=True)
+    eddi = models.DateField(null=True, blank=True)
+
+
 class Subject(models.Model):
 
     class Meta:
@@ -228,6 +242,7 @@ class Subject(models.Model):
     art_resumption_date = models.DateField(null=True, blank=True)
     artificial = models.BooleanField(default=False)
     source_study = models.ForeignKey(Study, null=True, blank=True)
+    subject_eddi = models.ForeignKey(SubjectEDDI, null=True, blank=True)
     history = HistoricalRecords()
 
     def __unicode__(self):
@@ -289,6 +304,15 @@ class SubjectRow(ImportedRow):
         return self.subject_label
 
 
+class VisitEDDI(models.Model):
+    class Meta:
+        db_table = "cephia_visit_eddi"
+        
+    tci_begin = models.DateField(null=True, blank=True)
+    tci_end = models.DateField(null=True, blank=True)
+    eddi = models.DateField(null=True, blank=True)
+
+
 class Visit(models.Model):
 
     class Meta:
@@ -311,6 +335,7 @@ class Visit(models.Model):
     hepatitis = models.NullBooleanField()
     artificial = models.BooleanField(default=False)
     subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
+    visit_eddi = models.ForeignKey(VisitEDDI, null=True, blank=True)
     history = HistoricalRecords()
 
     def __unicode__(self):
