@@ -14,6 +14,7 @@ urlpatterns = [
 
     url(r'^reports/', include('reporting.urls', namespace='reporting')),
     url(r'^accounts/', include('user_management.urls', namespace='users')),
+    url(r'^diagnostics/', include('diagnostics.urls', namespace='diagnostics')),
     
     url(r'^countries/$', views.countries, name='countries'),
     url(r'^ethnicities/$', views.ethnicities, name='ethnicities'),

@@ -68,6 +68,12 @@ class TestHistoryFileHandler(FileHandler):
                 except ProtocolLookup.DoesNotExist:
                     error_msg += "Protocol not recognised.\n"
 
+                if not datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date() < datetime.now().date():
+                    error_msg += 'test_date must be before today.\n'
+
+                if not datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date() > datetime.strptime('1980-01-01', "%Y-%m-%d").date():
+                    error_msg += 'test_date must be after 1 Jan 1980.\n'
+
                 if error_msg:
                     raise Exception(error_msg)
 

@@ -1,0 +1,61 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block filter_col_a %}
+{% endblock %}
+
+{% block filter_col_b %}
+{% endblock %}
+
+{% block filter_col_c %}
+{% endblock %}
+
+{% block filter_col_d %}
+{% endblock %}
+
+{% block page_content %}
+
+{% paginate subjects %}
+
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">EDDI - Subjects</h3>
+      </div>
+      <div class="panel-body">
+        {% show_pages %}
+        <div class="row">
+          <div class="table-responsive">
+            <table class="table-striped table table-hover" style="overflow:auto;">
+              <thead>
+                <th>Subject Label</th>
+                <th>TCI Begin</th>
+                <th>TCI End</th>
+                <th>EDDI</th>
+                <th>Cohort Entry Date</th>
+                <th>Cohort Entry Status</th>
+                <th>Reported FP Date</th>
+              </thead>
+              <tbody>
+                {% for subject in subjects %}
+                <tr>
+	          <td>{{subject.subject_label}}</td>
+	          <td>{{subject.subject_eddi.tci_begin}}</td>
+	          <td>{{subject.subject_eddi.tci_end}}</td>
+	          <td>{{subject.subject_eddi.eddi}}</td>
+                  <td>{{subject.cohort_entry_date}}</td>
+                  <td>{{subject.cohort_entry_hiv_status}}</td>
+                  <td>{{subject.first_positive_date}}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

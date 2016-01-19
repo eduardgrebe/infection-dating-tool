@@ -1,29 +1,22 @@
-from django.shortcuts import render
+from cephia.models import Subject
+from diagnostics.models import DiagnosticTestHistory
+import logging
+from django.shortcuts import render_to_response
+from django.http import HttpResponseRedirect, HttpResponse
+from django.core.urlresolvers import reverse
+from django.template import RequestContext
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
+from collections import OrderedDict
+from django.utils import timezone
+from django.conf import settings
 
-# Create your views here.
 
-
-
-@csrf_exempt
 @login_required
 def eddi_report(request, template="diagnostics/eddi_report.html"):
     context = {}
-
-    if visit_ids and subject_ids:
-        specimens = Specimen.objects.filter(Q(visit__id__in=visit_ids) | Q(subject__id__in=subject_ids))
-    elif subject_ids and not visit_ids:
-        specimens = Specimen.objects.filter(subject__id__in=subject_ids)
-    elif visit_ids and not subject_ids:
-        specimens = Specimen.objects.filter(visit__id__in=visit_ids)
-    else:
-        specimens = None
-
-        Subject ref
-        EDDIMin
-        EDDIMax
-        EDDIMidPointEstimate
-        Completeness (one of [ PosAndNeg, OnlyPos, OnlyNeg ] )
-
-    context['specimens'] = specimens
-    response = render_to_response(template, context, context_instance=RequestContext(request))
-    return response
+    subjects = Subject.objects.filter(subject_eddi__isnull=False)
+    context['subjects'] = subjects
+    
+    return render_to_response(template, context, context_instance=RequestContext(request))
