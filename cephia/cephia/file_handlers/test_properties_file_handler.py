@@ -31,7 +31,7 @@ class TestPropertyFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    TestPropertyEstimate.objects.update_or_create(diagnostic_test=DiagnosticTest.objects.get(pk=row_dict['test']),
+                    TestPropertyEstimate.objects.update_or_create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
                                                                   estimate_label=row_dict['label'],
                                                                   estimate_type=row_dict['estimate_type'],
                                                                   mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
