@@ -39,6 +39,7 @@
                 <th>Cohort Entry Date</th>
                 <th>Cohort Entry Status</th>
                 <th>Reported FP Date</th>
+                <th>Reported LN Date</th>
               </thead>
               <tbody>
                 {% for subject in subjects %}
@@ -49,12 +50,43 @@
 	          <td>{{subject.subject_eddi.eddi}}</td>
                   <td>{{subject.cohort_entry_date}}</td>
                   <td>{{subject.cohort_entry_hiv_status}}</td>
+                  <td>{{subject.last_negative_date}}</td>
                   <td>{{subject.first_positive_date}}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="modal fade" id="eddiModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">All test history for selected subject</h4>
+        </div>
+        <div class="modal-body eddi-modal-body">
+          <div class="table-responsive" style="overflow:auto; max-height:500px;"">
+            <table class="table-striped table table-hover">
+              <thead>
+                <th>Test Name</th>
+                <th>Subject Label</th>
+                <th>LN Date</th>
+                <th>FP Date</th>
+                <th>Study</th>
+              </thead>
+              <tbody class="eddi-modal">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>
     </div>

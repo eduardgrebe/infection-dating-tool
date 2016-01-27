@@ -26,3 +26,16 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
     context['form'] = form
     
     return render_to_response(template, context, context_instance=RequestContext(request))
+
+
+#@csrf_exempt
+@login_required
+def eddi_report_detail(request, template="diagnostics/eddi_report_detail_modal.html"):
+    context = {}
+    import pdb; pdb.set_trace()
+    subject_ids = request.POST.getlist('SubjectId', None)
+    specimens = Specimen.objects.filter(Q(visit__id__in=visit_ids) | Q(subject__id__in=subject_ids))
+
+    context['specimens'] = specimens
+    response = render_to_response(template, context, context_instance=RequestContext(request))
+    return HttpResponse(json.dumps({'response': response.content}))

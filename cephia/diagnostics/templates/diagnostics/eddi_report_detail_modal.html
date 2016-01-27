@@ -1,0 +1,11 @@
+{% load bootstrap3 %}
+
+{% for test in tests %}
+<tr>
+  <td>{{test.name}}</td>
+  <td>{{test.subject.id}}</td>
+  <td>{{test.id}}</td>
+  <td>{{test.test_label}}</td>
+  <td>{{test.volume}}</td>
+</tr>
+{% endfor %}
