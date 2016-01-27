@@ -12,6 +12,8 @@ from collections import OrderedDict
 from django.utils import timezone
 from django.conf import settings
 from diagnostics.forms import SubjectEDDIFilterForm
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 @login_required
 def eddi_report(request, template="diagnostics/eddi_report.html"):
@@ -28,14 +30,13 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
-#@csrf_exempt
+@csrf_exempt
 @login_required
-def eddi_report_detail(request, template="diagnostics/eddi_report_detail_modal.html"):
+def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_report_detail_modal.html"):
     context = {}
-    import pdb; pdb.set_trace()
-    subject_ids = request.POST.getlist('SubjectId', None)
-    specimens = Specimen.objects.filter(Q(visit__id__in=visit_ids) | Q(subject__id__in=subject_ids))
+    tests = DiagnosticTestHistory.objects.filter(subject__id=subject_id)
 
-    context['specimens'] = specimens
+    context['tests'] = tests
+
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))

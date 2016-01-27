@@ -7,15 +7,6 @@
 {% bootstrap_field form.source_study %}
 {% endblock %}
 
-{% block filter_col_b %}
-{% endblock %}
-
-{% block filter_col_c %}
-{% endblock %}
-
-{% block filter_col_d %}
-{% endblock %}
-
 {% block page_content %}
 
 {% paginate subjects %}
@@ -40,10 +31,11 @@
                 <th>Cohort Entry Status</th>
                 <th>Reported FP Date</th>
                 <th>Reported LN Date</th>
+                <th></th>
               </thead>
               <tbody>
                 {% for subject in subjects %}
-                <tr>
+                <tr data-subject-id="{{subject.id}}" >
 	          <td>{{subject.subject_label}}</td>
 	          <td>{{subject.subject_eddi.tci_begin}}</td>
 	          <td>{{subject.subject_eddi.tci_end}}</td>
@@ -52,6 +44,7 @@
                   <td>{{subject.cohort_entry_hiv_status}}</td>
                   <td>{{subject.last_negative_date}}</td>
                   <td>{{subject.first_positive_date}}</td>
+                  <td><a class="show-eddi-detail">See detail</a></td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -78,6 +71,9 @@
                 <th>Subject Label</th>
                 <th>LN Date</th>
                 <th>FP Date</th>
+                <th>Test Date</th>
+                <th>Adjusted Date</th>
+                <th>Test Result</th>
                 <th>Study</th>
               </thead>
               <tbody class="eddi-modal">

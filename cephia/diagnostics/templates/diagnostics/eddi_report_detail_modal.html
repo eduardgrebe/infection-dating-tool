@@ -2,10 +2,13 @@
 
 {% for test in tests %}
 <tr>
-  <td>{{test.name}}</td>
-  <td>{{test.subject.id}}</td>
-  <td>{{test.id}}</td>
-  <td>{{test.test_label}}</td>
-  <td>{{test.volume}}</td>
+  <td>{{test.test.name}}</td>
+  <td>{{test.subject.subject_label}}</td>
+  <td>{{test.subject.last_negative_date}}</td>
+  <td>{{test.subject.first_positive_date}}</td>
+  <td>{{test.test_date}}</td>
+  <td>{{test.adjusted_date}}</td>
+  <td>{{test.test_result}}</td>
+  <td>{{test.subject.source_study.name}}</td>
 </tr>
 {% endfor %}

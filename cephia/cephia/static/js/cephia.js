@@ -86,6 +86,21 @@ $(document).ready(function() {
         });
     });
 
+    $('a.show-eddi-detail').on('click', function(event) {
+        event.preventDefault();
+        var subjectId = $(this).parent().parent().data('subject-id');
+        var url = "/diagnostics/eddi_report_detail/" + String(subjectId);
+        
+        $.get(url, function(data, status) {
+            var response = JSON.parse(data);
+
+            if (status == "success") {
+                $(".eddi-modal").html(response.response);
+                $("#eddiModal").modal();
+            }
+        });
+    });
+
     // $('a.export-specimen').on('click', function(event) {
     //     event.preventDefault();
 
