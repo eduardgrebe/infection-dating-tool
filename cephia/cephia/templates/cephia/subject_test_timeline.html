@@ -1,0 +1,29 @@
+{% extends "timeline_base.html" %}
+{% block content %}
+<div id='placement'></div>
+<script type='text/javascript'>
+ var tg1 = {};
+ var timelineData;
+ var url = "/diagnostics/subject_test_data";
+
+ $.get(url, function(data, status) {
+     var response = JSON.parse(data);
+     if (status == "success") {
+         debugger;
+     }
+ });
+ 
+ $(function() {
+     tg1 = $("#placement").timeline({
+	 "min_zoom":1, 
+	 "max_zoom":55, 
+	 "image_lane_height":100,
+	 "icon_folder":"timeglider/icons/",
+	 "data_source":"json/idaho.json",
+	 "constrain_to_data": false
+     });
+     
+     tg_actor = tg1.data("timeline");
+ });
+</script>
+{% endblock %}

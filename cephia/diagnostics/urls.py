@@ -8,4 +8,5 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^eddi_report/', views.eddi_report, name='eddi_report'),
+    url(r'^subject_test_timeline/', views.subject_test_timeline, name='subject_test_timeline'),
 ]
