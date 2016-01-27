@@ -16,7 +16,7 @@ from django.conf import settings
 @login_required
 def eddi_report(request, template="diagnostics/eddi_report.html"):
     context = {}
-    subjects = Subject.objects.filter(subject_eddi__isnull=False)
+    subjects = Subject.objects.all()
     context['subjects'] = subjects
     
     return render_to_response(template, context, context_instance=RequestContext(request))
