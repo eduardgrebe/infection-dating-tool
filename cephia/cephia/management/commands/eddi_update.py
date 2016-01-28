@@ -27,10 +27,11 @@ class Command(BaseCommand):
                 eddi = None
             else:
                 eddi = tci_begin + timedelta(days=((tci_end - tci_begin).days / 2))
+                tci_size = abs((tci_end - tci_begin).days)
 
             subject_eddi = SubjectEDDI.objects.create(tci_begin=tci_begin,
                                                       tci_end=tci_end,
-                                                      tci_size=(tci_end - tci_begin).days,
+                                                      tci_size=tci_size,
                                                       eddi=eddi)
 
             subject_to_update = Subject.objects.get(pk=subject_id)
