@@ -4,7 +4,14 @@
 
 {% block filter_col_a %}
 {% bootstrap_field form.subject_label %}
+{% endblock %}
+
+{% block filter_col_b %}
 {% bootstrap_field form.source_study %}
+{% endblock %}
+
+{% block filter_col_c %}
+{% bootstrap_field form.has_history %}
 {% endblock %}
 
 {% block page_content %}
@@ -24,19 +31,19 @@
             <table class="table-striped table table-hover" style="overflow:auto;">
               <thead>
                 <th>Subject Label</th>
-                <th>TCI Begin</th>
-                <th>TCI End</th>
+                <th>VDW Begin</th>
+                <th>VDW End</th>
                 <th>EDDI</th>
                 <th>Cohort Entry Date</th>
                 <th>Cohort Entry Status</th>
-                <th>Reported FP Date</th>
                 <th>Reported LN Date</th>
-                <th></th>
+                <th>Reported FP Date</th>
+                <th>Reported EDSC</th>
               </thead>
               <tbody>
                 {% for subject in subjects %}
                 <tr data-subject-id="{{subject.id}}" >
-	          <td>{{subject.subject_label}}</td>
+	          <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
 	          <td>{{subject.subject_eddi.tci_begin}}</td>
 	          <td>{{subject.subject_eddi.tci_end}}</td>
 	          <td>{{subject.subject_eddi.eddi}}</td>
@@ -44,7 +51,7 @@
                   <td>{{subject.cohort_entry_hiv_status}}</td>
                   <td>{{subject.last_negative_date}}</td>
                   <td>{{subject.first_positive_date}}</td>
-                  <td><a class="show-eddi-detail">See detail</a></td>
+                  <td>{{subject.edsc_reported}}</td>
                 </tr>
                 {% endfor %}
               </tbody>
