@@ -95,7 +95,7 @@ $(document).ready(function() {
             var response = JSON.parse(data);
 
             if (status == "success") {
-                $(".eddi-modal").html(response.response);
+                $(".eddi-modal-container").html(response.response);
                 $("#eddiModal").modal();
             }
         });

@@ -11,7 +11,11 @@
 {% endblock %}
 
 {% block filter_col_c %}
-{% bootstrap_field form.has_history %}
+{% bootstrap_field form.has_diagnostic_test_history %}
+{% endblock %}
+
+{% block filter_col_d %}
+{% bootstrap_field form.subject_eddi_status %}
 {% endblock %}
 
 {% block page_content %}
@@ -30,15 +34,17 @@
           <div class="table-responsive">
             <table class="table-striped table table-hover" style="overflow:auto;">
               <thead>
-                <th>Subject Label</th>
+                <th>Subject</th>
                 <th>VDW Begin</th>
                 <th>VDW End</th>
+                <th>VDW Size</th>
                 <th>EDDI</th>
-                <th>Cohort Entry Date</th>
-                <th>Cohort Entry Status</th>
-                <th>Reported LN Date</th>
-                <th>Reported FP Date</th>
+                <th>Cohort Entry</th>
+                <th>Entry Status</th>
+                <th>Reported LN</th>
+                <th>Reported FP</th>
                 <th>Reported EDSC</th>
+                <th>EDDI Status</th>
               </thead>
               <tbody>
                 {% for subject in subjects %}
@@ -46,12 +52,14 @@
 	          <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
 	          <td>{{subject.subject_eddi.tci_begin}}</td>
 	          <td>{{subject.subject_eddi.tci_end}}</td>
+                  <td></td>
 	          <td>{{subject.subject_eddi.eddi}}</td>
                   <td>{{subject.cohort_entry_date}}</td>
                   <td>{{subject.cohort_entry_hiv_status}}</td>
                   <td>{{subject.last_negative_date}}</td>
                   <td>{{subject.first_positive_date}}</td>
                   <td>{{subject.edsc_reported}}</td>
+                  <td>{{subject.subject_eddi_status.status}}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -62,37 +70,6 @@
     </div>
   </div>
 </div>
-<div class="container">
-  <div class="modal fade" id="eddiModal">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-          <h4 class="modal-title">All test history for selected subject</h4>
-        </div>
-        <div class="modal-body eddi-modal-body">
-          <div class="table-responsive" style="overflow:auto; max-height:500px;"">
-            <table class="table-striped table table-hover">
-              <thead>
-                <th>Test Name</th>
-                <th>Subject Label</th>
-                <th>LN Date</th>
-                <th>FP Date</th>
-                <th>Test Date</th>
-                <th>Adjusted Date</th>
-                <th>Test Result</th>
-                <th>Study</th>
-              </thead>
-              <tbody class="eddi-modal">
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="eddi-modal-container">
 </div>
 {% endblock %}

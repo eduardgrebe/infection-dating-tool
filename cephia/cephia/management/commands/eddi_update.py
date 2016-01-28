@@ -30,6 +30,7 @@ class Command(BaseCommand):
 
             subject_eddi = SubjectEDDI.objects.create(tci_begin=tci_begin,
                                                       tci_end=tci_end,
+                                                      tci_size=(tci_end - tci_begin).days,
                                                       eddi=eddi)
 
             subject_to_update = Subject.objects.get(pk=subject_id)

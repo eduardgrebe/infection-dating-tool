@@ -1,14 +1,44 @@
 {% load bootstrap3 %}
+<div class="container">
+  <form id="form" action="{% url 'diagnostics:eddi_report_detail' subject_id=subject.id %}" enctype="multipart/form-data" role="form" method="POST">
+    <div class="modal fade" id="eddiModal">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">All test history for Subject - {{subject.subject_label}} from {{subject.source_study}} </h4>
+          </div>
+          <div class="modal-body eddi-modal-body">
+            <div class="table-responsive" style="overflow:auto; max-height:500px;"">
+              <div class="col-md-4">{% bootstrap_field form.status %}</div>
+              <div class="col-md-8">{% bootstrap_field form.comment %}</div>
+              <table class="table-striped table table-hover">
+                <thead>
+                  <th>Test Date</th>
+                  <th>Adjusted Date</th>
+                  <th>Test Name</th>
+                  <th>Test Result</th>
+                </thead>
+                <tbody class="eddi-modal">
+                  {% for test in tests %}
+                  <tr>
+                    <td>{{test.test_date}}</td>
+                    <td>{{test.adjusted_date}}</td>
+                    <td>{{test.test.name}}</td>
+                    <td>{{test.test_result}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary save-subject-eddi-status">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
 
-{% for test in tests %}
-<tr>
-  <td>{{test.test.name}}</td>
-  <td>{{test.subject.subject_label}}</td>
-  <td>{{test.subject.last_negative_date}}</td>
-  <td>{{test.subject.first_positive_date}}</td>
-  <td>{{test.test_date}}</td>
-  <td>{{test.adjusted_date}}</td>
-  <td>{{test.test_result}}</td>
-  <td>{{test.subject.source_study.name}}</td>
-</tr>
-{% endfor %}
