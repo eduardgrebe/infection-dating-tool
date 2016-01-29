@@ -110,6 +110,7 @@ $(document).ready(function() {
                             $('.status-message').show();
                             $('.status-message').text("Status successfully changed");
                             $('.status-message').fadeOut(2000);
+                            debugger;
                         }
                     });
                 });
