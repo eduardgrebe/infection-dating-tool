@@ -72,7 +72,7 @@ class SubjectEDDIFilterForm(BaseFilterForm):
         if vdw_size_greater_than:
             subjects = subjects.filter(subject_eddi__tci_size__gte=vdw_size_greater_than)
         if inverted_vdw:
-            subjects = subjects.filter(subject_eddi__tci_begin__gte=F('subject_eddi__tci_end'))
+            subjects = subjects.filter(subject_eddi__tci_begin__gt=F('subject_eddi__tci_end'))
 
         return subjects
 
