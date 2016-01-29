@@ -1,6 +1,6 @@
 {% load bootstrap3 %}
 <div class="container">
-  <form id="form" action="{% url 'diagnostics:eddi_report_detail' subject_id=subject.id %}" enctype="multipart/form-data" role="form" method="POST">
+  <form id="eddi-status-form" data-subject-id="{{subject.id}}" enctype="multipart/form-data" role="form" method="POST">
     <div class="modal fade" id="eddiModal">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -10,6 +10,7 @@
           </div>
           <div class="modal-body eddi-modal-body">
             <div class="table-responsive" style="overflow:auto; max-height:500px;"">
+              <div class="alert alert-success status-message"></div>
               <div class="col-md-4">{% bootstrap_field form.status %}</div>
               <div class="col-md-8">{% bootstrap_field form.comment %}</div>
               <table class="table-striped table table-hover">
@@ -33,7 +34,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary save-subject-eddi-status">Save</button>
+            <a class="btn btn-primary eddi-status-update">Save</a>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>

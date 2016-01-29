@@ -43,9 +43,11 @@ def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_repo
             subject_eddi_status = form.save()
             subject.subject_eddi_status = subject_eddi_status
             subject.save()
-            messages.add_message(request, messages.SUCCESS,
-                                 'Successfully updated eddi status for subject')
-            return HttpResponseRedirect(reverse('diagnostics:eddi_report'))
+            data = {
+                'success': True,
+            }
+            json_data = json.dumps(data)
+            return HttpResponse(json_data, content_type='application/json')
     elif request.method == 'GET':
         if subject.subject_eddi_status:
             form = SubjectEDDIStatusForm(initial=subject.subject_eddi_status.model_to_dict())
