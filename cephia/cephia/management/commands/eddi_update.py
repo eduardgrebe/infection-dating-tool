@@ -13,6 +13,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
         for subject_id in subject_ids:
+            self._handle_subject(subject_id)
+
+    def _handle_subject(self, subject_id):
             try:
                 tci_end = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Positive').earliest('adjusted_date').adjusted_date
             except DiagnosticTestHistory.DoesNotExist:
@@ -25,6 +28,7 @@ class Command(BaseCommand):
 
             if tci_begin is None or tci_end is None:
                 eddi = None
+                tci_size = None
             else:
                 eddi = tci_begin + timedelta(days=((tci_end - tci_begin).days / 2))
                 tci_size = abs((tci_end - tci_begin).days)
