@@ -4,7 +4,7 @@ from cephia.models import Subject, ImportedRow
 
 class DiagnosticTest(models.Model):
     class Meta:
-        db_table = "diagnostic_tests"
+        db_table = "cephia_diagnostic_tests"
 
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -13,7 +13,7 @@ class DiagnosticTest(models.Model):
 
 class ProtocolLookup(models.Model):
     class Meta:
-        db_table = "protocol_lookup"
+        db_table = "cephia_protocol_lookup"
 
     name = models.CharField(max_length=100, null=False, blank=False)
     protocol = models.CharField(max_length=100, null=False, blank=False)
@@ -22,7 +22,7 @@ class ProtocolLookup(models.Model):
 
 class TestPropertyEstimate(models.Model):
     class Meta:
-        db_table = "test_property_estimates"
+        db_table = "cephia_test_property_estimates"
         
     TYPE_CHOICES = (
         ('published','Published'),
@@ -43,7 +43,7 @@ class TestPropertyEstimate(models.Model):
 
 class DiagnosticTestHistoryRow(ImportedRow):
     class Meta:
-        db_table = "diagnostic_test_history_row"
+        db_table = "cephia_diagnostic_test_history_row"
 
     subject = models.CharField(max_length=255, null=False, blank=True)
     test_date = models.CharField(max_length=255, null=False, blank=True)
@@ -55,7 +55,7 @@ class DiagnosticTestHistoryRow(ImportedRow):
 
 class DiagnosticTestHistory(models.Model):
     class Meta:
-        db_table = "diagnostic_test_history"
+        db_table = "cephia_diagnostic_test_history"
 
     subject = models.ForeignKey(Subject, null=True, blank=False)
     test = models.ForeignKey(DiagnosticTest, null=True, blank=False)
