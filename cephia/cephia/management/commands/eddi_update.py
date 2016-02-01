@@ -41,5 +41,5 @@ class Command(BaseCommand):
 
             old_eddi = subject_to_update.subject_eddi
             subject_to_update.subject_eddi = new_eddi
-            old_eddi.delete()
             subject_to_update.save()
+            old_eddi.delete()

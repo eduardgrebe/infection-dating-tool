@@ -20,7 +20,6 @@ from django.forms import modelformset_factory
 def eddi_report(request, template="diagnostics/eddi_report.html"):
     context = {}
     subjects = Subject.objects.all()
-    import pdb; pdb.set_trace()
 
     form = SubjectEDDIFilterForm(request.GET or None)
     if form.is_valid():
