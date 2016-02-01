@@ -62,3 +62,4 @@ class DiagnosticTestHistory(models.Model):
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
     test_result = models.CharField(max_length=15, null=True, blank=False)
+    ignore = models.BooleanField(blank=False, default=False)

@@ -1,6 +1,7 @@
 {% load bootstrap3 %}
 <div class="container">
   <form id="eddi-status-form" data-subject-id="{{subject.id}}" enctype="multipart/form-data" role="form" method="POST">
+    {{ history_formset.management_form }} 
     <div class="modal fade" id="eddiModal">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -11,22 +12,25 @@
           <div class="modal-body eddi-modal-body">
             <div class="table-responsive" style="overflow:auto; max-height:500px;"">
               <div class="alert alert-success status-message"></div>
-              <div class="col-md-4">{% bootstrap_field form.status %}</div>
-              <div class="col-md-8">{% bootstrap_field form.comment %}</div>
+              <div class="col-md-4">{% bootstrap_field status_form.status %}</div>
+              <div class="col-md-8">{% bootstrap_field status_form.comment %}</div>
               <table class="table-striped table table-hover">
                 <thead>
                   <th>Test Date</th>
                   <th>Adjusted Date</th>
                   <th>Test Name</th>
                   <th>Test Result</th>
+                  <th>Ignored</th>
                 </thead>
                 <tbody class="eddi-modal">
-                  {% for test in tests %}
+                  {% for test in history_formset %}
+                  {{test.id}}
                   <tr>
-                    <td>{{test.test_date}}</td>
-                    <td>{{test.adjusted_date}}</td>
-                    <td>{{test.test.name}}</td>
-                    <td>{{test.test_result}}</td>
+                    <td>{{test.instance.test_date}}</td>
+                    <td>{{test.instance.adjusted_date}}</td>
+                    <td>{{test.instance.test.name}}</td>
+                    <td>{{test.instance.test_result}}</td>
+                    <td>{{test.ignore}}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
