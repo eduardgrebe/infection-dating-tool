@@ -17,12 +17,12 @@ class Command(BaseCommand):
 
     def _handle_subject(self, subject_id):
             try:
-                tci_end = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Positive', ignored=False).earliest('adjusted_date').adjusted_date
+                tci_end = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
             except DiagnosticTestHistory.DoesNotExist:
                 tci_end = None
                     
             try:
-                tci_begin = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Negative', ignored=False).latest('adjusted_date').adjusted_date
+                tci_begin = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
             except DiagnosticTestHistory.DoesNotExist:
                 tci_begin = None
 
