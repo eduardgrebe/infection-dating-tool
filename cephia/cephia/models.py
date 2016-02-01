@@ -200,6 +200,7 @@ class SubjectEDDI(models.Model):
     tci_end = models.DateField(null=True, blank=True)
     tci_size = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
+    recalculate = models.BooleanField(default=False)
 
 
 class SubjectEDDIStatus(models.Model):
