@@ -50,7 +50,7 @@ def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_repo
         if history_formset.is_valid():
             history_formset.save()
             subject.subject_eddi.recalculate = True
-            subject.save()
+            subject.subject_eddi.save()
             
         data = {
             'success': True,
