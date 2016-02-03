@@ -32,8 +32,11 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
 
 def subject_test_timeline(request, template="cephia/subject_test_timeline.html"):
     context = {}
-    import pdb; pdb.set_trace()
     return render_to_response(template, context, context_instance=RequestContext(request))
+
+def subject_timeline_data(request):
+    data_source = open('/home/jarryd/Documents/js_history.json').read()
+    return HttpResponse(json.dumps({'response': data_source}))
 
 @csrf_exempt
 @login_required

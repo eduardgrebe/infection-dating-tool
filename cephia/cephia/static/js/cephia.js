@@ -85,7 +85,8 @@ $(document).ready(function() {
             }
         });
     });
-
+    
+    //
     $('a.show-eddi-detail').on('click', function(event) {
         event.preventDefault();
         var subjectId = $(this).parent().parent().data('subject-id');
@@ -110,7 +111,6 @@ $(document).ready(function() {
                             $('.status-message').show();
                             $('.status-message').text("Status successfully changed");
                             $('.status-message').fadeOut(2000);
-                            debugger;
                         }
                     });
                 });
