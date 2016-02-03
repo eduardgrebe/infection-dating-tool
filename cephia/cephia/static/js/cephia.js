@@ -86,21 +86,37 @@ $(document).ready(function() {
         });
     });
 
-    // $('a.export-specimen').on('click', function(event) {
-    //     event.preventDefault();
+    $('a.show-eddi-detail').on('click', function(event) {
+        event.preventDefault();
+        var subjectId = $(this).parent().parent().data('subject-id');
+        var url = "/diagnostics/eddi_report_detail/" + String(subjectId);
+        
+        $.get(url, function(data, status) {
+            var response = JSON.parse(data);
 
-    //     var url = "/reports/visit_specimen_report/";
-    //     var post_data = $('#specimen-form').serializeArray();
-    //     var csv = {name:'csv', value:true};
-    //     post_data.push(csv);
-
-    //     $.post(url, post_data, function(data, status) {
-    //         var response = JSON.parse(data);
-    //         if (status == "success") {
-    //             var win = window.open('','_blank');
-    //         }
-    //     });
-    // });
+            if (status == "success") {
+                $(".eddi-modal-container").html(response.response);
+                $('.status-message').hide();
+                $("#eddiModal").modal();
+                $('a.eddi-status-update').on('click', function(event) {
+                    event.preventDefault();
+                    var $form = $('#eddi-status-form');
+                    var subjectId = $form.data('subject-id');
+                    var url = "/diagnostics/eddi_report_detail/" + String(subjectId) + "/";
+                    var post_data = $form.serializeArray();
+                    
+                    $.post(url, post_data, function(data, status) {
+                        if (status == "success") {
+                            $('.status-message').show();
+                            $('.status-message').text("Status successfully changed");
+                            $('.status-message').fadeOut(2000);
+                            debugger;
+                        }
+                    });
+                });
+            }
+        });
+    });
 });
 
 

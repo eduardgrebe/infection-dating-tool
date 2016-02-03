@@ -24,7 +24,6 @@ class DiagnosticTestFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-
                     DiagnosticTest.objects.update_or_create(id=row_dict['id'],
                                                             name=row_dict['name'],
                                                             description=row_dict['description'])

@@ -68,3 +68,8 @@ pre.error-log {
     position: fixed;
     right: 20px;
 }
+
+.show-eddi-detail {
+    cursor:pointer;
+}
+

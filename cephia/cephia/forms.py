@@ -265,6 +265,8 @@ class RowFilterForm(forms.Form):
         elif fileinfo.file_type == 'test_history':
             rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo)
             template = 'diagnostics/test_history_row_info.html'
+        else:
+            raise Exception("Unknown filetype : %s" % fileinfo.file_type)
 
         if state:
             rows = rows.filter(state=state)

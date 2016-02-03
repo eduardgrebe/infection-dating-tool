@@ -3,15 +3,22 @@
 {% load endless %}
 
 {% block filter_col_a %}
+{% bootstrap_field form.subject_label %}
+{% bootstrap_field form.vdw_size_less_than %}
 {% endblock %}
 
 {% block filter_col_b %}
+{% bootstrap_field form.source_study %}
+{% bootstrap_field form.vdw_size_greater_than %}
 {% endblock %}
 
 {% block filter_col_c %}
+{% bootstrap_field form.has_diag_test_history %}
+{% bootstrap_field form.inverted_vdw %}
 {% endblock %}
 
 {% block filter_col_d %}
+{% bootstrap_field form.subject_eddi_status %}
 {% endblock %}
 
 {% block page_content %}
@@ -30,24 +37,32 @@
           <div class="table-responsive">
             <table class="table-striped table table-hover" style="overflow:auto;">
               <thead>
-                <th>Subject Label</th>
-                <th>TCI Begin</th>
-                <th>TCI End</th>
+                <th>Subject</th>
+                <th>VDW Begin</th>
+                <th>VDW End</th>
+                <th>VDW Size</th>
                 <th>EDDI</th>
-                <th>Cohort Entry Date</th>
-                <th>Cohort Entry Status</th>
-                <th>Reported FP Date</th>
+                <th>Cohort Entry</th>
+                <th>Entry Status</th>
+                <th>Reported LN</th>
+                <th>Reported FP</th>
+                <th>Reported EDSC</th>
+                <th>EDDI Status</th>
               </thead>
               <tbody>
                 {% for subject in subjects %}
-                <tr>
-	          <td>{{subject.subject_label}}</td>
+                <tr data-subject-id="{{subject.id}}" >
+	          <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
 	          <td>{{subject.subject_eddi.tci_begin}}</td>
 	          <td>{{subject.subject_eddi.tci_end}}</td>
+                  <td>{{subject.subject_eddi.tci_size}}</td>
 	          <td>{{subject.subject_eddi.eddi}}</td>
                   <td>{{subject.cohort_entry_date}}</td>
                   <td>{{subject.cohort_entry_hiv_status}}</td>
+                  <td>{{subject.last_negative_date}}</td>
                   <td>{{subject.first_positive_date}}</td>
+                  <td>{{subject.edsc_reported}}</td>
+                  <td class="eddi-status-column">{{subject.subject_eddi_status.status}}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -57,5 +72,7 @@
       </div>
     </div>
   </div>
+</div>
+<div class="eddi-modal-container">
 </div>
 {% endblock %}
