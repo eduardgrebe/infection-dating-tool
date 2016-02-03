@@ -38,7 +38,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <a class="btn btn-primary view-timeline" href="{% url 'diagnostics:subject_test_timeline' %}" >View Timeline</a>
+            <a class="btn btn-primary view-timeline" href="{% url 'diagnostics:subject_test_timeline' subject_id=subject.id %}" target="_blank">View Timeline</a>
             <a class="btn btn-primary eddi-status-update">Save</a>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>

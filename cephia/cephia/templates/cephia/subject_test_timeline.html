@@ -1,16 +1,22 @@
 {% extends "timeline_base.html" %}
 {% block content %}
+<style type='text/css'>
+ #placement {
+     margin:32px;
+     height:550px;
+ }
+</style>
 <div id='placement'></div>
 <script type='text/javascript'>
- //var subjectId = $(this).parent().parent().data('subject-id');
+ var subjectId = $("title").data('subject-id');
  var tg1 = {};
- var url = "/diagnostics/subject_timeline_data";
+ var url = "/diagnostics/subject_timeline_data/" + String(subjectId);
 
  $.get(url, function(data, status) {
      var response = JSON.parse(data);
      var dataSource = JSON.parse(response.response);
      if (status == "success") {
-          $(function() {
+         $(function() {
              tg1 = $("#placement").timeline({
 	         "min_zoom":1, 
 	         "max_zoom":55, 

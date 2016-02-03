@@ -30,13 +30,17 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-def subject_test_timeline(request, template="cephia/subject_test_timeline.html"):
+def subject_test_timeline(request, subject_id=None, template="cephia/subject_test_timeline.html"):
     context = {}
+    context['subject_id'] = subject_id
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-def subject_timeline_data(request):
-    data_source = open('/home/jarryd/Documents/js_history.json').read()
-    return HttpResponse(json.dumps({'response': data_source}))
+def subject_timeline_data(request, subject_id=None, template="diagnostics/timeline_data.json"):
+    context = {}
+    context['tests'] = DiagnosticTestHistory.objects.filter(subject__id=subject_id)
+    import pdb; pdb.set_trace()
+    response = render_to_response(template, context, context_instance=RequestContext(request))
+    return HttpResponse(json.dumps({'response': response.content}))
 
 @csrf_exempt
 @login_required
