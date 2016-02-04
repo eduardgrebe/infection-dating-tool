@@ -1,0 +1,32 @@
+[
+    {
+        "id":"subject_timeline",
+        "title":"Subject Diagnostic Test Timeline",
+        "description":"<p></p>",
+        "focus_date":"1999-06-20",
+        "initial_zoom":"20",
+        "image_lane_height":0,
+        "events":[       
+            {% for test in tests %}
+            {
+                "id":"{{test.id}}",
+                "title": "{{test.test.name}}",
+                "description":"Some kind of description here",
+                "startdate": "1999-04-01 12:00:00",
+                "enddate": "1999-04-02 12:00:00",
+                "importance":"50",
+                "date_display":"ye",
+                "high_threshold":50,
+                "link":"",
+                "icon":{% if test.test_result == 'Negative' %}"circle_green.png"{% else %}"circle_red.png"{% endif %}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+
+        ],
+        "legend": [
+            {"title":"negative", "icon":"circle_green.png"},
+            {"title":"positive", "icon":"circle_red.png"}
+        ]
+        
+    }
+]

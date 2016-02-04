@@ -38,7 +38,6 @@ def subject_test_timeline(request, subject_id=None, template="cephia/subject_tes
 def subject_timeline_data(request, subject_id=None, template="diagnostics/timeline_data.json"):
     context = {}
     context['tests'] = DiagnosticTestHistory.objects.filter(subject__id=subject_id)
-    import pdb; pdb.set_trace()
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
 
