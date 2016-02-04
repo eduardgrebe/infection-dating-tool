@@ -1,20 +1,20 @@
 [
     {
-        "id":"subject_timeline",
-        "title":"Subject Diagnostic Test Timeline",
-        "description":"<p></p>",
-        "focus_date":"1999-06-20",
-        "initial_zoom":"20",
+        "id":"{{subject.id}}",
+        "title":"Subject - {{subject.subject_label}} Diagnostic Test Timeline",
+        "description":"",
+        "focus_date":"{{subject.subject_eddi.eddi|date:'Y-m-d'}}",
+        "initial_zoom":"25",
         "image_lane_height":0,
         "events":[       
             {% for test in tests %}
             {
                 "id":"{{test.id}}",
                 "title": "{{test.test.name}}",
-                "description":"Some kind of description here",
-                "startdate": "1999-04-01 12:00:00",
-                "enddate": "1999-04-02 12:00:00",
-                "importance":"50",
+                "description":"Test Date: {{test.test_date}}<br/> Adjusted Date: {{test.adjusted_date}}<br/> Test Result: {{test.test_result}}",
+                "startdate": "{{test.test_date|date:'Y-m-d'}}",
+                "enddate": "{{test.adjusted_date|date:'Y-m-d'}}",
+                "importance":"30",
                 "date_display":"ye",
                 "high_threshold":50,
                 "link":"",
