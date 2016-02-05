@@ -1,6 +1,7 @@
 <!doctype html>
 
 {% load staticfiles %}
+{% load common_tags %}
 
 <html>
   <title data-subject-id="{{subject_id}}">Subject Diagnostic Test Timeline</title>
@@ -22,6 +23,7 @@
     <link rel="stylesheet" href="{% static 'css/jquery-ui-1.10.3.custom.css' %}" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{% static 'timeglider/Timeglider.css' %}" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{% static 'timeglider/timeglider.datepicker.css' %}" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{% static 'css/cephia.css' %}" type="text/css" charset="utf-8">
 
     {% block extrastyle %}{% endblock %}
     {% block extramedia %}{% endblock %}
