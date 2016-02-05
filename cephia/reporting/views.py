@@ -27,7 +27,14 @@ def visit_material(request, template="reporting/visit_material.html"):
     subjects.subject_label AS SubjectLabel,
     visits.visit_date AS VisitDate,
     subjects.cohort_entry_date AS EntryDate ,
-    subjects.cohort_entry_hiv_status AS EntryStatus ,
+    subjects.cohort_entry_hiv_status AS EntryStatus,
+    eddi.tci_begin AS VDW_Begin,
+    eddi.tci_end AS VDW_End,
+    eddi.tci_size AS VDW_Size,
+    eddi.eddi AS EDDI,
+    DATEDIFF(visits.visit_date,eddi.tci_begin) AS DaysSinceVDWBegin,
+    DATEDIFF(visits.visit_date,eddi.tci_end) AS DaysSinceVDWEnd,
+    DATEDIFF(visits.visit_date,eddi.eddi) AS DaysSinceEDDI,
     subjects.last_negative_date AS LNDate,
     subjects.first_positive_date AS FPDate,
     subjects.fiebig_stage_at_firstpos AS FiebigFP,
@@ -51,7 +58,8 @@ def visit_material(request, template="reporting/visit_material.html"):
     COUNT(specimens.id) AS n_specs ,
     SUM(specimens.initial_claimed_volume) AS vol_recd ,
     specimens.volume_units
-    FROM cephia_subjects AS subjects 
+    FROM cephia_subjects AS subjects
+    LEFT JOIN cephia_subject_eddi AS eddi ON subjects.subject_eddi_id = eddi.id
     INNER JOIN cephia_visits AS visits ON subjects.id = visits.subject_id
     LEFT JOIN cephia_panel_memberships AS panels ON visits.id = panels.visit_id
     INNER JOIN cephia_specimens AS specimens ON visits.id = specimens.visit_id
