@@ -15,6 +15,8 @@ from diagnostics.forms import SubjectEDDIFilterForm, SubjectEDDIStatusForm
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.forms import modelformset_factory
+from django.core.management import call_command
+
 
 @login_required
 def eddi_report(request, template="diagnostics/eddi_report.html"):
@@ -79,3 +81,8 @@ def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_repo
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
+
+
+def recalculate_eddi(request):
+    call_command('eddi_update')
+    return HttpResponseRedirect(reverse('diagnostics:eddi_report'))
