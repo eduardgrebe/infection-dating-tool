@@ -34,7 +34,7 @@ class TestPropertyFileHandler(FileHandler):
                     try:
                         testimate = TestPropertyEstimate.objects.get(test=DiagnosticTest.objects.get(pk=row_dict['test']))
 
-                        testimate.estimate_label = row_dict['label']
+                        testimate.estimate_label = row_dict['estimate_label']
                         testimate.estimate_type = row_dict['estimate_type']
                         testimate.mean_diagnostic_delay_days = int(row_dict['diagnostic_delay_mean'])
                         testimate.foursigma_diagnostic_delay_days = int(row_dict['diagnostic_delay_4sigma'])
@@ -44,7 +44,7 @@ class TestPropertyFileHandler(FileHandler):
                         testimate.save()
                     except TestPropertyEstimate.DoesNotExist:
                         TestPropertyEstimate.objects.create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
-                                                            estimate_label=row_dict['label'],
+                                                            estimate_label=row_dict['estimate_label'],
                                                             estimate_type=row_dict['estimate_type'],
                                                             mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
                                                             foursigma_diagnostic_delay_days=int(row_dict['diagnostic_delay_4sigma']),

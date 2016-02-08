@@ -111,7 +111,7 @@ class TestHistoryFileHandler(FileHandler):
                                                                             test=ProtocolLookup.objects.get(name=test_history_row.test_code,
                                                                                                             protocol=test_history_row.protocol).test)
 
-                        test_property = TestPropertyEstimate.objects.filter(test__id=test_history.test.pk, is_default=True)
+                        test_property = TestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
                         test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
                         test_history.save()
                         
