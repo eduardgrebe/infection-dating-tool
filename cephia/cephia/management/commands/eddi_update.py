@@ -45,7 +45,5 @@ class Command(BaseCommand):
                                                       tci_size=tci_size,
                                                       eddi=eddi)
 
-            old_eddi = subject_to_update.subject_eddi
             subject_to_update.subject_eddi = new_eddi
             subject_to_update.save()
-            old_eddi.delete()
