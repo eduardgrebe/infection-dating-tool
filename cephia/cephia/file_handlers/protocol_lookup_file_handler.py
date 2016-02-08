@@ -20,6 +20,8 @@ class ProtocolLookupFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
+        ProtocolLookup.objects.all().delete()
+        
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -27,20 +29,15 @@ class ProtocolLookupFileHandler(FileHandler):
                     if not row_dict['TestId'] or 'or' in row_dict['TestId']:
                         continue
                     else:
-                        try:
-                            protocol_lookup = ProtocolLookup.objects.get(name=row_dict['TestCode'])
-                            protocol_lookup.protocol = row_dict['Protocol']
-                            protocol_lookup.test = DiagnosticTest.objects.get(pk=row_dict['TestId'])
-                            protocol_lookup.save()
-                        except ProtocolLookup.DoesNotExist:
-                            ProtocolLookup.objects.create(name=row_dict['TestCode'],
-                                                          protocol=row_dict['Protocol'],
-                                                          test=DiagnosticTest.objects.get(pk=row_dict['TestId']))
+                        ProtocolLookup.objects.create(name=row_dict['TestCode'],
+                                                      protocol=row_dict['Protocol'],
+                                                      test=DiagnosticTest.objects.get(pk=row_dict['TestId']))
 
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.message = "Row " + str(row_num) + ": " + e.message
+                self.upload_file.state = 'error'
                 self.upload_file.save()
                 return 0, 1
 

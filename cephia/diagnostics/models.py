@@ -1,5 +1,6 @@
 from django.db import models
 from cephia.models import Subject, ImportedRow
+from django.db import transaction
 
 
 class DiagnosticTest(models.Model):
@@ -41,7 +42,15 @@ class TestPropertyEstimate(models.Model):
     reference = models.CharField(max_length=255, null=False, blank=True)
 
     def save(self, *args, **kwargs):
-        import pdb; pdb.set_trace()
+        with transaction.atomic():
+            result = super(TestPropertyEstimate, self).save(*args, **kwargs)
+            if self.is_default:
+                exists = TestPropertyEstimate.objects.filter(test=self.test, is_default=True).exclude(pk=self.pk).exists()
+                if exists:
+                    msg = "Default test already exists for %s" % (self.test.name)
+                    raise ValueError(msg)
+
+        return result
 
 
 class DiagnosticTestHistoryRow(ImportedRow):

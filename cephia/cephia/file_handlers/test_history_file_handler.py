@@ -99,11 +99,10 @@ class TestHistoryFileHandler(FileHandler):
         rows_failed = 0
 
         for subject_label in DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
-            try:
-                with transaction.atomic():
-                    subject = Subject.objects.get(subject_label=subject_label)
-                    DiagnosticTestHistory.objects.filter(subject=subject).delete()
-                    
+            with transaction.atomic():
+                subject = Subject.objects.get(subject_label=subject_label)
+                DiagnosticTestHistory.objects.filter(subject=subject).delete()
+                try:        
                     for test_history_row in DiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
                         test_history = DiagnosticTestHistory.objects.create(subject=subject,
                                                                             test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
@@ -121,13 +120,13 @@ class TestHistoryFileHandler(FileHandler):
                         test_history_row.save()
 
                         rows_inserted += 1
-            except Exception, e:
-                logger.exception(e)
-                test_history_row.state = 'error'
-                test_history_row.error_message = e.message
-                test_history_row.save()
-                rows_failed += 1
-                continue
+                except Exception, e:
+                    logger.exception(e)
+                    test_history_row.state = 'error'
+                    test_history_row.error_message = e.message
+                    test_history_row.save()
+                    rows_failed += 1
+                    continue
 
         self.upload_file.state = 'processed'
         self.upload_file.save()

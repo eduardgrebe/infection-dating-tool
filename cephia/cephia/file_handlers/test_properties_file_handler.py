@@ -26,36 +26,26 @@ class TestPropertyFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
+        TestPropertyEstimate.objects.all().delete()
+        
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-
-                    try:
-                        testimate = TestPropertyEstimate.objects.get(test=DiagnosticTest.objects.get(pk=row_dict['test']))
-
-                        testimate.estimate_label = row_dict['estimate_label']
-                        testimate.estimate_type = row_dict['estimate_type']
-                        testimate.mean_diagnostic_delay_days = int(row_dict['diagnostic_delay_mean'])
-                        testimate.foursigma_diagnostic_delay_days = int(row_dict['diagnostic_delay_4sigma'])
-                        testimate.is_default = self.get_bool(row_dict['is_default'])
-                        testimate.comment = row_dict['comment']
-                        testimate.reference = row_dict['reference']
-                        testimate.save()
-                    except TestPropertyEstimate.DoesNotExist:
-                        TestPropertyEstimate.objects.create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
-                                                            estimate_label=row_dict['estimate_label'],
-                                                            estimate_type=row_dict['estimate_type'],
-                                                            mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
-                                                            foursigma_diagnostic_delay_days=int(row_dict['diagnostic_delay_4sigma']),
-                                                            is_default=self.get_bool(row_dict['is_default']),
-                                                            comment=row_dict['comment'],
-                                                            reference=row_dict['reference'])
+                    TestPropertyEstimate.objects.create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
+                                                        estimate_label=row_dict['estimate_label'],
+                                                        estimate_type=row_dict['estimate_type'],
+                                                        mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
+                                                        foursigma_diagnostic_delay_days=int(row_dict['diagnostic_delay_4sigma']),
+                                                        is_default=self.get_bool(row_dict['is_default']),
+                                                        comment=row_dict['comment'],
+                                                        reference=row_dict['reference'])
 
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.message = "Row " + str(row_num) + ": " + e.message
+                self.upload_file.state = 'error'
                 self.upload_file.save()
                 return 0, 1
 
