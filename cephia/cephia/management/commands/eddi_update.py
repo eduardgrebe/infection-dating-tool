@@ -9,15 +9,17 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'Update EDDI dates on subjects table'
+    args = '<type>'
 
     def handle(self, *args, **options):
-        subjects = Subject.objects.filter(subject_eddi__recalculate=True)
-        for subject in subjects:
-            self._handle_subject(subject.id)
-            
-        # subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
-        # for subject_id in subject_ids:
-        #     self._handle_subject(subject_id)
+        if args[0] == 'flagged':
+            subjects = Subject.objects.filter(subject_eddi__recalculate=True)
+            for subject in subjects:
+                self._handle_subject(subject.id)
+        elif args[0] == 'all':
+            subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
+            for subject_id in subject_ids:
+                self._handle_subject(subject_id)
 
     def _handle_subject(self, subject_id):
             try:
