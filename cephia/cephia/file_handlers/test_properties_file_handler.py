@@ -31,14 +31,26 @@ class TestPropertyFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    TestPropertyEstimate.objects.update_or_create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
-                                                                  estimate_label=row_dict['label'],
-                                                                  estimate_type=row_dict['estimate_type'],
-                                                                  mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
-                                                                  foursigma_diagnostic_delay_days=int(row_dict['diagnostic_delay_4sigma']),
-                                                                  is_default=self.get_bool(row_dict['is_default']),
-                                                                  comment=row_dict['comment'],
-                                                                  reference=row_dict['reference'])
+                    try:
+                        testimate = TestPropertyEstimate.objects.get(test=DiagnosticTest.objects.get(pk=row_dict['test']))
+
+                        testimate.estimate_label = row_dict['label']
+                        testimate.estimate_type = row_dict['estimate_type']
+                        testimate.mean_diagnostic_delay_days = int(row_dict['diagnostic_delay_mean'])
+                        testimate.foursigma_diagnostic_delay_days = int(row_dict['diagnostic_delay_4sigma'])
+                        testimate.is_default = self.get_bool(row_dict['is_default'])
+                        testimate.comment = row_dict['comment']
+                        testimate.reference = row_dict['reference']
+                        testimate.save()
+                    except TestPropertyEstimate.DoesNotExist:
+                        TestPropertyEstimate.objects.create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
+                                                            estimate_label=row_dict['label'],
+                                                            estimate_type=row_dict['estimate_type'],
+                                                            mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
+                                                            foursigma_diagnostic_delay_days=int(row_dict['diagnostic_delay_4sigma']),
+                                                            is_default=self.get_bool(row_dict['is_default']),
+                                                            comment=row_dict['comment'],
+                                                            reference=row_dict['reference'])
 
                     rows_inserted += 1
             except Exception, e:

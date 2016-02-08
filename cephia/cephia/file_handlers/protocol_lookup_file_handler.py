@@ -27,9 +27,15 @@ class ProtocolLookupFileHandler(FileHandler):
                     if not row_dict['TestId'] or 'or' in row_dict['TestId']:
                         continue
                     else:
-                        ProtocolLookup.objects.update_or_create(name=row_dict['TestCode'],
-                                                                protocol=row_dict['Protocol'],
-                                                                test=DiagnosticTest.objects.get(pk=row_dict['TestId']))
+                        try:
+                            protocol_lookup = ProtocolLookup.objects.get(name=row_dict['TestCode'])
+                            protocol_lookup.protocol = row_dict['Protocol']
+                            protocol_lookup.test = DiagnosticTest.objects.get(pk=row_dict['TestId'])
+                            protocol_lookup.save()
+                        except ProtocolLookup.DoesNotExist:
+                            ProtocolLookup.objects.create(name=row_dict['TestCode'],
+                                                          protocol=row_dict['Protocol'],
+                                                          test=DiagnosticTest.objects.get(pk=row_dict['TestId']))
 
                     rows_inserted += 1
             except Exception, e:

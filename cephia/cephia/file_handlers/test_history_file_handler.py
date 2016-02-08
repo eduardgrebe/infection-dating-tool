@@ -98,27 +98,29 @@ class TestHistoryFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for test_history_row in DiagnosticTestHistoryRow.objects.filter(fileinfo=self.upload_file, state='validated'):
-
+        for subject_label in DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
             try:
                 with transaction.atomic():
-                    test_history = DiagnosticTestHistory.objects.create(subject=Subject.objects.get(subject_label=test_history_row.subject),
-                                                                        test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
-                                                                        test_result=test_history_row.test_result,
-                                                                        test=ProtocolLookup.objects.get(name=test_history_row.test_code,
-                                                                                                        protocol=test_history_row.protocol).test)
+                    subject = Subject.objects.get(subject_label=subject_label)
+                    DiagnosticTestHistory.objects.filter(subject=subject).delete()
+                    
+                    for test_history_row in DiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
+                        test_history = DiagnosticTestHistory.objects.create(subject=subject,
+                                                                            test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
+                                                                            test_result=test_history_row.test_result,
+                                                                            test=ProtocolLookup.objects.get(name=test_history_row.test_code,
+                                                                                                            protocol=test_history_row.protocol).test)
 
-                    test_property = TestPropertyEstimate.objects.filter(test__id=test_history.test.pk, is_default=True).first()
-                    test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
-                    test_history.save()
+                        test_property = TestPropertyEstimate.objects.filter(test__id=test_history.test.pk, is_default=True)
+                        test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+                        test_history.save()
                         
-                    test_history_row.state = 'processed'
-                    test_history_row.error_message = ''
-                    test_history_row.date_processed = timezone.now()
-                    test_history_row.save()
+                        test_history_row.state = 'processed'
+                        test_history_row.error_message = ''
+                        test_history_row.date_processed = timezone.now()
+                        test_history_row.save()
 
-                    rows_inserted += 1
-
+                        rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
                 test_history_row.state = 'error'

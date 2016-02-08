@@ -40,6 +40,9 @@ class TestPropertyEstimate(models.Model):
     comment = models.CharField(max_length=255, null=False, blank=True)
     reference = models.CharField(max_length=255, null=False, blank=True)
 
+    def save(self, *args, **kwargs):
+        import pdb; pdb.set_trace()
+
 
 class DiagnosticTestHistoryRow(ImportedRow):
     class Meta:

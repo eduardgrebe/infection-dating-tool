@@ -24,9 +24,16 @@ class DiagnosticTestFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    DiagnosticTest.objects.update_or_create(id=row_dict['id'],
-                                                            name=row_dict['name'],
-                                                            description=row_dict['description'])
+
+                    try:
+                        test = DiagnosticTest.objects.get(id=row_dict['id'])
+                        test.name = row_dict['name']
+                        test.description = row_dict['description']
+                        test.save()
+                    except DiagnosticTest.DoesNotExist:
+                        test = DiagnosticTest.objects.create(id=row_dict['id'],
+                                                             name=row_dict['name'],
+                                                             description=row_dict['description'])
                     
                     rows_inserted += 1
             except Exception, e:
