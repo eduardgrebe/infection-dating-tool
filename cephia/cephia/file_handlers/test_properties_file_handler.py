@@ -17,6 +17,7 @@ class TestPropertyFileHandler(FileHandler):
                                    'is_default',
                                    'diagnostic_delay_mean',
                                    'diagnostic_delay_4sigma',
+                                   'diagnostic_delay_median',
                                    'comment',
                                    'reference']
 
@@ -35,8 +36,9 @@ class TestPropertyFileHandler(FileHandler):
                     TestPropertyEstimate.objects.create(test=DiagnosticTest.objects.get(pk=row_dict['test']),
                                                         estimate_label=row_dict['estimate_label'],
                                                         estimate_type=row_dict['estimate_type'],
-                                                        mean_diagnostic_delay_days=int(row_dict['diagnostic_delay_mean']),
-                                                        foursigma_diagnostic_delay_days=int(row_dict['diagnostic_delay_4sigma']),
+                                                        mean_diagnostic_delay_days=float(row_dict['diagnostic_delay_mean']),
+                                                        foursigma_diagnostic_delay_days=float(row_dict['diagnostic_delay_4sigma']),
+                                                        foursigma_diagnostic_delay_median=float(row_dict['diagnostic_delay_median']),
                                                         is_default=self.get_bool(row_dict['is_default']),
                                                         comment=row_dict['comment'],
                                                         reference=row_dict['reference'])

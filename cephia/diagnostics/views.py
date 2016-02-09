@@ -84,5 +84,5 @@ def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_repo
 
 
 def recalculate_eddi(request):
-    call_command('eddi_update')
+    call_command('eddi_update', 'flagged')
     return HttpResponseRedirect(reverse('diagnostics:eddi_report'))
