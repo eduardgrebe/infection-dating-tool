@@ -122,7 +122,6 @@ class TestHistoryFileHandler(FileHandler):
         
         for subject_label in DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
             with transaction.atomic():
-                import pdb; pdb.set_trace()
                 DiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
                 try:        
                     for test_history_row in DiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
