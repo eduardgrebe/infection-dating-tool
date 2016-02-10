@@ -100,7 +100,7 @@ class TestHistoryFileHandler(FileHandler):
         return rows_validated, rows_failed
 
     def process(self):
-        from cephia.models import Subject
+        from cephia.models import Subject, SubjectEDDI
         from diagnostics.models import DiagnosticTestHistoryRow, DiagnosticTestHistory, ProtocolLookup, TestPropertyEstimate
         
         rows_inserted = 0
@@ -131,6 +131,10 @@ class TestHistoryFileHandler(FileHandler):
                                                                             test=ProtocolLookup.objects.get(name=test_history_row.test_code,
                                                                                                             protocol=test_history_row.protocol).test)
                         
+                        if not test_history.subject.subject_eddi:
+                            test_history.subject.subject_eddi = SubjectEDDI.objects.create()
+                            test_history.subject.save()
+
                         test_history.subject.subject_eddi.recalculate = True
                         test_history.subject.subject_eddi.save()
                         test_property = TestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
