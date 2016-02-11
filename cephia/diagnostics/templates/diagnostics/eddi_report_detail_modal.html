@@ -1,4 +1,5 @@
 {% load bootstrap3 %}
+{% load common_tags %}
 <div class="container">
   <form id="eddi-status-form" data-subject-id="{{subject.id}}" enctype="multipart/form-data" role="form" method="POST">
     {{ history_formset.management_form }} 
@@ -19,19 +20,23 @@
                   <th>Test Date</th>
                   <th>Adjusted Date</th>
                   <th>Test Name</th>
+                  <th>Test Estimate</th>
                   <th>Test Result</th>
                   <th>Ignore</th>
                 </thead>
                 <tbody class="eddi-modal">
-                  {% for test in history_formset %}
-                  {{test.id}}
+                  {% for history in history_formset %}
+                  {% if history.instance.test_date %}
+                  {{history.id}}
                   <tr>
-                    <td>{{test.instance.test_date}}</td>
-                    <td>{{test.instance.adjusted_date}}</td>
-                    <td>{{test.instance.test.name}}</td>
-                    <td>{{test.instance.test_result}}</td>
-                    <td>{{test.ignore}}</td>
+                    <td>{{history.instance.test_date}}</td>
+                    <td>{{history.instance.adjusted_date}}</td>
+                    <td>{{history.instance.test.name}}</td>
+                    <td>{{test_properties|get_item:history.instance.test.id}}</td>
+                    <td>{{history.instance.test_result}}</td>
+                    <td>{{history.ignore}}</td>
                   </tr>
+                  {% endif %}
                   {% endfor %}
                 </tbody>
               </table>

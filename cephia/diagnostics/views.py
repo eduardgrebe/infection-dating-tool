@@ -1,5 +1,5 @@
 from cephia.models import Subject
-from diagnostics.models import DiagnosticTestHistory
+from diagnostics.models import DiagnosticTestHistory, TestPropertyEstimate
 import logging
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
@@ -53,6 +53,7 @@ def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_repo
     status_form = SubjectEDDIStatusForm(request.POST or None)
     history_formset = TestHistoryModelFormset(request.POST or None, queryset=tests)
     subject = Subject.objects.get(pk=subject_id)
+    default_test_properties = { testimate.test.id: testimate.estimate_label for testimate in TestPropertyEstimate.objects.filter(is_default=True) }
 
     if request.method == 'POST':
         if status_form.is_valid():
@@ -78,6 +79,7 @@ def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_repo
         context['status_form'] = status_form
         context['history_formset'] = history_formset
         context['subject'] = subject
+        context['test_properties'] = default_test_properties
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
