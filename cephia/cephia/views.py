@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
+from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
                    FileInfoFilterForm)
@@ -402,6 +403,8 @@ def export_as_csv(request, file_id):
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'aliquot':
             rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = sorted(rows[0].model_to_dict())
@@ -596,6 +599,14 @@ def export_file_data(request, file_id=None, state=None):
                        'volume',
                        'volume_units',
                        'reason']
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['subject',
+                       'test_date',
+                       'test_code',
+                       'test_result',
+                       'source',
+                       'protocol']
 
         response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
 
@@ -610,7 +621,7 @@ def export_file_data(request, file_id=None, state=None):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if model_dict['comment']:
+            if model_dict.has_key('comment'):
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
