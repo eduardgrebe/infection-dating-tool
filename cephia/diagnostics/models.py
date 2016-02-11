@@ -53,18 +53,6 @@ class TestPropertyEstimate(models.Model):
         return result
 
 
-class DiagnosticTestHistoryRow(ImportedRow):
-    class Meta:
-        db_table = "cephia_diagnostic_test_history_row"
-
-    subject = models.CharField(max_length=255, null=False, blank=True)
-    test_date = models.CharField(max_length=255, null=False, blank=True)
-    test_code = models.CharField(max_length=255, null=False, blank=True)
-    test_result = models.CharField(max_length=255, null=False, blank=True)
-    source = models.CharField(max_length=255, null=False, blank=True)
-    protocol = models.CharField(max_length=255, null=False, blank=True)
-
-
 class DiagnosticTestHistory(models.Model):
     class Meta:
         db_table = "cephia_diagnostic_test_history"
@@ -75,3 +63,19 @@ class DiagnosticTestHistory(models.Model):
     adjusted_date = models.DateField(null=True, blank=False)
     test_result = models.CharField(max_length=15, null=True, blank=False)
     ignore = models.BooleanField(blank=False, default=False)
+    
+
+class DiagnosticTestHistoryRow(ImportedRow):
+    class Meta:
+        db_table = "cephia_diagnostic_test_history_row"
+
+    subject = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    test_code = models.CharField(max_length=255, null=False, blank=True)
+    test_result = models.CharField(max_length=255, null=False, blank=True)
+    source = models.CharField(max_length=255, null=False, blank=True)
+    protocol = models.CharField(max_length=255, null=False, blank=True)
+    test_history = models.ForeignKey(DiagnosticTestHistory, null=True, blank=False)
+
+
+
