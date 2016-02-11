@@ -16,8 +16,9 @@ class TestPropertyFileHandler(FileHandler):
                                    'estimate_category',
                                    'is_default',
                                    'diagnostic_delay_mean',
-                                   'diagnostic_delay_4sigma',
                                    'diagnostic_delay_median',
+                                   'diagnostic_delay_4sigma',
+                                   'time0_ref',
                                    'comment',
                                    'reference']
 
@@ -37,6 +38,7 @@ class TestPropertyFileHandler(FileHandler):
                                                                         estimate_label=row_dict['estimate_label'],
                                                                         estimate_type=row_dict['estimate_type'],
                                                                         is_default=self.get_bool(row_dict['is_default']),
+                                                                        time0_ref=row_dict['time0_ref'],
                                                                         comment=row_dict['comment'],
                                                                         reference=row_dict['reference'])
 

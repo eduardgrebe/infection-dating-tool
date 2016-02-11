@@ -36,8 +36,10 @@ class TestPropertyEstimate(models.Model):
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
     estimate_type = models.CharField(max_length=255, null=False, blank=True)
     mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
+    diagnostic_delay_median = models.IntegerField(null=True, blank=False)
     foursigma_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
     is_default = models.BooleanField(blank=False, default=False)
+    time0_ref = models.CharField(max_length=255, null=False, blank=True)
     comment = models.CharField(max_length=255, null=False, blank=True)
     reference = models.CharField(max_length=255, null=False, blank=True)
 
