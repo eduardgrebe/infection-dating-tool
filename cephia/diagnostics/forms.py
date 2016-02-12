@@ -32,6 +32,7 @@ class SubjectEDDIFilterForm(BaseFilterForm):
         ('ok','OK'),
         ('investigate','Investigate'),
         ('suspected_incorrect_data','Suspected Incorrect Data'),
+        ('resolved','Resolved'),
         ('other','Other'),
     )
     

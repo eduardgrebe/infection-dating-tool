@@ -211,6 +211,7 @@ class SubjectEDDIStatus(models.Model):
         ('ok','OK'),
         ('investigate','Investigate'),
         ('suspected_incorrect_data','Suspected Incorrect Data'),
+        ('resolved','Resolved'),
         ('other','Other'),
     )
 
