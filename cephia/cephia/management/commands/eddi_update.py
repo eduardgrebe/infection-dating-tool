@@ -39,11 +39,18 @@ class Command(BaseCommand):
                 eddi = tci_begin + timedelta(days=((tci_end - tci_begin).days / 2))
                 tci_size = abs((tci_end - tci_begin).days)
                 
+                subject = Subject.objects.get(pk=subject_id)
+                if subject.edsc_reported and eddi:
+                    import pdb; pdb.set_trace()
+                    edsc_diff = timedelta(days=(eddi - tci_begin.subject.edsc_reported).days))
+                    
+                
+                
             subject_to_update = Subject.objects.get(pk=subject_id)
             new_eddi = SubjectEDDI.objects.create(tci_begin=tci_begin,
-                                                      tci_end=tci_end,
-                                                      tci_size=tci_size,
-                                                      eddi=eddi)
+                                                  tci_end=tci_end,
+                                                  tci_size=tci_size,
+                                                  eddi=eddi)
 
             subject_to_update.subject_eddi = new_eddi
             subject_to_update.save()
