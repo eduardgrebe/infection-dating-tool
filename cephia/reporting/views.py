@@ -51,6 +51,8 @@ def visit_material(request, template="reporting/visit_material.html"):
     subjects.art_initiation_date AS ARTInitDate,
     subjects.art_interruption_date AS ARTInterruptDate,
     subjects.art_resumption_date AS ARTResumptionDate,
+    if(visits.on_treatment, 'yes', 'no') As On_Treatment,
+    if(visits.treatment_naive, 'yes', 'no') As Treatment_Naive,
     subtypes.name as subtype,
     subjects.subtype_confirmed as st_conf,
     countries.name as Country,

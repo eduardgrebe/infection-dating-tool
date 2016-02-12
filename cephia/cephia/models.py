@@ -359,6 +359,8 @@ class Visit(models.Model):
     artificial = models.BooleanField(default=False)
     subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
     visit_eddi = models.ForeignKey(VisitEDDI, null=True, blank=True)
+    treatment_naive = models.NullBooleanField()
+    on_treatment = models.NullBooleanField()
     history = HistoricalRecords()
 
     def __unicode__(self):
