@@ -323,6 +323,7 @@ class SubjectRow(ImportedRow):
     art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     subject = models.ForeignKey(Subject, null=True, blank=False)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
@@ -386,6 +387,7 @@ class VisitRow(ImportedRow):
     hepatitis = models.CharField(max_length=255, null=False, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     visit = models.ForeignKey(Visit, null=True, blank=False)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
@@ -474,6 +476,7 @@ class TransferInRow(ImportedRow):
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False)
     roll_up = models.NullBooleanField()
+    history = HistoricalRecords()
 
 
     def __unicode__(self):
@@ -497,6 +500,7 @@ class TransferOutRow(ImportedRow):
     destination_site = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.specimen_label
@@ -519,6 +523,7 @@ class AliquotRow(ImportedRow):
     specimen_type = models.CharField(max_length=255, null=True, blank=True)
     comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.parent_label
