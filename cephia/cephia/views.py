@@ -609,7 +609,6 @@ def export_file_data(request, file_id=None, state=None):
                        'protocol']
 
         response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-
         headers.insert(0, 'id')
         headers.append("error_message")
         headers.append('resolve_action')
@@ -621,7 +620,7 @@ def export_file_data(request, file_id=None, state=None):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if model_dict.has_key('comment'):
+            if row.comment:
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
