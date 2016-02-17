@@ -82,7 +82,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         upload_file = FileInfo.objects.get(pk=78)
         handler = upload_file.get_handler()
-        #handler.parse()
+        handler.parse()
         uploaded_rows = TransferInRow.objects.filter(fileinfo=upload_file)
 
         for row in uploaded_rows:
