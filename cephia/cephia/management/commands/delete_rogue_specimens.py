@@ -13,7 +13,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         spec_file = open('BSRI_transferin_delete20160217_revised.csv')
-        headers = spec_file.readline()
         for line in spec_file.readlines():
             row_id = line.split(',')[0].rstrip()
             try:
