@@ -80,7 +80,7 @@ class Command(BaseCommand):
         return error_msg
 
     def handle(self, *args, **options):
-        upload_file = FileInfo.objects.get(pk=78)
+        upload_file = FileInfo.objects.get(pk=80)
         handler = upload_file.get_handler()
         handler.parse()
         uploaded_rows = TransferInRow.objects.filter(fileinfo=upload_file)
