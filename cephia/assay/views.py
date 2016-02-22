@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
-from cephia.models import Panels
+from cephia.models import Panel
 from forms import PanelCaptureForm, PanelFileForm
 from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership
@@ -26,7 +26,7 @@ def panels(request, template="assay/panels.html"):
             
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
-        context['panels'] = Panels.objects.all()
+        context['panels'] = Panel.objects.all()
         context['panel_capture_form'] = panel_capture_form
         context['panel_file_form'] = panel_file_form
         context['upload_form'] = upload_form

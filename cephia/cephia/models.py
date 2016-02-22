@@ -120,14 +120,14 @@ class SpecimenType(models.Model):
     def __unicode__(self):
         return self.name
 
-class Panels(models.Model):
+class Panel(models.Model):
 
     class Meta:
-        db_table = "cephia_panel"
+        db_table = "cephia_panels"
 
     name = models.CharField(max_length=255, null=True, blank=True)
-    description = models.TextField(null=False, blank=False)
-    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=False, db_index=True)
+    description = models.TextField(null=True, blank=False)
+    specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=False, db_index=True)
     volume = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
@@ -164,8 +164,8 @@ class FileInfo(models.Model):
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
-    assay = models.ForeignKey(Assay, db_index=True, default=None, null=True)
-    panel = models.ForeignKey(Panels, db_index=True, default=None, null=True)
+    assay = ProtectedForeignKey(Assay, db_index=True, default=None, null=True)
+    panel = ProtectedForeignKey(Panel, db_index=True, default=None, null=True)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
@@ -574,26 +574,3 @@ class AliquotRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_label
-
-
-class Panel(models.Model):
-
-    class Meta:
-        db_table = "cephia_panels"
-
-    name = models.CharField(max_length=255, null=True, blank=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
-    specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=False, db_index=True)
-    volume = models.FloatField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
-
-class PanelMemberships(models.Model):
-
-    class Meta:
-        db_table = "cephia_panel_memberships"
-
-    visit = ProtectedForeignKey(Visit, null=True, blank=False, db_index=True)
-    panel = ProtectedForeignKey(Panel, null=True, blank=False, db_index=True)
-    replicates = models.IntegerField(null=True, blank=True)

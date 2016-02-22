@@ -1,23 +1,10 @@
 # encoding: utf-8
 from django.db import models
-from cephia.models import (Visit, Specimen, SpecimenType, ImportedRow, Panels,
-                           Assay, Laboratory)
+from cephia.models import (Visit, Specimen, SpecimenType, ImportedRow,
+                           Assay, Laboratory, Panel)
 import logging
 
 logger = logging.getLogger(__name__)
-
-class Panel(models.Model):
-
-    class Meta:
-        db_table = "cephia_panels"
-
-    name = models.CharField(max_length=255, null=True, blank=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
-    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=False, db_index=True)
-    volume = models.FloatField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
 
 
 class PanelMembershipRow(ImportedRow):
@@ -39,7 +26,7 @@ class PanelMembership(models.Model):
         db_table = "cephia_panel_memberships"
 
     visit = models.ForeignKey(Visit, null=True, blank=False, db_index=True)
-    panel = models.ForeignKey(Panels, null=True, blank=False, db_index=True)
+    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     replicates = models.IntegerField(null=True, blank=True)
     
     def __unicode__(self):
@@ -65,7 +52,7 @@ class PanelShipment(models.Model):
         db_table = "cephia_panel_shipments"
 
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
-    panel = models.ForeignKey(Panels, null=True, blank=False, db_index=True)
+    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     replicates = models.IntegerField(null=True, blank=True)
 
     def __unicode__(self):
@@ -76,7 +63,7 @@ class AssayResult(models.Model):
     class Meta:
         db_table = "cephia_assay_results"
 
-    panel = models.ForeignKey(Panels, null=True, blank=False, db_index=True)
+    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
     test_date = models.DateField(null=True, blank=False)
