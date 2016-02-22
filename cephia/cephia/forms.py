@@ -1,9 +1,10 @@
 from django import forms
-from models import (FileInfo, SubjectRow, Ethnicity,
-                    VisitRow, Specimen, TransferInRow,
-                    TransferOutRow, AliquotRow, ImportedRowComment, Assay)
+from cephia.models import (FileInfo, SubjectRow, Ethnicity,
+                           VisitRow, Specimen, TransferInRow,
+                           TransferOutRow, AliquotRow, ImportedRowComment, Assay)
 from assay.models import (PanelMembershipRow, PanelShipmentRow, LagResultRow,
                           GeeniusResultRow, BEDResultRow, ArchitectResultRow)
+from diagnostics.models import DiagnosticTestHistoryRow
 
 class BaseFilterForm(forms.Form):
 
@@ -309,6 +310,11 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'Duke-BioPlex':
                 rows = DukeResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/duke_row_info.html'
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo)
+            template = 'diagnostics/test_history_row_info.html'
+        else:
+            raise Exception("Unknown filetype : %s" % fileinfo.file_type)
 
         if state:
             rows = rows.filter(state=state)
@@ -338,6 +344,10 @@ class FileInfoFilterForm(forms.Form):
         ('transfer_in','Transfer In'),
         ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
+        ('diagnostic_test','Diagnostic Test'),
+        ('protocol_lookup','Protocol Lookup'),
+        ('test_history','Diagnostic Test History'),
+        ('test_property','Diagnostic Test Properties'),
     )
 
     file_type = forms.ChoiceField(choices=FILE_TYPE_CHOICES, required=False)

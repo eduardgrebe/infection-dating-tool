@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
+from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
                    FileInfoFilterForm)
@@ -231,6 +232,10 @@ def upload_file(request):
     try:
         FILE_PRIORITIES = {
             'assay': 0,
+            'diagnostic_test': 0,
+            'protocol_lookup': 0,
+            'test_history': 0,
+            'test_property': 0,
             'subject': 1,
             'visit': 2,
             'transfer_in': 3,
@@ -251,7 +256,13 @@ def upload_file(request):
     
             form = FileInfoForm(post_data, request.FILES)
             if form.is_valid():
-                form.save()
+                new_file = form.save()
+                if new_file.file_type == 'test_history':
+                    new_file.get_handler().parse()
+                    new_file.get_handler().validate()
+                    new_file.get_handler().process()
+                elif new_file.file_type in ['diagnostic_test','protocol_lookup', 'test_property']:
+                    new_file.get_handler().process()
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
             else:
                 messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
@@ -394,6 +405,8 @@ def export_as_csv(request, file_id):
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'aliquot':
             rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = sorted(rows[0].model_to_dict())
@@ -588,9 +601,16 @@ def export_file_data(request, file_id=None, state=None):
                        'volume',
                        'volume_units',
                        'reason']
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['subject',
+                       'test_date',
+                       'test_code',
+                       'test_result',
+                       'source',
+                       'protocol']
 
         response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-
         headers.insert(0, 'id')
         headers.append("error_message")
         headers.append('resolve_action')
@@ -602,7 +622,7 @@ def export_file_data(request, file_id=None, state=None):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if model_dict['comment']:
+            if row.comment:
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)

@@ -9,6 +9,7 @@ from django.forms.models import model_to_dict
 from simple_history.models import HistoricalRecords
 import collections
 from user_management.models import BaseUser
+from fields import ProtectedForeignKey
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +147,7 @@ class FileInfo(models.Model):
     )
 
     FILE_TYPE_CHOICES = (
+        ('','---------'),
         ('subject','Subject'),
         ('visit','Visit'),
         ('transfer_in','Transfer In'),
@@ -154,6 +156,10 @@ class FileInfo(models.Model):
         ('assay','Assay'),
         ('panel_shipment','Panel Shipment'),
         ('panel_membership','Panel Membership'),
+        ('diagnostic_test','Diagnostic Test'),
+        ('protocol_lookup','Protocol Lookup'),
+        ('test_history','Diagnostic Test History'),
+        ('test_property','Diagnostic Test Properties'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
@@ -220,7 +226,7 @@ class ImportedRow(models.Model):
     state = models.CharField(max_length=10, choices=STATE_CHOICES, null=False, blank=False)
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
-    fileinfo = models.ForeignKey(FileInfo, db_index=True)
+    fileinfo = ProtectedForeignKey(FileInfo, db_index=True)
     history = HistoricalRecords()
 
     def model_to_dict(self):
@@ -237,6 +243,38 @@ class ImportedRowComment(models.Model):
     resolve_date = models.DateTimeField(blank=False, null=False)
     resolve_action = models.TextField(blank=False, null=False)
     assigned_to = models.CharField(max_length=50, null=False, blank=False)
+
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
+
+
+class SubjectEDDI(models.Model):
+    class Meta:
+        db_table = "cephia_subject_eddi"
+        
+    tci_begin = models.DateField(null=True, blank=True)
+    tci_end = models.DateField(null=True, blank=True)
+    tci_size = models.IntegerField(null=True, blank=True)
+    edsc_days_difference = models.IntegerField(null=True, blank=True)
+    eddi = models.DateField(null=True, blank=True)
+    recalculate = models.BooleanField(default=False)
+
+
+class SubjectEDDIStatus(models.Model):
+    class Meta:
+        db_table = "cephia_subject_eddi_status"
+
+    STATUS_CHOICES = (
+        ('ok','OK'),
+        ('investigate','Investigate'),
+        ('suspected_incorrect_data','Suspected Incorrect Data'),
+        ('resolved','Resolved'),
+        ('other','Other'),
+    )
+
+    status = models.CharField(max_length=30, null=True, blank=False, choices=STATUS_CHOICES)
+    comment = models.CharField(max_length=255, blank=True, null=True)
 
     def model_to_dict(self):
         d = model_to_dict(self)
@@ -262,7 +300,7 @@ class Subject(models.Model):
     subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     cohort_entry_date = models.DateField(null=True, blank=True, db_index=True)
     cohort_entry_hiv_status = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
-    country = models.ForeignKey(Country, null=True, blank=True)
+    country = ProtectedForeignKey(Country, null=True, blank=True)
     last_negative_date = models.DateField(null=True, blank=True)
     first_positive_date = models.DateField(null=True, blank=True)
     edsc_reported  = models.DateField(null=True, blank=True, default=None)
@@ -272,18 +310,20 @@ class Subject(models.Model):
     date_of_death = models.DateField(null=True, blank=True)
     sex = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
     transgender = models.NullBooleanField()
-    population_group = models.ForeignKey(Ethnicity, null=True, blank=True)
+    population_group = ProtectedForeignKey(Ethnicity, null=True, blank=True)
     risk_sex_with_men = models.NullBooleanField()
     risk_sex_with_women = models.NullBooleanField()
     risk_idu = models.NullBooleanField()
     subtype_confirmed = models.NullBooleanField()
-    subtype = models.ForeignKey(Subtype, null=True, blank=True, db_index=True)
+    subtype = ProtectedForeignKey(Subtype, null=True, blank=True, db_index=True)
     art_initiation_date = models.DateField(null=True, blank=True)
     aids_diagnosis_date = models.DateField(null=True, blank=True)
     art_interruption_date = models.DateField(null=True, blank=True)
     art_resumption_date = models.DateField(null=True, blank=True)
     artificial = models.BooleanField(default=False)
-    source_study = models.ForeignKey(Study, null=True, blank=True)
+    source_study = ProtectedForeignKey(Study, null=True, blank=True)
+    subject_eddi = ProtectedForeignKey(SubjectEDDI, null=True, blank=True)
+    subject_eddi_status = ProtectedForeignKey(SubjectEDDIStatus, null=True, blank=True)
     history = HistoricalRecords()
 
     def __unicode__(self):
@@ -338,11 +378,21 @@ class SubjectRow(ImportedRow):
     art_resumption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_mm = models.CharField(max_length=255, null=False, blank=True)
     art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
-    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-    subject = models.ForeignKey(Subject, null=True, blank=False)
+    comment = ProtectedForeignKey(ImportedRowComment, blank=False, null=True)
+    subject = ProtectedForeignKey(Subject, null=True, blank=False)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
+
+
+class VisitEDDI(models.Model):
+    class Meta:
+        db_table = "cephia_visit_eddi"
+        
+    tci_begin = models.DateField(null=True, blank=True)
+    tci_end = models.DateField(null=True, blank=True)
+    eddi = models.DateField(null=True, blank=True)
 
 
 class Visit(models.Model):
@@ -359,14 +409,17 @@ class Visit(models.Model):
     subject_label = models.CharField(max_length=255, null=False, blank=False)
     visit_date = models.DateField(null=True, blank=True)
     visit_hivstatus = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
-    source_study = models.ForeignKey(Study, null=True, blank=True)
+    source_study = ProtectedForeignKey(Study, null=True, blank=True)
     cd4_count = models.IntegerField(null=True, blank=False)
     vl = models.CharField(max_length=10, null=True, blank=False)
     scopevisit_ec = models.CharField(max_length=100, null=True, blank=False)
     pregnant = models.NullBooleanField()
     hepatitis = models.NullBooleanField()
     artificial = models.BooleanField(default=False)
-    subject = models.ForeignKey(Subject, null=True, blank=True, default=None)
+    subject = ProtectedForeignKey(Subject, null=True, blank=True, default=None)
+    visit_eddi = ProtectedForeignKey(VisitEDDI, null=True, blank=True)
+    treatment_naive = models.NullBooleanField()
+    on_treatment = models.NullBooleanField()
     history = HistoricalRecords()
 
     def __unicode__(self):
@@ -389,8 +442,9 @@ class VisitRow(ImportedRow):
     scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
     pregnant = models.CharField(max_length=255, null=False, blank=True)
     hepatitis = models.CharField(max_length=255, null=False, blank=True)
-    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-    visit = models.ForeignKey(Visit, null=True, blank=False)
+    comment = ProtectedForeignKey(ImportedRowComment, blank=False, null=True)
+    visit = ProtectedForeignKey(Visit, null=True, blank=False)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
@@ -420,18 +474,18 @@ class Specimen(models.Model):
     created_date = models.DateTimeField(null=True, blank=True)
     modified_date = models.DateField(null=True, blank=True)
     transfer_reason = models.CharField(max_length=50, null=True, blank=True)
-    subject = models.ForeignKey(Subject, null=True, blank=False)
-    visit = models.ForeignKey(Visit, null=True, blank=False, related_name='visit')
+    subject = ProtectedForeignKey(Subject, null=True, blank=False)
+    visit = ProtectedForeignKey(Visit, null=True, blank=False, related_name='visit')
     visit_linkage = models.CharField(max_length=12, null=True, blank=False, choices=VISIT_LINKAGE_CHOICES)
-    specimen_type = models.ForeignKey(SpecimenType, null=True, blank=True, db_index=True)
+    specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=True, db_index=True)
     volume = models.FloatField(null=True, blank=True)
     volume_units = models.CharField(max_length=20, null=True, blank=True)
     initial_claimed_volume = models.FloatField(null=True, blank=True)
-    source_study = models.ForeignKey(Study, null=True, blank=True)
-    shipped_to = models.ForeignKey(Laboratory, related_name='shipped_to', null=True, blank=True)
+    source_study = ProtectedForeignKey(Study, null=True, blank=True)
+    shipped_to = ProtectedForeignKey(Laboratory, related_name='shipped_to', null=True, blank=True)
     shipped_in_panel = models.CharField(max_length=255, null=True, blank=True)
-    location = models.ForeignKey(Location, null=True, blank=True)
-    parent = models.ForeignKey('Specimen', null=True, blank=False, default=None)
+    location = ProtectedForeignKey(Location, null=True, blank=True)
+    parent = ProtectedForeignKey('Specimen', null=True, blank=False, default=None)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
     is_available = models.BooleanField(default=True)
     history = HistoricalRecords()
@@ -466,9 +520,10 @@ class TransferInRow(ImportedRow):
     volume_units = models.CharField(max_length=255, null=True, blank=True)
     source_study = models.CharField(max_length=255, null=True, blank=True)
     notes = models.CharField(max_length=255, null=True, blank=True)
-    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-    specimen = models.ForeignKey(Specimen, null=True, blank=False)
+    comment = ProtectedForeignKey(ImportedRowComment, blank=False, null=True)
+    specimen = ProtectedForeignKey(Specimen, null=True, blank=False)
     roll_up = models.NullBooleanField()
+    history = HistoricalRecords()
 
 
     def __unicode__(self):
@@ -490,8 +545,9 @@ class TransferOutRow(ImportedRow):
     shipment_date_mm = models.CharField(max_length=255, null=True, blank=True)
     shipment_date_yyyy = models.CharField(max_length=255, null=True, blank=True)
     destination_site = models.CharField(max_length=255, null=True, blank=True)
-    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-    specimen = models.ForeignKey(Specimen, null=True, blank=False)
+    comment = ProtectedForeignKey(ImportedRowComment, blank=False, null=True)
+    specimen = ProtectedForeignKey(Specimen, null=True, blank=False)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.specimen_label
@@ -512,8 +568,32 @@ class AliquotRow(ImportedRow):
     aliquoting_date_dd = models.CharField(max_length=255, null=True, blank=True)
     reason = models.CharField(max_length=255, null=True, blank=True)
     specimen_type = models.CharField(max_length=255, null=True, blank=True)
-    comment = models.ForeignKey(ImportedRowComment, blank=False, null=True)
-    specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
+    comment = ProtectedForeignKey(ImportedRowComment, blank=False, null=True)
+    specimen = ProtectedForeignKey(Specimen, null=True, blank=False, db_index=True)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.parent_label
+
+
+class Panel(models.Model):
+
+    class Meta:
+        db_table = "cephia_panels"
+
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=False, db_index=True)
+    volume = models.FloatField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+class PanelMemberships(models.Model):
+
+    class Meta:
+        db_table = "cephia_panel_memberships"
+
+    visit = ProtectedForeignKey(Visit, null=True, blank=False, db_index=True)
+    panel = ProtectedForeignKey(Panel, null=True, blank=False, db_index=True)
+    replicates = models.IntegerField(null=True, blank=True)

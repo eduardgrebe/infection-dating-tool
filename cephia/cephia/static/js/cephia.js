@@ -128,6 +128,7 @@ $(document).ready(function() {
             }
         });
     });
+
     //SHOW AND HIDE ASSAY TYPE DROPDOWN ON FILE UPLOAD
     $('div.upload-file-type select').on('change', function(event) {
         var fileType = $('div.upload-file-type select option:selected').val();
@@ -138,7 +139,38 @@ $(document).ready(function() {
             $('div.upload-assay').hide();
         }
     });
-    
+    //
+
+    $('a.show-eddi-detail').on('click', function(event) {
+        event.preventDefault();
+        var subjectId = $(this).parent().parent().data('subject-id');
+        var url = "/diagnostics/eddi_report_detail/" + String(subjectId);
+        
+        $.get(url, function(data, status) {
+            var response = JSON.parse(data);
+
+            if (status == "success") {
+                $(".eddi-modal-container").html(response.response);
+                $('.status-message').hide();
+                $("#eddiModal").modal();
+                $('a.eddi-status-update').on('click', function(event) {
+                    event.preventDefault();
+                    var $form = $('#eddi-status-form');
+                    var subjectId = $form.data('subject-id');
+                    var url = "/diagnostics/eddi_report_detail/" + String(subjectId) + "/";
+                    var post_data = $form.serializeArray();
+                    
+                    $.post(url, post_data, function(data, status) {
+                        if (status == "success") {
+                            $('.status-message').show();
+                            $('.status-message').text("Status successfully changed");
+                            $('.status-message').fadeOut(2000);
+                        }
+                    });
+                });
+            }
+        });
+    });
 });
 
 

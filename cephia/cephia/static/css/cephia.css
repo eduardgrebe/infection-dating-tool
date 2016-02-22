@@ -68,3 +68,22 @@ pre.error-log {
     position: fixed;
     right: 20px;
 }
+
+.show-eddi-detail {
+    cursor:pointer;
+}
+
+.positive-zone .timeglider-event-spanner {
+    background-color:#ff6666;
+    color:black;
+}
+
+.negative-zone .timeglider-event-spanner {
+    background-color:#77ff33;
+    color:black;
+}
+
+.vdw .timeglider-event-spanner {
+    background-color:#0066FF;
+    color:black;
+}

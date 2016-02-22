@@ -1,0 +1,42 @@
+<!doctype html>
+
+{% load staticfiles %}
+{% load common_tags %}
+
+<html>
+  <title data-subject-id="{{subject_id}}">Subject Diagnostic Test Timeline</title>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="{% static 'js/jquery-1.9.1.min.js' %}"></script>
+    <script src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'js/underscore-min.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/backbone-min.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/json2.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/jquery.tmpl.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/ba-tinyPubSub.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/jquery.mousewheel.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/jquery.ui.ipad.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'js/globalize.js' %}" type="text/javascript" charset="utf-8"></script>	
+    <script src="{% static 'js/ba-debug.min.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'timeglider/timeglider-1.0.3.min.js' %}" type="text/javascript" charset="utf-8"></script>
+    
+    <link rel="stylesheet" href="{% static 'css/jquery-ui-1.10.3.custom.css' %}" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{% static 'timeglider/Timeglider.css' %}" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{% static 'timeglider/timeglider.datepicker.css' %}" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{% static 'css/cephia.css' %}" type="text/css" charset="utf-8">
+
+    {% block extrastyle %}{% endblock %}
+    {% block extramedia %}{% endblock %}
+
+    <script>
+     var config = { 'static_url' : "{% static '.' %}" };
+    </script>
+  </head>
+  
+  <body class="{% block body_class %}{% endblock %}">
+    {% block content %}
+    {% endblock %}
+    <div style="clear:both">&nbsp;</div>
+  </body>
+
+</html>

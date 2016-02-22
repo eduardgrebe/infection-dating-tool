@@ -48,8 +48,6 @@ class Command(BaseCommand):
         cursor = connection.cursor()
         cursor.execute(roll_up_sql)
 
-        import pdb; pdb.set_trace()
-
         rows_roll_up = self.dictfetchall(cursor)
 
         for row in rows:

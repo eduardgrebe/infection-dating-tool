@@ -18,6 +18,10 @@ from biorad_glasgow_file_handler import BioradGlasgowFileHandler
 from luminex_file_handler import LuminexFileHandler
 from ide_file_handler import IDEFileHandler
 from duke_file_handler import DukeFileHandler
+from protocol_lookup_file_handler import ProtocolLookupFileHandler
+from test_history_file_handler import TestHistoryFileHandler
+from diagnostic_test_file_handler import DiagnosticTestFileHandler
+from test_properties_file_handler import TestPropertyFileHandler
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +43,7 @@ register_file_handler("transfer_out", TransferOutFileHandler, None)
 register_file_handler("transfer_in", TransferInFileHandler, None)
 register_file_handler("panel_shipment", PanelShipmentFileHandler, None)
 register_file_handler("panel_membership", PanelMembershipFileHandler, None)
+
 register_file_handler("assay", LagFileHandler, 'LAg')
 register_file_handler("assay", ArchitectFileHandler, 'Architect')
 register_file_handler("assay", BioradCDCFileHandler, 'BioRad-Avidity-CDC')
@@ -51,3 +56,8 @@ register_file_handler("assay", BioradGlasgowFileHandler, 'BioRad-Avidity-Glasgow
 register_file_handler("assay", LuminexFileHandler, 'Luminex')
 register_file_handler("assay", IDEFileHandler, 'IDE-V3')
 register_file_handler("assay", DukeFileHandler, 'Duke-BioPlex')
+
+register_file_handler("diagnostic_test", DiagnosticTestFileHandler, None)
+register_file_handler("test_history", TestHistoryFileHandler, None)
+register_file_handler("protocol_lookup", ProtocolLookupFileHandler, None)
+register_file_handler("test_property", TestPropertyFileHandler, None)

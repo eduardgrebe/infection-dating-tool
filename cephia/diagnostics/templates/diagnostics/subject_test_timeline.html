@@ -1,0 +1,23 @@
+{% extends "timeline_base.html" %}
+{% block page_content %}
+
+<script type='text/javascript'>
+ var tg1 = {};
+ $(function () { 
+     // jQuery widget implementation
+     // with some basic options
+     tg1 = $("#placement").timeline({
+	 "min_zoom":1, 
+	 "max_zoom":55, 
+	 "image_lane_height":100,
+	 "icon_folder":"timeglider/icons/",
+	 "data_source":"json/idaho.json",
+	 "constrain_to_data": false
+     });
+     
+     tg_actor = tg1.data("timeline");
+     // You'll use tg_actor as the key to access 
+     // public API methods like "goTo", etc.
+ }); // end document-ready
+</script>
+{% endblock %}
