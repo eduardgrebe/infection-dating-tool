@@ -122,7 +122,7 @@ class LagFileHandler(FileHandler):
         self.upload_file.save()
 
     def process(self, panel_id):
-        from cephia.models import Specimen, Laboratory, Assay, Panels
+        from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import LagResultRow, LagResult, AssayResult
         
         rows_inserted = 0
@@ -150,7 +150,7 @@ class LagFileHandler(FileHandler):
                                                           final_result=lag_result_row.final_result,
                                                           panel_type=lag_result_row.panel_type)
 
-                    AssayResult.objects.create(panel=Panels.objects.get(pk=panel_id),
+                    AssayResult.objects.create(panel=Panel.objects.get(pk=panel_id),
                                                assay=Assay.objects.get(name=lag_result_row.assay),
                                                specimen=Specimen.objects.get(specimen_label=lag_result_row.specimen),
                                                test_date=self.float_as_date(float(lag_result_row.test_date)),
@@ -163,7 +163,6 @@ class LagFileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
-                import pdb; pdb.set_trace()
                 logger.exception(e)
                 lag_result_row.state = 'error'
                 lag_result_row.error_message = e.message

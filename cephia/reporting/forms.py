@@ -6,6 +6,7 @@ class VisitReportFilterForm(forms.Form):
 
     from_date = forms.DateField(required=False, input_formats=settings.DATE_INPUT_FORMATS)
     to_date = forms.DateField(required=False, input_formats=settings.DATE_INPUT_FORMATS)
+    visit_list = forms.CharField(max_length=255, required=False)
 
     def __init__(self, *args, **kwargs):
         super(VisitReportFilterForm, self).__init__(*args, **kwargs)
