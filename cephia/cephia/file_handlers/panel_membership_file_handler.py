@@ -10,8 +10,7 @@ class PanelMembershipFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(PanelMembershipFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['visit',
-                                   'panel',
+        self.registered_columns = ['VisitId',
                                    'replicates']
 
     def parse(self):
