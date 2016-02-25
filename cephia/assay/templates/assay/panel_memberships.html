@@ -21,16 +21,16 @@
             <div class="table-responsive">
               <table class="table-striped table table-hover" style="overflow:auto;">
                 <thead>
-                  <th>Visit</th>
-                  <th>Panel</th>
-                  <th>Replicates</th>
+                  <th>Visit ID</th>
+                  <th>Patient Label</th>
+                  <th>Visit Date</th>
                 </thead>
                 <tbody>
                   {% for membership in panel_memberships %}
                   <tr>
                     <td>{{membership.visit.id}}</td>
-                    <td>{{membership.panel.name}}</td>
-                    <td>{{membership.replicates}}</td>
+                    <td>{{membership.visit.subject.subject_label}}</td>
+                    <td>{{membership.visit.visit_date}}</td>
                   </tr>
                   {% endfor %}
                 </tbody>

@@ -14,7 +14,6 @@ class PanelMembershipRow(ImportedRow):
 
     visit = models.CharField(max_length=255, null=False, blank=True)
     panel = models.CharField(max_length=255, null=False, blank=True)
-    replicates = models.CharField(max_length=255, null=False, blank=True)
     
     def __unicode__(self):
         return self.visit
@@ -27,8 +26,7 @@ class PanelMembership(models.Model):
 
     visit = models.ForeignKey(Visit, null=True, blank=False, db_index=True)
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
-    replicates = models.IntegerField(null=True, blank=True)
-    
+
     def __unicode__(self):
         return str(self.visit.id)
 
@@ -40,7 +38,6 @@ class PanelShipmentRow(ImportedRow):
 
     specimen = models.CharField(max_length=255, null=False, blank=True)
     panel = models.CharField(max_length=255, null=False, blank=True)
-    replicates = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.specimen
@@ -53,7 +50,6 @@ class PanelShipment(models.Model):
 
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
-    replicates = models.IntegerField(null=True, blank=True)
 
     def __unicode__(self):
         return self.specimen

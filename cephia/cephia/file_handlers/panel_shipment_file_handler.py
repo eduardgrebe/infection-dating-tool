@@ -10,9 +10,7 @@ class PanelShipmentFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(PanelShipmentFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen',
-                                   'panel',
-                                   'replicates']
+        self.registered_columns = ['SpecimenId']
 
     def parse(self):
         from assay.models import PanelShipmentRow
@@ -24,10 +22,7 @@ class PanelShipmentFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
-                    panel_shipment_row = PanelShipmentRow.objects.create(specimen=row_dict['specimen'],
-                                                                         panel=row_dict['panel'],
-                                                                         replicates=row_dict['replicates'],
+                    panel_shipment_row = PanelShipmentRow.objects.create(specimen=row_dict['SpecimenId'],
                                                                          state='pending',
                                                                          fileinfo=self.upload_file)
 
@@ -49,8 +44,8 @@ class PanelShipmentFileHandler(FileHandler):
         self.upload_file.save()
 
     def validate(self):
-        from cephia.models import Specimen
-        from assay.models import PanelShipmentRow, PanelShipment, Panel
+        from cephia.models import Specimen, Panel
+        from assay.models import PanelShipmentRow, PanelShipment, PanelMembership
         
         rows_validated = 0
         rows_failed = 0
@@ -59,16 +54,15 @@ class PanelShipmentFileHandler(FileHandler):
             try:
                 error_msg = ''
                 
-                # try:
-                #     Specimen.objects.get(pk=shipment_row.specimen)
-                # except Specimen.DoesNotExist:
-                #     error_msg += "Specimen not recognised.\n"
-
-                # try:
-                #     Panel.objects.get(pk=shipment_row.panel)
-                # except Panel.DoesNotExist:
-                #     error_msg += "Panel not recognised.\n"
-
+                try:
+                    specimen = Specimen.objects.get(pk=shipment_row.specimen)
+                    if specimen:
+                        has_memberships = PanelMembership.objects.filter(visit=specimen.visit).exists()
+                        if not has_memberships:
+                            error_msg += "Specimen has no membership on panel.\n"
+                except Specimen.DoesNotExist:
+                    error_msg += "Specimen not recognised.\n"
+                    
                 if error_msg:
                     raise Exception(error_msg)
                 
@@ -94,8 +88,8 @@ class PanelShipmentFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self):
-        from cephia.models import Specimen, Panels
+    def process(self, panel_id):
+        from cephia.models import Specimen, Panel
         from assay.models import PanelShipmentRow, PanelShipment
         
         rows_inserted = 0
@@ -105,8 +99,7 @@ class PanelShipmentFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     panel_shipment = PanelShipment.objects.create(specimen=Specimen.objects.get(pk=panel_shipment_row.specimen),
-                                                                  panel=Panels.objects.get(pk=panel_shipment_row.panel),
-                                                                  replicates=panel_shipment_row.replicates)
+                                                                  panel=Panel.objects.get(pk=panel_id))
 
                     panel_shipment_row.state = 'processed'
                     panel_shipment_row.date_processed = timezone.now()

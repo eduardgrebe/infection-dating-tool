@@ -10,8 +10,7 @@ class PanelMembershipFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(PanelMembershipFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['VisitId',
-                                   'replicates']
+        self.registered_columns = ['VisitId']
 
     def parse(self):
         from assay.models import PanelMembershipRow
@@ -24,9 +23,7 @@ class PanelMembershipFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
-                    panel_membership_row = PanelMembershipRow.objects.create(visit=row_dict['visit'],
-                                                                             panel=row_dict['panel'],
-                                                                             replicates=row_dict['replicates'],
+                    panel_membership_row = PanelMembershipRow.objects.create(visit=row_dict['VisitId'],
                                                                              state='pending',
                                                                              fileinfo=self.upload_file)
 
@@ -58,15 +55,10 @@ class PanelMembershipFileHandler(FileHandler):
             try:
                 error_msg = ''
                 
-                # try:
-                #     Visit.objects.get(pk=membership_row.visit)
-                # except Visit.DoesNotExist:
-                #     error_msg += "Visit not recognised.\n"
-
-                # try:
-                #     Panel.objects.get(pk=shipment_row.panel)
-                # except Panel.DoesNotExist:
-                #     error_msg += "Panel not recognised.\n"
+                try:
+                    viist = Visit.objects.get(pk=membership_row.visit)
+                except Visit.DoesNotExist:
+                    error_msg += "Visit not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -93,8 +85,8 @@ class PanelMembershipFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self):
-        from cephia.models import Visit, Panels
+    def process(self, panel_id):
+        from cephia.models import Visit, Panel
         from assay.models import PanelMembershipRow, PanelMembership
         
         rows_inserted = 0
@@ -104,8 +96,7 @@ class PanelMembershipFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     panel_membership = PanelMembership.objects.create(visit=Visit.objects.get(pk=panel_membership_row.visit),
-                                                                      panel=Panels.objects.get(pk=panel_membership_row.panel),
-                                                                      replicates=panel_membership_row.replicates)
+                                                                      panel=Panel.objects.get(pk=panel_id))
 
                     panel_membership_row.state = 'processed'
                     panel_membership_row.date_processed = timezone.now()

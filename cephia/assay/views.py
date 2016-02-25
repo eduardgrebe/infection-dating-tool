@@ -47,7 +47,7 @@ def shipment_file_upload(request, panel_id=None, template="assay/shipment_modal.
             shipment_file = shipment_file_form.save()
             shipment_file.get_handler().parse()
             shipment_file.get_handler().validate()
-            shipment_file.get_handler().process()
+            shipment_file.get_handler().process(panel_id)
                 
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
@@ -76,7 +76,7 @@ def membership_file_upload(request, panel_id=None, template="assay/membership_mo
             membership_file = membership_file_form.save()
             membership_file.get_handler().parse()
             membership_file.get_handler().validate()
-            membership_file.get_handler().process()
+            membership_file.get_handler().process(panel_id)
                 
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:

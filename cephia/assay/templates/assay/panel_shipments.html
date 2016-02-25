@@ -22,15 +22,15 @@
               <table class="table-striped table table-hover" style="overflow:auto;">
                 <thead>
                   <th>Specimen</th>
-                  <th>Panel</th>
+                  <th>Parent</th>
                   <th>Replicates</th>
                 </thead>
                 <tbody>
                   {% for shipment in panel_shipments %}
                   <tr>
                     <td>{{shipment.specimen.specimen_label}}</td>
-                    <td>{{shipment.panel.name}}</td>
-                    <td>{{shipment.replicates}}</td>
+                    <td>{{shipment.specimen.parent_label}}</td>
+                    <td>0</td>
                   </tr>
                   {% endfor %}
                 </tbody>
