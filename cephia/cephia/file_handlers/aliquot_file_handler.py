@@ -77,10 +77,10 @@ class AliquotFileHandler(FileHandler):
                 error_msg = ''
                 self.register_dates(aliquot_row.model_to_dict())
 
-                exists = Specimen.objects.filter(specimen_label=aliquot_row.aliquot_label,
-                                                 specimen_type__spec_type=aliquot_row.specimen_type).exists()
-                if exists:
-                    error_msg += 'This aliquot already exists.\n'
+                # exists = Specimen.objects.filter(specimen_label=aliquot_row.aliquot_label,
+                #                                  specimen_type__spec_type=aliquot_row.specimen_type).exists()
+                # if exists:
+                #     error_msg += 'This aliquot already exists.\n'
 
                 try:
                     SpecimenType.objects.get(spec_type=aliquot_row.specimen_type)
