@@ -40,7 +40,8 @@ class AliquotFileHandler(FileHandler):
                         aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
                                                                 aliquot_label=row_dict['aliquot_label'],
                                                                 fileinfo=self.upload_file)
-                    
+
+                    aliquot_row.aliquot_label=row_dict['aliquot_label']
                     aliquot_row.parent_label=row_dict['parent_label']
                     aliquot_row.volume=row_dict['volume']
                     aliquot_row.volume_units=row_dict['volume_units']
