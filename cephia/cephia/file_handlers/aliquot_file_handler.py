@@ -41,6 +41,7 @@ class AliquotFileHandler(FileHandler):
                                                                 aliquot_label=row_dict['aliquot_label'],
                                                                 fileinfo=self.upload_file)
                     
+                    aliquot_row.parent_label=row_dict['parent_label']
                     aliquot_row.volume=row_dict['volume']
                     aliquot_row.volume_units=row_dict['volume_units']
                     aliquot_row.aliquoting_date_yyyy=row_dict['aliquoting_date_yyyy']
