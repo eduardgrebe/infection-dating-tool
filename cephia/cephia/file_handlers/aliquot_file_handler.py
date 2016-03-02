@@ -77,10 +77,10 @@ class AliquotFileHandler(FileHandler):
                 error_msg = ''
                 self.register_dates(aliquot_row.model_to_dict())
 
-                # exists = Specimen.objects.filter(specimen_label=aliquot_row.aliquot_label,
-                #                                  specimen_type__spec_type=aliquot_row.specimen_type).exists()
-                # if exists:
-                #     error_msg += 'This aliquot already exists.\n'
+                exists = Specimen.objects.filter(specimen_label=aliquot_row.aliquot_label,
+                                                 specimen_type__spec_type=aliquot_row.specimen_type).exists()
+                if exists:
+                    error_msg += 'This aliquot already exists.\n'
 
                 try:
                     SpecimenType.objects.get(spec_type=aliquot_row.specimen_type)
@@ -166,19 +166,20 @@ class AliquotFileHandler(FileHandler):
                 with transaction.atomic():
                     self.register_dates(aliquot_row.model_to_dict())
 
-                    parent_specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label, parent_label=None,
+                    parent_specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label,
                                                            specimen_type__spec_type=aliquot_row.specimen_type)
-                    
+
                     if aliquot_row.parent_label == aliquot_row.aliquot_label:
                         if float(aliquot_row.volume) == 0:
                             parent_specimen.is_available = False
-                            
                         parent_specimen.volume = aliquot_row.volume
                         parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
                         parent_specimen.reason = aliquot_row.reason
                         parent_specimen.save()
                         specimen = parent_specimen
                     else:
+                        if parent_specimen.parent_label:
+                            parent_specimen.is_available = False
                         parent_specimen.modified_date = self.registered_dates.get('aliquoting_date', None)
                         parent_specimen.save()
 
@@ -188,7 +189,6 @@ class AliquotFileHandler(FileHandler):
                                                            volume_units=aliquot_row.volume_units,
                                                            specimen_type=parent_specimen.specimen_type,
                                                            reported_draw_date=parent_specimen.reported_draw_date,
-                                                           #transfer_in_date=parent_specimen.transfer_in_date,
                                                            parent=parent_specimen,
                                                            visit=parent_specimen.visit,
                                                            subject=parent_specimen.subject,
