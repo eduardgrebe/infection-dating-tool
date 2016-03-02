@@ -32,7 +32,7 @@ class LagFileHandler(FileHandler):
 
     def parse(self):
         from assay.models import LagResultRow
-        
+        import pdb; pdb.set_trace()
         rows_inserted = 0
         rows_failed = 0
 
