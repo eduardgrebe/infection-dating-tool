@@ -78,6 +78,7 @@ class AliquotFileHandler(FileHandler):
                 self.register_dates(aliquot_row.model_to_dict())
 
                 exists = Specimen.objects.filter(specimen_label=aliquot_row.aliquot_label,
+                                                 parent_label__isnull=False,
                                                  specimen_type__spec_type=aliquot_row.specimen_type).exists()
                 if exists:
                     error_msg += 'This aliquot already exists.\n'
@@ -126,14 +127,16 @@ class AliquotFileHandler(FileHandler):
                         error_msg += 'volume_units must be "swabs" for this specimen_type.\n'
                     if float(aliquot_row.volume or 0) > 10:
                         error_msg += 'volume must be less than or equal to 10 for this specimen_type.\n'
-                        
-                specimen = Specimen.objects.filter(specimen_label=aliquot_row.parent_label,
-                                                   parent_label=None,
-                                                   specimen_type__spec_type=aliquot_row.specimen_type)
-                if not specimen:
+
+                try:
+                    specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label,
+                                                    specimen_type__spec_type=aliquot_row.specimen_type)
+                except Specimen.DoesNotExist:
                     error_msg += "Parent specimen does not exist.\n"
-                else:
-                    specimen = specimen[0]
+
+                if specimen:
+                    if not specimen.is_available:
+                        error_msg += "Reported parent specimen already unavailable.\n"
                     if not self.registered_dates.get('aliquot_date', default_less_date) < (specimen.transfer_in_date or default_more_date):
                         error_msg += 'aliquot_date must be after transfer_in_date.\n'
 
