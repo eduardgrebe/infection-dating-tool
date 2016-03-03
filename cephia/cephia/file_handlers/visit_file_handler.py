@@ -20,7 +20,8 @@ class VisitFileHandler(FileHandler):
                                    'vl',
                                    'scopevisit_ec',
                                    'pregnant',
-                                   'hepatitis']
+                                   'hepatitis',
+                                   'artificial']
 
     def parse(self):
         from cephia.models import VisitRow
@@ -52,6 +53,7 @@ class VisitFileHandler(FileHandler):
                     visit_row.scopevisit_ec = row_dict['scopevisit_ec']
                     visit_row.pregnant = row_dict['pregnant']
                     visit_row.hepatitis = row_dict['hepatitis']
+                    visit_row.artificial = row_dict['artificial']
 
                     visit_row.fileinfo = self.upload_file
                     visit_row.state = 'pending'
@@ -146,7 +148,8 @@ class VisitFileHandler(FileHandler):
                                                  vl = visit_row.vl or None,
                                                  scopevisit_ec = self.get_bool(visit_row.scopevisit_ec) or False,
                                                  pregnant = self.get_bool(visit_row.pregnant),
-                                                 hepatitis = self.get_bool(visit_row.hepatitis))
+                                                 hepatitis = self.get_bool(visit_row.hepatitis),
+                                                 artificial = self.get_bool(visit_row.artificial))
 
                     visit_row.state = 'processed'
                     visit_row.date_processed = timezone.now()

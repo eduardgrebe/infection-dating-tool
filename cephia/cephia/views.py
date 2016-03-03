@@ -669,18 +669,24 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     associate_specimen = Specimen.objects.get(id=request.POST.get('unlink'))
                     associate_specimen.visit_linkage = None
                     associate_specimen.visit = None
-                    
                 associate_specimen.save()
             messages.success(request, 'Successful!')
 
         context = {}
-        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) & Q(visit__isnull=True) | Q(visit_linkage='provisional')).distinct()
+        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) &
+                                                                 Q(visit__isnull=True) |
+                                                                 Q(visit_linkage='provisional')).distinct()
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
-                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='provisional'),
-                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='confirmed'),
-                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=True)} for x in subjects ]
+                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                       visit__isnull=False,
+                                                                                       visit_linkage='provisional'),
+                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                  visit__isnull=False,
+                                                                                  visit_linkage='confirmed'),
+                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                     visit__isnull=True)} for x in subjects ]
 
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:

@@ -383,6 +383,7 @@ class VisitRow(ImportedRow):
     source_study = models.CharField(max_length=255, null=False, blank=True)
     cd4_count = models.CharField(max_length=255, null=False, blank=True)
     vl = models.CharField(max_length=255, null=False, blank=True)
+    artificial = models.CharField(max_length=255, null=False, blank=True)
     scopevisit_ec = models.CharField(max_length=255, null=False, blank=True)
     pregnant = models.CharField(max_length=255, null=False, blank=True)
     hepatitis = models.CharField(max_length=255, null=False, blank=True)

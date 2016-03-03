@@ -48,6 +48,8 @@ def visit_material(request, template="reporting/visit_material.html"):
     DATEDIFF(visits.visit_date,subjects.cohort_entry_date) AS DaysSinceEntry,
     DATEDIFF(visits.visit_date,subjects.art_initiation_date) AS DaysSinceARTInit,
     visits.scopevisit_ec as SCOPE_EC,
+    visits.vl as VL,
+    visits.artificial as Artificial,
     subjects.art_initiation_date AS ARTInitDate,
     subjects.art_interruption_date AS ARTInterruptDate,
     subjects.art_resumption_date AS ARTResumptionDate,
