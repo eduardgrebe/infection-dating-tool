@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'Specimen with the same parent and specimen label to be used as volume updates and deleted'
 
     def handle(self, *args, **options):
-        specimens = Specimen.objects.filter(specimen_label=F('parent_label'))
+        specimens = Specimen.objects.filter(specimen_label=F('parent_label'), is_available=True)
         for specimen in specimens:
             root_specimen = Specimen.objects.get(specimen_label=specimen.specimen_label,
                                                  parent_label=None,
