@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from cephia.models import Specimen, AliquotRow, HistoricalAliquotRow
+from cephia.models import Specimen, TransferOutRow, HistoricalTransferOutRow
 from django.db.models import F
 import logging
 
