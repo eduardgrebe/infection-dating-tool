@@ -16,6 +16,8 @@ class Command(BaseCommand):
                                                  specimen_type=specimen.specimen_type)
             root_specimen.volume = specimen.volume
             root_specimen.save()
+            AliquotRow.objects.filter(specimen=specimen).delete()
+            HistoricalAliquotRow.objects.filter(specimen=specimen).delete()
             TransferOutRow.objects.filter(specimen=specimen).delete()
             HistoricalTransferOutRow.objects.filter(specimen=specimen).delete()
             specimen.delete()
