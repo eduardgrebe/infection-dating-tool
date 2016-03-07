@@ -40,6 +40,9 @@
       </div>
       <div class="panel-body">
         {% show_pages %}
+        <div class="btn-group">
+          <a href="#" class="btn btn-default" style="text-decoration:none;" onclick="submitFilterFormCSV();">Export as CSV</a>
+        </div>
         <div class="row">
           <div class="table-responsive">
             <table class="table-striped table table-hover" style="overflow:auto;">
@@ -99,11 +102,6 @@
             </table>
           </div>
         </div>
-        {% comment %}
-        <div class="btn-group">
-          <a href="{% url 'download_subjects_no_visits' %}" class="btn btn-primary" style="float:right; text-decoration:none;">Export as CSV</a>
-        </div>
-        {% endcomment %}
       </div>
     </div>
   </div>

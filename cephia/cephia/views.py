@@ -130,7 +130,25 @@ def subjects(request, template="cephia/subjects.html"):
 
     context['subjects'] = subjects
     context['form'] = form
-    return render_to_response(template, context, context_instance=RequestContext(request))
+
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('subjects_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(subjects[0]).keys()
+
+            writer.writerow(headers)
+
+            for subject in subjects:
+                d = model_to_dict(subject)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required
@@ -144,8 +162,25 @@ def visits(request, template="cephia/visits.html"):
 
     context['visits'] = visits
     context['form'] = form
-    return render_to_response(template, context, context_instance=RequestContext(request))
 
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('visits_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(visits[0]).keys()
+
+            writer.writerow(headers)
+
+            for visit in visits:
+                d = model_to_dict(visit)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def specimen(request, template="cephia/specimen.html"):
@@ -159,7 +194,25 @@ def specimen(request, template="cephia/specimen.html"):
 
     context['specimen'] = specimen
     context['form'] = form
-    return render_to_response(template, context, context_instance=RequestContext(request))
+
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('specimen_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(specimen[0]).keys()
+
+            writer.writerow(headers)
+
+            for spec in specimen:
+                d = model_to_dict(spec)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def specimen_type(request, template="cephia/specimen_type.html"):
@@ -463,7 +516,6 @@ def download_visits_no_subjects(request):
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to download file')
-        return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
 def download_subjects_no_visits(request):
@@ -671,18 +723,24 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     associate_specimen = Specimen.objects.get(id=request.POST.get('unlink'))
                     associate_specimen.visit_linkage = None
                     associate_specimen.visit = None
-                    
                 associate_specimen.save()
             messages.success(request, 'Successful!')
 
         context = {}
-        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) & Q(visit__isnull=True) | Q(visit_linkage='provisional')).distinct()
+        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) &
+                                                                 Q(visit__isnull=True) |
+                                                                 Q(visit_linkage='provisional')).distinct()
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
-                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='provisional'),
-                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='confirmed'),
-                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=True)} for x in subjects ]
+                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                       visit__isnull=False,
+                                                                                       visit_linkage='provisional'),
+                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                  visit__isnull=False,
+                                                                                  visit_linkage='confirmed'),
+                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                     visit__isnull=True)} for x in subjects ]
 
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:

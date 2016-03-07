@@ -33,6 +33,9 @@
       </div>
       <div class="panel-body">
         {% show_pages %}
+        <div class="btn-group">
+          <a href="#" class="btn btn-default" style="text-decoration:none;" onclick="submitFilterFormCSV();">Export as CSV</a>
+        </div>
         <div class="row">
           <div class="table-responsive">
             <table class="table-striped table table-hover" style="overflow:auto;">
@@ -52,11 +55,11 @@
               <tbody>
                 {% for subject in subjects %}
                 <tr data-subject-id="{{subject.id}}" >
-	          <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
-	          <td>{{subject.subject_eddi.tci_begin}}</td>
-	          <td>{{subject.subject_eddi.tci_end}}</td>
+	              <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
+	              <td>{{subject.subject_eddi.tci_begin}}</td>
+	              <td>{{subject.subject_eddi.tci_end}}</td>
                   <td>{{subject.subject_eddi.tci_size}}</td>
-	          <td>{{subject.subject_eddi.eddi}}</td>
+	              <td>{{subject.subject_eddi.eddi}}</td>
                   <td>{{subject.cohort_entry_date}}</td>
                   <td>{{subject.cohort_entry_hiv_status}}</td>
                   <td>{{subject.last_negative_date}}</td>
