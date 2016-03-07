@@ -118,5 +118,13 @@ $(document).ready(function() {
         });
     });
 });
-
-
+//
+function submitFilterFormCSV() {
+    $('<input />').attr('type', 'hidden')
+        .attr('name', "csv")
+        .attr('value', "1")
+        .appendTo('.filter-form');
+    $(".filter-form").submit();
+    return true;
+};
+//
