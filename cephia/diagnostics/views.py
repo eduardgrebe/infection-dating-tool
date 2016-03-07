@@ -8,6 +8,8 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
+from csv_helper import get_csv_response
+from datetime import datetime
 from collections import OrderedDict
 from django.utils import timezone
 from django.conf import settings
@@ -17,6 +19,7 @@ import json
 from django.forms import modelformset_factory
 from django.core.management import call_command
 
+logger = logging.getLogger(__name__)
 
 @login_required
 def eddi_report(request, template="diagnostics/eddi_report.html"):
@@ -29,8 +32,25 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
 
     context['subjects'] = subjects
     context['form'] = form
-    
-    return render_to_response(template, context, context_instance=RequestContext(request))
+    import pdb; pdb.set_trace()
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('eddi_report_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(subjects[0]).keys()
+
+            writer.writerow(headers)
+
+            for subject in subjects:
+                d = model_to_dict(subject)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 def subject_test_timeline(request, subject_id=None, template="cephia/subject_test_timeline.html"):
     context = {}
