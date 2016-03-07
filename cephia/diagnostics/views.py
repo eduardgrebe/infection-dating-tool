@@ -32,25 +32,41 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
 
     context['subjects'] = subjects
     context['form'] = form
-    import pdb; pdb.set_trace()
+
     if 'csv' in request.GET:
         try:
             response, writer = get_csv_response('eddi_report_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-            headers = model_to_dict(subjects[0]).keys()
+            headers = ['subject',
+                       'vdw begin',
+                       'vdw end',
+                       'vdw size',
+                       'eddi',
+                       'cohort entry',
+                       'entry status',
+                       'reported ln',
+                       'reported fp',
+                       'reported edsc',
+                       'eddi status']
 
             writer.writerow(headers)
-
             for subject in subjects:
-                d = model_to_dict(subject)
-                content = [ d[x] for x in headers ]
-                writer.writerow(content)
-
+                writer.writerow( [ subject.subject_label,
+                                   subject.subject_eddi.tci_begin if subject.subject_eddi else None,
+                                   subject.subject_eddi.tci_end if subject.subject_eddi else None,
+                                   subject.subject_eddi.tci_size if subject.subject_eddi else None,
+                                   subject.subject_eddi.eddi if subject.subject_eddi else None,
+                                   subject.cohort_entry_date,
+                                   subject.cohort_entry_hiv_status,
+                                   subject.last_negative_date,
+                                   subject.first_positive_date,
+                                   subject.edsc_reported,
+                                   subject.subject_eddi_status.status if subject.subject_eddi_status else None ] )
             return response
         except Exception, e:
             logger.exception(e)
             messages.error(request, 'Failed to download file')
-    else:
-        return render_to_response(template, context, context_instance=RequestContext(request))
+
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 def subject_test_timeline(request, subject_id=None, template="cephia/subject_test_timeline.html"):
     context = {}
