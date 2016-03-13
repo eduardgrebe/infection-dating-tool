@@ -10,29 +10,22 @@ class LSVitrosFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(LSVitrosFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['Specimen ID',
-                                   'Assay',
-                                   'Sample Type',
-                                   'Site',
-                                   'Test Date',
-                                   'Operator',
-                                   'Assay Kit Lot ID',
-                                   'Run/Plate ID',
-                                   'Test Mode',
-                                   'Well',
-                                   'Intermediate 1',
-                                   'Intermediate 2',
-                                   'Intermediate 3',
-                                   'Intermediate 4',
-                                   'Intermediate 5',
-                                   'Intermediate 6',
-                                   'Final Result',
-                                   'Panel Type']
-
+        self.registered_columns = ['specimen_label',
+                                   'assay',
+                                   'laboratory',
+                                   'test_date',
+                                   'operator',
+                                   'assay_kit_lot',
+                                   'plate_identifier',
+                                   'well',
+                                   'test_mode',
+                                   'specimen_purpose',
+                                   'result_SCO',
+                                   'panel_type']
 
     def parse(self):
-        from cephia.models import LSVitrosResultRow
-        
+        from assay.models import LSVitrosResultRow
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -40,27 +33,22 @@ class LSVitrosFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
-                    ls_vitros_result_row = LSVitrosResultRow.objects.create(specimen=row_dict['Specimen ID'],
-                                                                 assay=row_dict['Assay'],
-                                                                 sample_type=row_dict['Sample Type'],
-                                                                 site=row_dict['Site'],
-                                                                 test_date=row_dict['Test Date'],
-                                                                 operator=row_dict['Operator'],
-                                                                 assay_kit_lot_id=row_dict['Assay Kit Lot ID'],
-                                                                 plate_id=row_dict['Run/Plate ID'],
-                                                                 test_mode=row_dict['Test Mode'],
-                                                                 well=row_dict['Well'],
-                                                                 intermediate_1=row_dict['Intermediate 1'],
-                                                                 intermediate_2=row_dict['Intermediate 2'],
-                                                                 intermediate_3=row_dict['Intermediate 3'],
-                                                                 intermediate_4=row_dict['Intermediate 4'],
-                                                                 intermediate_5=row_dict['Intermediate 5'],
-                                                                 intermediate_6=row_dict['Intermediate 6'],
-                                                                 final_result=row_dict['Final Result'],
-                                                                 panel_type=row_dict['Panel Type'],
-                                                                 state='pending',
-                                                                 fileinfo=self.upload_file)
+
+                    ls_vitros_result_row = LSVitrosResultRow.objects.create(specimen_label=row_dict['specimen_label'],
+                                                                            assay=row_dict['assay'],
+                                                                            laboratory=row_dict['laboratory'],
+                                                                            test_date=row_dict['test_date'],
+                                                                            operator=row_dict['operator'],
+                                                                            assay_kit_lot=row_dict['assay_kit_lot'],
+                                                                            plate_identifier=row_dict['plate_identifier'],
+                                                                            well=row_dict['well'],
+                                                                            test_mode=row_dict['test_mode'],
+                                                                            specimen_purpose=row_dict['specimen_purpose'],
+                                                                            result_SCO=row_dict['result_SCO'],
+                                                                            panel_type=row_dict['panel_type'],
+                                                                            state='pending',
+                                                                            fileinfo=self.upload_file)
+
 
                     rows_inserted += 1
             except Exception, e:
@@ -70,39 +58,41 @@ class LSVitrosFileHandler(FileHandler):
                 return 0, 1
 
         if rows_failed > 0:
-            self.upload_file.state = 'row_error'
+            self.upload_file.state = 'file_error'
         else:
             self.upload_file.state = 'imported'
         fail_msg = 'Failed to import ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully imported ' + str(rows_inserted) + ' rows.'
-        
+
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def validate(self):
-        from cephia.models import Specimen
-        from assay.models import LSVitrosResultRow, LSVitrosResult
-        
+    def validate(self, panel_id):
+        from cephia.models import Specimen, Panel, Assay
+        from assay.models import LSVitrosResultRow, LSVitrosResult, PanelMembership
+
         rows_validated = 0
         rows_failed = 0
-        
+
         for ls_vitros_result_row in LSVitrosResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
-                
-                # try:
-                #     Specimen.objects.get(pk=ls_vitros_result_row.specimen)
-                # except Specimen.DoesNotExist:
-                #     error_msg += "Specimen not recognised.\n"
+                panel = Panel.objects.get(pk=panel_id)
+                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+                assay = Assay.objects.get(name=ls_vitros_result_row.assay)
 
-                # try:
-                #     Panel.objects.get(pk=ls_vitros_result_row.panel)
-                # except Panel.DoesNotExist:
-                #     error_msg += "Panel not recognised.\n"
+                try:
+                    specimen = Specimen.objects.get(specimen_label=ls_vitros_result_row.specimen_label,
+                                                    specimen_type=panel.specimen_type)
+                except Specimen.DoesNotExist:
+                    error_msg += "Specimen not recognised.\n"
+
+                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
+                #     error_msg += "Specimen does not belong to any panel membership.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
-                
+
                 ls_vitros_result_row.state = 'validated'
                 ls_vitros_result_row.error_message = ''
                 rows_validated += 1
@@ -114,46 +104,53 @@ class LSVitrosFileHandler(FileHandler):
                 rows_failed += 1
                 ls_vitros_result_row.save()
                 continue
-        
+
         if rows_failed > 0:
             self.upload_file.state = 'row_error'
         else:
             self.upload_file.state = 'validated'
         fail_msg = 'Failed to validate ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully validated ' + str(rows_validated) + ' rows.'
-        
+
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self):
-        from cephia.models import Specimen
-        from assay.models import LSVitrosResultRow, LSVitrosResult
-        
+    def process(self, panel_id):
+        from cephia.models import Specimen, Laboratory, Assay, Panel
+        from assay.models import LSVitrosResultRow, LSVitrosResult, AssayResult
+
         rows_inserted = 0
         rows_failed = 0
 
         for ls_vitros_result_row in LSVitrosResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    ls_vitros_result = LSVitrosResult.objects.create(specimen=Specimen.objects.get(pk=ls_vitros_result_row.specimen),
-                                                          assay=Assay.objects.get(pk=ls_vitros_result_row.assay),
-                                                          sample_type=ls_vitros_result_row.sample_type,
-                                                          site=Site.objects.get(name=ls_vitros_result_row.site),
-                                                          test_date=self.registered_dates(),
-                                                          operator=ls_vitros_result_row.operator,
-                                                          assay_kit_lot_id=ls_vitros_result_row.assay_kit_lot_id,
-                                                          plate_id=ls_vitros_result_row.plate_id,
-                                                          test_mode=ls_vitros_result_row.test_mode,
-                                                          well=ls_vitros_result_row.well,
-                                                          intermediate_1=ls_vitros_result_row.intermediate_1,
-                                                          intermediate_2=ls_vitros_result_row.intermediate_2,
-                                                          intermediate_3=ls_vitros_result_row.intermediate_3,
-                                                          intermediate_4=ls_vitros_result_row.intermediate_4,
-                                                          intermediate_5=ls_vitros_result_row.intermediate_5,
-                                                          intermediate_6=ls_vitros_result_row.intermediate_6,
-                                                          final_result=ls_vitros_result_row.final_result,
-                                                          panel_type=ls_vitros_result_row.panel_type)
-                    
+                    assay = Assay.objects.get(name=ls_vitros_result_row.assay)
+                    panel = Panel.objects.get(pk=panel_id)
+                    specimen = Specimen.objects.get(specimen_label=ls_vitros_result_row.specimen_label,
+                                                    specimen_type=panel.specimen_type,
+                                                    parent_label__isnull=False)
+
+                    assay_result = AssayResult.objects.create(panel=panel,
+                                                              assay=assay,
+                                                              specimen=specimen,
+                                                              test_date=datetime.strptime(ls_vitros_result_row.test_date, '%Y/%m/%d').date(),
+                                                              result=float(ls_vitros_result_row.result_ODn))
+
+                    ls_vitros_result = LSVitrosResult.objects.create(specimen=specimen,
+                                                                     assay=assay,
+                                                                     laboratory=Laboratory.objects.get(name=ls_vitros_result_row.laboratory),
+                                                                     test_date=datetime.strptime(ls_vitros_result_row.test_date, '%Y/%m/%d').date(),
+                                                                     operator=ls_vitros_result_row.operator,
+                                                                     assay_kit_lot=ls_vitros_result_row.assay_kit_lot,
+                                                                     plate_identifier=ls_vitros_result_row.plate_identifier,
+                                                                     test_mode=ls_vitros_result_row.test_mode,
+                                                                     well=ls_vitros_result_row.well,
+                                                                     specimen_purpose=ls_vitros_result_row.specimen_purpose,
+                                                                     result_SCO=float(ls_vitros_result_row.result_SCO),
+                                                                     assay_result=assay_result,
+                                                                     panel_type=ls_vitros_result_row.panel_type)
+
                     ls_vitros_result_row.state = 'processed'
                     ls_vitros_result_row.date_processed = timezone.now()
                     ls_vitros_result_row.error_message = ''
@@ -174,6 +171,6 @@ class LSVitrosFileHandler(FileHandler):
             self.upload_file.state = 'processed'
         fail_msg = 'Failed to process ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully processed ' + str(rows_inserted) + ' rows.'
-        
+
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()

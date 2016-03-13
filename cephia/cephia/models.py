@@ -204,8 +204,6 @@ class FileInfo(models.Model):
                 return LagResultRow.objects.get(fileinfo__id=self.id, id=row_id)
             elif self.assay.name == 'biorad':
                 return BioradResultRow.objects.get(fileinfo__id=self.id, id=row_id)
-            elif self.assay.name == 'biorad':
-                return BioradResultRow.objects.get(fileinfo__id=self.id, id=row_id)
 
     def get_extension(self):
         return self.filename().split('.')[-1]

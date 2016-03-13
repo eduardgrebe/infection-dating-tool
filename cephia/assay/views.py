@@ -41,18 +41,15 @@ def shipment_file_upload(request, panel_id=None, template="assay/shipment_modal.
         post_data.__setitem__('priority', 0)
         post_data.__setitem__('panel', panel_id)
         post_data.__setitem__('file_type', 'panel_shipment')
-            
         shipment_file_form = PanelFileForm(post_data, request.FILES)
         if shipment_file_form.is_valid():
             shipment_file = shipment_file_form.save()
             shipment_file.get_handler().parse()
             shipment_file.get_handler().validate()
             shipment_file.get_handler().process(panel_id)
-                
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
-            
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
         panel_file_form = PanelFileForm()
@@ -77,11 +74,9 @@ def membership_file_upload(request, panel_id=None, template="assay/membership_mo
             membership_file.get_handler().parse()
             membership_file.get_handler().validate()
             membership_file.get_handler().process(panel_id)
-                
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
-            
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
         panel_file_form = PanelFileForm()
@@ -105,8 +100,8 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         if file_info_form.is_valid():
             result_file = file_info_form.save()
             result_file.get_handler().parse()
-            result_file.get_handler().validate()
-            result_file.get_handler().process(panel_id)            
+            result_file.get_handler().validate(panel_id)
+            result_file.get_handler().process(panel_id)
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
@@ -122,24 +117,24 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
 
 def panel_memberships(request, panel_id=None, template="assay/panel_memberships.html"):
     context = {}
-    
+
     if request.method == 'GET':
         context['panel_memberships'] = PanelMembership.objects.filter(panel__id=panel_id)
-        
+
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html"):
     context = {}
-    
+
     if request.method == 'GET':
         context['panel_shipments'] = PanelShipment.objects.filter(panel__id=panel_id)
-        
+
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 def panel_results(request, panel_id=None, template="assay/panel_results.html"):
     context = {}
-    
+
     if request.method == 'GET':
         context['panel_results'] = AssayResult.objects.filter(panel__id=panel_id)
-        
+
         return render_to_response(template, context, context_instance=RequestContext(request))

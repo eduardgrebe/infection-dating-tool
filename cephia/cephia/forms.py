@@ -3,7 +3,7 @@ from cephia.models import (FileInfo, SubjectRow, Ethnicity,
                            VisitRow, Specimen, TransferInRow,
                            TransferOutRow, AliquotRow, ImportedRowComment, Assay)
 from assay.models import (PanelMembershipRow, PanelShipmentRow, LagResultRow,
-                          GeeniusResultRow, BEDResultRow, ArchitectResultRow)
+                          GeeniusResultRow, BEDResultRow, ArchitectResultRow, LSVitrosResultRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 
 class BaseFilterForm(forms.Form):

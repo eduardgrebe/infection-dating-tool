@@ -10,24 +10,20 @@ class BEDFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(BEDFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['Specimen ID',
-                                   'Assay',
-                                   'Sample Type',
-                                   'Site',
-                                   'Test Date',
-                                   'Operator',
-                                   'Assay Kit Lot ID',
-                                   'Run/Plate ID',
-                                   'Test Mode',
-                                   'Well',
-                                   'Intermediate 1',
-                                   'Intermediate 2',
-                                   'Intermediate 3',
-                                   'Intermediate 4',
-                                   'Intermediate 5',
-                                   'Intermediate 6',
-                                   'Final Result']
-
+        self.registered_columns = ['specimen_label',
+                                   'assay',
+                                   'laboratory',
+                                   'test_date',
+                                   'operator',
+                                   'assay_kit_lot',
+                                   'plate_identifier',
+                                   'well',
+                                   'test_mode',
+                                   'specimen_purpose',
+                                   'result_OD',
+                                   'result_calibrator_OD',
+                                   'result_ODn',
+                                   'panel_type']
 
     def parse(self):
         from assay.models import BEDResultRow
@@ -40,31 +36,27 @@ class BEDFileHandler(FileHandler):
                 if row_num >= 1:
                     self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
-                    bed_result_row = BEDResultRow.objects.create(specimen=row_dict['Specimen ID'],
-                                                                 assay=row_dict['Assay'],
-                                                                 sample_type=row_dict['Sample Type'],
-                                                                 site=row_dict['Site'],
-                                                                 test_date=row_dict['Test Date'],
-                                                                 operator=row_dict['Operator'],
-                                                                 assay_kit_lot_id=row_dict['Assay Kit Lot ID'],
-                                                                 plate_id=row_dict['Run/Plate ID'],
-                                                                 test_mode=row_dict['Test Mode'],
-                                                                 well=row_dict['Well'],
-                                                                 intermediate_1=row_dict['Intermediate 1'],
-                                                                 intermediate_2=row_dict['Intermediate 2'],
-                                                                 intermediate_3=row_dict['Intermediate 3'],
-                                                                 intermediate_4=row_dict['Intermediate 4'],
-                                                                 intermediate_5=row_dict['Intermediate 5'],
-                                                                 intermediate_6=row_dict['Intermediate 6'],
-                                                                 final_result=row_dict['Final Result'],
-                                                                 panel_type=row_dict['Panel Type'],
+
+                    bed_result_row = BEDResultRow.objects.create(specimen_label=row_dict['specimen_label'],
+                                                                 assay=row_dict['assay'],
+                                                                 laboratory=row_dict['laboratory'],
+                                                                 test_date=row_dict['test_date'],
+                                                                 operator=row_dict['operator'],
+                                                                 assay_kit_lot=row_dict['assay_kit_lot'],
+                                                                 plate_identifier=row_dict['plate_identifier'],
+                                                                 test_mode=row_dict['test_mode'],
+                                                                 well=row_dict['well'],
+                                                                 specimen_purpose=row_dict['specimen_purpose'],
+                                                                 result_OD=row_dict['result_OD'],
+                                                                 result_calibrator_OD=row_dict['result_calibrator_OD'],
+                                                                 result_ODn=row_dict['result_ODn'],
+                                                                 panel_type=row_dict['panel_type'],
                                                                  state='pending',
                                                                  fileinfo=self.upload_file)
 
+
                     rows_inserted += 1
             except Exception, e:
-                import pdb; pdb.set_trace()
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
@@ -76,14 +68,14 @@ class BEDFileHandler(FileHandler):
             self.upload_file.state = 'imported'
         fail_msg = 'Failed to import ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully imported ' + str(rows_inserted) + ' rows.'
-        
+
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
     def validate(self):
-        from cephia.models import Specimen
+        from cephia.models import Specimen, Assay, Panel
         from assay.models import BEDResultRow
-        
+
         rows_validated = 0
         rows_failed = 0
         
