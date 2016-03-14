@@ -70,12 +70,12 @@ class VisitFileHandler(FileHandler):
 
     def validate(self):
         from cephia.models import Visit, VisitRow, Subject
-        
+
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
         rows_validated = 0
         rows_failed = 0
-        
+
         for visit_row in VisitRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
@@ -84,13 +84,13 @@ class VisitFileHandler(FileHandler):
                     subject = Subject.objects.get(subject_label=visit_row.subject_label)
                 except Subject.DoesNotExist:
                     subject = None
-                    
+
                 first_visit = Visit.objects.filter(subject_label=visit_row.subject_label).order_by('visit_date').first()
                 already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
 
                 if already_exists:
                     raise Exception("Visit already exists.")
-                
+
                 if subject:
                     if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
                         error_msg += 'visit_date cannot be before cohort_entry_date.\n'
