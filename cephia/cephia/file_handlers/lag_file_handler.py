@@ -137,13 +137,13 @@ class LagFileHandler(FileHandler):
                     assay_result = AssayResult.objects.create(panel=panel,
                                                               assay=assay,
                                                               specimen=specimen,
-                                                              test_date=datetime.strptime(lag_result_row.test_date, '%Y/%m/%d').date(),
+                                                              test_date=datetime.strptime(lag_result_row.test_date, '%Y-%m-%d').date(),
                                                               result=float(lag_result_row.result_ODn))
 
                     lag_result = LagResult.objects.create(specimen=specimen,
                                                           assay=assay,
                                                           laboratory=Laboratory.objects.get(name=lag_result_row.laboratory),
-                                                          test_date=datetime.strptime(lag_result_row.test_date, '%Y/%m/%d').date(),
+                                                          test_date=datetime.strptime(lag_result_row.test_date, '%Y-%m-%d').date(),
                                                           operator=lag_result_row.operator,
                                                           assay_kit_lot=lag_result_row.assay_kit_lot,
                                                           plate_identifier=lag_result_row.plate_identifier,

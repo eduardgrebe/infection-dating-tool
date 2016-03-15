@@ -4,35 +4,30 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class BioradFileHandler(FileHandler):
+class BioRadFileHandler(FileHandler):
     upload_file = None
-    
-    def __init__(self, upload_file):
-        super(BioradFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['Specimen ID',
-                                   'Assay',
-                                   'Sample Type',
-                                   'Site',
-                                   'Test Date',
-                                   'Operator',
-                                   'Assay Kit Lot ID',
-                                   'Run/Plate ID',
-                                   'Test Mode',
-                                   'Well',
-                                   'Intermediate 1',
-                                   'Intermediate 2',
-                                   'Intermediate 3',
-                                   'Intermediate 4',
-                                   'Intermediate 5',
-                                   'Intermediate 6',
-                                   'Final Result',
-                                   'Panel Type']
+    def __init__(self, upload_file):
+        super(BioRadFileHandler, self).__init__(upload_file)
+
+        self.registered_columns = ['specimen_label',
+                                   'assay',
+                                   'laboratory',
+                                   'test_date',
+                                   'operator',
+                                   'assay_kit_lot',
+                                   'plate_identifier',
+                                   'well',
+                                   'test_mode',
+                                   'specimen_purpose',
+                                   'result_treated_well_OD',
+                                   'result_untreated_well_OD',
+                                   'result_AI']
 
 
     def parse(self):
         from assay.models import BioradResultRow
-        
+
         rows_inserted = 0
         rows_failed = 0
 
