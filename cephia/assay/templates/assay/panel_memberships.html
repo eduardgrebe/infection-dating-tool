@@ -22,15 +22,31 @@
               <table class="table-striped table table-hover" style="overflow:auto;">
                 <thead>
                   <th>Visit ID</th>
-                  <th>Patient Label</th>
+                  <th>Subject Label</th>
+                  <th>Subject Country</th>
+                  <th>Source Study</th>
+                  <th>EDDI</th>
+                  <th>Subtype</th>
                   <th>Visit Date</th>
+                  <th>Days From EDDI</th>
+                  <th>ART Naive</th>
+                  <th>On ART</th>
+                  <th>VL</th>
                 </thead>
                 <tbody>
                   {% for membership in panel_memberships %}
                   <tr>
                     <td>{{membership.visit.id}}</td>
                     <td>{{membership.visit.subject.subject_label}}</td>
+                    <td>{{membership.visit.subject.country}}</td>
+                    <td>{{membership.visit.subject.source_study}}</td>
+                    <td>{{membership.visit.subject.subject_eddi.eddi}}</td>
+                    <td>{{membership.visit.subject.subtype.name}}</td>
                     <td>{{membership.visit.visit_date}}</td>
+                    <td></td>
+                    <td>{{membership.visit.treatment_naive}}</td>
+                    <td>{{membership.visit.on_treatment}}</td>
+                    <td>{{membership.visit.vl}}</td>
                   </tr>
                   {% endfor %}
                 </tbody>

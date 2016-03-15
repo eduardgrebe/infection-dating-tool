@@ -10,11 +10,16 @@ class PanelMembershipFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(PanelMembershipFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['VisitId']
+        self.registered_columns = ['visit_id',
+                                   'subject_id',
+                                   'category',
+                                   'panel_inclusion_criterion',
+                                   'n_replicates']
+
 
     def parse(self):
         from assay.models import PanelMembershipRow
-        
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -22,8 +27,10 @@ class PanelMembershipFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
-                    panel_membership_row = PanelMembershipRow.objects.create(visit=row_dict['VisitId'],
+                    panel_membership_row = PanelMembershipRow.objects.create(visit=row_dict['visit_id'],
+                                                                             category=row_dict['category'],
+                                                                             panel_inclusion_criterion=row_dict['panel_inclusion_criterion'],
+                                                                             replicates=row_dict['n_replicates'],
                                                                              state='pending',
                                                                              fileinfo=self.upload_file)
 
@@ -40,21 +47,21 @@ class PanelMembershipFileHandler(FileHandler):
             self.upload_file.state = 'imported'
         fail_msg = 'Failed to import ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully imported ' + str(rows_inserted) + ' rows.'
-        
+
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
     def validate(self):
         from cephia.models import Visit
         from assay.models import PanelMembershipRow, PanelMembership, Panel
-        
+
         rows_validated = 0
         rows_failed = 0
-        
+
         for membership_row in PanelMembershipRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
-                
+
                 try:
                     viist = Visit.objects.get(pk=membership_row.visit)
                 except Visit.DoesNotExist:
@@ -62,7 +69,7 @@ class PanelMembershipFileHandler(FileHandler):
 
                 if error_msg:
                     raise Exception(error_msg)
-                
+
                 membership_row.state = 'validated'
                 membership_row.error_message = ''
                 rows_validated += 1
@@ -74,21 +81,21 @@ class PanelMembershipFileHandler(FileHandler):
                 rows_failed += 1
                 membership_row.save()
                 continue
-        
+
         if rows_failed > 0:
             self.upload_file.state = 'row_error'
         else:
             self.upload_file.state = 'validated'
         fail_msg = 'Failed to validate ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully validated ' + str(rows_validated) + ' rows.'
-        
+
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
     def process(self, panel_id):
         from cephia.models import Visit, Panel
         from assay.models import PanelMembershipRow, PanelMembership
-        
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -96,6 +103,9 @@ class PanelMembershipFileHandler(FileHandler):
             try:
                 with transaction.atomic():
                     panel_membership = PanelMembership.objects.create(visit=Visit.objects.get(pk=panel_membership_row.visit),
+                                                                      category=panel_membership_row.category,
+                                                                      replicates=panel_membership_row.replicates,
+                                                                      panel_inclusion_criterion=panel_membership_row.panel_inclusion_criterion,
                                                                       panel=Panel.objects.get(pk=panel_id))
 
                     panel_membership_row.state = 'processed'

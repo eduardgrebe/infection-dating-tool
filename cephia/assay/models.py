@@ -14,7 +14,10 @@ class PanelMembershipRow(ImportedRow):
 
     visit = models.CharField(max_length=255, null=False, blank=True)
     panel = models.CharField(max_length=255, null=False, blank=True)
-    
+    replicates = models.CharField(max_length=255, null=False, blank=True)
+    category = models.CharField(max_length=255, null=False, blank=True)
+    panel_inclusion_criterion = models.CharField(max_length=255, null=False, blank=True)
+
     def __unicode__(self):
         return self.visit
 
@@ -24,8 +27,28 @@ class PanelMembership(models.Model):
     class Meta:
         db_table = "cephia_panel_memberships"
 
+    CATEGORY_CHOICES = (
+        ('mdri','MDRI'),
+        ('frr','FRR'),
+        ('challenge','Challenge')
+    )
+
+    PANEL_INCLUSION_CHOICES = (
+        ('recent_infection_art_naive','Recent Infection ART Naive'),
+        ('longstanding_infection_art_naive','Longstanding Infection ART Naive'),
+        ('recent_infection_art_surpressed','Recent Infection ART Surpressed'),
+        ('longstanding_infection_art_surpressed','Longstanding Infection ART Surpressed'),
+        ('recent_infection_art_unsurpressed','Recent Infection ART Unsurpressed'),
+        ('longstanding_infection_art_unsurpressed','Longstanding Infection ART Unsurpressed'),
+        ('recent_infection_ec','Recent Infection Elite Controller'),
+        ('longstanding_infection_ec','Longstanding Infection Elite Controller')
+    )
+
     visit = models.ForeignKey(Visit, null=True, blank=False, db_index=True)
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
+    replicates = models.IntegerField(null=True, blank=False)
+    category = models.CharField(max_length=255, null=False, blank=True, choices=CATEGORY_CHOICES)
+    panel_inclusion_criterion = models.CharField(max_length=255, null=False, blank=True, choices=PANEL_INCLUSION_CHOICES)
 
     def __unicode__(self):
         return str(self.visit.id)

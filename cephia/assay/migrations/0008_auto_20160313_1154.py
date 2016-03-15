@@ -79,7 +79,7 @@ def add_assays(apps, schema_editor):
                    'developer':'',
                    'description':''}]
 
-
+    model.objects.all().delete()
     for assay in assay_list:
         model.objects.create(name=assay['short_name'],
                              long_name=assay['long_name'],

@@ -23,7 +23,6 @@ from vitros_file_handler import VitrosFileHandler
 from ls_vitros_file_handler import LSVitrosFileHandler
 from geenius_file_handler import GeeniusFileHandler
 from bed_file_handler import BEDFileHandler
-from biorad_glasgow_file_handler import BioradGlasgowFileHandler
 from luminex_file_handler import LuminexFileHandler
 from ide_file_handler import IDEFileHandler
 from duke_file_handler import DukeFileHandler

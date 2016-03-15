@@ -21,10 +21,9 @@
             <div class="table-responsive">
               <table class="table-striped table table-hover" style="overflow:auto;">
                 <thead>
+                  <th>Short Name</th>
                   <th>Name</th>
-                  <th>Description</th>
                   <th>Specimen Type</th>
-                  <th>Volume</th>
                   <th>Memberships</th>
                   <th>Shipments</th>
                   <th>Results</th>
@@ -32,10 +31,9 @@
                 <tbody>
                   {% for panel in panels %}
                   <tr>
+                    <td>{{panel.short_name}}</td>
                     <td>{{panel.name}}</td>
-                    <td>{{panel.description}}</td>
                     <td>{{panel.specimen_type.name}}</td>
-                    <td>{{panel.volume}}</td>
                     <td data-panel-id="{{panel.id}}">
                       <a href="{% url 'assay:panel_memberships' panel_id=panel.id %}" target="_blank" class="btn btn-default">View</a>
                       <button class="btn btn-default btn-membership-file-modal">Upload</button>

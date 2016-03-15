@@ -125,13 +125,22 @@ class Panel(models.Model):
     class Meta:
         db_table = "cephia_panels"
 
+    short_name = models.CharField(max_length=50, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=False)
     specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=False, db_index=True)
     volume = models.FloatField(null=True, blank=True)
+    n_recent = models.IntegerField(null=True, blank=False)
+    n_longstanding = models.IntegerField(null=True, blank=False)
+    n_challenge = models.IntegerField(null=True, blank=False)
+    n_reproducibility_controls = models.IntegerField(null=True, blank=False)
+    n_negative = models.IntegerField(null=True, blank=False)
+    n_total = models.IntegerField(null=True, blank=False)
+    blinded = models.NullBooleanField()
+    notes = models.TextField(null=True, blank=False)
 
     def __unicode__(self):
-        return self.name
+        return self.short_name
 
 
 class FileInfo(models.Model):
