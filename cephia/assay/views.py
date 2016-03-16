@@ -9,6 +9,7 @@ from cephia.models import Panel
 from forms import PanelCaptureForm, PanelFileForm
 from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership
+from cephia.models import Assay
 import json
 
 logger = logging.getLogger(__name__)
@@ -136,5 +137,6 @@ def panel_results(request, panel_id=None, template="assay/panel_results.html"):
 
     if request.method == 'GET':
         context['panel_results'] = AssayResult.objects.filter(panel__id=panel_id)
+        context['assays'] = Assay.objects.all()
 
         return render_to_response(template, context, context_instance=RequestContext(request))

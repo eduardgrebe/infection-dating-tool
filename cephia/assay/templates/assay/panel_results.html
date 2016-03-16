@@ -16,6 +16,12 @@
       </div>
       <div class="panel-body">
         <div class="row">
+          <ul class="nav nav-pills">
+            <li role="presentation"><a href="#">All</a></li>
+            {% for assay in assays %}
+            <li role="presentation"><a href="#">{{assay.name}}</a></li>
+            {% endfor %}
+          </ul>
           <div class="container"
                {% show_pages %}
             <div class="table-responsive">
