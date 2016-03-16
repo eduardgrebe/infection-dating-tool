@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0029_auto_20160222_1235'),
+        ('cephia', '0028_auto_20160217_1622'),
     ]
 
     operations = [

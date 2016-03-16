@@ -79,7 +79,6 @@ def add_assays(apps, schema_editor):
                    'developer':'',
                    'description':''}]
 
-    model.objects.all().delete()
     for assay in assay_list:
         model.objects.create(name=assay['short_name'],
                              long_name=assay['long_name'],
@@ -89,7 +88,7 @@ def add_assays(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assay', '0007_auto_20160310_1420'),
+        ('assay', '0001_initial'),
     ]
 
     operations = [

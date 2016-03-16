@@ -9,7 +9,7 @@ import cephia.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0028_auto_20160217_1622'),
+        ('cephia', '0029_auto_20160314_1341'),
     ]
 
     operations = [
@@ -43,6 +43,51 @@ class Migration(migrations.Migration):
             model_name='historicalfileinfo',
             name='panel',
             field=cephia.fields.ProtectedForeignKey(related_name='+', on_delete=django.db.models.deletion.PROTECT, db_constraint=False, blank=True, to='cephia.Panel', null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='blinded',
+            field=models.NullBooleanField(),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='n_challenge',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='n_longstanding',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='n_negative',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='n_recent',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='n_reproducibility_controls',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='n_total',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='notes',
+            field=models.TextField(null=True),
+        ),
+        migrations.AddField(
+            model_name='panel',
+            name='short_name',
+            field=models.CharField(max_length=50, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='fileinfo',

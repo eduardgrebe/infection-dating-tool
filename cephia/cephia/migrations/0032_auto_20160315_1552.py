@@ -28,7 +28,7 @@ def add_panels(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0031_auto_20160315_1540'),
+        ('cephia', '0030_auto_20160316_1427'),
     ]
 
     operations = [
