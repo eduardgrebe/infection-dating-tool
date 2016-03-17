@@ -4,11 +4,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class VitrosAvidityFileHandler(FileHandler):
+class LSVitrosDiluentFileHandler(FileHandler):
     upload_file = None
 
     def __init__(self, upload_file):
-        super(VitrosAvidityFileHandler, self).__init__(upload_file)
+        super(LSVitrosDiluentFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['specimen_label',
                                    'assay',
@@ -20,14 +20,11 @@ class VitrosAvidityFileHandler(FileHandler):
                                    'well',
                                    'test_mode',
                                    'specimen_purpose',
-                                   'result_treated_SCO',
-                                   'result_untreated_SCO',
-                                   'result_AI',
-                                   'result_AI_recalc']
+                                   'result_SCO']
 
 
     def parse(self):
-        from assay.models import VitrosAvidityResultRow
+        from assay.models import LSVitrosDiluentResultRow
 
         rows_inserted = 0
         rows_failed = 0
@@ -38,7 +35,7 @@ class VitrosAvidityFileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    vitros_result_row = VitrosAvidityResultRow.objects.create(specimen_label=row_dict['specimen_label'],
+                    lsvitros_result_row = LSVitrosDiluentResultRow.objects.create(specimen_label=row_dict['specimen_label'],
                                                                                     assay=row_dict['assay'],
                                                                                     laboratory=row_dict['laboratory'],
                                                                                     test_date=row_dict['test_date'],
@@ -48,10 +45,7 @@ class VitrosAvidityFileHandler(FileHandler):
                                                                                     well=row_dict['well'],
                                                                                     test_mode=row_dict['test_mode'],
                                                                                     specimen_purpose=row_dict['specimen_purpose'],
-                                                                                    result_treated_SCO=row_dict['result_treated_SCO'],
-                                                                                    result_untreated_SCO=row_dict['result_untreated_SCO'],
-                                                                                    result_AI=row_dict['result_AI'],
-                                                                                    result_AI_recalc=row_dict['result_AI_recalc'],
+                                                                                    result_SCO=row_dict['result_SCO'],
                                                                                     state='pending',
                                                                                     fileinfo=self.upload_file)
 
@@ -76,20 +70,20 @@ class VitrosAvidityFileHandler(FileHandler):
 
     def validate(self, panel_id):
         from cephia.models import Specimen, Panel, Assay
-        from assay.models import VitrosAvidityResultRow, VitrosAvidityResult, PanelMembership
+        from assay.models import LSVitrosDiluentResultRow, LSVitrosDiluentResult, PanelMembership
 
         rows_validated = 0
         rows_failed = 0
 
-        for vitros_result_row in VitrosAvidityResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for lsvitros_result_row in LSVitrosDiluentResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=vitros_result_row.assay)
+                assay = Assay.objects.get(name=lsvitros_result_row.assay)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lsvitros_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
@@ -101,16 +95,16 @@ class VitrosAvidityFileHandler(FileHandler):
                 if error_msg:
                     raise Exception(error_msg)
 
-                vitros_result_row.state = 'validated'
-                vitros_result_row.error_message = ''
+                lsvitros_result_row.state = 'validated'
+                lsvitros_result_row.error_message = ''
                 rows_validated += 1
-                vitros_result_row.save()
+                lsvitros_result_row.save()
             except Exception, e:
                 logger.exception(e)
-                vitros_result_row.state = 'error'
-                vitros_result_row.error_message = e.message
+                lsvitros_result_row.state = 'error'
+                lsvitros_result_row.error_message = e.message
                 rows_failed += 1
-                vitros_result_row.save()
+                lsvitros_result_row.save()
                 continue
 
         if rows_failed > 0:
@@ -125,53 +119,50 @@ class VitrosAvidityFileHandler(FileHandler):
 
     def process(self, panel_id):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import VitrosAvidityResultRow, VitrosAvidityResult, AssayResult
+        from assay.models import LSVitrosDiluentResultRow, LSVitrosDiluentResult, AssayResult
 
         rows_inserted = 0
         rows_failed = 0
 
-        for vitros_result_row in VitrosAvidityResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+        for lsvitros_result_row in LSVitrosDiluentResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=vitros_result_row.assay)
+                    assay = Assay.objects.get(name=lsvitros_result_row.assay)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lsvitros_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
                     assay_result = AssayResult.objects.create(panel=panel,
                                                               assay=assay,
                                                               specimen=specimen,
-                                                              test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=vitros_result_row.result_AI_recalc)
+                                                              test_date=datetime.strptime(lsvitros_result_row.test_date, '%Y-%m-%d').date(),
+                                                              result=lsvitros_result_row.result_SCO)
 
-                    vitros_result = VitrosAvidityResult.objects.create(specimen=specimen,
+                    lsvitros_result = LSVitrosDiluentResult.objects.create(specimen=specimen,
                                                                              assay=assay,
-                                                                             laboratory=Laboratory.objects.get(name=vitros_result_row.laboratory),
-                                                                             test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                                             operator=vitros_result_row.operator,
-                                                                             assay_kit_lot=vitros_result_row.assay_kit_lot,
-                                                                             plate_identifier=vitros_result_row.plate_identifier,
-                                                                             test_mode=vitros_result_row.test_mode,
-                                                                             well=vitros_result_row.well,
-                                                                             specimen_purpose=vitros_result_row.specimen_purpose,
-                                                                             result_treated_SCO=vitros_result_row.result_treated_SCO,
-                                                                             result_untreated_SCO=vitros_result_row.result_untreated_SCO,
-                                                                             result_AI=vitros_result_row.result_AI,
-                                                                             result_AI_recalc=vitros_result_row.result_AI_recalc,
+                                                                             laboratory=Laboratory.objects.get(name=lsvitros_result_row.laboratory),
+                                                                             test_date=datetime.strptime(lsvitros_result_row.test_date, '%Y-%m-%d').date(),
+                                                                             operator=lsvitros_result_row.operator,
+                                                                             assay_kit_lot=lsvitros_result_row.assay_kit_lot,
+                                                                             plate_identifier=lsvitros_result_row.plate_identifier,
+                                                                             test_mode=lsvitros_result_row.test_mode,
+                                                                             well=lsvitros_result_row.well,
+                                                                             specimen_purpose=lsvitros_result_row.specimen_purpose,
+                                                                             result_SCO=lsvitros_result_row.result_SCO,
                                                                              assay_result=assay_result)
 
-                    vitros_result_row.state = 'processed'
-                    vitros_result_row.date_processed = timezone.now()
-                    vitros_result_row.error_message = ''
-                    vitros_result_row.save()
+                    lsvitros_result_row.state = 'processed'
+                    lsvitros_result_row.date_processed = timezone.now()
+                    lsvitros_result_row.error_message = ''
+                    lsvitros_result_row.save()
                     rows_inserted += 1
 
             except Exception, e:
                 logger.exception(e)
-                vitros_result_row.state = 'error'
-                vitros_result_row.error_message = e.message
-                vitros_result_row.save()
+                lsvitros_result_row.state = 'error'
+                lsvitros_result_row.error_message = e.message
+                lsvitros_result_row.save()
                 rows_failed += 1
                 continue
 

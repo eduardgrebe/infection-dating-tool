@@ -4,11 +4,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class VitrosAvidityFileHandler(FileHandler):
+class BioRadAvidityJHUFileHandler(FileHandler):
     upload_file = None
 
     def __init__(self, upload_file):
-        super(VitrosAvidityFileHandler, self).__init__(upload_file)
+        super(BioRadAvidityJHUFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['specimen_label',
                                    'assay',
@@ -20,14 +20,14 @@ class VitrosAvidityFileHandler(FileHandler):
                                    'well',
                                    'test_mode',
                                    'specimen_purpose',
-                                   'result_treated_SCO',
-                                   'result_untreated_SCO',
+                                   'result_treated_OD',
+                                   'result_untreated_OD',
                                    'result_AI',
                                    'result_AI_recalc']
 
 
     def parse(self):
-        from assay.models import VitrosAvidityResultRow
+        from assay.models import BioRadAvidityJHUResultRow
 
         rows_inserted = 0
         rows_failed = 0
@@ -38,7 +38,7 @@ class VitrosAvidityFileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    vitros_result_row = VitrosAvidityResultRow.objects.create(specimen_label=row_dict['specimen_label'],
+                    biorad_result_row = BioRadAvidityJHUResultRow.objects.create(specimen_label=row_dict['specimen_label'],
                                                                                     assay=row_dict['assay'],
                                                                                     laboratory=row_dict['laboratory'],
                                                                                     test_date=row_dict['test_date'],
@@ -48,8 +48,8 @@ class VitrosAvidityFileHandler(FileHandler):
                                                                                     well=row_dict['well'],
                                                                                     test_mode=row_dict['test_mode'],
                                                                                     specimen_purpose=row_dict['specimen_purpose'],
-                                                                                    result_treated_SCO=row_dict['result_treated_SCO'],
-                                                                                    result_untreated_SCO=row_dict['result_untreated_SCO'],
+                                                                                    result_treated_OD=row_dict['result_treated_OD'],
+                                                                                    result_untreated_OD=row_dict['result_untreated_OD'],
                                                                                     result_AI=row_dict['result_AI'],
                                                                                     result_AI_recalc=row_dict['result_AI_recalc'],
                                                                                     state='pending',
@@ -76,20 +76,20 @@ class VitrosAvidityFileHandler(FileHandler):
 
     def validate(self, panel_id):
         from cephia.models import Specimen, Panel, Assay
-        from assay.models import VitrosAvidityResultRow, VitrosAvidityResult, PanelMembership
+        from assay.models import BioRadAvidityJHUResultRow, BioRadAvidityJHUResult, PanelMembership
 
         rows_validated = 0
         rows_failed = 0
 
-        for vitros_result_row in VitrosAvidityResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for biorad_result_row in BioRadAvidityJHUResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=vitros_result_row.assay)
+                assay = Assay.objects.get(name=biorad_result_row.assay)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
@@ -101,16 +101,16 @@ class VitrosAvidityFileHandler(FileHandler):
                 if error_msg:
                     raise Exception(error_msg)
 
-                vitros_result_row.state = 'validated'
-                vitros_result_row.error_message = ''
+                biorad_result_row.state = 'validated'
+                biorad_result_row.error_message = ''
                 rows_validated += 1
-                vitros_result_row.save()
+                biorad_result_row.save()
             except Exception, e:
                 logger.exception(e)
-                vitros_result_row.state = 'error'
-                vitros_result_row.error_message = e.message
+                biorad_result_row.state = 'error'
+                biorad_result_row.error_message = e.message
                 rows_failed += 1
-                vitros_result_row.save()
+                biorad_result_row.save()
                 continue
 
         if rows_failed > 0:
@@ -125,53 +125,53 @@ class VitrosAvidityFileHandler(FileHandler):
 
     def process(self, panel_id):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import VitrosAvidityResultRow, VitrosAvidityResult, AssayResult
+        from assay.models import BioRadAvidityJHUResultRow, BioRadAvidityJHUResult, AssayResult
 
         rows_inserted = 0
         rows_failed = 0
 
-        for vitros_result_row in VitrosAvidityResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+        for biorad_result_row in BioRadAvidityJHUResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=vitros_result_row.assay)
+                    assay = Assay.objects.get(name=biorad_result_row.assay)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
                     assay_result = AssayResult.objects.create(panel=panel,
                                                               assay=assay,
                                                               specimen=specimen,
-                                                              test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=vitros_result_row.result_AI_recalc)
+                                                              test_date=datetime.strptime(biorad_result_row.test_date, '%Y-%m-%d').date(),
+                                                              result=biorad_result_row.result_AI)
 
-                    vitros_result = VitrosAvidityResult.objects.create(specimen=specimen,
-                                                                             assay=assay,
-                                                                             laboratory=Laboratory.objects.get(name=vitros_result_row.laboratory),
-                                                                             test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                                             operator=vitros_result_row.operator,
-                                                                             assay_kit_lot=vitros_result_row.assay_kit_lot,
-                                                                             plate_identifier=vitros_result_row.plate_identifier,
-                                                                             test_mode=vitros_result_row.test_mode,
-                                                                             well=vitros_result_row.well,
-                                                                             specimen_purpose=vitros_result_row.specimen_purpose,
-                                                                             result_treated_SCO=vitros_result_row.result_treated_SCO,
-                                                                             result_untreated_SCO=vitros_result_row.result_untreated_SCO,
-                                                                             result_AI=vitros_result_row.result_AI,
-                                                                             result_AI_recalc=vitros_result_row.result_AI_recalc,
-                                                                             assay_result=assay_result)
+                    biorad_result = BioRadAvidityJHUResult.objects.create(specimen=specimen,
+                                                                          assay=assay,
+                                                                          laboratory=Laboratory.objects.get(name=biorad_result_row.laboratory),
+                                                                          test_date=datetime.strptime(biorad_result_row.test_date, '%Y-%m-%d').date(),
+                                                                          operator=biorad_result_row.operator,
+                                                                          assay_kit_lot=biorad_result_row.assay_kit_lot,
+                                                                          plate_identifier=biorad_result_row.plate_identifier,
+                                                                          test_mode=biorad_result_row.test_mode,
+                                                                          well=biorad_result_row.well,
+                                                                          specimen_purpose=biorad_result_row.specimen_purpose,
+                                                                          result_treated_OD=biorad_result_row.result_treated_OD,
+                                                                          result_untreated_OD=biorad_result_row.result_untreated_OD,
+                                                                          result_AI=biorad_result_row.result_AI,
+                                                                          result_AI_recalc=biorad_result_row.result_AI_recalc,
+                                                                          assay_result=assay_result)
 
-                    vitros_result_row.state = 'processed'
-                    vitros_result_row.date_processed = timezone.now()
-                    vitros_result_row.error_message = ''
-                    vitros_result_row.save()
+                    biorad_result_row.state = 'processed'
+                    biorad_result_row.date_processed = timezone.now()
+                    biorad_result_row.error_message = ''
+                    biorad_result_row.save()
                     rows_inserted += 1
 
             except Exception, e:
                 logger.exception(e)
-                vitros_result_row.state = 'error'
-                vitros_result_row.error_message = e.message
-                vitros_result_row.save()
+                biorad_result_row.state = 'error'
+                biorad_result_row.error_message = e.message
+                biorad_result_row.save()
                 rows_failed += 1
                 continue
 

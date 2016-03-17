@@ -82,12 +82,24 @@ class AssayResult(models.Model):
     class Meta:
         db_table = "cephia_assay_results"
 
+
+    UNIT_CHOICES = (
+        ('ODn','Normalised Optical Density'),
+        ('OD','Optical Density'),
+        ('SCO','Signal/Cutoff Ratio'),
+        ('AI','Avidity Index'),
+        ('GeeniusIndex','Geenius Index'),
+        ('LuminexIndex','Luminex Index'),
+        ('IDEV3Conclusion','IDE-V3 Conclusion'),
+    )
+
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
     reported_date = models.DateField(null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
     result = models.FloatField(null=True, blank=False)
+    result_unit = models.CharField(max_length=10, null=True, blank=False, choices=UNIT_CHOICES)
 
     def __unicode__(self):
         return self.specimen
@@ -124,12 +136,13 @@ class BaseAssayResultRow(ImportedRow):
     test_mode = models.CharField(max_length=255, null=False, blank=True)
     well = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
+    assay_result = models.ForeignKey(AssayResult, null=False, blank=False, db_index=True)
 
 
 class LagSediaResultRow(BaseAssayResultRow):
 
     class Meta:
-        db_table = "lag_sedia_row"
+        db_table = "lagsedia_row"
 
     result_OD = models.CharField(max_length=255, null=False, blank=True)
     result_calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
@@ -147,7 +160,6 @@ class LagSediaResult(BaseAssayResult):
     result_OD = models.FloatField(null=True, blank=False)
     result_calibrator_OD = models.FloatField(null=True, blank=False)
     result_ODn = models.FloatField(null=True, blank=False)
-    assay_result = models.ForeignKey(AssayResult, null=False, blank=False, db_index=True)
 
     def __unicode__(self):
         return self.specimen
@@ -261,7 +273,7 @@ class BioRadAvidityJHUResult(BaseAssayResult):
     result_AI_recalc = models.FloatField(null=True, blank=False)
 
 
-class BioRadAvidityGLASGOWResultRow(BaseAssayResultRow):
+class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
 
     class Meta:
         db_table = "biorad_avidity_glasgow_row"
@@ -270,6 +282,8 @@ class BioRadAvidityGLASGOWResultRow(BaseAssayResultRow):
     result_untreated_OD = models.CharField(max_length=255, null=False, blank=True)
     result_AI = models.CharField(max_length=255, null=False, blank=True)
     result_AI_recalc = models.CharField(max_length=255, null=False, blank=True)
+    result_clasification = models.CharField(max_length=255, null=False, blank=True)
+    dilution = models.CharField(max_length=255, null=False, blank=True)
 
 
 class BioRadAvidityGlasgowResult(BaseAssayResult):
@@ -280,6 +294,8 @@ class BioRadAvidityGlasgowResult(BaseAssayResult):
     result_untreated_OD = models.FloatField(null=True, blank=False)
     result_AI = models.FloatField(null=True, blank=False)
     result_AI_recalc = models.FloatField(null=True, blank=False)
+    result_clasification = models.CharField(max_length=255, null=False, blank=True)
+    dilution = models.CharField(max_length=255, null=False, blank=True)
 
 
 class VitrosAvidityResultRow(BaseAssayResultRow):
@@ -304,7 +320,7 @@ class VitrosAvidityResult(BaseAssayResult):
     result_AI_recalc = models.FloatField(null=True, blank=False)
 
 
-class LSVitrosDiluentResultrow(BaseAssayResultRow):
+class LSVitrosDiluentResultRow(BaseAssayResultRow):
 
     class Meta:
         db_table = "lsvitros_diluent_row"
@@ -320,7 +336,7 @@ class LSVitrosDiluentResult(BaseAssayResult):
     result_SCO = models.FloatField(null=True, blank=False)
 
 
-class LSVitrosPlasmaResultrow(BaseAssayResultRow):
+class LSVitrosPlasmaResultRow(BaseAssayResultRow):
 
     class Meta:
         db_table = "lsvitros_plasma_row"

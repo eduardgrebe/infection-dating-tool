@@ -7,7 +7,7 @@ from transfer_in_file_handler import TransferInFileHandler
 from aliquot_file_handler import AliquotFileHandler
 from transfer_out_file_handler import TransferOutFileHandler
 
-#TEST
+#DIAGNOSTIC TESTS
 from panel_membership_file_handler import PanelMembershipFileHandler
 from panel_shipment_file_handler import PanelShipmentFileHandler
 from protocol_lookup_file_handler import ProtocolLookupFileHandler
@@ -16,17 +16,20 @@ from diagnostic_test_file_handler import DiagnosticTestFileHandler
 from test_properties_file_handler import TestPropertyFileHandler
 
 #ASSAY
-from lag_file_handler import LagFileHandler
-from architect_file_handler import ArchitectFileHandler
-from biorad_file_handler import BioRadFileHandler
-from vitros_file_handler import VitrosFileHandler
-from ls_vitros_file_handler import LSVitrosFileHandler
-from geenius_file_handler import GeeniusFileHandler
+from architect_avidity_file_handler import ArchitectAvidityFileHandler
+from architect_unmodified_file_handler import ArchitectUnmodifiedFileHandler
 from bed_file_handler import BEDFileHandler
+from biorad_cdc_file_handler import BioRadCDCFileHandler
+from biorad_glasgow_file_handler import BioRadGlasgowFileHandler
+from biorad_jhu_file_handler import BioRadJHUFileHandler
+from geenius_file_handler import GeeniusFileHandler
+from ide_v3_file_handler import IDEV3FileHandler
+from lag_maxim_file_handler import LagMaximFileHandler
+from lag_sedia_file_handler import LagSediaFileHandler
+from lsvitros_diluent_file_handler import LSVitrosDiluentFileHandler
+from lsvitros_plasma_file_handler import LSVitrosPlasmaFileHandler
 from luminex_file_handler import LuminexFileHandler
-from ide_file_handler import IDEFileHandler
-from duke_file_handler import DukeFileHandler
-
+from vitros_file_handler import VitrosAvidityFileHandler
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +57,21 @@ register_file_handler("test_property", TestPropertyFileHandler, None)
 
 register_file_handler("panel_shipment", PanelShipmentFileHandler, None)
 register_file_handler("panel_membership", PanelMembershipFileHandler, None)
-register_file_handler("assay", LagFileHandler, 'LAg')
-register_file_handler("assay", BioRadFileHandler, 'BioRadAvidity-CDC')
-register_file_handler("assay", BioRadFileHandler, 'BioRadAvidity-JHU')
+
+register_file_handler("assay", ArchitectAvidityFileHandler
+register_file_handler("assay", ArchitectUnmodifiedFileHandler
+register_file_handler("assay", BEDFileHandler
+register_file_handler("assay", BioRadCDCFileHandler
+register_file_handler("assay", BioRadGlasgowFileHandler
+register_file_handler("assay", BioRadJHUFileHandler
+register_file_handler("assay", GeeniusFileHandler
+register_file_handler("assay", IDEV3FileHandler
+register_file_handler("assay", LagMaximFileHandler
+register_file_handler("assay", LagSediaFileHandler
+register_file_handler("assay", LSVitrosDiluentFileHandler
+register_file_handler("assay", LSVitrosPlasmaFileHandler
+register_file_handler("assay", LuminexFileHandler
+register_file_handler("assay", VitrosAvidityFileHandler
 
 #register_file_handler("assay", ArchitectFileHandler, 'Architect')
 #register_file_handler("assay", VitrosFileHandler, 'Vitros')

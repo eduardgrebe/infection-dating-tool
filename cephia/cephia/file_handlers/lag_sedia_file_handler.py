@@ -5,11 +5,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class BEDFileHandler(FileHandler):
+class LagFileHandler(FileHandler):
     upload_file = None
 
     def __init__(self, upload_file):
-        super(BEDFileHandler, self).__init__(upload_file)
+        super(LagFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['specimen_label',
                                    'assay',
@@ -23,11 +23,10 @@ class BEDFileHandler(FileHandler):
                                    'specimen_purpose',
                                    'result_OD',
                                    'result_calibrator_OD',
-                                   'result_ODn',
-                                   'result_ODn_recalc']
+                                   'result_ODn']
 
     def parse(self):
-        from assay.models import BEDResultRow
+        from assay.models import LagResultRow
         rows_inserted = 0
         rows_failed = 0
 
@@ -37,7 +36,7 @@ class BEDFileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
 
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    bed_result_row = BEDResultRow.objects.create(specimen_label=row_dict['specimen_label'],
+                    lag_result_row = LagResultRow.objects.create(specimen_label=row_dict['specimen_label'],
                                                                  assay=row_dict['assay'],
                                                                  laboratory=row_dict['laboratory'],
                                                                  test_date=row_dict['test_date'],
@@ -50,7 +49,6 @@ class BEDFileHandler(FileHandler):
                                                                  result_OD=row_dict['result_OD'],
                                                                  result_calibrator_OD=row_dict['result_calibrator_OD'],
                                                                  result_ODn=row_dict['result_ODn'],
-                                                                 result_ODn_recalc=row_dict['result_ODn_recalc'],
                                                                  state='pending',
                                                                  fileinfo=self.upload_file)
 
@@ -73,20 +71,20 @@ class BEDFileHandler(FileHandler):
 
     def validate(self, panel_id):
         from cephia.models import Specimen, Panel, Assay
-        from assay.models import BEDResultRow, BEDResult, PanelMembership
+        from assay.models import LagResultRow, LagResult, PanelMembership
 
         rows_validated = 0
         rows_failed = 0
 
-        for bed_result_row in BEDResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for lag_result_row in LagResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=bed_result_row.assay)
+                assay = Assay.objects.get(name=lag_result_row.assay)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lag_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
@@ -98,16 +96,16 @@ class BEDFileHandler(FileHandler):
                 if error_msg:
                     raise Exception(error_msg)
 
-                bed_result_row.state = 'validated'
-                bed_result_row.error_message = ''
+                lag_result_row.state = 'validated'
+                lag_result_row.error_message = ''
                 rows_validated += 1
-                bed_result_row.save()
+                lag_result_row.save()
             except Exception, e:
                 logger.exception(e)
-                bed_result_row.state = 'error'
-                bed_result_row.error_message = e.message
+                lag_result_row.state = 'error'
+                lag_result_row.error_message = e.message
                 rows_failed += 1
-                bed_result_row.save()
+                lag_result_row.save()
                 continue
 
         if rows_failed > 0:
@@ -122,53 +120,52 @@ class BEDFileHandler(FileHandler):
 
     def process(self, panel_id):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import BEDResultRow, BEDResult, AssayResult
+        from assay.models import LagResultRow, LagResult, AssayResult
 
         rows_inserted = 0
         rows_failed = 0
 
-        for bed_result_row in BEDResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+        for lag_result_row in LagResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=bed_result_row.assay)
+                    assay = Assay.objects.get(name=lag_result_row.assay)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lag_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
                     assay_result = AssayResult.objects.create(panel=panel,
                                                               assay=assay,
                                                               specimen=specimen,
-                                                              test_date=datetime.strptime(bed_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=float(bed_result_row.result_ODn_recalc))
+                                                              test_date=datetime.strptime(lag_result_row.test_date, '%Y-%m-%d').date(),
+                                                              result=float(lag_result_row.result_ODn))
 
-                    bed_result = BEDResult.objects.create(specimen=specimen,
+                    lag_result = LagResult.objects.create(specimen=specimen,
                                                           assay=assay,
-                                                          laboratory=Laboratory.objects.get(name=bed_result_row.laboratory),
-                                                          test_date=datetime.strptime(bed_result_row.test_date, '%Y-%m-%d').date(),
-                                                          operator=bed_result_row.operator,
-                                                          assay_kit_lot=bed_result_row.assay_kit_lot,
-                                                          plate_identifier=bed_result_row.plate_identifier,
-                                                          test_mode=bed_result_row.test_mode,
-                                                          well=bed_result_row.well,
-                                                          specimen_purpose=bed_result_row.specimen_purpose,
-                                                          result_OD=float(bed_result_row.result_OD),
-                                                          result_calibrator_OD=float(bed_result_row.result_calibrator_OD),
-                                                          result_ODn=float(bed_result_row.result_ODn),
-                                                          result_ODn_recalc=float(bed_result_row.result_ODn_recalc),
+                                                          laboratory=Laboratory.objects.get(name=lag_result_row.laboratory),
+                                                          test_date=datetime.strptime(lag_result_row.test_date, '%Y-%m-%d').date(),
+                                                          operator=lag_result_row.operator,
+                                                          assay_kit_lot=lag_result_row.assay_kit_lot,
+                                                          plate_identifier=lag_result_row.plate_identifier,
+                                                          test_mode=lag_result_row.test_mode,
+                                                          well=lag_result_row.well,
+                                                          specimen_purpose=lag_result_row.specimen_purpose,
+                                                          result_OD=float(lag_result_row.result_OD),
+                                                          result_calibrator_OD=float(lag_result_row.result_calibrator_OD),
+                                                          result_ODn=float(lag_result_row.result_ODn),
                                                           assay_result=assay_result)
 
-                    bed_result_row.state = 'processed'
-                    bed_result_row.date_processed = timezone.now()
-                    bed_result_row.error_message = ''
-                    bed_result_row.save()
+                    lag_result_row.state = 'processed'
+                    lag_result_row.date_processed = timezone.now()
+                    lag_result_row.error_message = ''
+                    lag_result_row.save()
                     rows_inserted += 1
 
             except Exception, e:
                 logger.exception(e)
-                bed_result_row.state = 'error'
-                bed_result_row.error_message = e.message
-                bed_result_row.save()
+                lag_result_row.state = 'error'
+                lag_result_row.error_message = e.message
+                lag_result_row.save()
                 rows_failed += 1
                 continue
 
@@ -178,6 +175,6 @@ class BEDFileHandler(FileHandler):
             self.upload_file.state = 'processed'
         fail_msg = 'Failed to process ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully processed ' + str(rows_inserted) + ' rows.'
-
+        
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()

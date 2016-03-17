@@ -2,8 +2,11 @@ from django import forms
 from cephia.models import (FileInfo, SubjectRow, Ethnicity,
                            VisitRow, Specimen, TransferInRow,
                            TransferOutRow, AliquotRow, ImportedRowComment, Assay)
-from assay.models import (PanelMembershipRow, PanelShipmentRow, LagResultRow,
-                          GeeniusResultRow, BEDResultRow, ArchitectResultRow, LSVitrosResultRow)
+from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodifiedResultRow,
+                          ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
+                          BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
+                          LSVitrosPlasmaResultRow, GeeniusResultRow, BEDResultRow, LuminexCDCResultRow,
+                          IDEV3ResultRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 
 class BaseFilterForm(forms.Form):
