@@ -22,6 +22,7 @@
     </li>
     {% if user.is_staff %}
     <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
+    <li><a class="navtab" href="{% url 'assay:panels' %}">Panels</a></li>
     {% endif %}
     {% endif %}
   </ul>

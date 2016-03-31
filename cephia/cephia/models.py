@@ -1,7 +1,6 @@
 # encoding: utf-8
 from lib.fields import ProtectedForeignKey
 from django.db import models
-from django import forms
 from django.conf import settings
 import os
 from file_handlers.file_handler_register import *
@@ -97,6 +96,53 @@ class Subtype(models.Model):
     name = models.CharField(max_length=30, null=False, blank=False)
 
 
+class Assay(models.Model):
+    class Meta:
+        db_table = "cephia_assay"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+    long_name = models.CharField(max_length=255, null=False, blank=False)
+    developer = models.CharField(max_length=255, null=False, blank=False)
+    description = models.CharField(max_length=255, null=False, blank=False)
+
+    def __unicode__(self):
+        return "%s" % (self.name)
+
+class SpecimenType(models.Model):
+
+    class Meta:
+        db_table = "cephia_specimen_types"
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+    spec_type = models.CharField(max_length=10, null=False, blank=False)
+    spec_group = models.IntegerField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+class Panel(models.Model):
+
+    class Meta:
+        db_table = "cephia_panels"
+
+    short_name = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=False)
+    specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=False, db_index=True)
+    volume = models.FloatField(null=True, blank=True)
+    n_recent = models.IntegerField(null=True, blank=False)
+    n_longstanding = models.IntegerField(null=True, blank=False)
+    n_challenge = models.IntegerField(null=True, blank=False)
+    n_reproducibility_controls = models.IntegerField(null=True, blank=False)
+    n_negative = models.IntegerField(null=True, blank=False)
+    n_total = models.IntegerField(null=True, blank=False)
+    blinded = models.NullBooleanField()
+    notes = models.TextField(null=True, blank=False)
+
+    def __unicode__(self):
+        return self.short_name
+
+
 class FileInfo(models.Model):
 
     class Meta:
@@ -116,6 +162,9 @@ class FileInfo(models.Model):
         ('transfer_in','Transfer In'),
         ('aliquot','Aliquot'),
         ('transfer_out','Transfer Out'),
+        ('assay','Assay'),
+        ('panel_shipment','Panel Shipment'),
+        ('panel_membership','Panel Membership'),
         ('diagnostic_test','Diagnostic Test'),
         ('protocol_lookup','Protocol Lookup'),
         ('test_history','Diagnostic Test History'),
@@ -124,6 +173,8 @@ class FileInfo(models.Model):
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
+    assay = ProtectedForeignKey(Assay, db_index=True, default=None, null=True)
+    panel = ProtectedForeignKey(Panel, db_index=True, default=None, null=True)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     priority = models.IntegerField(null=False, blank=False, default=1)
@@ -137,19 +188,31 @@ class FileInfo(models.Model):
         return os.path.basename(self.data_file.name)
 
     def get_handler(self):
-        return get_file_handler_for_type(self.file_type)(self)
+        if self.assay:
+            return get_file_handler_for_type(self.file_type, self.assay.name)(self)
+        else:
+            return get_file_handler_for_type(self.file_type, None)(self)
 
     def get_row(self, row_id):
         if self.file_type == 'subject':
             return SubjectRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'visit':
+        elif self.file_type == 'visit':
             return VisitRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'transfer_in':
+        elif self.file_type == 'transfer_in':
             return TransferInRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'aliquot':
+        elif self.file_type == 'aliquot':
             return AliquotRow.objects.get(fileinfo__id=self.id, id=row_id)
-        if self.file_type == 'transfer_out':
+        elif self.file_type == 'transfer_out':
             return TransferOutRow.objects.get(fileinfo__id=self.id, id=row_id)
+        elif self.file_type == 'panel_membership':
+            return PanelMembershipRow.objects.get(fileinfo__id=self.id, id=row_id)
+        elif self.file_type == 'panel_shipment':
+            return PanelShipmentRow.objects.get(fileinfo__id=self.id, id=row_id)
+        elif self.file_type == 'assay':
+            if self.assay.name == 'lag':
+                return LagResultRow.objects.get(fileinfo__id=self.id, id=row_id)
+            elif self.assay.name == 'biorad':
+                return BioradResultRow.objects.get(fileinfo__id=self.id, id=row_id)
 
     def get_extension(self):
         return self.filename().split('.')[-1]
@@ -395,17 +458,7 @@ class VisitRow(ImportedRow):
         return self.subject_label
 
 
-class SpecimenType(models.Model):
 
-    class Meta:
-        db_table = "cephia_specimen_types"
-
-    name = models.CharField(max_length=255, null=False, blank=False)
-    spec_type = models.CharField(max_length=10, null=False, blank=False)
-    spec_group = models.IntegerField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
 
 
 class Specimen(models.Model):
@@ -529,25 +582,3 @@ class AliquotRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_label
-
-class Panel(models.Model):
-
-    class Meta:
-        db_table = "cephia_panels"
-
-    name = models.CharField(max_length=255, null=True, blank=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
-    specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=False, db_index=True)
-    volume = models.FloatField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
-
-class PanelMemberships(models.Model):
-
-    class Meta:
-        db_table = "cephia_panel_memberships"
-
-    visit = ProtectedForeignKey(Visit, null=True, blank=False, db_index=True)
-    panel = ProtectedForeignKey(Panel, null=True, blank=False, db_index=True)
-    replicates = models.IntegerField(null=True, blank=True)

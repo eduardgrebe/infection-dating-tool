@@ -1,0 +1,57 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block filter_content %}
+{% endblock %}
+
+{% block page_content %}
+
+{% paginate panel_results %}
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Panel Results</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <ul class="nav nav-pills">
+            <li role="presentation"><a href="#">All</a></li>
+            {% for assay in assays %}
+            <li role="presentation"><a href="#">{{assay.name}}</a></li>
+            {% endfor %}
+          </ul>
+          <div class="container"
+               {% show_pages %}
+            <div class="table-responsive">
+              <table class="table-striped table table-hover" style="overflow:auto;">
+                <thead>
+                  <th>Panel</th>
+                  <th>Assay</th>
+                  <th>Specimen Label</th>
+                  <th>Test Date</th>
+                  <th>Result</th>
+                  <th></th>
+                </thead>
+                <tbody>
+                  {% for result in panel_results %}
+                  <tr>
+                    <td>{{result.panel.name}}</td>
+                    <td>{{result.assay.name}}</td>
+                    <td>{{result.specimen.specimen_label}}</td>
+                    <td>{{result.test_date}}</td>
+                    <td>{{result.result}}</td>
+                    <td><a href="#" target="_blank">View Results</a></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

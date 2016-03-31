@@ -1,0 +1,21 @@
+short_name,name,description,specimen_type_id,n_recent,n_longstanding,n_challenge,n_reproducibility_controls,n_negative,n_total,blinded,notes
+C1DP,CEPHIA 1 Development Panel,,10,15,35,0,0,0,50,0,
+C2DP-Plasma,Standard Development Panel (Plasma version),,10,16,35,0,0,14,75,0,
+C2DP-PBMC,Standard Development Panel (PBMC version),,9,16,35,0,0,14,75,0,
+HRBS-Plasma,HIV Recency Biomarker Screening Panel (Plasma version),,10,25,50,25,0,25,125,0,
+HRBS-Urine,HIV Recency Biomarker Screening Panel (Urine version),,4,25,50,25,0,25,125,0,"Actually, not strictly Urine/Nothing - should link to spectype group ""4"""
+HRBS-Stool,HIV Recency Biomarker Screening Panel (Stool version),,6,25,50,25,0,25,125,0,
+HRBS-Saliva,HIV Recency Biomarker Screening Panel (Saliva version),,8,25,50,25,0,25,125,0,
+BGI15,HRBS Subset of Recents for BGI,,10,15,0,0,0,0,15,0,
+Metabolistics-DP1-Urine,Metabolistics Custom Development Panel 1 (Urine version),,4,89,29,25,0,30,173,0,Initial set of 15 recent 15 longstanding 30 negatives sent first
+Metabolistics-DP1-Plasma,Metabolistics Custom Development Panel 1 (Plasma version),,10,89,29,25,0,30,173,0,
+Metabolistics-DP2,Metabolistics Custom Development Panel 2,,10,100,200,0,0,0,300,0,
+VDA,Viral Diversity Panel A,,10,89,11,0,0,0,100,0,At least 1000c/ml VL  - recent means < 1 year
+VDB,Viral Diversity Panel B,,10,100,100,0,0,0,200,0,50/50 Clade B.C - recent 1st yr non-recent 2nd year of infection
+Pitt1,Pitt Panel 1,11 pre-post SC pairs - even spread of timepoints,10,161,0,30,0,11,202,0,
+Pitt2,Pitt Panel 2,,10,180,0,30,0,0,210,0,
+PoC-Plasma,Proof of Concept/Biomarker Validation Panel,,10,150,150,50,0,0,350,1,Being built at the moment
+Metabolistics-PoC,Metabolistics Custom Proof of Concept Panel,,10,100,200,0,0,0,300,0,
+C1QP,CEPHIA 1 Qualification Panel,,10,50,125,25,50,0,250,1,
+C2QP-Plasma,CEPHIA 2 Qualification Panel,Hypothetical at this point,10,50,125,25,0,0,200,1,
+C1EP,CEPHIA 1 Evaluation Panel,,10,,,,75,1,2500,1,

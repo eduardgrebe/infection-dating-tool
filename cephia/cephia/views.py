@@ -284,6 +284,7 @@ def download_file(request, file_id):
 def upload_file(request):
     try:
         FILE_PRIORITIES = {
+            'assay': 0,
             'diagnostic_test': 0,
             'protocol_lookup': 0,
             'test_history': 0,
@@ -297,6 +298,7 @@ def upload_file(request):
 
         if request.method == "POST":
             post_data = request.POST.copy()
+
             if post_data.get("priority"):
                 priority = post_data.get("priority")
                 file_type = [k for k , v in FILE_PRIORITIES.iteritems() if u"%s" % v == priority][0]
