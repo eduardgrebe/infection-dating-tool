@@ -260,9 +260,9 @@ class SubjectEDDI(models.Model):
     class Meta:
         db_table = "cephia_subject_eddi"
         
-    tci_begin = models.DateField(null=True, blank=True)
-    tci_end = models.DateField(null=True, blank=True)
-    tci_size = models.IntegerField(null=True, blank=True)
+    ep_ddi = models.DateField(null=True, blank=True)
+    lp_ddi = models.DateField(null=True, blank=True)
+    interval_size = models.IntegerField(null=True, blank=True)
     edsc_days_difference = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
     recalculate = models.BooleanField(default=False)
@@ -396,10 +396,10 @@ class SubjectRow(ImportedRow):
 class VisitEDDI(models.Model):
     class Meta:
         db_table = "cephia_visit_eddi"
-        
-    tci_begin = models.DateField(null=True, blank=True)
-    tci_end = models.DateField(null=True, blank=True)
-    eddi = models.DateField(null=True, blank=True)
+
+    days_since_eddi = models.IntegerField(null=True)
+    days_since_ep_ddi = models.IntegerField(null=True)
+    days_since_lp_ddi = models.IntegerField(null=True)
 
 
 class Visit(models.Model):
