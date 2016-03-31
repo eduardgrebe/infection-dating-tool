@@ -161,14 +161,14 @@ class IDEV3FileHandler(FileHandler):
                                                             test_mode=ide_result_row.test_mode,
                                                             well=ide_result_row.well,
                                                             specimen_purpose=ide_result_row.specimen_purpose,
-                                                            result_tm_OD=ide_result_row.result_tm_OD
-                                                            result_v3_OD=ide_result_row.result_v3_OD
-                                                            result_ratioTM=ide_result_row.result_ratioTM
-                                                            result_ratioV3=ide_result_row.result_ratioV3
-                                                            result_intermediate=ide_result_row.result_intermediate
-                                                            result_conclusion=ide_result_row.result_conclusion
-                                                            result_conclusion_recalc=ide_result_row.result_conclusion_recalc
-                                                            assay_result=assay_result=ide_result_row.)
+                                                            result_tm_OD=ide_result_row.result_tm_OD,
+                                                            result_v3_OD=ide_result_row.result_v3_OD,
+                                                            result_ratioTM=ide_result_row.result_ratioTM,
+                                                            result_ratioV3=ide_result_row.result_ratioV3,
+                                                            result_intermediate=ide_result_row.result_intermediate,
+                                                            result_conclusion=ide_result_row.result_conclusion,
+                                                            result_conclusion_recalc=ide_result_row.result_conclusion_recalc,
+                                                            assay_result=assay_result)
 
                     ide_result_row.state = 'processed'
                     ide_result_row.date_processed = timezone.now()

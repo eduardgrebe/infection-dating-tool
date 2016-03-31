@@ -19,9 +19,9 @@ from test_properties_file_handler import TestPropertyFileHandler
 from architect_avidity_file_handler import ArchitectAvidityFileHandler
 from architect_unmodified_file_handler import ArchitectUnmodifiedFileHandler
 from bed_file_handler import BEDFileHandler
-from biorad_cdc_file_handler import BioRadCDCFileHandler
-from biorad_glasgow_file_handler import BioRadGlasgowFileHandler
-from biorad_jhu_file_handler import BioRadJHUFileHandler
+from biorad_cdc_file_handler import BioRadAvidityCDCFileHandler
+from biorad_glasgow_file_handler import BioRadAvidityGlasgowFileHandler
+from biorad_jhu_file_handler import BioRadAvidityJHUFileHandler
 from geenius_file_handler import GeeniusFileHandler
 from ide_v3_file_handler import IDEV3FileHandler
 from lag_maxim_file_handler import LagMaximFileHandler
@@ -58,27 +58,17 @@ register_file_handler("test_property", TestPropertyFileHandler, None)
 register_file_handler("panel_shipment", PanelShipmentFileHandler, None)
 register_file_handler("panel_membership", PanelMembershipFileHandler, None)
 
-register_file_handler("assay", ArchitectAvidityFileHandler
-register_file_handler("assay", ArchitectUnmodifiedFileHandler
-register_file_handler("assay", BEDFileHandler
-register_file_handler("assay", BioRadCDCFileHandler
-register_file_handler("assay", BioRadGlasgowFileHandler
-register_file_handler("assay", BioRadJHUFileHandler
-register_file_handler("assay", GeeniusFileHandler
-register_file_handler("assay", IDEV3FileHandler
-register_file_handler("assay", LagMaximFileHandler
-register_file_handler("assay", LagSediaFileHandler
-register_file_handler("assay", LSVitrosDiluentFileHandler
-register_file_handler("assay", LSVitrosPlasmaFileHandler
-register_file_handler("assay", LuminexFileHandler
-register_file_handler("assay", VitrosAvidityFileHandler
-
-#register_file_handler("assay", ArchitectFileHandler, 'Architect')
-#register_file_handler("assay", VitrosFileHandler, 'Vitros')
-#register_file_handler("assay", LSVitrosFileHandler, 'LS-Vitros')
-# register_file_handler("assay", GeeniusFileHandler, 'Geenius')
-# register_file_handler("assay", BEDFileHandler, 'BED')
-# register_file_handler("assay", BioradGlasgowFileHandler, 'BioRad-Avidity-Glasgow')
-# register_file_handler("assay", LuminexFileHandler, 'Luminex')
-# register_file_handler("assay", IDEFileHandler, 'IDE-V3')
-# register_file_handler("assay", DukeFileHandler, 'BioPlex-Duke')
+register_file_handler("assay", ArchitectAvidityFileHandler, 'ArchitectAvidity')
+register_file_handler("assay", ArchitectUnmodifiedFileHandler, 'ArchitectUnmodified')
+register_file_handler("assay", BEDFileHandler, 'BED')
+register_file_handler("assay", BioRadAvidityCDCFileHandler, 'BioRadAvidity-CDC')
+register_file_handler("assay", BioRadAvidityGlasgowFileHandler, 'BioRadAvidity-Glasgow')
+register_file_handler("assay", BioRadAvidityJHUFileHandler, 'BioRadAvidity-JHU')
+register_file_handler("assay", GeeniusFileHandler, 'Geenius')
+register_file_handler("assay", IDEV3FileHandler, 'IDE-V3')
+register_file_handler("assay", LagMaximFileHandler, 'LAg-Maxim')
+register_file_handler("assay", LagSediaFileHandler, 'LAg-Sedia')
+register_file_handler("assay", LSVitrosDiluentFileHandler, 'LSVitros-Diluent')
+register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Plasma')
+register_file_handler("assay", LuminexFileHandler, 'Luminex-CDC')
+register_file_handler("assay", VitrosAvidityFileHandler, 'Vitros')

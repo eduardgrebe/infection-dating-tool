@@ -111,6 +111,8 @@ class BaseAssayResult(models.Model):
 
     specimen = models.ForeignKey(Specimen, null=False, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=False, blank=False, db_index=True)
+    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
+    assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
     laboratory = models.ForeignKey(Laboratory, max_length=255, null=True, blank=False)
     test_date = models.DateField(max_length=255, null=False, blank=True)
     operator = models.CharField(max_length=255, null=False, blank=True)
@@ -136,7 +138,6 @@ class BaseAssayResultRow(ImportedRow):
     test_mode = models.CharField(max_length=255, null=False, blank=True)
     well = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
-    assay_result = models.ForeignKey(AssayResult, null=False, blank=False, db_index=True)
 
 
 class LagSediaResultRow(BaseAssayResultRow):
@@ -186,7 +187,6 @@ class LagMaximResult(BaseAssayResult):
     result_OD = models.FloatField(null=True, blank=False)
     result_calibrator_OD = models.FloatField(null=True, blank=False)
     result_ODn = models.FloatField(null=True, blank=False)
-    assay_result = models.ForeignKey(AssayResult, null=False, blank=False, db_index=True)
 
     def __unicode__(self):
         return self.specimen.specimen_label

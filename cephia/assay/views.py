@@ -140,3 +140,12 @@ def panel_results(request, panel_id=None, template="assay/panel_results.html"):
         context['assays'] = Assay.objects.all()
 
         return render_to_response(template, context, context_instance=RequestContext(request))
+
+def bed_results(request, panel_id=None, template="assay/bed_results.html"):
+    context = {}
+
+    if request.method == 'GET':
+        context['bed_results'] = BEDResult.objects.filter(panel__id=panel_id)
+        context['assays'] = Assay.objects.all()
+
+        return render_to_response(template, context, context_instance=RequestContext(request))

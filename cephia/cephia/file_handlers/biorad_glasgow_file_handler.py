@@ -55,7 +55,7 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                                                                                     result_AI=row_dict['result_AI'],
                                                                                     result_AI_recalc=row_dict['result_AI_recalc'],
                                                                                     result_clasification=row_dict['result_clasification'],
-                                                                                    dilution=row_dict['dilution']
+                                                                                     dilution=row_dict['dilution'],
                                                                                     state='pending',
                                                                                     fileinfo=self.upload_file)
 
@@ -164,7 +164,7 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                                                                               result_AI=biorad_result_row.result_AI,
                                                                               result_AI_recalc=biorad_result_row.result_AI_recalc,
                                                                               result_clasification=biorad_result_row.result_clasification,
-                                                                              dilution=biorad_result_row.dilution
+                                                                              dilution=biorad_result_row.dilution,
                                                                               assay_result=assay_result)
 
                     biorad_result_row.state = 'processed'

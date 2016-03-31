@@ -5,11 +5,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class LagFileHandler(FileHandler):
+class LagMaximFileHandler(FileHandler):
     upload_file = None
 
     def __init__(self, upload_file):
-        super(LagFileHandler, self).__init__(upload_file)
+        super(LagMaximFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['specimen_label',
                                    'assay',
