@@ -1,7 +1,8 @@
 from django import forms
 from cephia.models import (FileInfo, SubjectRow, Ethnicity,
                            VisitRow, Specimen, TransferInRow,
-                           TransferOutRow, AliquotRow, ImportedRowComment, Assay)
+                           TransferOutRow, AliquotRow, ImportedRowComment, Assay,
+                           Laboratory)
 from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodifiedResultRow,
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
@@ -21,6 +22,9 @@ class BaseFilterForm(forms.Form):
 
 
 class FileInfoForm(forms.ModelForm):
+
+    laboratory = forms.ChoiceField(required=False)
+
     class Meta:
         model = FileInfo
         fields = ['data_file','file_type', 'assay', 'priority', 'panel']
@@ -29,14 +33,18 @@ class FileInfoForm(forms.ModelForm):
             'priority':forms.HiddenInput(),
             'panel':forms.HiddenInput(),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super(FileInfoForm, self).__init__(*args, **kwargs)
         for key in self.fields:
             self.fields[key].required = True
-            
+
         self.fields['panel'].required = False
         self.fields['assay'].required = False
+
+        lab_choices = [('','---------')]
+        [ lab_choices.append((x.id, x.name)) for x in Laboratory.objects.all() ]
+        self.fields['laboratory'].choices = lab_choices
 
 
 class RowCommentForm(forms.ModelForm):

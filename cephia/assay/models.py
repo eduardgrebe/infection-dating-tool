@@ -1,7 +1,8 @@
 # encoding: utf-8
 from django.db import models
 from cephia.models import (Visit, Specimen, SpecimenType, ImportedRow,
-                           Assay, Laboratory, Panel)
+                           Assay, Laboratory, Panel, FileInfo)
+from lib.fields import ProtectedForeignKey
 import logging
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,19 @@ class PanelShipment(models.Model):
     def __unicode__(self):
         return self.specimen
 
+
+class AssayRun(models.Model):
+    class Meta:
+        db_table = "cephia_assay_runs"
+
+    panel = ProtectedForeignKey(Panel, null=False, db_index=True)
+    assay = ProtectedForeignKey(Assay, null=False, db_index=True)
+    laboratory = ProtectedForeignKey(Laboratory, null=False, db_index=True)
+    fileinfo = ProtectedForeignKey(FileInfo, null=False, db_index=True)
+    run_date = models.DateField(null=False)
+    comment = models.CharField(max_length=255, null=True, blank=False)
+
+
 class AssayResult(models.Model):
 
     class Meta:
@@ -96,6 +110,7 @@ class AssayResult(models.Model):
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
+    assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
     reported_date = models.DateField(null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
     result = models.FloatField(null=True, blank=False)
@@ -111,9 +126,7 @@ class BaseAssayResult(models.Model):
 
     specimen = models.ForeignKey(Specimen, null=False, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=False, blank=False, db_index=True)
-    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
-    laboratory = models.ForeignKey(Laboratory, max_length=255, null=True, blank=False)
     test_date = models.DateField(max_length=255, null=False, blank=True)
     operator = models.CharField(max_length=255, null=False, blank=True)
     assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
@@ -121,6 +134,7 @@ class BaseAssayResult(models.Model):
     test_mode = models.CharField(max_length=255, null=False, blank=True)
     well = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
+    assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
 
 
 class BaseAssayResultRow(ImportedRow):

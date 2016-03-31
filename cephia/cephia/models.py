@@ -457,10 +457,6 @@ class VisitRow(ImportedRow):
     def __unicode__(self):
         return self.subject_label
 
-
-
-
-
 class Specimen(models.Model):
 
     VISIT_LINKAGE_CHOICES = (

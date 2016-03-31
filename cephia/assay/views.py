@@ -11,6 +11,7 @@ from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership
 from cephia.models import Assay
 import json
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +103,14 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
             result_file = file_info_form.save()
             result_file.get_handler().parse()
             result_file.get_handler().validate(panel_id)
-            result_file.get_handler().process(panel_id)
+
+            assay_run = AssayRun.objects.create(panel=result_file.panel,
+                                                assay=result_file.assay,
+                                                laboratory=Laboratory.objects.get(pk=request.POST['laboratory']),
+                                                fileinfo=result_file,
+                                                run_date=timezone.now())
+
+            result_file.get_handler().process(panel_id, assay_run)
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to uploaded file')

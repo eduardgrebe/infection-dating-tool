@@ -51,9 +51,9 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
             writer.writerow(headers)
             for subject in subjects:
                 writer.writerow( [ subject.subject_label,
-                                   subject.subject_eddi.tci_begin if subject.subject_eddi else None,
-                                   subject.subject_eddi.tci_end if subject.subject_eddi else None,
-                                   subject.subject_eddi.tci_size if subject.subject_eddi else None,
+                                   subject.subject_eddi.ep_ddi if subject.subject_eddi else None,
+                                   subject.subject_eddi.lp_ddi if subject.subject_eddi else None,
+                                   subject.subject_eddi.interval_size if subject.subject_eddi else None,
                                    subject.subject_eddi.eddi if subject.subject_eddi else None,
                                    subject.cohort_entry_date,
                                    subject.cohort_entry_hiv_status,
