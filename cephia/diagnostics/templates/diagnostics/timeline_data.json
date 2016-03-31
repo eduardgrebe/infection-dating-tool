@@ -4,22 +4,22 @@
         "id":"{{subject.id}}",
         "title":"Subject - {{subject.subject_label}} Diagnostic Test Timeline",
         "description":"",
-        "focus_date":"{{subject.subject_eddi.tci_begin|date:'Y-m-d'}}",
+        "focus_date":"{{subject.subject_eddi.ep_ddi|date:'Y-m-d'}}",
         "image_lane_height":0,
         "events":[
             {
                 "id":"{{test.id}}_excluded",
                 "title": "",
-                "description":"Viral Detection Window",
-                "startdate": "{{subject.subject_eddi.tci_begin|date:'Y-m-d'}}",
-                "enddate": "{{subject.subject_eddi.tci_end|date:'Y-m-d'}}",
+                "description":"DDI Interval",
+                "startdate": "{{subject.subject_eddi.ep_ddi|date:'Y-m-d'}}",
+                "enddate": "{{subject.subject_eddi.lp_ddi|date:'Y-m-d'}}",
                 "importance":"50",
                 "date_display":"ye",
                 "y_position":5,
                 "link":"",
-                "icon":"star_gray.png",
+                "icon":""
                 "css_class":"vdw"
-            },            
+            },
             {% for test in tests %}
             {
                 "id":"{{test.id}}_excluded",
@@ -49,8 +49,7 @@
         ],
         "legend": [
             {"title":"negative", "icon":"triangle_left_green.png"},
-            {"title":"positive", "icon":"triangle_red.png"},
-            {"title":"VDW", "icon":"star_gray.png"}
+            {"title":"positive", "icon":"triangle_red.png"}
         ]
         
     }

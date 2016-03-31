@@ -41,9 +41,9 @@
             <table class="table-striped table table-hover" style="overflow:auto;">
               <thead>
                 <th>Subject</th>
-                <th>VDW Begin</th>
-                <th>VDW End</th>
-                <th>VDW Size</th>
+                <th>EP DDI</th>
+                <th>LP DDI</th>
+                <th>Interval Size</th>
                 <th>EDDI</th>
                 <th>Cohort Entry</th>
                 <th>Entry Status</th>
@@ -56,9 +56,9 @@
                 {% for subject in subjects %}
                 <tr data-subject-id="{{subject.id}}" >
 	              <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
-	              <td>{{subject.subject_eddi.tci_begin}}</td>
-	              <td>{{subject.subject_eddi.tci_end}}</td>
-                  <td>{{subject.subject_eddi.tci_size}}</td>
+	              <td>{{subject.subject_eddi.ep_ddi}}</td>
+	              <td>{{subject.subject_eddi.lp_ddi}}</td>
+                  <td>{{subject.subject_eddi.interval_size}}</td>
 	              <td>{{subject.subject_eddi.eddi}}</td>
                   <td>{{subject.cohort_entry_date}}</td>
                   <td>{{subject.cohort_entry_hiv_status}}</td>

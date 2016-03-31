@@ -127,25 +127,25 @@ class TestHistoryFileHandler(FileHandler):
                     subject_row_error.save()
         except Exception, e:
             pass
-        
+
         for subject_label in DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
             with transaction.atomic():
                 DiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
-                try:        
+                try:
                     for test_history_row in DiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
                         test_history = DiagnosticTestHistory.objects.create(subject=Subject.objects.get(subject_label=test_history_row.subject),
                                                                             test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
                                                                             test_result=test_history_row.test_result,
                                                                             test=ProtocolLookup.objects.get(name=test_history_row.test_code,
                                                                                                             protocol=test_history_row.protocol).test)
-                        
+
                         if not test_history.subject.subject_eddi:
                             test_history.subject.subject_eddi = SubjectEDDI.objects.create()
                             test_history.subject.save()
                         else:
-                            test_history.subject.subject_eddi.tci_begin = None
-                            test_history.subject.subject_eddi.tci_end = None
-                            test_history.subject.subject_eddi.tci_size = None
+                            test_history.subject.subject_eddi.ep_ddi = None
+                            test_history.subject.subject_eddi.lp_ddi = None
+                            test_history.subject.subject_eddi.interval_size = None
                             test_history.subject.subject_eddi.eddi = None
 
                         test_history.subject.subject_eddi.recalculate = True
@@ -153,7 +153,7 @@ class TestHistoryFileHandler(FileHandler):
                         test_property = TestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
                         test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
                         test_history.save()
-                        
+
                         test_history_row.state = 'processed'
                         test_history_row.error_message = ''
                         test_history_row.date_processed = timezone.now()
