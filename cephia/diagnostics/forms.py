@@ -35,6 +35,12 @@ class SubjectEDDIFilterForm(BaseFilterForm):
         ('resolved','Resolved'),
         ('other','Other'),
     )
+
+    EDDI_CHOICES = (
+        ('','---------'),
+        ('test_history','Diagnostic Test History'),
+        ('edsc_adjusted','Reported EDSC (adjusted)'),
+    )
     
     subject_label = forms.CharField(max_length=255, required=False)
     source_study = forms.ChoiceField(required=False)
@@ -43,6 +49,7 @@ class SubjectEDDIFilterForm(BaseFilterForm):
     interval_size_less_than = forms.IntegerField(required=False)
     interval_size_greater_than = forms.IntegerField(required=False)
     inverted_interval = forms.ChoiceField(choices=INVERTED_CHOICES, required=False)
+    eddi_type = forms.ChoiceField(choices=EDDI_CHOICES, required=False)
     
     def __init__(self, *args, **kwargs):
         super(SubjectEDDIFilterForm, self).__init__(*args, **kwargs)
@@ -59,6 +66,7 @@ class SubjectEDDIFilterForm(BaseFilterForm):
         interval_size_less_than = self.cleaned_data['interval_size_less_than']
         interval_size_greater_than = self.cleaned_data['interval_size_greater_than']
         inverted_interval = self.cleaned_data['inverted_interval']
+        eddi_type = self.cleaned_data['eddi_type']
 
         if subject_label:
             subjects = subjects.filter(subject_label=subject_label)
@@ -74,6 +82,8 @@ class SubjectEDDIFilterForm(BaseFilterForm):
             subjects = subjects.filter(subject_eddi__interval_size__gte=interval_size_greater_than)
         if self.get_bool(inverted_interval):
             subjects = subjects.filter(subject_eddi__ep_ddi__gt=F('subject_eddi__lp_ddi'))
+        if eddi_type:
+            subjects = subjects.filter(subject_eddi__eddi_type=eddi_type)
 
         return subjects
 

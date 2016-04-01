@@ -4,6 +4,7 @@ from cephia.models import Subject, SubjectEDDI, Visit, VisitEDDI
 from diagnostics.models import DiagnosticTestHistory, TestPropertyEstimate
 from datetime import timedelta
 from django.db import transaction
+from django.db.models import Q
 import logging
 
 logger = logging.getLogger(__name__)
@@ -106,7 +107,7 @@ class Command(BaseCommand):
 
 
     def _handle_subjects_without_test_history(self):
-        subjects = Subject.objects.filter(edsc_reported__isnull=False, subject_eddi__isnull=True)
+        subjects = Subject.objects.filter(edsc_reported__isnull=False).filter(Q(subject_eddi__isnull=True) | Q(subject_eddi__eddi_type='edsc_adjusted'))
         mean_diagnostic_delay_days = TestPropertyEstimate.objects.get(test__pk=3, is_default=True).mean_diagnostic_delay_days
 
         with transaction.atomic():
