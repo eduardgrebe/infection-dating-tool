@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from cephia.models import Subject, SubjectEDDI, Visit, VisitEDDI
-from diagnostics.models import DiagnosticTestHistory
+from diagnostics.models import DiagnosticTestHistory, TestPropertyEstimate
 from datetime import timedelta
+from django.db import transaction
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,12 +15,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if args[0] == 'flagged':
             subjects = Subject.objects.filter(subject_eddi__recalculate=True)
-            for subject in subjects:
-                self._handle_subject(subject.id)
+            with transaction.atomic():
+                for subject in subjects:
+                    self._handle_subject(subject.id)
         elif args[0] == 'all':
             subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
-            for subject_id in subject_ids:
-                self._handle_subject(subject_id)
+            with transaction.atomic():
+                for subject_id in subject_ids:
+                    self._handle_subject(subject_id)
+
+        self._handle_subjects_without_test_history()
+        self.cleanup_orphans()
 
     def _handle_subject(self, subject_id):
         edsc_days_diff = None
@@ -54,40 +60,60 @@ class Command(BaseCommand):
         subject_to_update.subject_eddi = new_eddi
         subject_to_update.save()
         if lp_ddi or ep_ddi or eddi:
-            _handle_visits(subject_to_udpate)
+            self._handle_visits(subject_to_update)
 
     def _handle_visits(self, subject):
         visits = Visit.objects.filter(subject=subject)
-        for visit in visits:
-            days_since_eddi = None
-            days_since_ep_ddi = None
-            days_since_lp_ddi = None
 
-            if subject.subject_eddi.eddi:
-                days_since_eddi = timedelta(days=(visit.visit_date - subject.subject_eddi.eddi).days).days
+        with transaction.atomic():
+            for visit in visits:
+                days_since_eddi = None
+                days_since_ep_ddi = None
+                days_since_lp_ddi = None
 
-            if subject.subject_eddi.ep_ddi:
-                days_since_ep_ddi = timedelta(days=(visit.visit_date - subject.subject_eddi.ep_ddi).days).days
+                if subject.subject_eddi.eddi:
+                    days_since_eddi = timedelta(days=(visit.visit_date - subject.subject_eddi.eddi).days).days
 
-            if subject.subject_eddi.lp_ddi:
-                days_since_lp_ddi = timedelta(days=(visit.visit_date - subject.subject_eddi.lp_ddi).days).days
+                if subject.subject_eddi.ep_ddi:
+                    days_since_ep_ddi = timedelta(days=(visit.visit_date - subject.subject_eddi.ep_ddi).days).days
 
-            visit_eddi = VisitEDDI.objects.create(days_since_eddi=days_since_eddi,
-                                                  days_since_ep_ddi=days_since_ep_ddi,
-                                                  days_since_lp_ddi=days_since_lp_ddi)
+                if subject.subject_eddi.lp_ddi:
+                    days_since_lp_ddi = timedelta(days=(visit.visit_date - subject.subject_eddi.lp_ddi).days).days
 
-            visit.visit_eddi = visit_eddi
-            visit.save()
+                if visit.visit_eddi:
+                    visit.visit_eddi.days_since_eddi = days_since_eddi
+                    visit.visit_eddi.days_since_ep_ddi = days_since_ep_ddi
+                    visit.visit_eddi.days_since_lp_ddi = days_since_lp_ddi
+
+                    visit.visit_eddi.save()
+                else:
+                    visit_eddi = VisitEDDI.objects.create(days_since_eddi=days_since_eddi,
+                                                          days_since_ep_ddi=days_since_ep_ddi,
+                                                          days_since_lp_ddi=days_since_lp_ddi)
+
+                    visit.visit_eddi = visit_eddi
+                    visit.save()
 
     def cleanup_orphans(self):
-        for subject_eddi in SubjectEDDI.objects.all():
-            try:
-                Subject.objects.get(subject_eddi=subject_eddi):
-            except Subject.DoesNotExist:
-                subject_eddi.delete()
+        with transaction.atomic():
+            for subject_eddi in SubjectEDDI.objects.all():
+                try:
+                    subject_count = Subject.objects.get(subject_eddi=subject_eddi)
+                except Subject.DoesNotExist:
+                    subject_eddi.eddi_type = 'orphaned'
+                    subject_eddi.save()
 
-        for visit_eddi in VisitEDDI.objects.all():
-            try:
-                Visit.objects.get(visit_eddi=visit_eddi):
-            except Visit.DoesNotExist:
-                visit_eddi.delete()
+
+    def _handle_subjects_without_test_history(self):
+        subjects = Subject.objects.filter(edsc_reported__isnull=False, subject_eddi__isnull=True)
+        mean_diagnostic_delay_days = TestPropertyEstimate.objects.get(test__pk=3, is_default=True).mean_diagnostic_delay_days
+
+        with transaction.atomic():
+            for subject in subjects:
+                eddi = subject.edsc_reported - timedelta(days=mean_diagnostic_delay_days)
+                subject_eddi = SubjectEDDI.objects.create(eddi=eddi,
+                                                          recalculate=False,
+                                                          eddi_type='edsc_adjusted')
+                subject.subject_eddi = subject_eddi
+                subject.save()
+                self._handle_visits(subject)

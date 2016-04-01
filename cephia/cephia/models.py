@@ -259,13 +259,14 @@ class ImportedRowComment(models.Model):
 class SubjectEDDI(models.Model):
     class Meta:
         db_table = "cephia_subject_eddi"
-        
+
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
     interval_size = models.IntegerField(null=True, blank=True)
     edsc_days_difference = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
     recalculate = models.BooleanField(default=False)
+    eddi_type = models.CharField(max_length=100, null=False, blank=False)
 
 
 class SubjectEDDIStatus(models.Model):
