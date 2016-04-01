@@ -55,7 +55,8 @@ class Command(BaseCommand):
                                               lp_ddi=lp_ddi,
                                               interval_size=interval_size,
                                               edsc_days_difference=edsc_days_diff,
-                                              eddi=eddi)
+                                              eddi=eddi,
+                                              eddi_type='test_history')
 
         subject_to_update.subject_eddi = new_eddi
         subject_to_update.save()

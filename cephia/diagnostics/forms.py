@@ -38,7 +38,7 @@ class SubjectEDDIFilterForm(BaseFilterForm):
     
     subject_label = forms.CharField(max_length=255, required=False)
     source_study = forms.ChoiceField(required=False)
-    has_diag_test_history = forms.ChoiceField(choices=BOOL_CHOICES, required=False)
+    has_eddi_data = forms.ChoiceField(choices=BOOL_CHOICES, required=False)
     subject_eddi_status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
     interval_size_less_than = forms.IntegerField(required=False)
     interval_size_greater_than = forms.IntegerField(required=False)
@@ -54,7 +54,7 @@ class SubjectEDDIFilterForm(BaseFilterForm):
     def filter(self, subjects):
         subject_label = self.cleaned_data['subject_label']
         source_study = self.cleaned_data['source_study']
-        has_diag_test_history = self.cleaned_data['has_diag_test_history']
+        has_eddi_data = self.cleaned_data['has_eddi_data']
         subject_eddi_status = self.cleaned_data['subject_eddi_status']
         interval_size_less_than = self.cleaned_data['interval_size_less_than']
         interval_size_greater_than = self.cleaned_data['interval_size_greater_than']
@@ -64,15 +64,15 @@ class SubjectEDDIFilterForm(BaseFilterForm):
             subjects = subjects.filter(subject_label=subject_label)
         if source_study:
             subjects = subjects.filter(source_study__id=source_study)
-        if has_diag_test_history:
-            subjects = subjects.filter(subject_eddi__isnull=self.get_bool(has_diag_test_history))
+        if has_eddi_data:
+            subjects = subjects.filter(subject_eddi__isnull=self.get_bool(has_eddi_data))
         if subject_eddi_status:
             subjects = subjects.filter(subject_eddi_status__status=subject_eddi_status)
-        if vdw_size_less_than:
-            subjects = subjects.filter(subject_eddi__interval_size__lte=vdw_size_less_than)
-        if vdw_size_greater_than:
-            subjects = subjects.filter(subject_eddi__interval_size__gte=vdw_size_greater_than)
-        if self.get_bool(inverted_vdw):
+        if interval_size_less_than:
+            subjects = subjects.filter(subject_eddi__interval_size__lte=interval_size_less_than)
+        if interval_size_greater_than:
+            subjects = subjects.filter(subject_eddi__interval_size__gte=interval_size_greater_than)
+        if self.get_bool(inverted_interval):
             subjects = subjects.filter(subject_eddi__ep_ddi__gt=F('subject_eddi__lp_ddi'))
 
         return subjects
