@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0028_auto_20160217_1622'),
+        ('cephia', '0029_auto_20160314_1341'),
     ]
 
     operations = [
@@ -37,6 +37,12 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name='visiteddi',
             name='tci_end',
+        ),
+        migrations.AddField(
+            model_name='subjecteddi',
+            name='eddi_type',
+            field=models.CharField(default='migrations', max_length=100),
+            preserve_default=False,
         ),
         migrations.AddField(
             model_name='visiteddi',
