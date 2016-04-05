@@ -1,7 +1,13 @@
 from django import forms
-from models import (FileInfo, SubjectRow, Ethnicity,
-                    VisitRow, Specimen, TransferInRow,
-                    TransferOutRow, AliquotRow, ImportedRowComment)
+from cephia.models import (FileInfo, SubjectRow, Ethnicity,
+                           VisitRow, Specimen, TransferInRow,
+                           TransferOutRow, AliquotRow, ImportedRowComment, Assay,
+                           Laboratory)
+from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodifiedResultRow,
+                          ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
+                          BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
+                          LSVitrosPlasmaResultRow, GeeniusResultRow, BEDResultRow, LuminexCDCResultRow,
+                          IDEV3ResultRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 
 class BaseFilterForm(forms.Form):
@@ -16,6 +22,9 @@ class BaseFilterForm(forms.Form):
 
 
 class FileInfoForm(forms.ModelForm):
+
+    laboratory = forms.ChoiceField(required=False)
+
     class Meta:
         model = FileInfo
         fields = ['data_file','file_type', 'priority']
@@ -23,12 +32,19 @@ class FileInfoForm(forms.ModelForm):
             'data_file': forms.FileInput(attrs={'accept':'.xls, .xlsx, .csv'}),
             'priority':forms.HiddenInput(),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super(FileInfoForm, self).__init__(*args, **kwargs)
-        
+
         for key in self.fields:
             self.fields[key].required = True
+
+        self.fields['panel'].required = False
+        self.fields['assay'].required = False
+
+        lab_choices = [('','---------')]
+        [ lab_choices.append((x.id, x.name)) for x in Laboratory.objects.all() ]
+        self.fields['laboratory'].choices = lab_choices
 
 
 class RowCommentForm(forms.ModelForm):
