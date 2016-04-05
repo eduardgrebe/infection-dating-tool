@@ -73,7 +73,6 @@ def visit_material(request, template="reporting/visit_material.html"):
     LEFT JOIN cephia_countries AS countries ON subjects.country_id = countries.id
     WHERE visits.visit_date >= 'FROM_DATE' AND visits.visit_date <= 'TO_DATE'
     AND specimens.parent_label is NULL
-    AND visits.id IN (VISIT_LIST)
     GROUP BY visits.id , spectypes.id
     ORDER BY IF(ISNULL(SC_int_size), 1, 0), SC_int_size, SubjectLabel , visit_date;
     """
@@ -82,16 +81,13 @@ def visit_material(request, template="reporting/visit_material.html"):
     if filter_form.is_valid() and 'show' not in request.POST:
         from_date = filter_form.cleaned_data['from_date'].strftime('%Y-%m-%d')
         to_date = filter_form.cleaned_data['to_date'].strftime('%Y-%m-%d')
-        visit_list = filter_form.cleaned_data['visit_list']
     else:
         from_date = '2000-01-01'
         to_date = datetime.now().date().strftime('%Y-%m-%d')
-        visit_list = ''
-        filter_form = VisitReportFilterForm(data={'from_date':from_date, 'to_date':to_date, 'visit_list':visit_list})
+        filter_form = VisitReportFilterForm(data={'from_date':from_date, 'to_date':to_date})
     
     sql = sql.replace("FROM_DATE", from_date)
     sql = sql.replace("TO_DATE", to_date)
-    sql = sql.replace("VISIT_LIST", visit_list)
 
     if 'show' in request.POST or 'download' in request.POST:
         context['num_rows'] = None
@@ -119,7 +115,6 @@ def visit_material(request, template="reporting/visit_material.html"):
             del running_row['volume_units']
             del running_row['n_specs']
             rolled_rows.append(running_row)
-            import pdb; pdb.set_trace()
             running_row = row
 
         header_name = "Number of %s" % row['SpecimenType']
@@ -133,10 +128,11 @@ def visit_material(request, template="reporting/visit_material.html"):
 
         vol = running_row.get(vol_header_name, 0)
         vol += row['vol_recd'] or 0
-
+            
         running_row[header_name] = num_spec_types+1
         running_row[vol_header_name] = vol
         running_row[vol_units_header_name] = row['volume_units']
+        
     report.set_rows(rolled_rows)
 
     if 'download' in request.POST:

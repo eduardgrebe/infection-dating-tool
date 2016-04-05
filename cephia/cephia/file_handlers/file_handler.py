@@ -110,9 +110,3 @@ class FileHandler(object):
             dict(zip(columns, row))
             for row in cursor.fetchall()
         ]
-
-    def float_as_date(self, value):
-        if value:
-            return datetime(*xlrd.xldate_as_tuple(value, 0))
-        else:
-            return ''
