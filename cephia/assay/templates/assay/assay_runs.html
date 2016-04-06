@@ -1,0 +1,55 @@
+{% extends "cephia/base.html" %}
+{% load bootstrap3 %}
+{% load endless %}
+
+{% block filter_content %}
+{% endblock %}
+
+{% block page_content %}
+
+{% paginate runs %}
+<div class="container">
+  <div class="row">
+    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+      <div class="panel-heading">
+        <h3 class="panel-title">Assay Runs</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="container"
+               {% show_pages %}
+            <div class="table-responsive">
+              <table class="table-striped table table-hover" style="overflow:auto;">
+                <thead>
+                  <th>Panel</th>
+                  <th>Assay</th>
+                  <th>Laboratory</th>
+                  <th>File</th>
+                  <th>Run Date</th>
+                </thead>
+                <tbody>
+                  {% for run in runs %}
+                  <tr>
+                    <td>{{run.panel.name}}</td>
+                    <td>{{run.assay.name}}</td>
+                    <td>{{run.laboratory.name}}</td>
+                    <td>{{run.fileinfo.id}}</td>
+                    <td>{{run.run_date}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="result-modal">
+</div>
+<div class="membership-modal">
+</div>
+<div class="shipment-modal">
+</div>
+{% endblock %}
