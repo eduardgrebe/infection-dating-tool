@@ -115,6 +115,7 @@ class AssayResult(models.Model):
     test_date = models.DateField(null=True, blank=False)
     result = models.FloatField(null=True, blank=False)
     result_unit = models.CharField(max_length=10, null=True, blank=False, choices=UNIT_CHOICES)
+    result_method = models.CharField(max_length=50, null=True, blank=False)
 
     def __unicode__(self):
         return self.specimen
@@ -159,9 +160,9 @@ class LagSediaResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "lagsedia_row"
 
-    result_OD = models.CharField(max_length=255, null=False, blank=True)
-    result_calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
-    result_ODn = models.CharField(max_length=255, null=False, blank=True)
+    OD = models.CharField(max_length=255, null=False, blank=True)
+    calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
+    ODn = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -170,11 +171,11 @@ class LagSediaResultRow(BaseAssayResultRow):
 class LagSediaResult(BaseAssayResult):
 
     class Meta:
-        db_table = "assayresult_lagsedia"
+        db_table = "assaylagsedia"
 
-    result_OD = models.FloatField(null=True, blank=False)
-    result_calibrator_OD = models.FloatField(null=True, blank=False)
-    result_ODn = models.FloatField(null=True, blank=False)
+    OD = models.FloatField(null=True, blank=False)
+    calibrator_OD = models.FloatField(null=True, blank=False)
+    ODn = models.FloatField(null=True, blank=False)
 
     def __unicode__(self):
         return self.specimen
@@ -185,9 +186,9 @@ class LagMaximResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "lag_maxim_row"
 
-    result_OD = models.CharField(max_length=255, null=False, blank=True)
-    result_calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
-    result_ODn = models.CharField(max_length=255, null=False, blank=True)
+    OD = models.CharField(max_length=255, null=False, blank=True)
+    calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
+    ODn = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -196,11 +197,11 @@ class LagMaximResultRow(BaseAssayResultRow):
 class LagMaximResult(BaseAssayResult):
 
     class Meta:
-        db_table = "assayresult_lagmaxim"
+        db_table = "assaylagmaxim"
 
-    result_OD = models.FloatField(null=True, blank=False)
-    result_calibrator_OD = models.FloatField(null=True, blank=False)
-    result_ODn = models.FloatField(null=True, blank=False)
+    OD = models.FloatField(null=True, blank=False)
+    calibrator_OD = models.FloatField(null=True, blank=False)
+    ODn = models.FloatField(null=True, blank=False)
 
     def __unicode__(self):
         return self.specimen.specimen_label

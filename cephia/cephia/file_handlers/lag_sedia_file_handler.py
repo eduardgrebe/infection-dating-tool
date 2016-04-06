@@ -21,9 +21,9 @@ class LagSediaFileHandler(FileHandler):
                                    'well',
                                    'test_mode',
                                    'specimen_purpose',
-                                   'result_OD',
-                                   'result_calibrator_OD',
-                                   'result_ODn']
+                                   'OD',
+                                   'calibrator_OD',
+                                   'ODn']
 
     def parse(self):
         from assay.models import LagSediaResultRow
@@ -36,7 +36,7 @@ class LagSediaFileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
 
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    lag_result_row = LagSediaResultRow.objects.create(specimen_label=row_dict['specimen_label'],
+                    lag_row = LagSediaResultRow.objects.create(specimen_label=row_dict['specimen_label'],
                                                                       assay=row_dict['assay'],
                                                                       laboratory=row_dict['laboratory'],
                                                                       test_date=row_dict['test_date'],
@@ -46,9 +46,9 @@ class LagSediaFileHandler(FileHandler):
                                                                       test_mode=row_dict['test_mode'],
                                                                       well=row_dict['well'],
                                                                       specimen_purpose=row_dict['specimen_purpose'],
-                                                                      result_OD=row_dict['result_OD'],
-                                                                      result_calibrator_OD=row_dict['result_calibrator_OD'],
-                                                                      result_ODn=row_dict['result_ODn'],
+                                                                      OD=row_dict['OD'],
+                                                                      calibrator_OD=row_dict['calibrator_OD'],
+                                                                      ODn=row_dict['ODn'],
                                                                       state='pending',
                                                                       fileinfo=self.upload_file)
 
@@ -76,15 +76,15 @@ class LagSediaFileHandler(FileHandler):
         rows_validated = 0
         rows_failed = 0
 
-        for lag_result_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for lag_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=lag_result_row.assay)
+                assay = Assay.objects.get(name=lag_row.assay)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=lag_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
@@ -96,16 +96,16 @@ class LagSediaFileHandler(FileHandler):
                 if error_msg:
                     raise Exception(error_msg)
 
-                lag_result_row.state = 'validated'
-                lag_result_row.error_message = ''
+                lag_row.state = 'validated'
+                lag_row.error_message = ''
                 rows_validated += 1
-                lag_result_row.save()
+                lag_row.save()
             except Exception, e:
                 logger.exception(e)
-                lag_result_row.state = 'error'
-                lag_result_row.error_message = e.message
+                lag_row.state = 'error'
+                lag_row.error_message = e.message
                 rows_failed += 1
-                lag_result_row.save()
+                lag_row.save()
                 continue
 
         if rows_failed > 0:
@@ -125,49 +125,49 @@ class LagSediaFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
-        for lag_result_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+        for lag_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=lag_result_row.assay)
+                    assay = Assay.objects.get(name=lag_row.assay)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=lag_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              assay_run=assay_run,
-                                                              test_date=datetime.strptime(lag_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=float(lag_result_row.result_ODn))
+                    # assay_result = AssayResult.objects.create(panel=panel,
+                    #                                           assay=assay,
+                    #                                           specimen=specimen,
+                    #                                           assay_run=assay_run,
+                    #                                           test_date=datetime.strptime(lag_row.test_date, '%Y-%m-%d').date(),
+                    #                                           result=float(lag_row.ODn))
 
                     lag_result = LagSediaResult.objects.create(specimen=specimen,
                                                                assay=assay,
-                                                               laboratory=Laboratory.objects.get(name=lag_result_row.laboratory),
-                                                               test_date=datetime.strptime(lag_result_row.test_date, '%Y-%m-%d').date(),
-                                                               operator=lag_result_row.operator,
-                                                               assay_kit_lot=lag_result_row.assay_kit_lot,
-                                                               plate_identifier=lag_result_row.plate_identifier,
-                                                               test_mode=lag_result_row.test_mode,
-                                                               well=lag_result_row.well,
-                                                               specimen_purpose=lag_result_row.specimen_purpose,
-                                                               result_OD=float(lag_result_row.result_OD),
-                                                               result_calibrator_OD=float(lag_result_row.result_calibrator_OD),
-                                                               result_ODn=float(lag_result_row.result_ODn),
+                                                               laboratory=Laboratory.objects.get(name=lag_row.laboratory),
+                                                               test_date=datetime.strptime(lag_row.test_date, '%Y-%m-%d').date(),
+                                                               operator=lag_row.operator,
+                                                               assay_kit_lot=lag_row.assay_kit_lot,
+                                                               plate_identifier=lag_row.plate_identifier,
+                                                               test_mode=lag_row.test_mode,
+                                                               well=lag_row.well,
+                                                               specimen_purpose=lag_row.specimen_purpose,
+                                                               OD=float(lag_row.OD),
+                                                               calibrator_OD=float(lag_row.calibrator_OD),
+                                                               ODn=float(lag_row.ODn),
                                                                assay_result=assay_result,
                                                                assay_run=assay_run)
 
-                    lag_result_row.state = 'processed'
-                    lag_result_row.date_processed = timezone.now()
-                    lag_result_row.error_message = ''
-                    lag_result_row.save()
+                    lag_row.state = 'processed'
+                    lag_row.date_processed = timezone.now()
+                    lag_row.error_message = ''
+                    lag_row.save()
                     rows_inserted += 1
 
             except Exception, e:
                 logger.exception(e)
-                lag_result_row.state = 'error'
-                lag_result_row.error_message = e.message
-                lag_result_row.save()
+                lag_row.state = 'error'
+                lag_row.error_message = e.message
+                lag_row.save()
                 rows_failed += 1
                 continue
 
