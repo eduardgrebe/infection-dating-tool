@@ -147,6 +147,13 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
         context['runs'] = AssayRun.objects.all()
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+def run_results(request, run_id=None, template="assay/run_results.html"):
+    context = {}
+
+    if request.method == 'GET':
+        context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
 def panel_results(request, panel_id=None, template="assay/panel_results.html"):
     context = {}
 
