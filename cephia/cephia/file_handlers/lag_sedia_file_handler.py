@@ -134,13 +134,6 @@ class LagSediaFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    # assay_result = AssayResult.objects.create(panel=panel,
-                    #                                           assay=assay,
-                    #                                           specimen=specimen,
-                    #                                           assay_run=assay_run,
-                    #                                           test_date=datetime.strptime(lag_row.test_date, '%Y-%m-%d').date(),
-                    #                                           result=float(lag_row.ODn))
-
                     lag_result = LagSediaResult.objects.create(specimen=specimen,
                                                                assay=assay,
                                                                laboratory=Laboratory.objects.get(name=lag_row.laboratory),
@@ -154,7 +147,6 @@ class LagSediaFileHandler(FileHandler):
                                                                OD=float(lag_row.OD),
                                                                calibrator_OD=float(lag_row.calibrator_OD),
                                                                ODn=float(lag_row.ODn),
-                                                               assay_result=assay_result,
                                                                assay_run=assay_run)
 
                     lag_row.state = 'processed'
