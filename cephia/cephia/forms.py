@@ -27,10 +27,12 @@ class FileInfoForm(forms.ModelForm):
 
     class Meta:
         model = FileInfo
-        fields = ['data_file','file_type', 'priority', 'panel']
+        fields = ['data_file','file_type', 'priority', 'panel', 'assay']
         widgets = {
             'data_file': forms.FileInput(attrs={'accept':'.xls, .xlsx, .csv'}),
             'priority':forms.HiddenInput(),
+            'panel':forms.HiddenInput(),
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -281,6 +283,49 @@ class RowFilterForm(forms.Form):
         elif fileinfo.file_type == 'test_history':
             rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo)
             template = 'diagnostics/test_history_row_info.html'
+        elif fileinfo.file_type == 'panel_membership':
+            rows = PanelMembershipRow.objects.filter(fileinfo=fileinfo)
+            template = 'assay/panel_membership_row_info.html'
+        elif fileinfo.file_type == 'panel_shipment':
+            rows = PanelShipmentRow.objects.filter(fileinfo=fileinfo)
+            template = 'assay/panel_shipment_row_info.html'
+        elif fileinfo.file_type == 'assay':
+            if fileinfo.assay.name == 'LAg':
+                rows = LagResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/lag_row_info.html'
+            elif fileinfo.assay.name == 'Architect':
+                rows = ArchitectResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/architect_row_info.html'
+            elif fileinfo.assay.name == 'BioRad-Avidity-CDC':
+                rows = BioradCDCResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/biorad_cdc_row_info.html'
+            elif fileinfo.assay.name == 'BioRad-Avidity-JHU':
+                rows = BioradJHUResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/biorad_jhu_row_info.html'
+            elif fileinfo.assay.name == 'Vitros':
+                rows = VitrosResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/vitros_row_info.html'
+            elif fileinfo.assay.name == 'LS-Vitros':
+                rows = LSVitrosResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/ls_vitros_row_info.html'
+            elif fileinfo.assay.name == 'Geenius':
+                rows = GeeniusResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/geenius_row_info.html'
+            elif fileinfo.assay.name == 'BED':
+                rows = BEDResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/bed_row_info.html'
+            elif fileinfo.assay.name == 'BioRad-Avidity-Glasgow':
+                rows = VitrosResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/biorad_glasgow_row_info.html'
+            elif fileinfo.assay.name == 'Luminex':
+                rows = LuminexResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/luminex_row_info.html'
+            elif fileinfo.assay.name == 'IDE-V3':
+                rows = IDEResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/ide_row_info.html'
+            elif fileinfo.assay.name == 'Duke-BioPlex':
+                rows = DukeResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/duke_row_info.html'
         else:
             raise Exception("Unknown filetype : %s" % fileinfo.file_type)
 
