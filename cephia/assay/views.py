@@ -8,8 +8,8 @@ from django.contrib import messages
 from cephia.models import Panel
 from forms import PanelCaptureForm, PanelFileForm
 from cephia.forms import FileInfoForm
-from assay.models import AssayResult, PanelShipment, PanelMembership
-from cephia.models import Assay
+from assay.models import AssayResult, PanelShipment, PanelMembership, AssayRun
+from cephia.models import Assay, Laboratory
 import json
 from django.utils import timezone
 

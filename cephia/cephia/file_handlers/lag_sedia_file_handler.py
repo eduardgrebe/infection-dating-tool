@@ -25,6 +25,8 @@ class LagSediaFileHandler(FileHandler):
                                    'calibrator_OD',
                                    'ODn']
 
+        self.assay_name = 'LAg-Sedia'
+
     def parse(self):
         from assay.models import LagSediaResultRow
         rows_inserted = 0
@@ -81,7 +83,7 @@ class LagSediaFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=lag_row.assay)
+                #assay = Assay.objects.get(name=self.assay_name)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
@@ -128,7 +130,7 @@ class LagSediaFileHandler(FileHandler):
         for lag_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=lag_row.assay)
+                    assay = Assay.objects.get(name=self.assay_name)
                     panel = Panel.objects.get(pk=panel_id)
                     specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
@@ -137,7 +139,7 @@ class LagSediaFileHandler(FileHandler):
                     lag_result = LagSediaResult.objects.create(specimen=specimen,
                                                                assay=assay,
                                                                laboratory=Laboratory.objects.get(name=lag_row.laboratory),
-                                                               test_date=datetime.strptime(lag_row.test_date, '%Y-%m-%d').date(),
+                                                               test_date=datetime.strptime(lag_row.test_date, '%Y/%m/%d').date(),
                                                                operator=lag_row.operator,
                                                                assay_kit_lot=lag_row.assay_kit_lot,
                                                                plate_identifier=lag_row.plate_identifier,

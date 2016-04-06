@@ -128,6 +128,7 @@ class BaseAssayResult(models.Model):
     specimen = models.ForeignKey(Specimen, null=False, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=False, blank=False, db_index=True)
     assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
+    laboratory = models.ForeignKey(Laboratory, null=True, blank=False, db_index=True)
     test_date = models.DateField(max_length=255, null=False, blank=True)
     operator = models.CharField(max_length=255, null=False, blank=True)
     assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)

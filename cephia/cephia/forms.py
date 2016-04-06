@@ -290,9 +290,9 @@ class RowFilterForm(forms.Form):
             rows = PanelShipmentRow.objects.filter(fileinfo=fileinfo)
             template = 'assay/panel_shipment_row_info.html'
         elif fileinfo.file_type == 'assay':
-            if fileinfo.assay.name == 'LAg':
-                rows = LagResultRow.objects.filter(fileinfo=fileinfo)
-                template = 'assay/lag_row_info.html'
+            if fileinfo.assay.name == 'LAg-Sedia':
+                rows = LagSediaResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/lag_sedia_row_info.html'
             elif fileinfo.assay.name == 'Architect':
                 rows = ArchitectResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/architect_row_info.html'

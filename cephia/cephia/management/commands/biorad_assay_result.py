@@ -25,9 +25,12 @@ class Command(BaseCommand):
                                                           specimen=lag_result.specimen,
                                                           assay_run=assay_run,
                                                           test_date=lag_result.test_date,
-                                                          result=lag_result.ODn)
+                                                          result=lag_result.result_AI)
             elif spec_results.count() > 1 and 'confirm' not in test_modes:
-                result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
+                # take treated ODs and get mean
+                # divide result by the mean of the untreated ODs
+                # in other words mean of treated / mean of untreated
+
                 lag_result = spec_results[0]
                 assay_result = AssayResult.objects.create(panel=lag_result.panel,
                                                           assay=lag_result.assay,
@@ -36,13 +39,13 @@ class Command(BaseCommand):
                                                           test_date=lag_result.test_date,
                                                           result=result)
             elif spec_results.count() > 1 and 'confirm' in test_modes:
-                lag_result = spec_results.get(test_mode='confirm3')
+                lag_result = spec_results.get(test_mode='confirm_3')
                 assay_result = AssayResult.objects.create(panel=lag_result.panel,
                                                           assay=lag_result.assay,
                                                           specimen=lag_result.specimen,
                                                           assay_run=assay_run,
                                                           test_date=lag_result.test_date,
-                                                          result=lag_result.ODn)
+                                                          result=lag_result.result_AI)
 
     def _handle_lag_sedia(self, specimen_ids):
         pass
