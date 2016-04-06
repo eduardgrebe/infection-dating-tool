@@ -80,6 +80,7 @@ INSTALLED_APPS = (
     'reporting',
     'user_management',
     'diagnostics',
+    'assay'
 )
 
 MIDDLEWARE_CLASSES = (

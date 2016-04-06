@@ -4,12 +4,13 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import django.db.models.deletion
 import cephia.fields
+import lib.fields
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0030_auto_20160316_1427'),
+        ('cephia', '0031_auto_20160406_1256'),
     ]
 
     operations = [
@@ -29,8 +30,6 @@ class Migration(migrations.Migration):
                 ('result_AI', models.FloatField(null=True)),
                 ('result_AI_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
-                ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
                 'db_table': 'assayresult_architectavidity',
@@ -77,8 +76,6 @@ class Migration(migrations.Migration):
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
                 ('result_SCO', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
-                ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
                 'db_table': 'assayresult_architectunmodified',
@@ -115,12 +112,27 @@ class Migration(migrations.Migration):
                 ('reported_date', models.DateField(null=True)),
                 ('test_date', models.DateField(null=True)),
                 ('result', models.FloatField(null=True)),
+                ('result_unit', models.CharField(max_length=10, null=True, choices=[(b'ODn', b'Normalised Optical Density'), (b'OD', b'Optical Density'), (b'SCO', b'Signal/Cutoff Ratio'), (b'AI', b'Avidity Index'), (b'GeeniusIndex', b'Geenius Index'), (b'LuminexIndex', b'Luminex Index'), (b'IDEV3Conclusion', b'IDE-V3 Conclusion')])),
+                ('result_method', models.CharField(max_length=50, null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay', null=True)),
-                ('panel', models.ForeignKey(to='cephia.Panel', null=True)),
-                ('specimen', models.ForeignKey(to='cephia.Specimen', null=True)),
             ],
             options={
                 'db_table': 'cephia_assay_results',
+            },
+        ),
+        migrations.CreateModel(
+            name='AssayRun',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('run_date', models.DateField()),
+                ('comment', models.CharField(max_length=255, null=True)),
+                ('assay', lib.fields.ProtectedForeignKey(to='cephia.Assay', on_delete=django.db.models.deletion.PROTECT)),
+                ('fileinfo', lib.fields.ProtectedForeignKey(to='cephia.FileInfo', on_delete=django.db.models.deletion.PROTECT)),
+                ('laboratory', lib.fields.ProtectedForeignKey(to='cephia.Laboratory', on_delete=django.db.models.deletion.PROTECT)),
+                ('panel', lib.fields.ProtectedForeignKey(to='cephia.Panel', on_delete=django.db.models.deletion.PROTECT)),
+            ],
+            options={
+                'db_table': 'cephia_assay_runs',
             },
         ),
         migrations.CreateModel(
@@ -139,7 +151,8 @@ class Migration(migrations.Migration):
                 ('result_ODn', models.FloatField(null=True)),
                 ('result_ODn_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -189,7 +202,8 @@ class Migration(migrations.Migration):
                 ('result_AI', models.FloatField(null=True)),
                 ('result_AI_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -238,8 +252,11 @@ class Migration(migrations.Migration):
                 ('result_untreated_OD', models.FloatField(null=True)),
                 ('result_AI', models.FloatField(null=True)),
                 ('result_AI_recalc', models.FloatField(null=True)),
+                ('result_clasification', models.CharField(max_length=255, blank=True)),
+                ('dilution', models.CharField(max_length=255, blank=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -247,7 +264,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='BioRadAvidityGLASGOWResultRow',
+            name='BioRadAvidityGlasgowResultRow',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('state', models.CharField(max_length=10, choices=[(b'pending', b'Pending'), (b'validated', b'Validated'), (b'imported', b'Imported'), (b'processed', b'Processed'), (b'error', b'Error')])),
@@ -267,6 +284,8 @@ class Migration(migrations.Migration):
                 ('result_untreated_OD', models.CharField(max_length=255, blank=True)),
                 ('result_AI', models.CharField(max_length=255, blank=True)),
                 ('result_AI_recalc', models.CharField(max_length=255, blank=True)),
+                ('result_clasification', models.CharField(max_length=255, blank=True)),
+                ('dilution', models.CharField(max_length=255, blank=True)),
                 ('fileinfo', cephia.fields.ProtectedForeignKey(to='cephia.FileInfo', on_delete=django.db.models.deletion.PROTECT)),
             ],
             options={
@@ -289,7 +308,8 @@ class Migration(migrations.Migration):
                 ('result_AI', models.FloatField(null=True)),
                 ('result_AI_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -344,7 +364,8 @@ class Migration(migrations.Migration):
                 ('result_GeeniusIndex', models.FloatField(null=True)),
                 ('result_GeeniusIndex_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -402,7 +423,8 @@ class Migration(migrations.Migration):
                 ('result_conclusion', models.FloatField(null=True)),
                 ('result_conclusion_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -450,16 +472,16 @@ class Migration(migrations.Migration):
                 ('test_mode', models.CharField(max_length=255, blank=True)),
                 ('well', models.CharField(max_length=255, blank=True)),
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
-                ('result_OD', models.FloatField(null=True)),
-                ('result_calibrator_OD', models.FloatField(null=True)),
-                ('result_ODn', models.FloatField(null=True)),
+                ('OD', models.FloatField(null=True)),
+                ('calibrator_OD', models.FloatField(null=True)),
+                ('ODn', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('assay_result', models.ForeignKey(to='assay.AssayResult')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
-                'db_table': 'assayresult_lagmaxim',
+                'db_table': 'assaylagmaxim',
             },
         ),
         migrations.CreateModel(
@@ -479,9 +501,9 @@ class Migration(migrations.Migration):
                 ('test_mode', models.CharField(max_length=255, blank=True)),
                 ('well', models.CharField(max_length=255, blank=True)),
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
-                ('result_OD', models.CharField(max_length=255, blank=True)),
-                ('result_calibrator_OD', models.CharField(max_length=255, blank=True)),
-                ('result_ODn', models.CharField(max_length=255, blank=True)),
+                ('OD', models.CharField(max_length=255, blank=True)),
+                ('calibrator_OD', models.CharField(max_length=255, blank=True)),
+                ('ODn', models.CharField(max_length=255, blank=True)),
                 ('fileinfo', cephia.fields.ProtectedForeignKey(to='cephia.FileInfo', on_delete=django.db.models.deletion.PROTECT)),
             ],
             options={
@@ -499,16 +521,16 @@ class Migration(migrations.Migration):
                 ('test_mode', models.CharField(max_length=255, blank=True)),
                 ('well', models.CharField(max_length=255, blank=True)),
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
-                ('result_OD', models.FloatField(null=True)),
-                ('result_calibrator_OD', models.FloatField(null=True)),
-                ('result_ODn', models.FloatField(null=True)),
+                ('OD', models.FloatField(null=True)),
+                ('calibrator_OD', models.FloatField(null=True)),
+                ('ODn', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('assay_result', models.ForeignKey(to='assay.AssayResult')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
-                'db_table': 'assayresult_lagsedia',
+                'db_table': 'assaylagsedia',
             },
         ),
         migrations.CreateModel(
@@ -528,13 +550,13 @@ class Migration(migrations.Migration):
                 ('test_mode', models.CharField(max_length=255, blank=True)),
                 ('well', models.CharField(max_length=255, blank=True)),
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
-                ('result_OD', models.CharField(max_length=255, blank=True)),
-                ('result_calibrator_OD', models.CharField(max_length=255, blank=True)),
-                ('result_ODn', models.CharField(max_length=255, blank=True)),
+                ('OD', models.CharField(max_length=255, blank=True)),
+                ('calibrator_OD', models.CharField(max_length=255, blank=True)),
+                ('ODn', models.CharField(max_length=255, blank=True)),
                 ('fileinfo', cephia.fields.ProtectedForeignKey(to='cephia.FileInfo', on_delete=django.db.models.deletion.PROTECT)),
             ],
             options={
-                'db_table': 'lag_sedia_row',
+                'db_table': 'lagsedia_row',
             },
         ),
         migrations.CreateModel(
@@ -550,7 +572,8 @@ class Migration(migrations.Migration):
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
                 ('result_SCO', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -558,7 +581,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='LSVitrosDiluentResultrow',
+            name='LSVitrosDiluentResultRow',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('state', models.CharField(max_length=10, choices=[(b'pending', b'Pending'), (b'validated', b'Validated'), (b'imported', b'Imported'), (b'processed', b'Processed'), (b'error', b'Error')])),
@@ -594,7 +617,8 @@ class Migration(migrations.Migration):
                 ('specimen_purpose', models.CharField(max_length=255, blank=True)),
                 ('result_SCO', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -602,7 +626,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='LSVitrosPlasmaResultrow',
+            name='LSVitrosPlasmaResultRow',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('state', models.CharField(max_length=10, choices=[(b'pending', b'Pending'), (b'validated', b'Validated'), (b'imported', b'Imported'), (b'processed', b'Processed'), (b'error', b'Error')])),
@@ -644,7 +668,8 @@ class Migration(migrations.Migration):
                 ('result_gp41_a', models.FloatField(null=True)),
                 ('result_LuminexIndex', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -755,7 +780,8 @@ class Migration(migrations.Migration):
                 ('result_AI', models.FloatField(null=True)),
                 ('result_AI_recalc', models.FloatField(null=True)),
                 ('assay', models.ForeignKey(to='cephia.Assay')),
-                ('laboratory', models.ForeignKey(to='cephia.Laboratory', max_length=255, null=True)),
+                ('assay_result', models.ForeignKey(to='assay.AssayResult', null=True)),
+                ('assay_run', lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True)),
                 ('specimen', models.ForeignKey(to='cephia.Specimen')),
             ],
             options={
@@ -788,5 +814,50 @@ class Migration(migrations.Migration):
             options={
                 'db_table': 'vitros_avidity_row',
             },
+        ),
+        migrations.AddField(
+            model_name='assayresult',
+            name='assay_run',
+            field=lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True),
+        ),
+        migrations.AddField(
+            model_name='assayresult',
+            name='panel',
+            field=models.ForeignKey(to='cephia.Panel', null=True),
+        ),
+        migrations.AddField(
+            model_name='assayresult',
+            name='specimen',
+            field=models.ForeignKey(to='cephia.Specimen', null=True),
+        ),
+        migrations.AddField(
+            model_name='architectunmodifiedresult',
+            name='assay_result',
+            field=models.ForeignKey(to='assay.AssayResult', null=True),
+        ),
+        migrations.AddField(
+            model_name='architectunmodifiedresult',
+            name='assay_run',
+            field=lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True),
+        ),
+        migrations.AddField(
+            model_name='architectunmodifiedresult',
+            name='specimen',
+            field=models.ForeignKey(to='cephia.Specimen'),
+        ),
+        migrations.AddField(
+            model_name='architectavidityresult',
+            name='assay_result',
+            field=models.ForeignKey(to='assay.AssayResult', null=True),
+        ),
+        migrations.AddField(
+            model_name='architectavidityresult',
+            name='assay_run',
+            field=lib.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun', null=True),
+        ),
+        migrations.AddField(
+            model_name='architectavidityresult',
+            name='specimen',
+            field=models.ForeignKey(to='cephia.Specimen'),
         ),
     ]
