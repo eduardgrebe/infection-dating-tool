@@ -5,6 +5,7 @@ from diagnostics.models import DiagnosticTestHistory, TestPropertyEstimate
 from datetime import timedelta
 from django.db import transaction
 from django.db.models import Q
+rom django.db.models import Sum
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,13 +28,22 @@ class Command(BaseCommand):
                                                           result=lag_result.ODn)
             elif spec_results.count() > 1 and 'confirm' not in test_modes:
                 import pdb; pdb.set_trace()
-                summed_result = spec_results.aggregate(SUM('ODn'))
-
-                #create result from mean of both records
+                result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
+                lag_result = spec_results[0]
+                assay_result = AssayResult.objects.create(panel=lag_result.panel,
+                                                          assay=lag_result.assay,
+                                                          specimen=lag_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=lag_result.test_date,
+                                                          result=result)
             elif spec_results.count() > 1 and 'confirm' in test_modes:
-                import pdb; pdb.set_trace()
-                #create result from confirm3 record
+                lag_result = spec_results.get(test_mode='confirm3')
+                assay_result = AssayResult.objects.create(panel=lag_result.panel,
+                                                          assay=lag_result.assay,
+                                                          specimen=lag_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=lag_result.test_date,
+                                                          result=lag_result.ODn)
 
     def _handle_lag_sedia(self, specimen_ids):
         pass
-        #logic over here
