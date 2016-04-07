@@ -4,14 +4,17 @@
 
 {% block filter_col_a %}
 {% bootstrap_field form.subject_label %}
+{% bootstrap_field form.vdw_size_less_than %}
 {% endblock %}
 
 {% block filter_col_b %}
 {% bootstrap_field form.source_study %}
+{% bootstrap_field form.vdw_size_greater_than %}
 {% endblock %}
 
 {% block filter_col_c %}
 {% bootstrap_field form.has_diag_test_history %}
+{% bootstrap_field form.inverted_vdw %}
 {% endblock %}
 
 {% block filter_col_d %}
@@ -30,6 +33,9 @@
       </div>
       <div class="panel-body">
         {% show_pages %}
+        <div class="btn-group">
+          <a href="#" class="btn btn-default" style="text-decoration:none;" onclick="submitFilterFormCSV();">Export as CSV</a>
+        </div>
         <div class="row">
           <div class="table-responsive">
             <table class="table-striped table table-hover" style="overflow:auto;">
@@ -49,23 +55,24 @@
               <tbody>
                 {% for subject in subjects %}
                 <tr data-subject-id="{{subject.id}}" >
-	          <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
-	          <td>{{subject.subject_eddi.tci_begin}}</td>
-	          <td>{{subject.subject_eddi.tci_end}}</td>
+	              <td><a class="show-eddi-detail">{{subject.subject_label}}</a></td>
+	              <td>{{subject.subject_eddi.tci_begin}}</td>
+	              <td>{{subject.subject_eddi.tci_end}}</td>
                   <td>{{subject.subject_eddi.tci_size}}</td>
-	          <td>{{subject.subject_eddi.eddi}}</td>
+	              <td>{{subject.subject_eddi.eddi}}</td>
                   <td>{{subject.cohort_entry_date}}</td>
                   <td>{{subject.cohort_entry_hiv_status}}</td>
                   <td>{{subject.last_negative_date}}</td>
                   <td>{{subject.first_positive_date}}</td>
                   <td>{{subject.edsc_reported}}</td>
-                  <td>{{subject.subject_eddi_status.status}}</td>
+                  <td class="eddi-status-column">{{subject.subject_eddi_status.status}}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
         </div>
+        <a class="btn btn-primary" href="{% url 'diagnostics:recalculate_eddi' %}" style="text-decoration: none;">Recalculate EDDIs</a>
       </div>
     </div>
   </div>

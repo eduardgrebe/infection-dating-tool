@@ -1,5 +1,6 @@
 from django import forms
 from cephia.models import Subject, Study, SubjectEDDIStatus
+from django.db.models import F
 
 class BaseFilterForm(forms.Form):
 
@@ -20,11 +21,18 @@ class SubjectEDDIFilterForm(BaseFilterForm):
         (True,'No'),
     )
 
+    INVERTED_CHOICES = (
+        ('','---------'),
+        (True,'Yes'),
+        (False,'No'),
+    )
+
     STATUS_CHOICES = (
         ('','---------'),
         ('ok','OK'),
         ('investigate','Investigate'),
         ('suspected_incorrect_data','Suspected Incorrect Data'),
+        ('resolved','Resolved'),
         ('other','Other'),
     )
     
@@ -32,6 +40,9 @@ class SubjectEDDIFilterForm(BaseFilterForm):
     source_study = forms.ChoiceField(required=False)
     has_diag_test_history = forms.ChoiceField(choices=BOOL_CHOICES, required=False)
     subject_eddi_status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
+    vdw_size_less_than = forms.IntegerField(required=False)
+    vdw_size_greater_than = forms.IntegerField(required=False)
+    inverted_vdw = forms.ChoiceField(choices=INVERTED_CHOICES, required=False)
     
     def __init__(self, *args, **kwargs):
         super(SubjectEDDIFilterForm, self).__init__(*args, **kwargs)
@@ -45,6 +56,9 @@ class SubjectEDDIFilterForm(BaseFilterForm):
         source_study = self.cleaned_data['source_study']
         has_diag_test_history = self.cleaned_data['has_diag_test_history']
         subject_eddi_status = self.cleaned_data['subject_eddi_status']
+        vdw_size_less_than = self.cleaned_data['vdw_size_less_than']
+        vdw_size_greater_than = self.cleaned_data['vdw_size_greater_than']
+        inverted_vdw = self.cleaned_data['inverted_vdw']
 
         if subject_label:
             subjects = subjects.filter(subject_label=subject_label)
@@ -54,6 +68,12 @@ class SubjectEDDIFilterForm(BaseFilterForm):
             subjects = subjects.filter(subject_eddi__isnull=self.get_bool(has_diag_test_history))
         if subject_eddi_status:
             subjects = subjects.filter(subject_eddi_status__status=subject_eddi_status)
+        if vdw_size_less_than:
+            subjects = subjects.filter(subject_eddi__tci_size__lte=vdw_size_less_than)
+        if vdw_size_greater_than:
+            subjects = subjects.filter(subject_eddi__tci_size__gte=vdw_size_greater_than)
+        if self.get_bool(inverted_vdw):
+            subjects = subjects.filter(subject_eddi__tci_begin__gt=F('subject_eddi__tci_end'))
 
         return subjects
 

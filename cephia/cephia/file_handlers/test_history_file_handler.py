@@ -2,6 +2,7 @@ from file_handler import FileHandler
 from handler_imports import *
 import logging
 from datetime import datetime
+from django.core.management import call_command
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,8 @@ class TestHistoryFileHandler(FileHandler):
     
     def validate(self):
         from cephia.models import Subject
-        from diagnostics.models import DiagnosticTestHistoryRow, ProtocolLookup
+        from diagnostics.models import (DiagnosticTestHistoryRow, ProtocolLookup,
+                                        TestPropertyEstimate, DiagnosticTestHistory)
 
         rows_validated = 0
         rows_failed = 0
@@ -57,14 +59,15 @@ class TestHistoryFileHandler(FileHandler):
         for test_history_row in DiagnosticTestHistoryRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
+                protocol = None
 
                 try:
-                    Subject.objects.get(subject_label=test_history_row.subject)
+                    subject = Subject.objects.get(subject_label=test_history_row.subject)
                 except Subject.DoesNotExist:
                     error_msg += "Subject not recognised.\n"
 
                 try:
-                    ProtocolLookup.objects.get(name=test_history_row.test_code, protocol=test_history_row.protocol)
+                    protocol = ProtocolLookup.objects.get(name=test_history_row.test_code, protocol=test_history_row.protocol)
                 except ProtocolLookup.DoesNotExist:
                     error_msg += "Protocol not recognised.\n"
 
@@ -74,6 +77,16 @@ class TestHistoryFileHandler(FileHandler):
                 if not datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date() > datetime.strptime('1980-01-01', "%Y-%m-%d").date():
                     error_msg += 'test_date must be after 1 Jan 1980.\n'
 
+                try:
+                    if protocol:
+                        TestPropertyEstimate.objects.get(test__id=protocol.test.pk, is_default=True)
+                except TestPropertyEstimate.DoesNotExist:
+                    error_msg += "Property Estimate not recognised.\n"
+
+
+                if DiagnosticTestHistory.objects.filter(subject__subject_label=test_history_row.subject, ignore=True).exists():
+                    error_msg += "Cannot overwrite test history data that has already been edited.\n"
+                    
                 if error_msg:
                     raise Exception(error_msg)
 
@@ -92,41 +105,71 @@ class TestHistoryFileHandler(FileHandler):
         return rows_validated, rows_failed
 
     def process(self):
-        from cephia.models import Subject
+        from cephia.models import Subject, SubjectEDDI
         from diagnostics.models import DiagnosticTestHistoryRow, DiagnosticTestHistory, ProtocolLookup, TestPropertyEstimate
         
         rows_inserted = 0
         rows_failed = 0
 
-        for test_history_row in DiagnosticTestHistoryRow.objects.filter(fileinfo=self.upload_file, state='validated'):
-
-            try:
-                with transaction.atomic():
-                    test_history = DiagnosticTestHistory.objects.create(subject=Subject.objects.get(subject_label=test_history_row.subject),
-                                                                        test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
-                                                                        test_result=test_history_row.test_result,
-                                                                        test=ProtocolLookup.objects.get(name=test_history_row.test_code,
-                                                                                                        protocol=test_history_row.protocol).test)
-
-                    test_property = TestPropertyEstimate.objects.filter(test__id=test_history.test.pk, is_default=True).first()
-                    test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
-                    test_history.save()
+        try:
+            with transaction.atomic():
+                excluded_subjects = DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='error').distinct()
+                
+                for subject_label in excluded_subjects:
+                    if not DiagnosticTestHistory.objects.filter(subject__subject_label=subject_label, ignore=True).exists():
+                        DiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
+                    else:
+                        continue
+                    
+                for subject_row_error in DiagnosticTestHistoryRow.objects.filter(subject__in=excluded_subjects, state='validated', fileinfo=self.upload_file):
+                    subject_row_error.state = 'error'
+                    subject_row_error.error_message = "One or more records for this subject have errors"
+                    subject_row_error.save()
+        except Exception, e:
+            pass
+        
+        for subject_label in DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
+            with transaction.atomic():
+                DiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
+                try:        
+                    for test_history_row in DiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
+                        test_history = DiagnosticTestHistory.objects.create(subject=Subject.objects.get(subject_label=test_history_row.subject),
+                                                                            test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
+                                                                            test_result=test_history_row.test_result,
+                                                                            test=ProtocolLookup.objects.get(name=test_history_row.test_code,
+                                                                                                            protocol=test_history_row.protocol).test)
                         
-                    test_history_row.state = 'processed'
-                    test_history_row.error_message = ''
-                    test_history_row.date_processed = timezone.now()
+                        if not test_history.subject.subject_eddi:
+                            test_history.subject.subject_eddi = SubjectEDDI.objects.create()
+                            test_history.subject.save()
+                        else:
+                            test_history.subject.subject_eddi.tci_begin = None
+                            test_history.subject.subject_eddi.tci_end = None
+                            test_history.subject.subject_eddi.tci_size = None
+                            test_history.subject.subject_eddi.eddi = None
+
+                        test_history.subject.subject_eddi.recalculate = True
+                        test_history.subject.subject_eddi.save()
+                        test_property = TestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
+                        test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+                        test_history.save()
+                        
+                        test_history_row.state = 'processed'
+                        test_history_row.error_message = ''
+                        test_history_row.date_processed = timezone.now()
+                        test_history_row.test_history = test_history
+                        test_history_row.save()
+
+                        rows_inserted += 1
+                except Exception, e:
+                    logger.exception(e)
+                    test_history_row.state = 'error'
+                    test_history_row.error_message = e.message
                     test_history_row.save()
+                    rows_failed += 1
+                    continue
 
-                    rows_inserted += 1
-
-            except Exception, e:
-                logger.exception(e)
-                test_history_row.state = 'error'
-                test_history_row.error_message = e.message
-                test_history_row.save()
-                rows_failed += 1
-                continue
-
+        call_command('eddi_update', 'flagged')
         self.upload_file.state = 'processed'
         self.upload_file.save()
         return rows_inserted, rows_failed

@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
                     Study, TransferOutRow, AliquotRow)
+from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
                    FileInfoFilterForm)
@@ -129,7 +130,25 @@ def subjects(request, template="cephia/subjects.html"):
 
     context['subjects'] = subjects
     context['form'] = form
-    return render_to_response(template, context, context_instance=RequestContext(request))
+
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('subjects_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(subjects[0]).keys()
+
+            writer.writerow(headers)
+
+            for subject in subjects:
+                d = model_to_dict(subject)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @login_required
@@ -143,8 +162,25 @@ def visits(request, template="cephia/visits.html"):
 
     context['visits'] = visits
     context['form'] = form
-    return render_to_response(template, context, context_instance=RequestContext(request))
 
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('visits_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(visits[0]).keys()
+
+            writer.writerow(headers)
+
+            for visit in visits:
+                d = model_to_dict(visit)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def specimen(request, template="cephia/specimen.html"):
@@ -158,7 +194,25 @@ def specimen(request, template="cephia/specimen.html"):
 
     context['specimen'] = specimen
     context['form'] = form
-    return render_to_response(template, context, context_instance=RequestContext(request))
+
+    if 'csv' in request.GET:
+        try:
+            response, writer = get_csv_response('specimen_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+            headers = model_to_dict(specimen[0]).keys()
+
+            writer.writerow(headers)
+
+            for spec in specimen:
+                d = model_to_dict(spec)
+                content = [ d[x] for x in headers ]
+                writer.writerow(content)
+
+            return response
+        except Exception, e:
+            logger.exception(e)
+            messages.error(request, 'Failed to download file')
+    else:
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def specimen_type(request, template="cephia/specimen_type.html"):
@@ -402,6 +456,8 @@ def export_as_csv(request, file_id):
             rows = TransferOutRow.objects.filter(fileinfo=fileinfo, state=state)
         elif fileinfo.file_type == 'aliquot':
             rows = AliquotRow.objects.filter(fileinfo=fileinfo, state=state)
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo, state=state)
 
         response, writer = get_csv_response('file_process_errors_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers = sorted(rows[0].model_to_dict())
@@ -458,7 +514,6 @@ def download_visits_no_subjects(request):
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to download file')
-        return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
 def download_subjects_no_visits(request):
@@ -596,9 +651,16 @@ def export_file_data(request, file_id=None, state=None):
                        'volume',
                        'volume_units',
                        'reason']
+        elif fileinfo.file_type == 'test_history':
+            rows = DiagnosticTestHistoryRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['subject',
+                       'test_date',
+                       'test_code',
+                       'test_result',
+                       'source',
+                       'protocol']
 
         response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-
         headers.insert(0, 'id')
         headers.append("error_message")
         headers.append('resolve_action')
@@ -610,7 +672,7 @@ def export_file_data(request, file_id=None, state=None):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if model_dict['comment']:
+            if row.comment:
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
@@ -659,18 +721,24 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
                     associate_specimen = Specimen.objects.get(id=request.POST.get('unlink'))
                     associate_specimen.visit_linkage = None
                     associate_specimen.visit = None
-                    
                 associate_specimen.save()
             messages.success(request, 'Successful!')
 
         context = {}
-        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) & Q(visit__isnull=True) | Q(visit_linkage='provisional')).distinct()
+        subjects = Specimen.objects.values('subject__id').filter(Q(subject__isnull=False) &
+                                                                 Q(visit__isnull=True) |
+                                                                 Q(visit_linkage='provisional')).distinct()
 
         context['subjects'] = [ {'subject': Subject.objects.get(pk=x['subject__id']),
                                  'visits': Visit.objects.filter(subject__id=x['subject__id']),
-                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='provisional'),
-                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=False, visit_linkage='confirmed'),
-                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'], visit__isnull=True)} for x in subjects ]
+                                 'specimens_with_prov_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                       visit__isnull=False,
+                                                                                       visit_linkage='provisional'),
+                                 'specimens_with_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                  visit__isnull=False,
+                                                                                  visit_linkage='confirmed'),
+                                 'specimens_without_visits': Specimen.objects.filter(subject__id=x['subject__id'],
+                                                                                     visit__isnull=True)} for x in subjects ]
 
         return render_to_response(template, context, context_instance=RequestContext(request))
     except Exception, e:

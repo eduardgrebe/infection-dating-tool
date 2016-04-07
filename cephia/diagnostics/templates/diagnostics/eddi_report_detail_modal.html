@@ -1,6 +1,8 @@
 {% load bootstrap3 %}
+{% load common_tags %}
 <div class="container">
-  <form id="form" action="{% url 'diagnostics:eddi_report_detail' subject_id=subject.id %}" enctype="multipart/form-data" role="form" method="POST">
+  <form id="eddi-status-form" data-subject-id="{{subject.id}}" enctype="multipart/form-data" role="form" method="POST">
+    {{ history_formset.management_form }} 
     <div class="modal fade" id="eddiModal">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -10,30 +12,39 @@
           </div>
           <div class="modal-body eddi-modal-body">
             <div class="table-responsive" style="overflow:auto; max-height:500px;"">
-              <div class="col-md-4">{% bootstrap_field form.status %}</div>
-              <div class="col-md-8">{% bootstrap_field form.comment %}</div>
+              <div class="alert alert-success status-message"></div>
+              <div class="col-md-4">{% bootstrap_field status_form.status %}</div>
+              <div class="col-md-8">{% bootstrap_field status_form.comment %}</div>
               <table class="table-striped table table-hover">
                 <thead>
                   <th>Test Date</th>
                   <th>Adjusted Date</th>
                   <th>Test Name</th>
+                  <th>Test Estimate</th>
                   <th>Test Result</th>
+                  <th>Ignore</th>
                 </thead>
                 <tbody class="eddi-modal">
-                  {% for test in tests %}
+                  {% for history in history_formset %}
+                  {% if history.instance.test_date %}
+                  {{history.id}}
                   <tr>
-                    <td>{{test.test_date}}</td>
-                    <td>{{test.adjusted_date}}</td>
-                    <td>{{test.test.name}}</td>
-                    <td>{{test.test_result}}</td>
+                    <td>{{history.instance.test_date}}</td>
+                    <td>{{history.instance.adjusted_date}}</td>
+                    <td>{{history.instance.test.name}}</td>
+                    <td>{{test_properties|get_item:history.instance.test.id}}</td>
+                    <td>{{history.instance.test_result}}</td>
+                    <td>{{history.ignore}}</td>
                   </tr>
+                  {% endif %}
                   {% endfor %}
                 </tbody>
               </table>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary save-subject-eddi-status">Save</button>
+            <a class="btn btn-primary view-timeline" href="{% url 'diagnostics:subject_test_timeline' subject_id=subject.id %}" target="_blank">View Timeline</a>
+            <a class="btn btn-primary eddi-status-update">Save</a>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>

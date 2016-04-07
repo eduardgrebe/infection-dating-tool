@@ -1,0 +1,34 @@
+{% extends "timeline_base.html" %}
+{% block content %}
+<style type='text/css'>
+ #placement {
+     margin:32px;
+     height:650px;
+ }
+</style>
+<div id='placement'></div>
+<script type='text/javascript'>
+ var subjectId = $("title").data('subject-id');
+ var tg1 = {};
+ var url = "/diagnostics/subject_timeline_data/" + String(subjectId);
+
+ $.get(url, function(data, status) {
+     var response = JSON.parse(data);
+     var dataSource = JSON.parse(response.response);
+     if (status == "success") {
+         $(function() {
+             tg1 = $("#placement").timeline({
+	         "min_zoom":1, 
+	         "max_zoom":25, 
+	         "image_lane_height":0,
+	         "icon_folder":config.static_url + "timeglider/icons/",
+	         "data_source":dataSource,
+	         "constrain_to_data": false
+             });
+             
+             tg_actor = tg1.data("timeline");
+         });
+     }
+ }); 
+</script>
+{% endblock %}

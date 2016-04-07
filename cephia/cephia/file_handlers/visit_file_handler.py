@@ -20,7 +20,8 @@ class VisitFileHandler(FileHandler):
                                    'vl',
                                    'scopevisit_ec',
                                    'pregnant',
-                                   'hepatitis']
+                                   'hepatitis',
+                                   'artificial']
 
     def parse(self):
         from cephia.models import VisitRow
@@ -52,6 +53,7 @@ class VisitFileHandler(FileHandler):
                     visit_row.scopevisit_ec = row_dict['scopevisit_ec']
                     visit_row.pregnant = row_dict['pregnant']
                     visit_row.hepatitis = row_dict['hepatitis']
+                    visit_row.artificial = row_dict['artificial']
 
                     visit_row.fileinfo = self.upload_file
                     visit_row.state = 'pending'
@@ -68,12 +70,12 @@ class VisitFileHandler(FileHandler):
 
     def validate(self):
         from cephia.models import Visit, VisitRow, Subject
-        
+
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
         rows_validated = 0
         rows_failed = 0
-        
+
         for visit_row in VisitRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
@@ -82,13 +84,13 @@ class VisitFileHandler(FileHandler):
                     subject = Subject.objects.get(subject_label=visit_row.subject_label)
                 except Subject.DoesNotExist:
                     subject = None
-                    
+
                 first_visit = Visit.objects.filter(subject_label=visit_row.subject_label).order_by('visit_date').first()
                 already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
 
                 if already_exists:
                     raise Exception("Visit already exists.")
-                
+
                 if subject:
                     if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
                         error_msg += 'visit_date cannot be before cohort_entry_date.\n'
@@ -146,7 +148,8 @@ class VisitFileHandler(FileHandler):
                                                  vl = visit_row.vl or None,
                                                  scopevisit_ec = self.get_bool(visit_row.scopevisit_ec) or False,
                                                  pregnant = self.get_bool(visit_row.pregnant),
-                                                 hepatitis = self.get_bool(visit_row.hepatitis))
+                                                 hepatitis = self.get_bool(visit_row.hepatitis),
+                                                 artificial = self.get_bool(visit_row.artificial))
 
                     visit_row.state = 'processed'
                     visit_row.date_processed = timezone.now()

@@ -20,6 +20,8 @@ class ProtocolLookupFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
+        ProtocolLookup.objects.all().delete()
+        
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -34,7 +36,8 @@ class ProtocolLookupFileHandler(FileHandler):
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.message = "Row " + str(row_num) + ": " + e.message
+                self.upload_file.state = 'error'
                 self.upload_file.save()
                 return 0, 1
 

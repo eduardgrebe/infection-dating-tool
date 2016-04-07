@@ -253,7 +253,7 @@ class TransferInFileHandler(FileHandler):
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                transfer_in_row.state = 'row_error'
+                transfer_in_row.state = 'error'
                 transfer_in_row.error_message = e.message
                 transfer_in_row.save()
 
@@ -307,7 +307,7 @@ class TransferInFileHandler(FileHandler):
                                              state='validated',
                                              roll_up=True,
                                              specimen_label=transfer_in_row['specimen_label'],
-                                             specimen_type=transfer_in_row['specimen_type']).update(state = 'row_error',
+                                             specimen_type=transfer_in_row['specimen_type']).update(state = 'error',
                                                                                                     error_message=e.message)
                 rows_failed += 1
                 continue
