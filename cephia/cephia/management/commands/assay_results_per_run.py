@@ -79,9 +79,9 @@ class Command(BaseCommand):
 
             if spec_results.count() == 1:
                 final_result = lag_result.ODn
-            elif spec_results.count() > 1 and 'confirm' not in test_modes:
+            elif spec_results.count() > 1 and 'confirm_3' not in test_modes:
                 final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
-            elif spec_results.count() > 1 and 'confirm' in test_modes:
+            elif spec_results.count() > 1 and 'confirm_3' in test_modes:
                 final_result = spec_results.get(test_mode='confirm_3').ODn
 
             assay_result = AssayResult.objects.create(panel=assay_run.panel,
@@ -107,34 +107,20 @@ class Command(BaseCommand):
             test_modes = [ spec.test_mode for spec in spec_results ]:
             if spec_results.count() == 1:
                 lag_result = spec_results[0]
-                assay_result = AssayResult.objects.create(panel=lag_result.panel,
-                                                          assay=lag_result.assay,
-                                                          specimen=lag_result.specimen,
-                                                          assay_run=assay_run,
-                                                          test_date=lag_result.test_date,
-                                                          result=lag_result.result_AI)
             elif spec_results.count() > 1 and 'confirm' not in test_modes:
                 # take treated ODs and get mean
                 # divide result by the mean of the untreated ODs
                 # in other words mean of treated / mean of untreated
-
                 lag_result = spec_results[0]
-                assay_result = AssayResult.objects.create(panel=lag_result.panel,
-                                                          assay=lag_result.assay,
-                                                          specimen=lag_result.specimen,
-                                                          assay_run=assay_run,
-                                                          test_date=lag_result.test_date,
-                                                          result=result)
             elif spec_results.count() > 1 and 'confirm' in test_modes:
                 lag_result = spec_results.get(test_mode='confirm_3')
-                assay_result = AssayResult.objects.create(panel=lag_result.panel,
-                                                          assay=lag_result.assay,
-                                                          specimen=lag_result.specimen,
-                                                          assay_run=assay_run,
-                                                          test_date=lag_result.test_date,
-                                                          result=lag_result.result_AI)
 
-        pass
+            assay_result = AssayResult.objects.create(panel=lag_result.panel,
+                                                      assay=lag_result.assay,
+                                                      specimen=lag_result.specimen,
+                                                      assay_run=assay_run,
+                                                      test_date=lag_result.test_date,
+                                                      result=lag_result.result_AI)
 
     def _handle_biorad_avidity_jhu(self, assay_run, specimen_ids):
         pass

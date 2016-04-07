@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
 from cephia.models import Panel
-from forms import PanelCaptureForm, PanelFileForm
+from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm
 from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership, AssayRun
 from cephia.models import Assay, Laboratory
@@ -142,9 +142,13 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
 
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
-
+    runs = AssayRun.objects.all()
     if request.method == 'GET':
-        context['runs'] = AssayRun.objects.all()
+        form = AssayRunFilterForm(request.GET or None)
+        if form.is_valid():
+            runs = form.filter()
+        context['runs'] = runs
+        context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 def run_results(request, run_id=None, template="assay/run_results.html"):
@@ -152,7 +156,26 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
 
     if request.method == 'GET':
         context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
-    return render_to_response(template, context, context_instance=RequestContext(request))
+        context['run'] = AssayRun.objects.get(pk=run_id)
+        if 'csv' in request.GET:
+            try:
+                response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+
+                headers = model_to_dict(subjects[0]).keys()
+
+                writer.writerow(headers)
+
+                for subject in subjects:
+                    d = model_to_dict(subject)
+                    content = [ d[x] for x in headers ]
+                    writer.writerow(content)
+
+                return response
+            except Exception, e:
+                logger.exception(e)
+                messages.error(request, 'Failed to download file')
+
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 def panel_results(request, panel_id=None, template="assay/panel_results.html"):
     context = {}

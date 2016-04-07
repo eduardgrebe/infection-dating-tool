@@ -2,7 +2,16 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-{% block filter_content %}
+{% block filter_col_a %}
+{% bootstrap_field form.panel %}
+{% endblock %}
+
+{% block filter_col_b %}
+{% bootstrap_field form.assay %}
+{% endblock %}
+
+{% block filter_col_c %}
+{% bootstrap_field form.laboratory %}
 {% endblock %}
 
 {% block page_content %}
@@ -33,7 +42,7 @@
                     <td>{{run.panel.name}}</td>
                     <td>{{run.assay.name}}</td>
                     <td>{{run.laboratory.name}}</td>
-                    <td>{{run.fileinfo.id}}</td>
+                    <td>{{run.fileinfo.filename}}</td>
                     <td>{{run.run_date}}</td>
                     <td><a href="{% url 'assay:run_results' run_id=run.id %}" target="_blank" class="btn btn-default">Preview Results</a></td>
                   </tr>
