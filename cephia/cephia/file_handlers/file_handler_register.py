@@ -61,7 +61,7 @@ register_file_handler("panel_membership", PanelMembershipFileHandler, None)
 # register_file_handler("assay", ArchitectAvidityFileHandler
 # register_file_handler("assay", ArchitectUnmodifiedFileHandler
 # register_file_handler("assay", BEDFileHandler
-# register_file_handler("assay", BioRadAvidityCDCFileHandler
+register_file_handler("assay", BioRadAvidityCDCFileHandler, 'BioRadAvidity-CDC')
 # register_file_handler("assay", BioRadAvidityGlasgowFileHandler
 # register_file_handler("assay", BioRadAvidityJHUFileHandler
 # register_file_handler("assay", GeeniusFileHandler
@@ -76,7 +76,6 @@ register_file_handler("assay", LagSediaFileHandler, 'LAg-Sedia')
 LAg-Maxim
 ArchitectUnmodified
 ArchitectAvidity
-BioRadAvidity-CDC
 BioRadAvidity-JHU
 Vitros
 LSVitros-Diluent

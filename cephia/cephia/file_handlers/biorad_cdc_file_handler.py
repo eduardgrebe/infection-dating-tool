@@ -17,13 +17,14 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                    'operator',
                                    'assay_kit_lot',
                                    'plate_identifier',
-                                   'well',
+                                   'well_treated',
+                                   'well_untreated',
                                    'test_mode',
                                    'specimen_purpose',
                                    'treated_OD',
                                    'untreated_OD',
-                                   'AI',
-                                   'AI_recalc']
+                                   'AI_reported',
+                                   'AI']
 
         self.assay_name = 'BioRadAvidity-CDC'
 
@@ -40,21 +41,22 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     biorad_result_row = BioRadAvidityCDCResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                                    assay=row_dict['assay'],
-                                                                                    laboratory=row_dict['laboratory'],
-                                                                                    test_date=row_dict['test_date'],
-                                                                                    operator=row_dict['operator'],
-                                                                                    assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                                    plate_identifier=row_dict['plate_identifier'],
-                                                                                    well=row_dict['well'],
-                                                                                    test_mode=row_dict['test_mode'],
-                                                                                    specimen_purpose=row_dict['specimen_purpose'],
-                                                                                    treated_OD=row_dict['treated_OD'],
-                                                                                    untreated_OD=row_dict['untreated_OD'],
-                                                                                    AI_reported=row_dict['AI_reported'],
-                                                                                    AI=row_dict['AI'],
-                                                                                    state='pending',
-                                                                                    fileinfo=self.upload_file)
+                                                                                 assay=row_dict['assay'],
+                                                                                 laboratory=row_dict['laboratory'],
+                                                                                 test_date=row_dict['test_date'],
+                                                                                 operator=row_dict['operator'],
+                                                                                 assay_kit_lot=row_dict['assay_kit_lot'],
+                                                                                 plate_identifier=row_dict['plate_identifier'],
+                                                                                 well_untreated=row_dict['well_untreated'],
+                                                                                 well_treated=row_dict['well_treated'],
+                                                                                 test_mode=row_dict['test_mode'],
+                                                                                 specimen_purpose=row_dict['specimen_purpose'],
+                                                                                 treated_OD=row_dict['treated_OD'],
+                                                                                 untreated_OD=row_dict['untreated_OD'],
+                                                                                 AI_reported=row_dict['AI_reported'],
+                                                                                 AI=row_dict['AI'],
+                                                                                 state='pending',
+                                                                                 fileinfo=self.upload_file)
 
 
 
@@ -148,7 +150,8 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                                                           assay_kit_lot=biorad_result_row.assay_kit_lot,
                                                                           plate_identifier=biorad_result_row.plate_identifier,
                                                                           test_mode=biorad_result_row.test_mode,
-                                                                          well=biorad_result_row.well,
+                                                                          well_untreated=biorad_result_row.well_untreated,
+                                                                          well_treated=biorad_result_row.well_treated,
                                                                           specimen_purpose=biorad_result_row.specimen_purpose,
                                                                           treated_OD=biorad_row.treated_OD,
                                                                           untreated_OD=biorad_row.untreated_OD,

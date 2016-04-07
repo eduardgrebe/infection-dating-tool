@@ -134,7 +134,7 @@ class BaseAssayResult(models.Model):
     assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
     plate_identifier = models.CharField(max_length=255, null=False, blank=True)
     test_mode = models.CharField(max_length=255, null=False, blank=True)
-    well = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
 
@@ -152,7 +152,7 @@ class BaseAssayResultRow(ImportedRow):
     assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
     plate_identifier = models.CharField(max_length=255, null=False, blank=True)
     test_mode = models.CharField(max_length=255, null=False, blank=True)
-    well = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
 
 
@@ -253,8 +253,9 @@ class BioRadAvidityCDCResultRow(BaseAssayResultRow):
 
     treated_OD = models.CharField(max_length=255, null=False, blank=True)
     untreated_OD = models.CharField(max_length=255, null=False, blank=True)
+    AI_reported = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
-    AI_recalc = models.CharField(max_length=255, null=False, blank=True)
+    well_treated = models.CharField(max_length=255, null=False, blank=True)
 
 
 class BioRadAvidityCDCResult(BaseAssayResult):
@@ -264,8 +265,9 @@ class BioRadAvidityCDCResult(BaseAssayResult):
 
     treated_OD = models.FloatField(null=True, blank=False)
     untreated_OD = models.FloatField(null=True, blank=False)
+    AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
-    AI_recalc = models.FloatField(null=True, blank=False)
+    well_treated = models.CharField(max_length=10, null=False, blank=True)
 
 
 class BioRadAvidityJHUResultRow(BaseAssayResultRow):
