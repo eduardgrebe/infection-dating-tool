@@ -76,6 +76,10 @@ ftp-ed to a backup server.
 
 Both of these servers are offsite from the primary production server.
 
+The cron entry for the backup process is:
+  02 4 * * * /home/cephia/cephia_prod/db_backup/backup.sh > /home/cephia/cephia/logs/db_backup.log 2>&1
+
+
 * Tests
 
 ** running tests
