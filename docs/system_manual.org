@@ -18,30 +18,33 @@ No failover.
 
 * Software architecture
 
+** ssh
+
+ssh cephia@cephiadb.incidence-estimation.org
+
+(password on request)
+
 ** Operating System
 
-Ubuntu
+Ubuntu 14.04.4 LTS (GNU/Linux 3.13.0-83-generic x86_64)
 
 ** Webserver
 
-Apache2
+Apache2 : Apache/2.4.7
 
 ** Database
+mysql  Ver 14.14 Distrib 5.5.47, for debian-linux-gnu (x86_64) using readline 6.3
+mysqld  Ver 5.5.47-0ubuntu0.14.04.1 for debian-linux-gnu on x86_64 ((Ubuntu))
 
-MySQL
+** Server Framework
 
-** Framework
+Django==1.8.2 
+Python 2.7.6
 
-Django
-
-** Primary development language
-
-Python
-
-** Other languages
+** Frontend Framework
 
 Javascript
-jQuery
+jQuary
 
 * Backups
 
@@ -49,11 +52,20 @@ jQuery
 
 The code is stored in Git. 
 
-Where?
+Primary source is:
+  git@git.implicitdesign.co.za:cephia
+
+Since the code is fully checked out for each installation, there are secondary sources on:
+
+- the production server
+- the staging server
+- jarryd's laptop
+- eduard's laptop
+- gareth's laptop
 
 ** Uploaded files
 
-Files 
+All uploaded on the production server go to /home/cephia_prod/media
 
 ** Database
 
