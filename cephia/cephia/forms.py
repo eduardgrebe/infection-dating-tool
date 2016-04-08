@@ -296,10 +296,10 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'Architect':
                 rows = ArchitectResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/architect_row_info.html'
-            elif fileinfo.assay.name == 'BioRad-Avidity-CDC':
-                rows = BioradCDCResultRow.objects.filter(fileinfo=fileinfo)
+            elif fileinfo.assay.name == 'BioRadAvidity-CDC':
+                rows = BioRadAvidityCDCResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_cdc_row_info.html'
-            elif fileinfo.assay.name == 'BioRad-Avidity-JHU':
+            elif fileinfo.assay.name == 'BioRadAvidity-JHU':
                 rows = BioradJHUResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_jhu_row_info.html'
             elif fileinfo.assay.name == 'Vitros':

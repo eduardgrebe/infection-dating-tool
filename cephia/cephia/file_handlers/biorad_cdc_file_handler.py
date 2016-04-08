@@ -153,10 +153,10 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                                                           well_untreated=biorad_result_row.well_untreated,
                                                                           well_treated=biorad_result_row.well_treated,
                                                                           specimen_purpose=biorad_result_row.specimen_purpose,
-                                                                          treated_OD=biorad_row.treated_OD,
-                                                                          untreated_OD=biorad_row.untreated_OD,
-                                                                          AI_reported=biorad_row.AI_reported,
-                                                                          AI=biorad_row.AI,
+                                                                          treated_OD=biorad_result_row.treated_OD,
+                                                                          untreated_OD=biorad_result_row.untreated_OD,
+                                                                          AI_reported=biorad_result_row.AI_reported,
+                                                                          AI=biorad_result_row.AI,
                                                                           assay_run=assay_run)
 
                     biorad_result_row.state = 'processed'
