@@ -58,7 +58,7 @@ register_file_handler("test_property", TestPropertyFileHandler, None)
 register_file_handler("panel_shipment", PanelShipmentFileHandler, None)
 register_file_handler("panel_membership", PanelMembershipFileHandler, None)
 
-# register_file_handler("assay", ArchitectAvidityFileHandler
+register_file_handler("assay", ArchitectAvidityFileHandler, 'ArchitectAvidity')
 # register_file_handler("assay", ArchitectUnmodifiedFileHandler
 # register_file_handler("assay", BEDFileHandler
 register_file_handler("assay", BioRadAvidityCDCFileHandler, 'BioRadAvidity-CDC')

@@ -231,8 +231,7 @@ class ArchitectAvidityResultRow(BaseAssayResultRow):
     treated_SCO = models.CharField(max_length=255, null=False, blank=True)
     untreated_SCO = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
-    AI_recalc = models.CharField(max_length=255, null=False, blank=True)
-    SCO = models.CharField(max_length=255, null=False, blank=True)
+    AI_reported = models.CharField(max_length=255, null=False, blank=True)
 
 
 class ArchitectAvidityResult(BaseAssayResult):
@@ -243,7 +242,7 @@ class ArchitectAvidityResult(BaseAssayResult):
     treated_SCO = models.FloatField(null=True, blank=False)
     untreated_SCO = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
-    AI_recalc = models.FloatField(null=True, blank=False)
+    AI_reported = models.FloatField(null=True, blank=False)
 
 
 class BioRadAvidityCDCResultRow(BaseAssayResultRow):
