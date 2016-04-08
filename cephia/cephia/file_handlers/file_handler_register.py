@@ -62,8 +62,8 @@ register_file_handler("panel_membership", PanelMembershipFileHandler, None)
 # register_file_handler("assay", ArchitectUnmodifiedFileHandler
 # register_file_handler("assay", BEDFileHandler
 register_file_handler("assay", BioRadAvidityCDCFileHandler, 'BioRadAvidity-CDC')
-# register_file_handler("assay", BioRadAvidityGlasgowFileHandler
-# register_file_handler("assay", BioRadAvidityJHUFileHandler
+register_file_handler("assay", BioRadAvidityGlasgowFileHandler, 'BioRadAvidity-Glasgow')
+register_file_handler("assay", BioRadAvidityJHUFileHandler, 'BioRadAvidity-JHU')
 # register_file_handler("assay", GeeniusFileHandler
 # register_file_handler("assay", IDEV3FileHandler
 # register_file_handler("assay", LagMaximFileHandler
