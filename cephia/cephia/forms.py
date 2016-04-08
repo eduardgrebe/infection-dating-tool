@@ -299,8 +299,11 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'BioRadAvidity-CDC':
                 rows = BioRadAvidityCDCResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_cdc_row_info.html'
+            elif fileinfo.assay.name == 'BioRadAvidity-Glasgow':
+                rows = BioRadAvidityGlasgowResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/biorad_glasgow_row_info.html'
             elif fileinfo.assay.name == 'BioRadAvidity-JHU':
-                rows = BioradJHUResultRow.objects.filter(fileinfo=fileinfo)
+                rows = BioRadAvidityJHUResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_jhu_row_info.html'
             elif fileinfo.assay.name == 'Vitros':
                 rows = VitrosResultRow.objects.filter(fileinfo=fileinfo)

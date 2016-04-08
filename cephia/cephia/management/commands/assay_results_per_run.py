@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from assay.models import LagSediaResult, AssayRun, AssayResult, BioRadAvidityCDCResult
+from assay.models import (LagSediaResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
+                          BioRadAvidityJHUResult)
 from django.db.models import Sum
 import logging
 
@@ -28,7 +29,7 @@ class Command(BaseCommand):
         elif assay == 'BioRadAvidity-CDC':
             self._handle_biorad_avidity_cdc(assay_run)
 
-        elif assay == '':
+        elif assay == 'BioRadAvidity-JHU':
             self._handle_biorad_avidity_jhu(assay_run)
 
         elif assay == '':
@@ -71,7 +72,7 @@ class Command(BaseCommand):
             self._handle_immunetics_newmixpeptide(assay_run)
 
     def _handle_lag_sedia(self, assay_run):
-        specimen_ids = LagSediaResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run)
+        specimen_ids = LagSediaResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
         for specimen_id in specimen_ids:
             spec_results = LagSediaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
             test_modes = [ spec.test_mode for spec in spec_results ]
@@ -79,16 +80,21 @@ class Command(BaseCommand):
 
             if spec_results.count() == 1:
                 final_result = lag_result.ODn
+                method = 'singlet'
             elif spec_results.count() > 1 and 'confirm_3' not in test_modes:
                 final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
+                method = 'mean_ODn_screen'
             elif spec_results.count() > 1 and 'confirm_3' in test_modes:
-                final_result = spec_results.get(test_mode='confirm_3').ODn
+                confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
+                final_result = confirm_results[1]
+                method = 'median_of_confirms'
 
             assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                       assay=assay_run.assay,
                                                       specimen=lag_result.specimen,
                                                       assay_run=assay_run,
                                                       test_date=lag_result.test_date,
+                                                      method=method,
                                                       result=final_result)
 
     def _handle_lag_maxim(self, assay_run, specimen_ids):
@@ -101,7 +107,7 @@ class Command(BaseCommand):
         pass
 
     def _handle_biorad_avidity_cdc(self, assay_run):
-        specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run)
+        specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
         for specimen_id in specimen_ids:
             spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
             test_modes = [ spec.test_mode for spec in spec_results ]
@@ -128,8 +134,33 @@ class Command(BaseCommand):
                                                       method=method,
                                                       result=final_result)
 
-    def _handle_biorad_avidity_jhu(self, assay_run, specimen_ids):
-        pass
+    def _handle_biorad_avidity_jhu(self, assay_run):
+        specimen_ids = BioRadAvidityJHUResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
+        for specimen_id in specimen_ids:
+            spec_results = BioRadAvidityJHUResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+            test_modes = [ spec.test_mode for spec in spec_results ]
+            biorad_result = spec_results[0]
+
+            if spec_results.count() == 1:
+                final_result = biorad_result.AI
+                method = 'singlet'
+            elif spec_results.count() > 1 and 'confirm_3' not in test_modes:
+                untreated_mean = spec_results.aggregate(Sum('untreated_OD'))['untreated_OD__sum'] / spec_results.count()
+                treated_mean = spec_results.aggregate(Sum('treated_OD'))['treated_OD__sum'] / spec_results.count()
+                final_result = treated_mean / untreated_mean
+                method = 'mean_ODs_screen'
+            elif spec_results.count() > 1 and 'confirm_3' in test_modes:
+                confirm_results = sorted([ result.AI for result in spec_results.filter(test_mode__startswith='confirm') ])
+                final_result = confirm_results[1]
+                method = 'median_of_confirms'
+
+            assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                      assay=assay_run.assay,
+                                                      specimen=biorad_result.specimen,
+                                                      assay_run=assay_run,
+                                                      test_date=biorad_result.test_date,
+                                                      method=method,
+                                                      result=final_result)
 
     def _handle_vitros_avidity(self, assay_run, specimen_ids):
         pass

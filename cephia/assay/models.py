@@ -277,8 +277,8 @@ class BioRadAvidityJHUResultRow(BaseAssayResultRow):
 
     treated_OD = models.CharField(max_length=255, null=False, blank=True)
     untreated_OD = models.CharField(max_length=255, null=False, blank=True)
+    AI_reported = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
-    AI_recalc = models.CharField(max_length=255, null=False, blank=True)
 
 
 class BioRadAvidityJHUResult(BaseAssayResult):
@@ -287,8 +287,8 @@ class BioRadAvidityJHUResult(BaseAssayResult):
 
     treated_OD = models.FloatField(null=True, blank=False)
     untreated_OD = models.FloatField(null=True, blank=False)
+    AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
-    AI_recalc = models.FloatField(null=True, blank=False)
 
 
 class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
@@ -298,9 +298,9 @@ class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
 
     treated_OD = models.CharField(max_length=255, null=False, blank=True)
     untreated_OD = models.CharField(max_length=255, null=False, blank=True)
+    AI_reported = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
-    AI_recalc = models.CharField(max_length=255, null=False, blank=True)
-    clasification = models.CharField(max_length=255, null=False, blank=True)
+    classification = models.CharField(max_length=255, null=False, blank=True)
     dilution = models.CharField(max_length=255, null=False, blank=True)
 
 
@@ -310,9 +310,9 @@ class BioRadAvidityGlasgowResult(BaseAssayResult):
 
     treated_OD = models.FloatField(null=True, blank=False)
     untreated_OD = models.FloatField(null=True, blank=False)
+    AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
-    AI_recalc = models.FloatField(null=True, blank=False)
-    clasification = models.CharField(max_length=255, null=False, blank=True)
+    classification = models.CharField(max_length=255, null=False, blank=True)
     dilution = models.CharField(max_length=255, null=False, blank=True)
 
 

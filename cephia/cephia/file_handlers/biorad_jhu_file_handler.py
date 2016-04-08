@@ -20,10 +20,12 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                                    'well',
                                    'test_mode',
                                    'specimen_purpose',
-                                   'result_treated_OD',
-                                   'result_untreated_OD',
-                                   'result_AI',
-                                   'result_AI_recalc']
+                                   'treated_OD',
+                                   'untreated_OD',
+                                   'AI',
+                                   'AI_recalc']
+
+        self.assay_name = 'BioRadAvidity-JHU'
 
 
     def parse(self):
@@ -39,21 +41,21 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     biorad_result_row = BioRadAvidityJHUResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                                    assay=row_dict['assay'],
-                                                                                    laboratory=row_dict['laboratory'],
-                                                                                    test_date=row_dict['test_date'],
-                                                                                    operator=row_dict['operator'],
-                                                                                    assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                                    plate_identifier=row_dict['plate_identifier'],
-                                                                                    well=row_dict['well'],
-                                                                                    test_mode=row_dict['test_mode'],
-                                                                                    specimen_purpose=row_dict['specimen_purpose'],
-                                                                                    result_treated_OD=row_dict['result_treated_OD'],
-                                                                                    result_untreated_OD=row_dict['result_untreated_OD'],
-                                                                                    result_AI=row_dict['result_AI'],
-                                                                                    result_AI_recalc=row_dict['result_AI_recalc'],
-                                                                                    state='pending',
-                                                                                    fileinfo=self.upload_file)
+                                                                                 assay=row_dict['assay'],
+                                                                                 laboratory=row_dict['laboratory'],
+                                                                                 test_date=row_dict['test_date'],
+                                                                                 operator=row_dict['operator'],
+                                                                                 assay_kit_lot=row_dict['assay_kit_lot'],
+                                                                                 plate_identifier=row_dict['plate_identifier'],
+                                                                                 well_untreated=row_dict['well_untreated'],
+                                                                                 test_mode=row_dict['test_mode'],
+                                                                                 specimen_purpose=row_dict['specimen_purpose'],
+                                                                                 treated_OD=row_dict['treated_OD'],
+                                                                                 untreated_OD=row_dict['untreated_OD'],
+                                                                                 AI=row_dict['AI'],
+                                                                                 AI_reported=row_dict['AI_reported'],
+                                                                                 state='pending',
+                                                                                 fileinfo=self.upload_file)
 
 
 
@@ -86,7 +88,6 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=biorad_result_row.assay)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
@@ -123,7 +124,7 @@ class BioRadAvidityJHUFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import BioRadAvidityJHUResultRow, BioRadAvidityJHUResult, AssayResult
 
@@ -133,17 +134,11 @@ class BioRadAvidityJHUFileHandler(FileHandler):
         for biorad_result_row in BioRadAvidityJHUResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=biorad_result_row.assay)
+                    assay = Assay.objects.get(name=self.assay_name)
                     panel = Panel.objects.get(pk=panel_id)
                     specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
-
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(biorad_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=biorad_result_row.result_AI)
 
                     biorad_result = BioRadAvidityJHUResult.objects.create(specimen=specimen,
                                                                           assay=assay,
@@ -153,13 +148,13 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                                                                           assay_kit_lot=biorad_result_row.assay_kit_lot,
                                                                           plate_identifier=biorad_result_row.plate_identifier,
                                                                           test_mode=biorad_result_row.test_mode,
-                                                                          well=biorad_result_row.well,
+                                                                          well_untreated=biorad_result_row.well_untreated,
                                                                           specimen_purpose=biorad_result_row.specimen_purpose,
-                                                                          result_treated_OD=biorad_result_row.result_treated_OD,
-                                                                          result_untreated_OD=biorad_result_row.result_untreated_OD,
-                                                                          result_AI=biorad_result_row.result_AI,
-                                                                          result_AI_recalc=biorad_result_row.result_AI_recalc,
-                                                                          assay_result=assay_result)
+                                                                          treated_OD=biorad_result_row.treated_OD,
+                                                                          untreated_OD=biorad_result_row.untreated_OD,
+                                                                          AI=biorad_result_row.AI,
+                                                                          AI_reported=biorad_result_row.AI_reported,
+                                                                          assay_run=assay_run)
 
                     biorad_result_row.state = 'processed'
                     biorad_result_row.date_processed = timezone.now()
