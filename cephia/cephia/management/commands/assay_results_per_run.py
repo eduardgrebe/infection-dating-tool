@@ -36,7 +36,7 @@ class Command(BaseCommand):
             self._handle_geenius(assay_run)
         elif assay == '':
             self._handle_BED(assay_run)
-        elif assay == '':
+        elif assay == 'BED':
             self._handle_biorad_avidity_glasgow(assay_run)
         elif assay == '':
             self._handle_bioplex_cdc(assay_run)
@@ -183,7 +183,30 @@ class Command(BaseCommand):
         pass
 
     def _handle_BED(self, assay_run, specimen_ids):
-        pass
+        specimen_ids = BEDResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
+        for specimen_id in specimen_ids:
+            spec_results = BEDResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+            test_modes = [ spec.test_mode for spec in spec_results ]
+            bed_result = spec_results[0]
+
+            if spec_results.count() == 1:
+                final_result = bed_result.ODn
+                method = 'singlet'
+            elif spec_results.count() > 1 and 'confirm_3' not in test_modes:
+                final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
+                method = 'mean_ODn_screen'
+            elif spec_results.count() > 1 and 'confirm_3' in test_modes:
+                confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
+                final_result = confirm_results[1]
+                method = 'median_of_confirms'
+
+            assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                      assay=assay_run.assay,
+                                                      specimen=bed_result.specimen,
+                                                      assay_run=assay_run,
+                                                      test_date=bed_result.test_date,
+                                                      method=method,
+                                                      result=final_result)
 
     def _handle_idev3_handle_biorad_avidity_glasgow(self, assay_run, specimen_ids):
         pass
