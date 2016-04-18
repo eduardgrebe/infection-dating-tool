@@ -153,10 +153,10 @@ class BEDFileHandler(FileHandler):
                                                           test_mode=bed_result_row.test_mode,
                                                           well_untreated=bed_result_row.well_untreated,
                                                           specimen_purpose=bed_result_row.specimen_purpose,
-                                                          OD=float(bed_row.OD),
-                                                          calibrator_OD=float(bed_row.calibrator_OD),
-                                                          ODn=float(bed_row.ODn),
-                                                          ODn_reported=float(bed_row.ODn_reported),
+                                                          OD=bed_result_row.OD,
+                                                          calibrator_OD=bed_result_row.calibrator_OD,
+                                                          ODn=bed_result_row.ODn,
+                                                          ODn_reported=bed_result_row.ODn_reported,
                                                           assay_run=assay_run,
                                                           status=warning_msg)
 
