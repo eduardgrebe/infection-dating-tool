@@ -18,13 +18,15 @@ class BEDFileHandler(FileHandler):
                                    'operator',
                                    'assay_kit_lot',
                                    'plate_identifier',
-                                   'well',
+                                   'well_untreated',
                                    'test_mode',
                                    'specimen_purpose',
                                    'OD',
                                    'calibrator_OD',
                                    'ODn',
-                                   'ODn_recalc']
+                                   'ODn_reported']
+
+        self.assay_name = 'BED'
 
     def parse(self):
         from assay.models import BEDResultRow
@@ -45,12 +47,12 @@ class BEDFileHandler(FileHandler):
                                                                  assay_kit_lot=row_dict['assay_kit_lot'],
                                                                  plate_identifier=row_dict['plate_identifier'],
                                                                  test_mode=row_dict['test_mode'],
-                                                                 well=row_dict['well'],
+                                                                 well_untreated=row_dict['well_untreated'],
                                                                  specimen_purpose=row_dict['specimen_purpose'],
                                                                  OD=row_dict['OD'],
                                                                  calibrator_OD=row_dict['calibrator_OD'],
                                                                  ODn=row_dict['ODn'],
-                                                                 ODn_recalc=row_dict['ODn_recalc'],
+                                                                 ODn_reported=row_dict['ODn_reported'],
                                                                  state='pending',
                                                                  fileinfo=self.upload_file)
 
@@ -82,8 +84,7 @@ class BEDFileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=bed_result_row.assay)
+
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
@@ -92,8 +93,7 @@ class BEDFileHandler(FileHandler):
                 except Specimen.DoesNotExist:
                     error_msg += "Specimen not recognised.\n"
 
-                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
-                #     error_msg += "Specimen does not belong to any panel membership.\n"
+
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -120,27 +120,28 @@ class BEDFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import BEDResultRow, BEDResult, AssayResult
+        from assay.models import BEDResultRow, BEDResult, AssayResult, PanelMembership
 
         rows_inserted = 0
         rows_failed = 0
 
+        assay = Assay.objects.get(name=self.assay_name)
+        panel = Panel.objects.get(pk=panel_id)
+        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
+
         for bed_result_row in BEDResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=bed_result_row.assay)
-                    panel = Panel.objects.get(pk=panel_id)
                     specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(bed_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=float(bed_result_row.result_ODn_recalc))
+                    if specimen.visit.id not in panel_memberhsip_ids:
+                        warning_msg += "Specimen does not belong to any panel membership."
 
                     bed_result = BEDResult.objects.create(specimen=specimen,
                                                           assay=assay,
@@ -150,13 +151,14 @@ class BEDFileHandler(FileHandler):
                                                           assay_kit_lot=bed_result_row.assay_kit_lot,
                                                           plate_identifier=bed_result_row.plate_identifier,
                                                           test_mode=bed_result_row.test_mode,
-                                                          well=bed_result_row.well,
+                                                          well_untreated=bed_result_row.well_untreated,
                                                           specimen_purpose=bed_result_row.specimen_purpose,
-                                                          result_OD=float(bed_result_row.result_OD),
-                                                          result_calibrator_OD=float(bed_result_row.result_calibrator_OD),
-                                                          result_ODn=float(bed_result_row.result_ODn),
-                                                          result_ODn_recalc=float(bed_result_row.result_ODn_recalc),
-                                                          assay_result=assay_result)
+                                                          OD=float(bed_row.OD),
+                                                          calibrator_OD=float(bed_row.calibrator_OD),
+                                                          ODn=float(bed_row.ODn),
+                                                          ODn_reported=float(bed_row.ODn_reported),
+                                                          assay_run=assay_run,
+                                                          status=warning_msg)
 
                     bed_result_row.state = 'processed'
                     bed_result_row.date_processed = timezone.now()

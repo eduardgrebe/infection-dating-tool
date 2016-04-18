@@ -136,6 +136,7 @@ class BaseAssayResult(models.Model):
     test_mode = models.CharField(max_length=255, null=False, blank=True)
     well_untreated = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
+    status = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
 
 
