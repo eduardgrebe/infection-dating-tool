@@ -209,7 +209,6 @@ class Command(BaseCommand):
                                                       result=final_result)
 
     def _handle_idev3_handle_biorad_avidity_glasgow(self, assay_run, specimen_ids):
-        pass
 
     def _handle_bioplex_cdc(self, assay_run, specimen_ids):
         pass
