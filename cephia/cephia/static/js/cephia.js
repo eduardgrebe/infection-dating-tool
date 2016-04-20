@@ -51,6 +51,8 @@ $(document).ready(function() {
             }
         })
     });
+
+
     //MEMBERSHIP FILE MODAL CALL
     $('.btn-membership-file-modal').on('click', function(event) {
         event.preventDefault();
@@ -180,5 +182,15 @@ function submitFilterFormCSV() {
         .appendTo('.filter-form');
     $(".filter-form").submit();
     return true;
+};
+//
+function confirmResultFileUpload() {
+    var $resultFileModal = $(event.target).closest(".modal");
+    var file = $resultFileModal.find("input[type='file']").val();
+    var assay = $($resultFileModal.find("select option:selected")[0]).text()
+    var lab = $($resultFileModal.find("select option:selected")[1]).text()
+    $resultFileModal.modal('hide');
+    debugger;
+    //$("#confirmModal").modal();
 };
 //
