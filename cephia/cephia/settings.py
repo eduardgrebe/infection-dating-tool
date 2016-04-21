@@ -4,6 +4,7 @@ import os
 import git
 import sys
 from django.conf import global_settings
+import raven
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
@@ -66,6 +67,7 @@ XS_SHARING_ALLOWED_METHODS = ['GET','OPTIONS']
 # Application definition
 
 INSTALLED_APPS = (
+    'raven.contrib.django.raven_compat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,6 +85,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'raven.contrib.django.raven_compat.middleware.Sentry404CatchMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -95,6 +98,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+    'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware'
 )
 
 ROOT_URLCONF = 'cephia.urls'
@@ -162,56 +166,57 @@ EMAIL_FILE_PATH = os.path.join(LOG_FOLDER, "email")
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(process)d %(asctime)s %(module)s.%(funcName)s[%(lineno)d]: %(message)s'
-            },
+            'format': '%(levelname)s %(asctime)s %(process)d %(filename)s %(lineno)d: %(message)s'
+        },
         'simple': {
             'format': '%(asctime)s %(levelname)s %(message)s'
-            },
         },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'logging.NullHandler',
-        },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-            },
+        },
         'file':{
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
             'filename':os.path.join(LOG_FOLDER, LOG_FILENAME),
             'formatter': 'verbose',
-            'maxBytes':604800, 
+            'maxBytes':604800,
             'backupCount':50
-            }
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+         'console': {
+             'level': 'INFO',
+             'class': 'logging.StreamHandler',
+             'filters': ['require_debug_true'],
+             'formatter': 'verbose'
+        }
+    },
     'loggers': {
-        'django.request': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
+        '': {
+            'handlers': ['file', 'console', 'sentry'],
             'propagate': True,
+            'level': 'ERROR'
         },
         'django': {
-            'handlers':['file', 'mail_admins',],
+            'handlers': ['file', 'console', 'sentry'],
             'propagate': True,
-            'level':'INFO',
-            },
-        'django.schema': {
-            'handlers':['file', 'mail_admins',],
-            'propagate': True,
-            'level':'INFO',
-            },
-        'django.db': {
-            'handlers': ['file','mail_admins',],
-            'propagate': True,
-            'level': 'INFO'
+            'level': 'ERROR'
         },
-    }
-    }
+    },
+}
 
 if os.path.exists(os.path.join(PROJECT_HOME,"local_settings.py")):
     from local_settings import *
