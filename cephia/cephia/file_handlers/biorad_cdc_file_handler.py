@@ -17,12 +17,12 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                    'operator',
                                    'assay_kit_lot',
                                    'plate_identifier',
-                                   'well_treated',
-                                   'well_untreated',
+                                   'well_treated_DEA',
+                                   'well_untreated_dilwashsoln',
                                    'test_mode',
                                    'specimen_purpose',
-                                   'treated_OD',
-                                   'untreated_OD',
+                                   'treated_DEA_OD',
+                                   'untreated_dilwashsoln_OD',
                                    'AI_reported',
                                    'AI']
 
@@ -47,12 +47,12 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                                                                  operator=row_dict['operator'],
                                                                                  assay_kit_lot=row_dict['assay_kit_lot'],
                                                                                  plate_identifier=row_dict['plate_identifier'],
-                                                                                 well_untreated=row_dict['well_untreated'],
-                                                                                 well_treated=row_dict['well_treated'],
+                                                                                 well_untreated_dilwashsoln=row_dict['well_untreated_dilwashsoln'],
+                                                                                 well_treated_DEA=row_dict['well_treated_DEA'],
                                                                                  test_mode=row_dict['test_mode'],
                                                                                  specimen_purpose=row_dict['specimen_purpose'],
-                                                                                 treated_OD=row_dict['treated_OD'],
-                                                                                 untreated_OD=row_dict['untreated_OD'],
+                                                                                 treated_DEA_OD=row_dict['treated_DEA_OD'],
+                                                                                 untreated_dilwashsoln_OD=row_dict['untreated_dilwashsoln_OD'],
                                                                                  AI_reported=row_dict['AI_reported'],
                                                                                  AI=row_dict['AI'],
                                                                                  state='pending',
@@ -89,14 +89,15 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                #assay = Assay.objects.get(name=self.assay_name)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
+                    if biorad_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
+
 
                 # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
                 #     error_msg += "Specimen does not belong to any panel membership.\n"
@@ -135,12 +136,23 @@ class BioRadAvidityCDCFileHandler(FileHandler):
 
         for biorad_result_row in BioRadAvidityCDCResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
+
                 with transaction.atomic():
                     assay = Assay.objects.get(name=self.assay_name)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = None
+
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not recognised.\n"
+                        specimen = None
+
+                    # if specimen.visit.id not in panel_memberhsip_ids:
+                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     biorad_result = BioRadAvidityCDCResult.objects.create(specimen=specimen,
                                                                           assay=assay,
@@ -150,11 +162,11 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                                                           assay_kit_lot=biorad_result_row.assay_kit_lot,
                                                                           plate_identifier=biorad_result_row.plate_identifier,
                                                                           test_mode=biorad_result_row.test_mode,
-                                                                          well_untreated=biorad_result_row.well_untreated,
-                                                                          well_treated=biorad_result_row.well_treated,
+                                                                          well_untreated_dilwashsoln=biorad_result_row.well_untreated_dilwashsoln,
+                                                                          well_treated_DEA=biorad_result_row.well_treated_DEA,
                                                                           specimen_purpose=biorad_result_row.specimen_purpose,
-                                                                          treated_OD=biorad_result_row.treated_OD,
-                                                                          untreated_OD=biorad_result_row.untreated_OD,
+                                                                          treated_DEA_OD=biorad_result_row.treated_DEA_OD,
+                                                                          untreated_dilwashsoln_OD=biorad_result_row.untreated_dilwashsoln_OD,
                                                                           AI_reported=biorad_result_row.AI_reported,
                                                                           AI=biorad_result_row.AI,
                                                                           assay_run=assay_run)

@@ -2,19 +2,23 @@
   <div class="modal fade" id="resultModal">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-          <h4 class="modal-title">Upload File</h4>
-        </div>
-        <div class="modal-body">
-	      <div>{{upload_form.data_file}}</div>
-          <div>{{upload_form.assay}}</div>
-          <div>{{upload_form.laboratory}}</div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" onclick="confirmResultFileUpload();">Upload</button>
-        </div>
+        <form id="form" action="{% url 'assay:result_file_upload' panel_id=data.panel_id %}" enctype="multipart/form-data" role="form" method="POST">
+	      {% csrf_token %}
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Upload File</h4>
+          </div>
+          <div class="modal-body">
+	        <div>{{upload_form.data_file}}</div>
+            <div>{{upload_form.assay}}</div>
+            <div>{{upload_form.laboratory}}</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            {% comment %}<button type="button" class="btn btn-primary" onclick="confirmResultFileUpload();">Upload</button>{% endcomment %}
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

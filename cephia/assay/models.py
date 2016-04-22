@@ -125,7 +125,7 @@ class BaseAssayResult(models.Model):
     class Meta:
         abstract = True
 
-    specimen = models.ForeignKey(Specimen, null=False, blank=False, db_index=True)
+    specimen = models.ForeignKey(Specimen, null=True, db_index=True)
     assay = models.ForeignKey(Assay, null=False, blank=False, db_index=True)
     assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
     laboratory = models.ForeignKey(Laboratory, null=True, blank=False, db_index=True)
@@ -134,7 +134,6 @@ class BaseAssayResult(models.Model):
     assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
     plate_identifier = models.CharField(max_length=255, null=False, blank=True)
     test_mode = models.CharField(max_length=255, null=False, blank=True)
-    well_untreated = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
     status = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
@@ -153,7 +152,6 @@ class BaseAssayResultRow(ImportedRow):
     assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
     plate_identifier = models.CharField(max_length=255, null=False, blank=True)
     test_mode = models.CharField(max_length=255, null=False, blank=True)
-    well_untreated = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
 
 
@@ -165,6 +163,8 @@ class LagSediaResultRow(BaseAssayResultRow):
     OD = models.CharField(max_length=255, null=False, blank=True)
     calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
     ODn = models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=False, blank=True)
+
 
     def __unicode__(self):
         return self.specimen_label
@@ -178,6 +178,7 @@ class LagSediaResult(BaseAssayResult):
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
     ODn = models.FloatField(null=True, blank=False)
+    well= models.CharField(max_length=10, null=False, blank=True)
 
     def __unicode__(self):
         return self.specimen
@@ -191,6 +192,7 @@ class LagMaximResultRow(BaseAssayResultRow):
     OD = models.CharField(max_length=255, null=False, blank=True)
     calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
     ODn = models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
         return self.specimen_label
@@ -204,6 +206,7 @@ class LagMaximResult(BaseAssayResult):
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
     ODn = models.FloatField(null=True, blank=False)
+    well= models.CharField(max_length=10, null=False, blank=True)
 
     def __unicode__(self):
         return self.specimen.specimen_label
@@ -214,6 +217,7 @@ class ArchitectUnmodifiedResultRow(BaseAssayResultRow):
         db_table = "architect_unmodified_row"
 
     SCO = models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 
 class ArchitectUnmodifiedResult(BaseAssayResult):
@@ -222,6 +226,7 @@ class ArchitectUnmodifiedResult(BaseAssayResult):
         db_table = "assayarchitectunmodified"
 
     SCO = models.FloatField(null=True, blank=False)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 
 class ArchitectAvidityResultRow(BaseAssayResultRow):
@@ -233,6 +238,8 @@ class ArchitectAvidityResultRow(BaseAssayResultRow):
     untreated_SCO = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
     AI_reported = models.CharField(max_length=255, null=False, blank=True)
+    well_treated_guanidine = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_pbs = models.CharField(max_length=255, null=False, blank=True)
 
 
 class ArchitectAvidityResult(BaseAssayResult):
@@ -240,10 +247,12 @@ class ArchitectAvidityResult(BaseAssayResult):
     class Meta:
         db_table = "assayarchitectavidity"
 
-    treated_SCO = models.FloatField(null=True, blank=False)
-    untreated_SCO = models.FloatField(null=True, blank=False)
+    treated_guanidine_SCO = models.FloatField(null=True, blank=False)
+    untreated_pbs_SCO = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
     AI_reported = models.FloatField(null=True, blank=False)
+    well_treated_guanidine = models.CharField(max_length=10, null=False, blank=True)
+    well_untreated_pbs = models.CharField(max_length=10, null=False, blank=True)
 
 
 class BioRadAvidityCDCResultRow(BaseAssayResultRow):
@@ -251,11 +260,12 @@ class BioRadAvidityCDCResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "biorad_avidity_cdc_row"
 
-    treated_OD = models.CharField(max_length=255, null=False, blank=True)
-    untreated_OD = models.CharField(max_length=255, null=False, blank=True)
+    treated_DEA_OD = models.CharField(max_length=255, null=False, blank=True)
+    untreated_dilwashsoln_OD = models.CharField(max_length=255, null=False, blank=True)
     AI_reported = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
-    well_treated = models.CharField(max_length=255, null=False, blank=True)
+    well_treated_DEA = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
 
 
 class BioRadAvidityCDCResult(BaseAssayResult):
@@ -263,11 +273,20 @@ class BioRadAvidityCDCResult(BaseAssayResult):
     class Meta:
         db_table = "assaybioradavidity_cdc"
 
-    treated_OD = models.FloatField(null=True, blank=False)
-    untreated_OD = models.FloatField(null=True, blank=False)
+    treated_DEA_OD = models.FloatField(null=True)
+    untreated_dilwashsoln_OD = models.FloatField(null=True)
     AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
-    well_treated = models.CharField(max_length=10, null=False, blank=True)
+    well_treated_DEA = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.untreated_dilwashsoln_OD:
+            self.untreated_dilwashsoln_OD = None
+        if not self.treated_DEA_OD:
+            self.treated_DEA_OD = None
+
+        return super(BioRadAvidityCDCResult, self).save(*args, **kwargs)
 
 
 class BioRadAvidityJHUResultRow(BaseAssayResultRow):
@@ -275,20 +294,24 @@ class BioRadAvidityJHUResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "biorad_avidity_jhu_row"
 
-    treated_OD = models.CharField(max_length=255, null=False, blank=True)
-    untreated_OD = models.CharField(max_length=255, null=False, blank=True)
+    treated_DEA_OD = models.CharField(max_length=255, null=False, blank=True)
+    untreated_dilwashsoln_OD = models.CharField(max_length=255, null=False, blank=True)
     AI_reported = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
+    well_treated_DEA = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
 
 
 class BioRadAvidityJHUResult(BaseAssayResult):
     class Meta:
         db_table = "assaybioradavidity_jhu"
 
-    treated_OD = models.FloatField(null=True, blank=False)
-    untreated_OD = models.FloatField(null=True, blank=False)
+    treated_DEA_OD = models.FloatField(null=True, blank=False)
+    untreated_dilwashsoln_OD = models.FloatField(null=True, blank=False)
     AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
+    well_treated_DEA = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
 
 
 class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
@@ -296,10 +319,12 @@ class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "biorad_avidity_glasgow_row"
 
-    treated_OD = models.CharField(max_length=255, null=False, blank=True)
-    untreated_OD = models.CharField(max_length=255, null=False, blank=True)
-    AI_reported = models.CharField(max_length=255, null=False, blank=True)
-    AI = models.CharField(max_length=255, null=False, blank=True)
+    treated_urea_OD = models.CharField(max_length=255, null=True, blank=False)
+    untreated_dilwashsoln_OD = models.CharField(max_length=255, null=True, blank=False)
+    AI_reported = models.CharField(max_length=255, null=True, blank=False)
+    AI = models.CharField(max_length=255, null=True, blank=False)
+    well_treated_urea = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
     classification = models.CharField(max_length=255, null=False, blank=True)
     dilution = models.CharField(max_length=255, null=False, blank=True)
 
@@ -308,13 +333,14 @@ class BioRadAvidityGlasgowResult(BaseAssayResult):
     class Meta:
         db_table = "assaybioradavidity_glasgow"
 
-    treated_OD = models.FloatField(null=True, blank=False)
-    untreated_OD = models.FloatField(null=True, blank=False)
+    treated_urea_OD = models.FloatField(null=True, blank=False)
+    untreated_dilwashsoln_OD = models.FloatField(null=True, blank=False)
     AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
+    well_treated_urea = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
     classification = models.CharField(max_length=255, null=False, blank=True)
     dilution = models.CharField(max_length=255, null=False, blank=True)
-
 
 class VitrosAvidityResultRow(BaseAssayResultRow):
 
@@ -344,7 +370,8 @@ class LSVitrosDiluentResultRow(BaseAssayResultRow):
         db_table = "lsvitros_diluent_row"
 
     SCO = models.CharField(max_length=255, null=False, blank=True)
-
+    final_SCO = models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 class LSVitrosDiluentResult(BaseAssayResult):
 
@@ -352,6 +379,8 @@ class LSVitrosDiluentResult(BaseAssayResult):
         db_table = "assaylsvitros_diluent"
 
     SCO = models.FloatField(null=True, blank=False)
+    final_SCO = models.FloatField(null=True, blank=False)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 
 class LSVitrosPlasmaResultRow(BaseAssayResultRow):
@@ -360,6 +389,8 @@ class LSVitrosPlasmaResultRow(BaseAssayResultRow):
         db_table = "lsvitros_plasma_row"
 
     SCO = models.CharField(max_length=255, null=False, blank=True)
+    final_SCO = models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 
 class LSVitrosPlasmaResult(BaseAssayResult):
@@ -368,6 +399,8 @@ class LSVitrosPlasmaResult(BaseAssayResult):
         db_table = "assaylsvitros_plasma"
 
     SCO = models.FloatField(null=True, blank=False)
+    final_SCO = models.FloatField(null=True, blank=False)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 
 class GeeniusResultRow(BaseAssayResultRow):
@@ -443,13 +476,13 @@ class LuminexCDCResult(BaseAssayResult):
     class Meta:
         db_table = "assayluminexcdc"
 
-    gp120_n = models.FloatField(null=True, blank=False)
-    gp160_n = models.FloatField(null=True, blank=False)
-    gp41_n = models.FloatField(null=True, blank=False)
-    gp120_a = models.FloatField(null=True, blank=False)
-    gp160_a = models.FloatField(null=True, blank=False)
-    gp41_a = models.FloatField(null=True, blank=False)
-    LuminexIndex = models.FloatField(null=True, blank=False)
+    gp120_n = models.FloatField(null=True)
+    gp160_n = models.FloatField(null=True)
+    gp41_n = models.FloatField(null=True)
+    gp120_a = models.FloatField(null=True)
+    gp160_a = models.FloatField(null=True)
+    gp41_a = models.FloatField(null=True)
+    LuminexIndex = models.FloatField(null=True)
 
 
 class IDEV3ResultRow(BaseAssayResultRow):

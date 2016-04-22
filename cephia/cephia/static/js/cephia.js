@@ -184,13 +184,13 @@ function submitFilterFormCSV() {
     return true;
 };
 //
-function confirmResultFileUpload() {
-    var $resultFileModal = $(event.target).closest(".modal");
-    var file = $resultFileModal.find("input[type='file']").val();
-    var assay = $($resultFileModal.find("select option:selected")[0]).text()
-    var lab = $($resultFileModal.find("select option:selected")[1]).text()
-    $resultFileModal.modal('hide');
-    debugger;
-    //$("#confirmModal").modal();
-};
+// function confirmResultFileUpload() {
+//     var $resultFileModal = $(event.target).closest(".modal");
+//     var file = $resultFileModal.find("input[type='file']").val();
+//     var assay = $($resultFileModal.find("select option:selected")[0]).text()
+//     var lab = $($resultFileModal.find("select option:selected")[1]).text()
+//     $resultFileModal.modal('hide');
+//     debugger;
+//     //$("#confirmModal").modal();
+// };
 //

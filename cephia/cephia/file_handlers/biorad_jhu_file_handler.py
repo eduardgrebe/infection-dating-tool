@@ -17,16 +17,16 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                                    'operator',
                                    'assay_kit_lot',
                                    'plate_identifier',
-                                   'well',
+                                   'well_treated_DEA',
+                                   'well_untreated_dilwashsoln',
                                    'test_mode',
                                    'specimen_purpose',
-                                   'treated_OD',
-                                   'untreated_OD',
-                                   'AI',
-                                   'AI_recalc']
+                                   'treated_DEA_OD',
+                                   'untreated_dilwashsoln_OD',
+                                   'AI_reported',
+                                   'AI']
 
         self.assay_name = 'BioRadAvidity-JHU'
-
 
     def parse(self):
         from assay.models import BioRadAvidityJHUResultRow
@@ -47,13 +47,14 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                                                                                  operator=row_dict['operator'],
                                                                                  assay_kit_lot=row_dict['assay_kit_lot'],
                                                                                  plate_identifier=row_dict['plate_identifier'],
-                                                                                 well_untreated=row_dict['well_untreated'],
+                                                                                 well_untreated_dilwashsoln=row_dict['well_untreated_dilwashsoln'],
+                                                                                 well_treated_DEA=row_dict['well_treated_DEA'],
                                                                                  test_mode=row_dict['test_mode'],
                                                                                  specimen_purpose=row_dict['specimen_purpose'],
-                                                                                 treated_OD=row_dict['treated_OD'],
-                                                                                 untreated_OD=row_dict['untreated_OD'],
-                                                                                 AI=row_dict['AI'],
+                                                                                 treated_DEA_OD=row_dict['treated_DEA_OD'],
+                                                                                 untreated_dilwashsoln_OD=row_dict['untreated_dilwashsoln_OD'],
                                                                                  AI_reported=row_dict['AI_reported'],
+                                                                                 AI=row_dict['AI'],
                                                                                  state='pending',
                                                                                  fileinfo=self.upload_file)
 
@@ -88,6 +89,7 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+                #assay = Assay.objects.get(name=self.assay_name)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
@@ -148,12 +150,13 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                                                                           assay_kit_lot=biorad_result_row.assay_kit_lot,
                                                                           plate_identifier=biorad_result_row.plate_identifier,
                                                                           test_mode=biorad_result_row.test_mode,
-                                                                          well_untreated=biorad_result_row.well_untreated,
+                                                                          well_untreated_dilwashsoln=biorad_result_row.well_untreated_dilwashsoln,
+                                                                          well_treated_DEA=biorad_result_row.well_treated_DEA,
                                                                           specimen_purpose=biorad_result_row.specimen_purpose,
-                                                                          treated_OD=biorad_result_row.treated_OD,
-                                                                          untreated_OD=biorad_result_row.untreated_OD,
-                                                                          AI=biorad_result_row.AI,
+                                                                          treated_DEA_OD=biorad_result_row.treated_DEA_OD,
+                                                                          untreated_dilwashsoln_OD=biorad_result_row.untreated_dilwashsoln_OD,
                                                                           AI_reported=biorad_result_row.AI_reported,
+                                                                          AI=biorad_result_row.AI,
                                                                           assay_run=assay_run)
 
                     biorad_result_row.state = 'processed'

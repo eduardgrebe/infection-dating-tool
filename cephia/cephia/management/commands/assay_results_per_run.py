@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from assay.models import (LagSediaResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
                           BioRadAvidityJHUResult, ArchitectAvidityResult)
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 import logging
 
 logger = logging.getLogger(__name__)
@@ -115,6 +115,8 @@ class Command(BaseCommand):
                                                       result=final_result)
 
     def _handle_biorad_avidity_cdc(self, assay_run):
+        warning_msg = ''
+
         specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
         for specimen_id in specimen_ids:
             spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
@@ -124,15 +126,21 @@ class Command(BaseCommand):
             if spec_results.count() == 1:
                 final_result = biorad_result.AI
                 method = 'singlet'
-            elif spec_results.count() > 1 and 'confirm_3' not in test_modes:
-                untreated_mean = spec_results.aggregate(Sum('untreated_OD'))['untreated_OD__sum'] / spec_results.count()
-                treated_mean = spec_results.aggregate(Sum('treated_OD'))['treated_OD__sum'] / spec_results.count()
+            elif spec_results.count() == 2 and not [mode for mode in test_modes if "conf" in mode]:
+                untreated_mean = spec_results.aggregate(Sum('untreated_dilwashsoln_OD'))['untreated_dilwashsoln_OD__sum'] / spec_results.count()
+                treated_mean = spec_results.aggregate(Sum('treated_DEA_OD'))['treated_DEA_OD__sum'] / spec_results.count()
                 final_result = treated_mean / untreated_mean * 100
-                method = 'mean_ODs_screen'
-            elif spec_results.count() > 1 and 'confirm_3' in test_modes:
-                confirm_results = sorted([ result.AI for result in spec_results.filter(test_mode__startswith='confirm') ])
-                final_result = confirm_results[1]
-                method = 'median_of_confirms - check'
+                method = 'screens_mean(treated)/mean(untreated)*100'
+            elif spec_results.count() == 3 and len([mode for mode in test_modes if "conf" in mode]) == 2:
+                spec_results = spec_results.filter(test_mode__startswith='confirm')
+                untreated_mean = spec_results.aggregate(Sum('untreated_dilwashsoln_OD'))['untreated_dilwashsoln_OD__sum'] / spec_results.count()
+                treated_mean = spec_results.aggregate(Sum('treated_DEA_OD'))['treated_DEA_OD__sum'] / spec_results.count()
+                final_result = treated_mean / untreated_mean * 100
+                method = 'confirms_mean(treated)/mean(untreated)*100'
+            else:
+                warning_msg += "Unhandled numbered number of 'confirm' or 'screen' records.\n"
+                warning_msg += "Results not reflected in generic results table."
+                spec_results.update(status=warning_msg)
 
             assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                       assay=assay_run.assay,

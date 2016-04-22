@@ -7,7 +7,7 @@
 
 {% block page_content %}
 
-{% paginate panels %}
+{% lazy_paginate 50,50 panels %}
 <div class="container">
   <div class="row">
     <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">

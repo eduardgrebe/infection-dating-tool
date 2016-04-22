@@ -85,15 +85,13 @@ class BEDFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
 
-
                 try:
                     specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
-
-
+                    if bed_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -135,13 +133,17 @@ class BEDFileHandler(FileHandler):
         for bed_result_row in BEDResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 warning_msg = ''
+
                 with transaction.atomic():
-                    specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not recognised.\n"
 
                     if specimen.visit.id not in panel_memberhsip_ids:
-                        warning_msg += "Specimen does not belong to any panel membership."
+                        warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     bed_result = BEDResult.objects.create(specimen=specimen,
                                                           assay=assay,
