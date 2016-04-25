@@ -163,34 +163,7 @@ class Command(BaseCommand):
                                                               warning_msg=warning_msg)
 
     def _handle_biorad_avidity_jhu(self, assay_run):
-        warning_msg = ''
-
-        specimen_ids = BioRadAvidityJHUResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
-        for specimen_id in specimen_ids:
-            spec_results = BioRadAvidityJHUResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
-            test_modes = [ spec.test_mode for spec in spec_results ]
-            biorad_result = spec_results[0]
-
-            if spec_results.count() == 1:
-                final_result = biorad_result.AI
-                method = 'singlet'
-            elif spec_results.count() > 1 and 'confirm_3' not in test_modes:
-                untreated_mean = spec_results.aggregate(Sum('untreated_OD'))['untreated_OD__sum'] / spec_results.count()
-                treated_mean = spec_results.aggregate(Sum('treated_OD'))['treated_OD__sum'] / spec_results.count()
-                final_result = treated_mean / untreated_mean
-                method = 'mean_ODs_screen'
-            elif spec_results.count() > 1 and 'confirm_3' in test_modes:
-                confirm_results = sorted([ result.AI for result in spec_results.filter(test_mode__startswith='confirm') ])
-                final_result = confirm_results[1]
-                method = 'median_of_confirms'
-
-            assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                      assay=assay_run.assay,
-                                                      specimen=biorad_result.specimen,
-                                                      assay_run=assay_run,
-                                                      test_date=biorad_result.test_date,
-                                                      method=method,
-                                                      result=final_result)
+        pass
 
     def _handle_vitros_avidity(self, assay_run, specimen_ids):
         warning_msg = ''
@@ -228,7 +201,45 @@ class Command(BaseCommand):
                                                       warning_msg=warning_msg)
 
     def _handle_ls_vitros_diluent(self, assay_run, specimen_ids):
-        pass
+        warning_msg = ''
+
+        specimen_ids = LSVitrosDiluentResult.objects.values_list('specimen', flat=True)
+        .filter(assay_run=assay_run)
+        .exclude(test_mode='control').distinct()
+
+        for specimen_id in specimen_ids:
+            with transaction.atomic():
+                spec_results = LSVitrosDiluentResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                test_modes = [ spec.test_mode for spec in spec_results ]
+                ls_vitros_result = spec_results[0]
+                number_of_screens = len([mode for mode in test_modes if "screen" in mode])
+                number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
+
+                if spec_results.count() == 1:
+                    final_result = ls_vitros_result.SCO
+                    method = 'singlet'
+                elif number_of_screens > 0 and number_of_confirms == 0:
+                    spec_results = spec_results.filter(test_mode__startswith='screen')
+                    final_result = spec_results.aggregate(Sum('SCO'))['SCO__sum'] / spec_results.count()
+                    method = 'mean_of_screen_SCOs'
+                elif number_of_confirms > 0:
+                    spec_results = spec_results.filter(test_mode__startswith='confirm')
+                    final_result = spec_results.aggregate(Sum('SCO'))['SCO__sum'] / spec_results.count()
+                    method = 'mean_of_confirm_SCOs'
+
+                if number_of_confirms > 0 and number_of_confirms != 2:
+                    warning_msg += "Unexpected number of 'confirm' records."
+                if number_of_screens == 0:
+                    warning_msg += "\nNo 'screen' records."
+
+                    assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                              assay=assay_run.assay,
+                                                              specimen=ls_vitros_result.specimen,
+                                                              assay_run=assay_run,
+                                                              test_date=ls_vitros_result.test_date,
+                                                              method=method,
+                                                              result=final_result,
+                                                              warning_msg=warning_msg)
 
     def _handle_ls_vitros_plasma(self, assay_run, specimen_ids):
         pass
