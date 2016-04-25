@@ -165,10 +165,10 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                                                                           well_untreated_dilwashsoln=biorad_result_row.well_untreated_dilwashsoln,
                                                                           well_treated_DEA=biorad_result_row.well_treated_DEA,
                                                                           specimen_purpose=biorad_result_row.specimen_purpose,
-                                                                          treated_DEA_OD=biorad_result_row.treated_DEA_OD,
-                                                                          untreated_dilwashsoln_OD=biorad_result_row.untreated_dilwashsoln_OD,
-                                                                          AI_reported=biorad_result_row.AI_reported,
-                                                                          AI=biorad_result_row.AI,
+                                                                          treated_DEA_OD=biorad_result_row.treated_DEA_OD or None,
+                                                                          untreated_dilwashsoln_OD=biorad_result_row.untreated_dilwashsoln_OD or None,
+                                                                          AI_reported=biorad_result_row.AI_reported or None,
+                                                                          AI=biorad_result_row.AI or None,
                                                                           assay_run=assay_run)
 
                     biorad_result_row.state = 'processed'

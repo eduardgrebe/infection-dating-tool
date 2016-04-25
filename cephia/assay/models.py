@@ -116,9 +116,10 @@ class AssayResult(models.Model):
     result = models.FloatField(null=True, blank=False)
     unit = models.CharField(max_length=10, null=True, blank=False, choices=UNIT_CHOICES)
     method = models.CharField(max_length=50, null=True, blank=False)
+    warning_msg = models.CharField(max_length=255, null=False, blank=True)
 
     def __unicode__(self):
-        return self.specimen
+        return self.specimen.specimen_label
 
 class BaseAssayResult(models.Model):
 
@@ -135,7 +136,6 @@ class BaseAssayResult(models.Model):
     plate_identifier = models.CharField(max_length=255, null=False, blank=True)
     test_mode = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
-    status = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
 
 
@@ -234,8 +234,8 @@ class ArchitectAvidityResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "architect_avidity_row"
 
-    treated_SCO = models.CharField(max_length=255, null=False, blank=True)
-    untreated_SCO = models.CharField(max_length=255, null=False, blank=True)
+    treated_guanidine_SCO = models.CharField(max_length=255, null=False, blank=True)
+    untreated_pbs_SCO = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
     AI_reported = models.CharField(max_length=255, null=False, blank=True)
     well_treated_guanidine = models.CharField(max_length=255, null=False, blank=True)
@@ -247,12 +247,18 @@ class ArchitectAvidityResult(BaseAssayResult):
     class Meta:
         db_table = "assayarchitectavidity"
 
-    treated_guanidine_SCO = models.FloatField(null=True, blank=False)
-    untreated_pbs_SCO = models.FloatField(null=True, blank=False)
-    AI = models.FloatField(null=True, blank=False)
-    AI_reported = models.FloatField(null=True, blank=False)
+    treated_guanidine_SCO = models.FloatField(null=True)
+    untreated_pbs_SCO = models.FloatField(null=True)
+    AI = models.FloatField(null=True)
+    AI_reported = models.FloatField(null=True)
     well_treated_guanidine = models.CharField(max_length=10, null=False, blank=True)
     well_untreated_pbs = models.CharField(max_length=10, null=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.treated_guanidine_SCO < -1 and self.untreated_pbs_SCO < -1:
+            self.AI = None
+
+        return super(ArchitectAvidityResult, self).save(*args, **kwargs)
 
 
 class BioRadAvidityCDCResultRow(BaseAssayResultRow):
@@ -275,18 +281,10 @@ class BioRadAvidityCDCResult(BaseAssayResult):
 
     treated_DEA_OD = models.FloatField(null=True)
     untreated_dilwashsoln_OD = models.FloatField(null=True)
-    AI_reported = models.FloatField(null=True, blank=False)
-    AI = models.FloatField(null=True, blank=False)
+    AI_reported = models.FloatField(null=True)
+    AI = models.FloatField(null=True)
     well_treated_DEA = models.CharField(max_length=255, null=False, blank=True)
     well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
-
-    def save(self, *args, **kwargs):
-        if not self.untreated_dilwashsoln_OD:
-            self.untreated_dilwashsoln_OD = None
-        if not self.treated_DEA_OD:
-            self.treated_DEA_OD = None
-
-        return super(BioRadAvidityCDCResult, self).save(*args, **kwargs)
 
 
 class BioRadAvidityJHUResultRow(BaseAssayResultRow):
