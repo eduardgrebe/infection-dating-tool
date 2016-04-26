@@ -140,7 +140,7 @@ class BaseAssayResult(models.Model):
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
-            if getattr(self, field) == 'NA' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+            if getattr(self, field) in ['NA','NEG'] and self._meta.get_field(field).get_internal_type() == 'FloatField':
                 setattr(self, field, None)
         super(BaseAssayResult, self).save(*args, **kwargs)
 
