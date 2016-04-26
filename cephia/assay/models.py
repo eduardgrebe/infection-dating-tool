@@ -137,11 +137,15 @@ class BaseAssayResult(models.Model):
     test_mode = models.CharField(max_length=255, null=False, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
+    interpretation = models.CharField(max_length=255, null=True, blank=False)
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
-            if getattr(self, field) in ['NA','NEG'] and self._meta.get_field(field).get_internal_type() == 'FloatField':
+            if getattr(self, field) == 'NA' and self._meta.get_field(field).get_internal_type() == 'FloatField':
                 setattr(self, field, None)
+            if getattr(self, field) == 'NEG' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+                setattr(self, field, None)
+                setattr(self, 'interpretation', 'neg')
         super(BaseAssayResult, self).save(*args, **kwargs)
 
 
