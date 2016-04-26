@@ -10,21 +10,25 @@ class VitrosAvidityFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(VitrosAvidityFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen_label',
-                                   'assay',
-                                   'laboratory',
-                                   'test_date',
-                                   'operator',
-                                   'assay_kit_lot',
-                                   'plate_identifier',
-                                   'well',
-                                   'test_mode',
-                                   'specimen_purpose',
-                                   'result_treated_SCO',
-                                   'result_untreated_SCO',
-                                   'result_AI',
-                                   'result_AI_recalc']
+        self.registered_columns = ["specimen_label",
+                                   "assay",
+                                   "laboratory",
+                                   "operator",
+                                   "test_date",
+                                   "assay_kit_lot",
+                                   "plate_identifier",
+                                   "well_treated_guanidine",
+                                   "well_untreated_pbs",
+                                   "test_mode",
+                                   "specimen_purpose",
+                                   "treated_guanidine_OD",
+                                   "untreated_pbs_OD",
+                                   "AI_reported",
+                                   "AI",
+                                   "exclusion",
+                                   "panel"]
 
+        self.assay_name = 'Vitros'
 
     def parse(self):
         from assay.models import VitrosAvidityResultRow
@@ -39,22 +43,21 @@ class VitrosAvidityFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     vitros_result_row = VitrosAvidityResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                                    assay=row_dict['assay'],
-                                                                                    laboratory=row_dict['laboratory'],
-                                                                                    test_date=row_dict['test_date'],
-                                                                                    operator=row_dict['operator'],
-                                                                                    assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                                    plate_identifier=row_dict['plate_identifier'],
-                                                                                    well=row_dict['well'],
-                                                                                    test_mode=row_dict['test_mode'],
-                                                                                    specimen_purpose=row_dict['specimen_purpose'],
-                                                                                    result_treated_SCO=row_dict['result_treated_SCO'],
-                                                                                    result_untreated_SCO=row_dict['result_untreated_SCO'],
-                                                                                    result_AI=row_dict['result_AI'],
-                                                                                    result_AI_recalc=row_dict['result_AI_recalc'],
-                                                                                    state='pending',
-                                                                                    fileinfo=self.upload_file)
-
+                                                                              assay=row_dict['assay'],
+                                                                              laboratory=row_dict['laboratory'],
+                                                                              test_date=row_dict['test_date'],
+                                                                              operator=row_dict['operator'],
+                                                                              assay_kit_lot=row_dict['assay_kit_lot'],
+                                                                              plate_identifier=row_dict['plate_identifier'],
+                                                                              well=row_dict['well'],
+                                                                              test_mode=row_dict['test_mode'],
+                                                                              specimen_purpose=row_dict['specimen_purpose'],
+                                                                              treated_guanidine_OD=row_dict["treated_guanidine_OD"],
+                                                                              untreated_pbs_OD=row_dict["untreated_pbs_OD"],
+                                                                              AI_reported=row_dict["AI_reported"],
+                                                                              AI=row_dict["AI"],
+                                                                              state='pending',
+                                                                              fileinfo=self.upload_file)
 
 
                     rows_inserted += 1
@@ -133,33 +136,26 @@ class VitrosAvidityFileHandler(FileHandler):
         for vitros_result_row in VitrosAvidityResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=vitros_result_row.assay)
+                    assay = Assay.objects.get(name=self.assay_name)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
+                    specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=vitros_result_row.result_AI_recalc)
-
                     vitros_result = VitrosAvidityResult.objects.create(specimen=specimen,
-                                                                             assay=assay,
-                                                                             laboratory=Laboratory.objects.get(name=vitros_result_row.laboratory),
-                                                                             test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                                             operator=vitros_result_row.operator,
-                                                                             assay_kit_lot=vitros_result_row.assay_kit_lot,
-                                                                             plate_identifier=vitros_result_row.plate_identifier,
-                                                                             test_mode=vitros_result_row.test_mode,
-                                                                             well=vitros_result_row.well,
-                                                                             specimen_purpose=vitros_result_row.specimen_purpose,
-                                                                             result_treated_SCO=vitros_result_row.result_treated_SCO,
-                                                                             result_untreated_SCO=vitros_result_row.result_untreated_SCO,
-                                                                             result_AI=vitros_result_row.result_AI,
-                                                                             result_AI_recalc=vitros_result_row.result_AI_recalc,
-                                                                             assay_result=assay_result)
+                                                                       assay=assay,
+                                                                       laboratory=Laboratory.objects.get(name=vitros_result_row.laboratory),
+                                                                       test_date=datetime.strptime(vitros_result_row.test_date, '%Y-%m-%d').date(),
+                                                                       operator=vitros_result_row.operator,
+                                                                       assay_kit_lot=vitros_result_row.assay_kit_lot,
+                                                                       plate_identifier=vitros_result_row.plate_identifier,
+                                                                       test_mode=vitros_result_row.test_mode,
+                                                                       well=vitros_result_row.well,
+                                                                       specimen_purpose=vitros_result_row.specimen_purpose,
+                                                                       treated_guanidine_OD=vitros_result_row.treated_guanidine_OD,
+                                                                       untreated_pbs_OD=vitros_result_row.untreated_pbs_OD,
+                                                                       AI_reported=vitros_result_row.AI_reported,
+                                                                       AI=vitros_result_row.AI)
 
                     vitros_result_row.state = 'processed'
                     vitros_result_row.date_processed = timezone.now()

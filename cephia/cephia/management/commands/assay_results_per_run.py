@@ -27,26 +27,24 @@ class Command(BaseCommand):
             self._handle_biorad_avidity_cdc(assay_run)
         elif assay == 'BioRadAvidity-JHU':
             self._handle_biorad_avidity_jhu(assay_run)
-        elif assay == '':
+        elif assay == 'Vitros':
             self._handle_vitros_avidity(assay_run)
-        elif assay == '':
+        elif assay == 'LSVitros-Diluent':
             self._handle_ls_vitros_diluent(assay_run)
-        elif assay == '':
+        elif assay == 'LSVitros-Plasma':
             self._handle_ls_vitros_plasma(assay_run)
-        elif assay == '':
+        elif assay == 'Geenius':
             self._handle_geenius(assay_run)
-        elif assay == '':
-            self._handle_BED(assay_run)
         elif assay == 'BED':
+            self._handle_BED(assay_run)
+        elif assay == 'BioRadAvidity-Glasgow':
             self._handle_biorad_avidity_glasgow(assay_run)
-        elif assay == '':
+        elif assay == 'BioPlex-CDC':
             self._handle_bioplex_cdc(assay_run)
-        elif assay == '':
+        elif assay == 'BioPlex-Duke':
             self._handle_bioplex_duke(assay_run)
-        elif assay == '':
+        elif assay == 'IDE-iV3':
             self._handle_idev3(assay_run)
-        elif assay == '':
-            self._handle_bioplex_duke(assay_run)
         elif assay == '':
             self._handle_immunetics_mixl(assay_run)
         elif assay == '':
@@ -88,79 +86,88 @@ class Command(BaseCommand):
 
     def _handle_architect_avidity(self, assay_run):
         warning_msg = ''
+        specimen_ids = ArchitectAvidityResult.objects.values_list('specimen', flat=True)\
+                                                     .filter(assay_run=assay_run)\
+                                                     .exclude(test_mode='control').distinct()
 
-        specimen_ids = ArchitectAvidityResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
-        for specimen_id in specimen_ids:
-            spec_results = ArchitectAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
-            test_modes = [ spec.test_mode for spec in spec_results ]
-            number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
-            number_of_screens = len([mode for mode in test_modes if "screen" in mode])
-            architect_result = spec_results[0]
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                spec_results = ArchitectAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                test_modes = [ spec.test_mode for spec in spec_results ]
+                number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
+                number_of_screens = len([mode for mode in test_modes if "screen" in mode])
+                architect_result = spec_results[0]
 
-            if spec_results.count() == 1:
-                final_result = architect_result.AI
-                method = 'singlet'
-            elif number_of_screens > 1 and number_of_confirms == 0:
-                spec_result = spec_results.filter(test_mode__startswith='screen')
-                untreated_mean = spec_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / spec_results.count()
-                treated_mean = spec_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / spec_results.count()
-                final_result = treated_mean / untreated_mean * 100
-                method = 'mean_SCO_treated/mean_SCO_untreated*100'
-                warning_msg += 'More than 1 screen result.'
-            elif number_of_confirms > 0:
-                spec_result = spec_results.filter(test_mode__startswith='confirm')
-                untreated_mean = spec_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / spec_results.count()
-                treated_mean = spec_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / spec_results.count()
-                final_result = treated_mean / untreated_mean * 100
-                method = 'mean_SCO_treated/mean_SCO_untreated*100'
+                if spec_results.count() == 1:
+                    final_result = architect_result.AI
+                    method = 'singlet'
+                elif number_of_screens > 1 and number_of_confirms == 0:
+                    spec_result = spec_results.filter(test_mode__startswith='screen')
+                    untreated_mean = spec_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / spec_results.count()
+                    treated_mean = spec_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / spec_results.count()
+                    final_result = treated_mean / untreated_mean * 100
+                    method = 'mean_SCO_treated/mean_SCO_untreated*100'
+                    warning_msg += 'More than 1 screen result.'
+                elif number_of_confirms > 0:
+                    spec_result = spec_results.filter(test_mode__startswith='confirm')
+                    untreated_mean = spec_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / spec_results.count()
+                    treated_mean = spec_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / spec_results.count()
+                    final_result = treated_mean / untreated_mean * 100
+                    method = 'mean_SCO_treated/mean_SCO_untreated*100'
 
-            if number_of_confirms != 2:
-                warning_msg += "Unexpected number of 'confirm' records."
-            if number_of_screens == 0:
-                warning_msg += "\nNo 'screen' records."
+                if number_of_confirms != 2:
+                    warning_msg += "Unexpected number of 'confirm' records."
+                if number_of_screens == 0:
+                    warning_msg += "\nNo 'screen' records."
 
-            assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                      assay=assay_run.assay,
-                                                      specimen=biorad_result.specimen,
-                                                      assay_run=assay_run,
-                                                      test_date=biorad_result.test_date,
-                                                      method=method,
-                                                      result=final_result,
-                                                      warning_msg=warning_msg)
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=architect_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=architect_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
 
     def _handle_biorad_avidity_cdc(self, assay_run):
         warning_msg = ''
+        specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True) \
+                                                     .filter(assay_run=assay_run) \
+                                                     .exclude(test_mode='control').distinct()
 
-        specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).distinct()
-        for specimen_id in specimen_ids:
-            with transaction.atomic():
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
                 spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 biorad_result = spec_results[0]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
-
+                number_of_screens = len([mode for mode in test_modes if "screen" in mode])
                 if spec_results.count() == 1:
                     final_result = biorad_result.AI
                     method = 'singlet'
-                elif spec_results.count() == 2 and number_of_confirms == 0:
+                elif spec_results.count() > 1 and number_of_confirms == 0:
                     spec_results = spec_results.filter(test_mode__startswith='screen')
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
+                    warning_msg += 'More than 1 screen result.'
                     method = 'mean_of_screen_AIs'
-                elif spec_results.count() == 3 and number_of_confirms > 0:
+                elif spec_results.count() > 1 and number_of_confirms > 0:
                     spec_results = spec_results.filter(test_mode__startswith='confirm')
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
                     method = 'mean_of_confirm_AIs'
-                    if number_of_confirms != 2:
-                        warning_msg += "Unexpected number of 'confirm' records."
 
-                    assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                              assay=assay_run.assay,
-                                                              specimen=biorad_result.specimen,
-                                                              assay_run=assay_run,
-                                                              test_date=biorad_result.test_date,
-                                                              method=method,
-                                                              result=final_result,
-                                                              warning_msg=warning_msg)
+                if number_of_confirms != 2:
+                    warning_msg += "Unexpected number of 'confirm' records."
+                if number_of_screens == 0:
+                    warning_msg += "\nNo 'screen' records."
+
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=biorad_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=biorad_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
 
     def _handle_biorad_avidity_jhu(self, assay_run):
         pass
@@ -168,9 +175,7 @@ class Command(BaseCommand):
     def _handle_vitros_avidity(self, assay_run, specimen_ids):
         warning_msg = ''
 
-        specimen_ids = VitrosAvidityResult.objects.values_list('specimen', flat=True)
-        .filter(assay_run=assay_run)
-        .exclude(test_mode='control').distinct()
+        specimen_ids = VitrosAvidityResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).exclude(test_mode='control').distinct()
 
         for specimen_id in specimen_ids:
             spec_results = VitrosAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
@@ -203,9 +208,7 @@ class Command(BaseCommand):
     def _handle_ls_vitros_diluent(self, assay_run, specimen_ids):
         warning_msg = ''
 
-        specimen_ids = LSVitrosDiluentResult.objects.values_list('specimen', flat=True)
-        .filter(assay_run=assay_run)
-        .exclude(test_mode='control').distinct()
+        specimen_ids = LSVitrosDiluentResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).exclude(test_mode='control').distinct()
 
         for specimen_id in specimen_ids:
             with transaction.atomic():
@@ -242,9 +245,7 @@ class Command(BaseCommand):
                                                               warning_msg=warning_msg)
 
     def _handle_ls_vitros_plasma(self, assay_run, specimen_ids):
-        specimen_ids = LSVitrosPlasmaResult.objects.values_list('specimen', flat=True)
-        .filter(assay_run=assay_run)
-        .exclude(test_mode='control').distinct()
+        specimen_ids = LSVitrosPlasmaResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).exclude(test_mode='control').distinct()
 
         for specimen_id in specimen_ids:
             with transaction.atomic():

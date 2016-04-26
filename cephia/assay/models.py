@@ -138,6 +138,12 @@ class BaseAssayResult(models.Model):
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
 
+    def save(self, *args, **kwargs):
+        for field in self._meta.get_all_field_names():
+            if getattr(self, field) == 'NA' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+                setattr(self, field, None)
+        super(BaseAssayResult, self).save(*args, **kwargs)
+
 
 class BaseAssayResultRow(ImportedRow):
 
@@ -257,8 +263,8 @@ class ArchitectAvidityResult(BaseAssayResult):
     def save(self, *args, **kwargs):
         if self.treated_guanidine_SCO < -1 and self.untreated_pbs_SCO < -1:
             self.AI = None
+        super(ArchitectAvidityResult, self).save(*args, **kwargs)
 
-        return super(ArchitectAvidityResult, self).save(*args, **kwargs)
 
 
 class BioRadAvidityCDCResultRow(BaseAssayResultRow):
