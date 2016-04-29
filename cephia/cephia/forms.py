@@ -311,6 +311,9 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'LSVitros-Diluent':
                 rows = LSVitrosDiluentResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/lsvitros_diluent_row_info.html'
+            elif fileinfo.assay.name == 'LSVitros-Plasma':
+                rows = LSVitrosPlasmaResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/lsvitros_plasma_row_info.html'
             elif fileinfo.assay.name == 'Geenius':
                 rows = GeeniusResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/geenius_row_info.html'

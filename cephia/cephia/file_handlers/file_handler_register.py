@@ -69,13 +69,12 @@ register_file_handler("assay", BioRadAvidityJHUFileHandler, 'BioRadAvidity-JHU')
 # register_file_handler("assay", LagMaximFileHandler
 register_file_handler("assay", LagSediaFileHandler, 'LAg-Sedia')
 register_file_handler("assay", LSVitrosDiluentFileHandler, 'LSVitros-Diluent')
-register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Diluent')
+register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Plasma')
 # register_file_handler("assay", LuminexFileHandler
 # register_file_handler("assay", VitrosAvidityFileHandler
 '''
 LAg-Maxim
 ArchitectUnmodified
-ArchitectAvidity
 BioRadAvidity-JHU
 Vitros
 Geenius

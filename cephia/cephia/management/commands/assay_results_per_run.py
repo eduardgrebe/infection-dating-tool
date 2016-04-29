@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from assay.models import (LagSediaResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
-                          BioRadAvidityJHUResult, ArchitectAvidityResult, BEDResult, LSVitrosDiluentResult)
+                          BioRadAvidityJHUResult, ArchitectAvidityResult, BEDResult, LSVitrosDiluentResult,
+                          LSVitrosPlasmaResult)
 from django.db.models import Sum, Avg
 from django.db import transaction
 import logging
@@ -258,8 +259,10 @@ class Command(BaseCommand):
                                                           warning_msg=warning_msg)
 
     def _handle_ls_vitros_plasma(self, assay_run):
-        specimen_ids = LSVitrosPlasmaResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).exclude(test_mode='control').distinct()
+        warning_msg = ''
 
+        specimen_ids = LSVitrosPlasmaResult.objects.values_list('specimen',flat=True).filter(assay_run=assay_run)\
+                                                                                      .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
                 spec_results = LSVitrosPlasmaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
@@ -285,14 +288,14 @@ class Command(BaseCommand):
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
 
-                    assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                              assay=assay_run.assay,
-                                                              specimen=ls_vitros_result.specimen,
-                                                              assay_run=assay_run,
-                                                              test_date=ls_vitros_result.test_date,
-                                                              method=method,
-                                                              result=final_result,
-                                                              warning_msg=warning_msg)
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=ls_vitros_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=ls_vitros_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
 
     def _handle_geenius(self, assay_run, specimen_ids):
         pass
