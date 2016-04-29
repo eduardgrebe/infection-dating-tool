@@ -10,18 +10,22 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(ArchitectUnmodifiedFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen_label',
-                                   'assay',
-                                   'laboratory',
-                                   'test_date',
-                                   'operator',
-                                   'assay_kit_lot',
-                                   'plate_identifier',
-                                   'well',
-                                   'test_mode',
-                                   'specimen_purpose',
-                                   'result_SCO']
+        self.registered_columns = ["specimen_label",
+                                   "SCO",
+                                   "assay",
+                                   "laboratory",
+                                   "operator",
+                                   "test_date",
+                                   "assay_kit_lot",
+                                   "plate_identifier",
+                                   "well",
+                                   "test_mode",
+                                   "specimen_purpose",
+                                   "exclusion",
+                                   "panel",
+                                   "interpretation"]
 
+        self.assay_name = 'ArchitectUnmodified'
 
     def parse(self):
         from assay.models import ArchitectUnmodifiedResultRow
@@ -29,25 +33,27 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
+        self.header = [ x.strip() for x in self.header ]
+
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
-                    self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-
                     architect_result_row = ArchitectUnmodifiedResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                                    assay=row_dict['assay'],
-                                                                                    laboratory=row_dict['laboratory'],
-                                                                                    test_date=row_dict['test_date'],
-                                                                                    operator=row_dict['operator'],
-                                                                                    assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                                    plate_identifier=row_dict['plate_identifier'],
-                                                                                    well=row_dict['well'],
-                                                                                    test_mode=row_dict['test_mode'],
-                                                                                    specimen_purpose=row_dict['specimen_purpose'],
-                                                                                    result_SCO=row_dict['result_SCO'],
-                                                                                    state='pending',
-                                                                                    fileinfo=self.upload_file)
+                                                                                       assay=row_dict['assay'],
+                                                                                       laboratory=row_dict['laboratory'],
+                                                                                       test_date=row_dict['test_date'],
+                                                                                       operator=row_dict['operator'],
+                                                                                       assay_kit_lot=row_dict['assay_kit_lot'],
+                                                                                       plate_identifier=row_dict['plate_identifier'],
+                                                                                       well=row_dict['well'],
+                                                                                       test_mode=row_dict['test_mode'],
+                                                                                       specimen_purpose=row_dict['specimen_purpose'],
+                                                                                       SCO=row_dict['SCO'],
+                                                                                       exclusion=row_dict['exclusion'],
+                                                                                       interpretation=row_dict['interpretation'],
+                                                                                       state='pending',
+                                                                                       fileinfo=self.upload_file)
 
 
 
@@ -79,18 +85,14 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=architect_result_row.assay)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=architect_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
-
-                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
-                #     error_msg += "Specimen does not belong to any panel membership.\n"
+                    if architect_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -117,12 +119,17 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import ArchitectUnmodifiedResultRow, ArchitectUnmodifiedResult, AssayResult
+        from assay.models import ArchitectUnmodifiedResultRow, ArchitectUnmodifiedResult, AssayResult, PanelMembership
 
         rows_inserted = 0
         rows_failed = 0
+
+        assay = Assay.objects.get(name=self.assay_name)
+        panel = Panel.objects.get(pk=panel_id)
+        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
 
         for architect_result_row in ArchitectUnmodifiedResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
@@ -133,24 +140,21 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(architect_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=architect_result_row.result_SCO)
-
                     architect_result = ArchitectUnmodifiedResult.objects.create(specimen=specimen,
-                                                                             assay=assay,
-                                                                             laboratory=Laboratory.objects.get(name=architect_result_row.laboratory),
-                                                                             test_date=datetime.strptime(architect_result_row.test_date, '%Y-%m-%d').date(),
-                                                                             operator=architect_result_row.operator,
-                                                                             assay_kit_lot=architect_result_row.assay_kit_lot,
-                                                                             plate_identifier=architect_result_row.plate_identifier,
-                                                                             test_mode=architect_result_row.test_mode,
-                                                                             well=architect_result_row.well,
-                                                                             specimen_purpose=architect_result_row.specimen_purpose,
-                                                                             result_SCO=architect_result_row.result_SCO,
-                                                                             assay_result=assay_result)
+                                                                                assay=assay,
+                                                                                laboratory=Laboratory.objects\
+                                                                                .get(name=architect_result_row.laboratory),
+                                                                                test_date=None,
+                                                                                operator=architect_result_row.operator,
+                                                                                assay_kit_lot=architect_result_row.assay_kit_lot or None,
+                                                                                plate_identifier=architect_result_row.plate_identifier or None,
+                                                                                test_mode=architect_result_row.test_mode,
+                                                                                well=architect_result_row.well or None,
+                                                                                specimen_purpose=architect_result_row.specimen_purpose,
+                                                                                SCO=architect_result_row.SCO,
+                                                                                exclusion=architect_result_row.exclusion,
+                                                                                interpretation=architect_result_row.interpretation,
+                                                                                assay_run=assay_run)
 
                     architect_result_row.state = 'processed'
                     architect_result_row.date_processed = timezone.now()

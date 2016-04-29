@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from assay.models import (LagSediaResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
                           BioRadAvidityJHUResult, ArchitectAvidityResult, BEDResult, LSVitrosDiluentResult,
-                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult)
+                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult, ArchitectUnmodifiedResult)
 from django.db.models import Sum, Avg
 from django.db.models import Q, F
 from django.db import transaction
@@ -97,7 +97,31 @@ class Command(BaseCommand):
         pass
 
     def _handle_architect_unmodified(self, assay_run):
-        pass
+        warning_msg = ''
+        specimen_ids = ArchitectUnmodifiedResult.objects.values_list('specimen', flat=True)\
+                                                        .filter(assay_run=assay_run)\
+                                                        .exclude(test_mode='control').distinct()
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                spec_results = ArchitectUnmodifiedResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                architect_result = spec_results[0]
+
+                if spec_results.count() == 1:
+                    final_result = architect_result.SCO
+                    method = 'singlet'
+                elif spec_results.count() > 1:
+                    final_result = spec_result.aggregate(Sum('SCO')) / spec_results.count()
+                    method = 'mean_of_SCOs'
+                    warning_msg += "Unexpected number of results."
+
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=architect_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=architect_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
 
     def _handle_architect_avidity(self, assay_run):
         warning_msg = ''

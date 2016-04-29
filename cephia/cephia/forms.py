@@ -296,6 +296,9 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'ArchitectAvidity':
                 rows = ArchitectAvidityResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/architect_avidity_row_info.html'
+            elif fileinfo.assay.name == 'ArchitectUnmodified':
+                rows = ArchitectUnmodifiedResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/architect_unmodified_row_info.html'
             elif fileinfo.assay.name == 'BioRadAvidity-CDC':
                 rows = BioRadAvidityCDCResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_cdc_row_info.html'

@@ -59,7 +59,7 @@ register_file_handler("panel_shipment", PanelShipmentFileHandler, None)
 register_file_handler("panel_membership", PanelMembershipFileHandler, None)
 
 register_file_handler("assay", ArchitectAvidityFileHandler, 'ArchitectAvidity')
-# register_file_handler("assay", ArchitectUnmodifiedFileHandler
+register_file_handler("assay", ArchitectUnmodifiedFileHandler, 'ArchitectUnmodified')
 register_file_handler("assay", BEDFileHandler, 'BED')
 register_file_handler("assay", BioRadAvidityCDCFileHandler, 'BioRadAvidity-CDC')
 register_file_handler("assay", BioRadAvidityGlasgowFileHandler, 'BioRadAvidity-Glasgow')
@@ -74,7 +74,6 @@ register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Plasma')
 # register_file_handler("assay", VitrosAvidityFileHandler
 '''
 LAg-Maxim
-ArchitectUnmodified
 BioRadAvidity-JHU
 Vitros
 Geenius

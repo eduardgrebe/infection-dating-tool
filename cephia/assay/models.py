@@ -127,17 +127,18 @@ class BaseAssayResult(models.Model):
         abstract = True
 
     specimen = models.ForeignKey(Specimen, null=True, db_index=True)
-    assay = models.ForeignKey(Assay, null=False, blank=False, db_index=True)
+    assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
     laboratory = models.ForeignKey(Laboratory, null=True, blank=False, db_index=True)
-    test_date = models.DateField(max_length=255, null=False, blank=True)
-    operator = models.CharField(max_length=255, null=False, blank=True)
-    assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
-    plate_identifier = models.CharField(max_length=255, null=False, blank=True)
-    test_mode = models.CharField(max_length=255, null=False, blank=True)
-    specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.DateField(max_length=255, null=True, blank=True)
+    operator = models.CharField(max_length=255, null=True, blank=True)
+    assay_kit_lot = models.CharField(max_length=255, null=True, blank=True)
+    plate_identifier = models.CharField(max_length=255, null=True, blank=True)
+    test_mode = models.CharField(max_length=255, null=True, blank=True)
+    specimen_purpose = models.CharField(max_length=255, null=True, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
     interpretation = models.CharField(max_length=255, null=True, blank=False)
+    exclusion = models.CharField(max_length=255, null=True, blank=False)
     warning_msg = models.CharField(max_length=255, null=True, blank=False)
 
     def save(self, *args, **kwargs):
@@ -155,15 +156,17 @@ class BaseAssayResultRow(ImportedRow):
     class Meta:
         abstract = True
 
-    specimen_label = models.CharField(max_length=255, null=False, blank=True)
-    assay = models.CharField(max_length=255, null=False, blank=True)
-    laboratory = models.CharField(max_length=255, null=False, blank=True)
-    test_date = models.CharField(max_length=255, null=False, blank=True)
-    operator = models.CharField(max_length=255, null=False, blank=True)
-    assay_kit_lot = models.CharField(max_length=255, null=False, blank=True)
-    plate_identifier = models.CharField(max_length=255, null=False, blank=True)
-    test_mode = models.CharField(max_length=255, null=False, blank=True)
-    specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
+    specimen_label = models.CharField(max_length=255, null=True, blank=True)
+    assay = models.CharField(max_length=255, null=True, blank=True)
+    laboratory = models.CharField(max_length=255, null=True, blank=True)
+    test_date = models.CharField(max_length=255, null=True, blank=True)
+    operator = models.CharField(max_length=255, null=True, blank=True)
+    assay_kit_lot = models.CharField(max_length=255, null=True, blank=True)
+    plate_identifier = models.CharField(max_length=255, null=True, blank=True)
+    test_mode = models.CharField(max_length=255, null=True, blank=True)
+    specimen_purpose = models.CharField(max_length=255, null=True, blank=True)
+    interpretation = models.CharField(max_length=255, null=True, blank=False)
+    exclusion = models.CharField(max_length=255, null=True, blank=False)
 
 
 class LagSediaResultRow(BaseAssayResultRow):
@@ -335,7 +338,6 @@ class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
     well_treated_urea = models.CharField(max_length=255, null=True, blank=False)
     well_untreated_buffer = models.CharField(max_length=255, null=True, blank=False)
     dilution = models.CharField(max_length=255, null=True, blank=False)
-    exclusion = models.CharField(max_length=255, null=True, blank=False)
 
 
 class BioRadAvidityGlasgowResult(BaseAssayResult):
@@ -349,7 +351,7 @@ class BioRadAvidityGlasgowResult(BaseAssayResult):
     well_treated_urea = models.CharField(max_length=255, null=True, blank=False)
     well_untreated_buffer = models.CharField(max_length=255, null=True, blank=False)
     dilution = models.CharField(max_length=255, null=True, blank=False)
-    exclusion = models.CharField(max_length=255, null=True, blank=False)
+
 
 class VitrosAvidityResultRow(BaseAssayResultRow):
 
