@@ -18,7 +18,7 @@ class BEDFileHandler(FileHandler):
                                    'operator',
                                    'assay_kit_lot',
                                    'plate_identifier',
-                                   'well_untreated',
+                                   'well',
                                    'test_mode',
                                    'specimen_purpose',
                                    'OD',
@@ -47,7 +47,7 @@ class BEDFileHandler(FileHandler):
                                                                  assay_kit_lot=row_dict['assay_kit_lot'],
                                                                  plate_identifier=row_dict['plate_identifier'],
                                                                  test_mode=row_dict['test_mode'],
-                                                                 well_untreated=row_dict['well_untreated'],
+                                                                 well=row_dict['well'],
                                                                  specimen_purpose=row_dict['specimen_purpose'],
                                                                  OD=row_dict['OD'],
                                                                  calibrator_OD=row_dict['calibrator_OD'],
@@ -135,6 +135,7 @@ class BEDFileHandler(FileHandler):
                 warning_msg = ''
 
                 with transaction.atomic():
+                    specimen = None
                     try:
                         specimen = Specimen.objects.get(specimen_label=bed_result_row.specimen_label,
                                                         specimen_type=panel.specimen_type,
@@ -142,8 +143,8 @@ class BEDFileHandler(FileHandler):
                     except Specimen.DoesNotExist:
                         warning_msg += "Specimen not recognised.\n"
 
-                    if specimen.visit.id not in panel_memberhsip_ids:
-                        warning_msg += "Specimen does not belong to any panel membership.\n"
+                    # if specimen.visit.id not in panel_memberhsip_ids:
+                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     bed_result = BEDResult.objects.create(specimen=specimen,
                                                           assay=assay,
@@ -153,14 +154,14 @@ class BEDFileHandler(FileHandler):
                                                           assay_kit_lot=bed_result_row.assay_kit_lot,
                                                           plate_identifier=bed_result_row.plate_identifier,
                                                           test_mode=bed_result_row.test_mode,
-                                                          well_untreated=bed_result_row.well_untreated,
+                                                          well=bed_result_row.well,
                                                           specimen_purpose=bed_result_row.specimen_purpose,
-                                                          OD=bed_result_row.OD,
-                                                          calibrator_OD=bed_result_row.calibrator_OD,
-                                                          ODn=bed_result_row.ODn,
-                                                          ODn_reported=bed_result_row.ODn_reported,
+                                                          OD=bed_result_row.OD or None,
+                                                          calibrator_OD=bed_result_row.calibrator_OD or None,
+                                                          ODn=bed_result_row.ODn or None,
+                                                          ODn_reported=bed_result_row.ODn_reported or None,
                                                           assay_run=assay_run,
-                                                          status=warning_msg)
+                                                          warning_msg=warning_msg)
 
                     bed_result_row.state = 'processed'
                     bed_result_row.date_processed = timezone.now()

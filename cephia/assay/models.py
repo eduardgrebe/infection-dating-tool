@@ -138,6 +138,7 @@ class BaseAssayResult(models.Model):
     specimen_purpose = models.CharField(max_length=255, null=False, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
     interpretation = models.CharField(max_length=255, null=True, blank=False)
+    warning_msg = models.CharField(max_length=255, null=True, blank=False)
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
@@ -452,6 +453,7 @@ class BEDResultRow(BaseAssayResultRow):
     calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
     ODn_reported = models.CharField(max_length=255, null=False, blank=True)
     ODn = models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=False, blank=True)
 
 
 class BEDResult(BaseAssayResult):
@@ -463,6 +465,7 @@ class BEDResult(BaseAssayResult):
     calibrator_OD = models.FloatField(null=True, blank=False)
     ODn_reported = models.FloatField(null=True, blank=False)
     ODn = models.FloatField(null=True, blank=False)
+    well= models.CharField(max_length=10, null=False, blank=True)
 
 
 class LuminexCDCResultRow(BaseAssayResultRow):

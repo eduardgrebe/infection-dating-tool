@@ -83,7 +83,6 @@ class LagSediaFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                #assay = Assay.objects.get(name=self.assay_name)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
