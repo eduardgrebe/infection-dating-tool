@@ -117,7 +117,7 @@ class LSVitrosDiluentFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import LSVitrosDiluentResultRow, LSVitrosDiluentResult, AssayResult
 
@@ -133,24 +133,18 @@ class LSVitrosDiluentFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(lsvitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=lsvitros_result_row.result_SCO)
-
                     lsvitros_result = LSVitrosDiluentResult.objects.create(specimen=specimen,
-                                                                             assay=assay,
-                                                                             laboratory=Laboratory.objects.get(name=lsvitros_result_row.laboratory),
-                                                                             test_date=datetime.strptime(lsvitros_result_row.test_date, '%Y-%m-%d').date(),
-                                                                             operator=lsvitros_result_row.operator,
-                                                                             assay_kit_lot=lsvitros_result_row.assay_kit_lot,
-                                                                             plate_identifier=lsvitros_result_row.plate_identifier,
-                                                                             test_mode=lsvitros_result_row.test_mode,
-                                                                             well=lsvitros_result_row.well,
-                                                                             specimen_purpose=lsvitros_result_row.specimen_purpose,
-                                                                             result_SCO=lsvitros_result_row.result_SCO,
-                                                                             assay_result=assay_result)
+                                                                           assay=assay,
+                                                                           laboratory=Laboratory.objects.get(name=lsvitros_result_row.laboratory),
+                                                                           test_date=datetime.strptime(lsvitros_result_row.test_date, '%Y-%m-%d').date(),
+                                                                           operator=lsvitros_result_row.operator,
+                                                                           assay_kit_lot=lsvitros_result_row.assay_kit_lot,
+                                                                           plate_identifier=lsvitros_result_row.plate_identifier,
+                                                                           test_mode=lsvitros_result_row.test_mode,
+                                                                           well=lsvitros_result_row.well,
+                                                                           specimen_purpose=lsvitros_result_row.specimen_purpose,
+                                                                           SCO=lsvitros_result_row.SCO,
+                                                                           assay_result=assay_result)
 
                     lsvitros_result_row.state = 'processed'
                     lsvitros_result_row.date_processed = timezone.now()
