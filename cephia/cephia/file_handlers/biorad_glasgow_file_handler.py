@@ -10,22 +10,24 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(BioRadAvidityGlasgowFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen_label',
-                                   'assay',
-                                   'laboratory',
-                                   'test_date',
-                                   'operator',
-                                   'assay_kit_lot',
-                                   'plate_identifier',
-                                   'well_untreated',
-                                   'test_mode',
-                                   'specimen_purpose',
-                                   'treated_OD',
-                                   'untreated_OD',
-                                   'AI',
-                                   'AI_recalc',
-                                   'classification',
-                                   'dilution']
+        self.registered_columns = ["specimen_label",
+                                   "assay",
+                                   "laboratory",
+                                   "operator",
+                                   "test_date",
+                                   "assay_kit_lot",
+                                   "plate_identifier",
+                                   "well_treated_urea",
+                                   "well_untreated_buffer",
+                                   "test_mode",
+                                   "specimen_purpose",
+                                   "treated_urea_OD",
+                                   "untreated_buffer_OD",
+                                   "AI_reported",
+                                   "AI",
+                                   "dilution",
+                                   "exclusion",
+                                   "panel"]
 
         self.assay_name = 'BioRadAvidity-Glasgow'
 
@@ -49,15 +51,16 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                                                                                      operator=row_dict['operator'],
                                                                                      assay_kit_lot=row_dict['assay_kit_lot'],
                                                                                      plate_identifier=row_dict['plate_identifier'],
-                                                                                     well_untreated=row_dict['well_untreated'],
+                                                                                     well_treated_urea=row_dict['well_treated_urea'],
+                                                                                     well_untreated_buffer=row_dict['well_untreated_buffer'],
                                                                                      test_mode=row_dict['test_mode'],
                                                                                      specimen_purpose=row_dict['specimen_purpose'],
-                                                                                     treated_OD=row_dict['treated_OD'],
-                                                                                     untreated_OD=row_dict['untreated_OD'],
+                                                                                     treated_urea_OD=row_dict['treated_urea_OD'],
+                                                                                     untreated_buffer_OD=row_dict['untreated_buffer_OD'],
                                                                                      AI_reported=row_dict['AI_reported'],
                                                                                      AI=row_dict['AI'],
-                                                                                     classification=row_dict['classification'],
                                                                                      dilution=row_dict['dilution'],
+                                                                                     exclusion=row_dict['exclusion'],
                                                                                      state='pending',
                                                                                      fileinfo=self.upload_file)
 
@@ -90,14 +93,15 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                #assay = Assay.objects.get(name=biorad_result_row.assay)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
+                    if biorad_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
+
 
                 # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
                 #     error_msg += "Specimen does not belong to any panel membership.\n"
@@ -136,12 +140,22 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
 
         for biorad_result_row in BioRadAvidityGlasgowResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
+
                 with transaction.atomic():
                     assay = Assay.objects.get(name=self.assay_name)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = None
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not recognised.\n"
+                        specimen = None
+
+                    # if specimen.visit.id not in panel_memberhsip_ids:
+                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     biorad_result = BioRadAvidityGlasgowResult.objects.create(specimen=specimen,
                                                                               assay=assay,
@@ -151,14 +165,16 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                                                                               assay_kit_lot=biorad_result_row.assay_kit_lot,
                                                                               plate_identifier=biorad_result_row.plate_identifier,
                                                                               test_mode=biorad_result_row.test_mode,
-                                                                              well_untreated=biorad_result_row.well_untreated,
+                                                                              well_untreated_buffer=biorad_result_row.well_untreated_buffer,
+                                                                              well_treated_urea=biorad_result_row.well_treated_urea,
                                                                               specimen_purpose=biorad_result_row.specimen_purpose,
-                                                                              treated_OD=biorad_result_row.treated_OD,
-                                                                              untreated_OD=biorad_result_row.untreated_OD,
+                                                                              treated_urea_OD=biorad_result_row.treated_urea_OD,
+                                                                              untreated_buffer_OD=biorad_result_row.untreated_buffer_OD,
                                                                               AI_reported=biorad_result_row.AI_reported,
                                                                               AI=biorad_result_row.AI,
-                                                                              classification=biorad_result_row.classification,
-                                                                              dilution=biorad_result_row.dilution)
+                                                                              dilution=biorad_result_row.dilution,
+                                                                              exclusion=biorad_result_row.exclusion,
+                                                                              assay_run=assay_run)
 
                     biorad_result_row.state = 'processed'
                     biorad_result_row.date_processed = timezone.now()

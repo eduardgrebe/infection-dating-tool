@@ -329,13 +329,13 @@ class BioRadAvidityGlasgowResultRow(BaseAssayResultRow):
         db_table = "biorad_avidity_glasgow_row"
 
     treated_urea_OD = models.CharField(max_length=255, null=True, blank=False)
-    untreated_dilwashsoln_OD = models.CharField(max_length=255, null=True, blank=False)
+    untreated_buffer_OD = models.CharField(max_length=255, null=True, blank=False)
     AI_reported = models.CharField(max_length=255, null=True, blank=False)
     AI = models.CharField(max_length=255, null=True, blank=False)
-    well_treated_urea = models.CharField(max_length=255, null=False, blank=True)
-    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
-    classification = models.CharField(max_length=255, null=False, blank=True)
-    dilution = models.CharField(max_length=255, null=False, blank=True)
+    well_treated_urea = models.CharField(max_length=255, null=True, blank=False)
+    well_untreated_buffer = models.CharField(max_length=255, null=True, blank=False)
+    dilution = models.CharField(max_length=255, null=True, blank=False)
+    exclusion = models.CharField(max_length=255, null=True, blank=False)
 
 
 class BioRadAvidityGlasgowResult(BaseAssayResult):
@@ -343,13 +343,13 @@ class BioRadAvidityGlasgowResult(BaseAssayResult):
         db_table = "assaybioradavidity_glasgow"
 
     treated_urea_OD = models.FloatField(null=True, blank=False)
-    untreated_dilwashsoln_OD = models.FloatField(null=True, blank=False)
+    untreated_buffer_OD = models.FloatField(null=True, blank=False)
     AI_reported = models.FloatField(null=True, blank=False)
     AI = models.FloatField(null=True, blank=False)
-    well_treated_urea = models.CharField(max_length=255, null=False, blank=True)
-    well_untreated_dilwashsoln = models.CharField(max_length=255, null=False, blank=True)
-    classification = models.CharField(max_length=255, null=False, blank=True)
-    dilution = models.CharField(max_length=255, null=False, blank=True)
+    well_treated_urea = models.CharField(max_length=255, null=True, blank=False)
+    well_untreated_buffer = models.CharField(max_length=255, null=True, blank=False)
+    dilution = models.CharField(max_length=255, null=True, blank=False)
+    exclusion = models.CharField(max_length=255, null=True, blank=False)
 
 class VitrosAvidityResultRow(BaseAssayResultRow):
 

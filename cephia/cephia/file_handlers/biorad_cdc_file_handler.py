@@ -179,7 +179,6 @@ class BioRadAvidityCDCFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                import pdb; pdb.set_trace()
                 biorad_result_row.state = 'error'
                 biorad_result_row.error_message = e.message
                 biorad_result_row.save()
