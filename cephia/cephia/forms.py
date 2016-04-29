@@ -306,11 +306,11 @@ class RowFilterForm(forms.Form):
                 rows = BioRadAvidityJHUResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_jhu_row_info.html'
             elif fileinfo.assay.name == 'Vitros':
-                rows = VitrosResultRow.objects.filter(fileinfo=fileinfo)
+                rows = VitrosAvidityResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/vitros_row_info.html'
-            elif fileinfo.assay.name == 'LS-Vitros':
-                rows = LSVitrosResultRow.objects.filter(fileinfo=fileinfo)
-                template = 'assay/ls_vitros_row_info.html'
+            elif fileinfo.assay.name == 'LSVitros-Diluent':
+                rows = LSVitrosDiluentResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/lsvitros_diluent_row_info.html'
             elif fileinfo.assay.name == 'Geenius':
                 rows = GeeniusResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/geenius_row_info.html'

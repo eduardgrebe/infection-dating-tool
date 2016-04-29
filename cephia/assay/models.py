@@ -379,7 +379,6 @@ class LSVitrosDiluentResultRow(BaseAssayResultRow):
         db_table = "lsvitros_diluent_row"
 
     SCO = models.CharField(max_length=255, null=False, blank=True)
-    final_SCO = models.CharField(max_length=255, null=False, blank=True)
     well= models.CharField(max_length=255, null=False, blank=True)
 
 class LSVitrosDiluentResult(BaseAssayResult):
@@ -388,8 +387,7 @@ class LSVitrosDiluentResult(BaseAssayResult):
         db_table = "assaylsvitros_diluent"
 
     SCO = models.FloatField(null=True, blank=False)
-    final_SCO = models.FloatField(null=True, blank=False)
-    well= models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=10, null=False, blank=True)
 
 
 class LSVitrosPlasmaResultRow(BaseAssayResultRow):
@@ -398,7 +396,6 @@ class LSVitrosPlasmaResultRow(BaseAssayResultRow):
         db_table = "lsvitros_plasma_row"
 
     SCO = models.CharField(max_length=255, null=False, blank=True)
-    final_SCO = models.CharField(max_length=255, null=False, blank=True)
     well= models.CharField(max_length=255, null=False, blank=True)
 
 
@@ -408,7 +405,6 @@ class LSVitrosPlasmaResult(BaseAssayResult):
         db_table = "assaylsvitros_plasma"
 
     SCO = models.FloatField(null=True, blank=False)
-    final_SCO = models.FloatField(null=True, blank=False)
     well= models.CharField(max_length=255, null=False, blank=True)
 
 

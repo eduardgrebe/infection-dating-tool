@@ -68,8 +68,8 @@ register_file_handler("assay", BioRadAvidityJHUFileHandler, 'BioRadAvidity-JHU')
 # register_file_handler("assay", IDEV3FileHandler
 # register_file_handler("assay", LagMaximFileHandler
 register_file_handler("assay", LagSediaFileHandler, 'LAg-Sedia')
-# register_file_handler("assay", LSVitrosDiluentFileHandler
-# register_file_handler("assay", LSVitrosPlasmaFileHandler
+register_file_handler("assay", LSVitrosDiluentFileHandler, 'LSVitros-Diluent')
+register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Diluent')
 # register_file_handler("assay", LuminexFileHandler
 # register_file_handler("assay", VitrosAvidityFileHandler
 '''
@@ -78,10 +78,7 @@ ArchitectUnmodified
 ArchitectAvidity
 BioRadAvidity-JHU
 Vitros
-LSVitros-Diluent
-LSVitros-Plasma
 Geenius
-BED
 BioRadAvidity-Glasgow
 Luminex-CDC
 IDE-V3

@@ -89,7 +89,7 @@ class LSVitrosDiluentFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    if bed_result_row.specimen_purpose == 'panel_specimen':
+                    if lsvitros_result_row.specimen_purpose == 'panel_specimen':
                         error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
@@ -119,19 +119,32 @@ class LSVitrosDiluentFileHandler(FileHandler):
 
     def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import LSVitrosDiluentResultRow, LSVitrosDiluentResult, AssayResult
+        from assay.models import (LSVitrosDiluentResultRow, LSVitrosDiluentResult,
+                                  AssayResult, PanelMembership)
 
         rows_inserted = 0
         rows_failed = 0
 
+        assay = Assay.objects.get(name=self.assay_name)
+        panel = Panel.objects.get(pk=panel_id)
+        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
+
         for lsvitros_result_row in LSVitrosDiluentResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
+
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=lsvitros_result_row.assay)
-                    panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=lsvitros_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = None
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=lsvitros_result_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not recognised.\n"
+
+                    # if specimen.visit.id not in panel_memberhsip_ids:
+                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     lsvitros_result = LSVitrosDiluentResult.objects.create(specimen=specimen,
                                                                            assay=assay,
@@ -144,7 +157,7 @@ class LSVitrosDiluentFileHandler(FileHandler):
                                                                            well=lsvitros_result_row.well,
                                                                            specimen_purpose=lsvitros_result_row.specimen_purpose,
                                                                            SCO=lsvitros_result_row.SCO,
-                                                                           assay_result=assay_result)
+                                                                           assay_run=assay_run)
 
                     lsvitros_result_row.state = 'processed'
                     lsvitros_result_row.date_processed = timezone.now()
