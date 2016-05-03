@@ -92,6 +92,7 @@ class Command(BaseCommand):
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_lag_maxim(self, assay_run):
         pass
@@ -123,6 +124,8 @@ class Command(BaseCommand):
                                                           result=final_result,
                                                           warning_msg=warning_msg)
 
+                spec_results.update(assay_result=assay_result)
+
     def _handle_architect_avidity(self, assay_run):
         warning_msg = ''
         specimen_ids = ArchitectAvidityResult.objects.values_list('specimen', flat=True)\
@@ -141,16 +144,16 @@ class Command(BaseCommand):
                     final_result = architect_result.AI
                     method = 'singlet'
                 elif number_of_screens > 1 and number_of_confirms == 0:
-                    spec_result = spec_results.filter(test_mode__startswith='screen')
-                    untreated_mean = spec_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / spec_results.count()
-                    treated_mean = spec_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / spec_results.count()
+                    screen_results = spec_results.filter(test_mode__startswith='screen')
+                    untreated_mean = screen_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / screen_results.count()
+                    treated_mean = screen_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / screen_results.count()
                     final_result = treated_mean / untreated_mean * 100
                     method = 'mean_SCO_treated/mean_SCO_untreated*100'
                     warning_msg += 'More than 1 screen result.'
                 elif number_of_confirms > 0:
-                    spec_result = spec_results.filter(test_mode__startswith='confirm')
-                    untreated_mean = spec_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / spec_results.count()
-                    treated_mean = spec_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / spec_results.count()
+                    confirm_results = spec_results.filter(test_mode__startswith='confirm')
+                    untreated_mean = confirm_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / confirm_results.count()
+                    treated_mean = confirm_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / confirm_resultscount()
                     final_result = treated_mean / untreated_mean * 100
                     method = 'mean_SCO_treated/mean_SCO_untreated*100'
 
@@ -167,6 +170,7 @@ class Command(BaseCommand):
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_biorad_avidity_cdc(self, assay_run):
         warning_msg = ''
@@ -214,7 +218,9 @@ class Command(BaseCommand):
     def _handle_vitros_avidity(self, assay_run, specimen_ids):
         warning_msg = ''
 
-        specimen_ids = VitrosAvidityResult.objects.values_list('specimen', flat=True).filter(assay_run=assay_run).exclude(test_mode='control').distinct()
+        specimen_ids = VitrosAvidityResult.objects.values_list('specimen',flat=True)\
+                                                  .filter(assay_run=assay_run)\
+                                                  .exclude(test_mode='control').distinct()
 
         for specimen_id in specimen_ids:
             spec_results = VitrosAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
@@ -244,6 +250,8 @@ class Command(BaseCommand):
                                                       result=final_result,
                                                       warning_msg=warning_msg)
 
+            spec_results.update(assay_result=assay_result)
+
     def _handle_ls_vitros_diluent(self, assay_run):
         warning_msg = ''
 
@@ -261,12 +269,12 @@ class Command(BaseCommand):
                     final_result = ls_vitros_result.SCO
                     method = 'singlet'
                 elif number_of_screens > 0 and number_of_confirms == 0:
-                    spec_results = spec_results.filter(test_mode__startswith='screen')
-                    final_result = spec_results.aggregate(Sum('SCO'))['SCO__sum'] / spec_results.count()
+                    screen_results = spec_results.filter(test_mode__startswith='screen')
+                    final_result = screen_results.aggregate(Sum('SCO'))['SCO__sum'] / screen_results.count()
                     method = 'mean_of_screen_SCOs'
                 elif number_of_confirms > 0:
-                    spec_results = spec_results.filter(test_mode__startswith='confirm')
-                    final_result = spec_results.aggregate(Sum('SCO'))['SCO__sum'] / spec_results.count()
+                    confirm_results = spec_results.filter(test_mode__startswith='confirm')
+                    final_result = confirm_results.aggregate(Sum('SCO'))['SCO__sum'] / confirm_results.count()
                     method = 'mean_of_confirm_SCOs'
 
                 if number_of_confirms > 0 and number_of_confirms != 2:
@@ -282,6 +290,7 @@ class Command(BaseCommand):
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_ls_vitros_plasma(self, assay_run):
         warning_msg = ''
