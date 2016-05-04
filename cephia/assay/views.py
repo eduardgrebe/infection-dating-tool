@@ -195,16 +195,16 @@ def bed_results(request, panel_id=None, template="assay/bed_results.html"):
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
-def visit_specimen_report(request, template="reporting/results_modal.html"):
-    context = {}
+# def visit_specimen_report(request, template="reporting/results_modal.html"):
+#     context = {}
 
-    specime_id = request.POST.get('specimenId', None)
-    assay_run_id = request.POST.get('assayRunId', None)
+#     specime_id = request.POST.get('specimenId', None)
+#     assay_run_id = request.POST.get('assayRunId', None)
 
-    assay_run = AssayRun.objects.get(pk=assay_run_id)
-    #get the result table here
-    actual_results = .objects.filter(visit__id__in=visit_ids)
+#     assay_run = AssayRun.objects.get(pk=assay_run_id)
+#     #get the result table here
+#     actual_results = .objects.filter(visit__id__in=visit_ids)
 
-    context['actual_results'] = actual_results
-    response = render_to_response(template, context, context_instance=RequestContext(request))
-    return HttpResponse(json.dumps({'response': response.content}))
+#     context['actual_results'] = actual_results
+#     response = render_to_response(template, context, context_instance=RequestContext(request))
+#     return HttpResponse(json.dumps({'response': response.content}))

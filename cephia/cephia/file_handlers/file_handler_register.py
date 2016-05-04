@@ -66,14 +66,13 @@ register_file_handler("assay", BioRadAvidityGlasgowFileHandler, 'BioRadAvidity-G
 register_file_handler("assay", BioRadAvidityJHUFileHandler, 'BioRadAvidity-JHU')
 # register_file_handler("assay", GeeniusFileHandler
 # register_file_handler("assay", IDEV3FileHandler
-# register_file_handler("assay", LagMaximFileHandler
+register_file_handler("assay", LagMaximFileHandler, 'LAg-Maxim')
 register_file_handler("assay", LagSediaFileHandler, 'LAg-Sedia')
 register_file_handler("assay", LSVitrosDiluentFileHandler, 'LSVitros-Diluent')
 register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Plasma')
 # register_file_handler("assay", LuminexFileHandler
 # register_file_handler("assay", VitrosAvidityFileHandler
 '''
-LAg-Maxim
 BioRadAvidity-JHU
 Vitros
 Geenius
