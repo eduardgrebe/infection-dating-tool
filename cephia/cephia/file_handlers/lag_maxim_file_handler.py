@@ -82,17 +82,14 @@ class LagMaximFileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
-
-                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
-                #     error_msg += "Specimen does not belong to any panel membership.\n"
+                    if lag_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -121,19 +118,31 @@ class LagMaximFileHandler(FileHandler):
 
     def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import LagMaximResultRow, LagMaximResult, AssayResult
+        from assay.models import LagMaximResultRow, LagMaximResult, AssayResult, PanelMembership
 
         rows_inserted = 0
         rows_failed = 0
 
+        assay = Assay.objects.get(name=self.assay_name)
+        panel = Panel.objects.get(pk=panel_id)
+        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
+
         for lag_row in LagMaximResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
+
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=self.assay_name)
-                    panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = None
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not recognised.\n"
+
+                    # if specimen.visit.id not in panel_memberhsip_ids:
+                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     lag_result = LagMaximResult.objects.create(specimen=specimen,
                                                                assay=assay,
@@ -145,9 +154,9 @@ class LagMaximFileHandler(FileHandler):
                                                                test_mode=lag_row.test_mode,
                                                                well=lag_row.well,
                                                                specimen_purpose=lag_row.specimen_purpose,
-                                                               OD=float(lag_row.OD),
-                                                               calibrator_OD=float(lag_row.calibrator_OD),
-                                                               ODn=float(lag_row.ODn),
+                                                               OD=lag_row.OD or None,
+                                                               calibrator_OD=lag_row.calibrator_OD or None,
+                                                               ODn=lag_row.ODn or None,
                                                                assay_run=assay_run)
 
                     lag_row.state = 'processed'

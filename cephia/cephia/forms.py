@@ -293,6 +293,9 @@ class RowFilterForm(forms.Form):
             if fileinfo.assay.name == 'LAg-Sedia':
                 rows = LagSediaResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/lag_sedia_row_info.html'
+            if fileinfo.assay.name == 'LAg-Maxim':
+                rows = LagMaximResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/lag_maxim_row_info.html'
             elif fileinfo.assay.name == 'ArchitectAvidity':
                 rows = ArchitectAvidityResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/architect_avidity_row_info.html'
