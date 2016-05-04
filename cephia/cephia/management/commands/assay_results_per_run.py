@@ -346,12 +346,12 @@ class Command(BaseCommand):
                     final_result = ls_vitros_result.SCO
                     method = 'singlet'
                 elif number_of_screens > 0 and number_of_confirms == 0:
-                    spec_results = spec_results.filter(test_mode__startswith='screen')
-                    final_result = spec_results.aggregate(Sum('SCO'))['SCO__sum'] / spec_results.count()
+                    screen_results = spec_results.filter(test_mode__startswith='screen')
+                    final_result = screen_results.aggregate(Sum('SCO'))['SCO__sum'] / screen_results.count()
                     method = 'mean_of_screen_SCOs'
                 elif number_of_confirms > 0:
-                    spec_results = spec_results.filter(test_mode__startswith='confirm')
-                    final_result = spec_results.aggregate(Sum('SCO'))['SCO__sum'] / spec_results.count()
+                    confirm_results = spec_results.filter(test_mode__startswith='confirm')
+                    final_result = confirm_results.aggregate(Sum('SCO'))['SCO__sum'] / confirm_results.count()
                     method = 'mean_of_confirm_SCOs'
 
                 if number_of_confirms > 0 and number_of_confirms != 2:
@@ -367,6 +367,7 @@ class Command(BaseCommand):
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_geenius(self, assay_run, specimen_ids):
         pass
@@ -408,6 +409,7 @@ class Command(BaseCommand):
                                                       method=method,
                                                       result=final_result,
                                                       warning_msg=warning_msg)
+            spec_results.update(assay_result=assay_result)
 
     def _handle_idev3(self, assay_run):
         pass
@@ -487,6 +489,7 @@ class Command(BaseCommand):
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_bioplex_cdc(self, assay_run):
         pass
