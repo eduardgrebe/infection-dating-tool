@@ -13,10 +13,9 @@ class VitrosAvidityFileHandler(FileHandler):
         self.registered_columns = ["specimen_label",
                                    "assay",
                                    "laboratory",
-                                   "operator",
                                    "test_date",
+                                   "operator",
                                    "assay_kit_lot",
-                                   "plate_identifier",
                                    "well_treated_guanidine",
                                    "well_untreated_pbs",
                                    "test_mode",
@@ -25,8 +24,8 @@ class VitrosAvidityFileHandler(FileHandler):
                                    "untreated_pbs_OD",
                                    "AI_reported",
                                    "AI",
-                                   "exclusion",
-                                   "panel"]
+                                   "panel",
+                                   "interpretation"]
 
         self.assay_name = 'Vitros'
 
@@ -49,13 +48,15 @@ class VitrosAvidityFileHandler(FileHandler):
                                                                               operator=row_dict['operator'],
                                                                               assay_kit_lot=row_dict['assay_kit_lot'],
                                                                               plate_identifier=row_dict['plate_identifier'],
-                                                                              well=row_dict['well'],
+                                                                              well_treated_guanidine=row_dict['well_treated_guanidine'],
+                                                                              well_untreated_pbs=row_dict['well_untreated_pbs'],
                                                                               test_mode=row_dict['test_mode'],
                                                                               specimen_purpose=row_dict['specimen_purpose'],
                                                                               treated_guanidine_OD=row_dict["treated_guanidine_OD"],
                                                                               untreated_pbs_OD=row_dict["untreated_pbs_OD"],
                                                                               AI_reported=row_dict["AI_reported"],
                                                                               AI=row_dict["AI"],
+                                                                              interpretation=row_dict["interpretation"],
                                                                               state='pending',
                                                                               fileinfo=self.upload_file)
 
@@ -88,21 +89,20 @@ class VitrosAvidityFileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=vitros_result_row.assay)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
-
-                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
-                #     error_msg += "Specimen does not belong to any panel membership.\n"
+                    if vitros_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
+
+                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
+                #     error_msg += "Specimen does not belong to any panel membership.\n"
 
                 vitros_result_row.state = 'validated'
                 vitros_result_row.error_message = ''
@@ -126,21 +126,33 @@ class VitrosAvidityFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import VitrosAvidityResultRow, VitrosAvidityResult, AssayResult
+        from assay.models import VitrosAvidityResultRow, VitrosAvidityResult, AssayResult, PanelMembership
 
         rows_inserted = 0
         rows_failed = 0
 
+        assay = Assay.objects.get(name=self.assay_name)
+        panel = Panel.objects.get(pk=panel_id)
+        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
+
         for vitros_result_row in VitrosAvidityResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
+
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=self.assay_name)
-                    panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = None
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=vitros_result_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not recognised.\n"
+
+                    # if specimen.visit.id not in panel_memberhsip_ids:
+                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
                     vitros_result = VitrosAvidityResult.objects.create(specimen=specimen,
                                                                        assay=assay,
@@ -150,12 +162,15 @@ class VitrosAvidityFileHandler(FileHandler):
                                                                        assay_kit_lot=vitros_result_row.assay_kit_lot,
                                                                        plate_identifier=vitros_result_row.plate_identifier,
                                                                        test_mode=vitros_result_row.test_mode,
-                                                                       well=vitros_result_row.well,
+                                                                       well_treated_guanidine=vitros_result_row.well_treated_guanidine,
+                                                                       well_untreated_pbs=vitros_result_row.well_untreated_pbs,
                                                                        specimen_purpose=vitros_result_row.specimen_purpose,
-                                                                       treated_guanidine_OD=vitros_result_row.treated_guanidine_OD,
-                                                                       untreated_pbs_OD=vitros_result_row.untreated_pbs_OD,
-                                                                       AI_reported=vitros_result_row.AI_reported,
-                                                                       AI=vitros_result_row.AI)
+                                                                       treated_guanidine_OD=vitros_result_row.treated_guanidine_OD or None,
+                                                                       untreated_pbs_OD=vitros_result_row.untreated_pbs_OD or None,
+                                                                       AI_reported=vitros_result_row.AI_reported or None,
+                                                                       AI=vitros_result_row.AI or None,
+                                                                       interpretation=vitros_result_row.interpretation,
+                                                                       assay_run=assay_run)
 
                     vitros_result_row.state = 'processed'
                     vitros_result_row.date_processed = timezone.now()

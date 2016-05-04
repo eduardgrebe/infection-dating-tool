@@ -358,10 +358,12 @@ class VitrosAvidityResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "vitros_avidity_row"
 
-    treated_SCO = models.CharField(max_length=255, null=False, blank=True)
-    untreated_SCO = models.CharField(max_length=255, null=False, blank=True)
+    treated_guanidine_OD = models.CharField(max_length=255, null=False, blank=True)
+    untreated_pbs_OD = models.CharField(max_length=255, null=False, blank=True)
     AI = models.CharField(max_length=255, null=False, blank=True)
-    AI_recalc = models.CharField(max_length=255, null=False, blank=True)
+    AI_reported = models.CharField(max_length=255, null=False, blank=True)
+    well_treated_guanidine = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_pbs = models.CharField(max_length=255, null=False, blank=True)
 
 
 class VitrosAvidityResult(BaseAssayResult):
@@ -369,10 +371,12 @@ class VitrosAvidityResult(BaseAssayResult):
     class Meta:
         db_table = "assayvitrosavidity"
 
-    treated_SCO = models.FloatField(null=True, blank=False)
-    untreated_SCO = models.FloatField(null=True, blank=False)
-    AI = models.FloatField(null=True, blank=False)
-    AI_recalc = models.FloatField(null=True, blank=False)
+    treated_guanidine_OD = models.FloatField(max_length=255, null=True)
+    untreated_pbs_OD = models.FloatField(max_length=255, null=True)
+    AI = models.FloatField(max_length=255, null=True)
+    AI_reported = models.FloatField(max_length=255, null=True)
+    well_treated_guanidine = models.CharField(max_length=255, null=False, blank=True)
+    well_untreated_pbs = models.CharField(max_length=255, null=False, blank=True)
 
 
 class LSVitrosDiluentResultRow(BaseAssayResultRow):

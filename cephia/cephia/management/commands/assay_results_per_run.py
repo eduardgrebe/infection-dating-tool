@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from assay.models import (LagSediaResult, LagMaximResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
                           BioRadAvidityJHUResult, ArchitectAvidityResult, BEDResult, LSVitrosDiluentResult,
-                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult, ArchitectUnmodifiedResult)
+                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult, ArchitectUnmodifiedResult, VitrosAvidityResult)
 from django.db.models import Sum, Avg
 from django.db.models import Q, F
 from django.db import transaction
@@ -252,7 +252,7 @@ class Command(BaseCommand):
     def _handle_biorad_avidity_jhu(self, assay_run):
         pass
 
-    def _handle_vitros_avidity(self, assay_run, specimen_ids):
+    def _handle_vitros_avidity(self, assay_run):
         warning_msg = ''
 
         specimen_ids = VitrosAvidityResult.objects.values_list('specimen',flat=True)\
@@ -280,9 +280,9 @@ class Command(BaseCommand):
 
             assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                       assay=assay_run.assay,
-                                                      specimen=biorad_result.specimen,
+                                                      specimen=vitros_result.specimen,
                                                       assay_run=assay_run,
-                                                      test_date=biorad_result.test_date,
+                                                      test_date=vitros_result.test_date,
                                                       method=method,
                                                       result=final_result,
                                                       warning_msg=warning_msg)

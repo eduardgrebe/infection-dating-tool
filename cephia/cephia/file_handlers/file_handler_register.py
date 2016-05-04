@@ -64,23 +64,11 @@ register_file_handler("assay", BEDFileHandler, 'BED')
 register_file_handler("assay", BioRadAvidityCDCFileHandler, 'BioRadAvidity-CDC')
 register_file_handler("assay", BioRadAvidityGlasgowFileHandler, 'BioRadAvidity-Glasgow')
 register_file_handler("assay", BioRadAvidityJHUFileHandler, 'BioRadAvidity-JHU')
-# register_file_handler("assay", GeeniusFileHandler
-# register_file_handler("assay", IDEV3FileHandler
+register_file_handler("assay", GeeniusFileHandler, 'Geenius')
+register_file_handler("assay", IDEV3FileHandler, 'IDE-V3')
 register_file_handler("assay", LagMaximFileHandler, 'LAg-Maxim')
 register_file_handler("assay", LagSediaFileHandler, 'LAg-Sedia')
 register_file_handler("assay", LSVitrosDiluentFileHandler, 'LSVitros-Diluent')
 register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Plasma')
-# register_file_handler("assay", LuminexFileHandler
-# register_file_handler("assay", VitrosAvidityFileHandler
-'''
-BioRadAvidity-JHU
-Vitros
-Geenius
-BioRadAvidity-Glasgow
-Luminex-CDC
-IDE-V3
-BioPlex-Duke
-Immuneticks-MixL
-Immuneticks-NewMix
-Immuneticks-NewMixPeptide
-'''
+register_file_handler("assay", LuminexFileHandler, 'Luminex-CDC')
+register_file_handler("assay", VitrosAvidityFileHandler, 'Vitros')
