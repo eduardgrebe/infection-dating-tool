@@ -2,51 +2,6 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-<div class="col-md-8">
-  {% block filter_content %}
-  <div class="container">
-    <div class="row">
-      <div class="panel panel-info">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" href="#filter-panel">Filter</a>
-          </h3>
-        </div>
-        <div id="filter-panel" class="panel-collapse collapse">
-          <div class="panel-body">
-            <form id="form" class="filter-form" action="{% block submit_action %}{% endblock %}" role="form" method="GET">
-              <div class="row">
-                <div class="col-md-3">
-                  {% block filter_col_a %}
-                  {% endblock %}
-                </div>
-                <div class="col-md-3">
-                  {% block filter_col_b %}
-                  {% endblock %}
-                </div>
-                <div class="col-md-3">
-                  {% block filter_col_c %}
-                  {% endblock %}
-                </div>
-                <div class="col-md-3">
-                  {% block filter_col_d %}
-                  {% endblock %}
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-1">
-                  {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary" %}
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endblock %}
-</div>
-
 {% block page_content %}
 
 <div class="container">

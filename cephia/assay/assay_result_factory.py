@@ -31,12 +31,9 @@ class AssayResultFactory(object):
             self.results = IDEV3Result.objects.filter(assay_result__pk=assay_result_id)
         elif assay_result.assay.name == 'BioPlex-Duke':
             self.results = BioPlexDukeResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'Immunetics-MixL':
-            pass
-        elif assay_result.assay.name == 'Immunetics-NewMix':
-            pass
-        elif assay_result.assay.name == 'Immunetics-NewMixPeptide':
-            pass
 
     def get_results(self):
         return self.results
+
+    def get_headers(self):
+        import pdb; pdb.set_trace()

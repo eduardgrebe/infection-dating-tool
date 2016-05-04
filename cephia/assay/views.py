@@ -157,23 +157,6 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
     if request.method == 'GET':
         context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
         context['run'] = AssayRun.objects.get(pk=run_id)
-        # if 'csv' in request.GET:
-        #     try:
-        #         response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-
-        #         headers = model_to_dict(subjects[0]).keys()
-
-        #         writer.writerow(headers)
-
-        #         for subject in subjects:
-        #             d = model_to_dict(subject)
-        #             content = [ d[x] for x in headers ]
-        #             writer.writerow(content)
-
-        #         return response
-        #     except Exception, e:
-        #         logger.exception(e)
-        #         messages.error(request, 'Failed to download file')
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -195,16 +178,14 @@ def bed_results(request, panel_id=None, template="assay/bed_results.html"):
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
-# def visit_specimen_report(request, template="reporting/results_modal.html"):
-#     context = {}
+def specific_results(request, template="reporting/results_modal.html"):
+    context = {}
 
-#     specime_id = request.POST.get('specimenId', None)
-#     assay_run_id = request.POST.get('assayRunId', None)
+    assay_result_id = request.POST.get('assayResultId', None)
 
-#     assay_run = AssayRun.objects.get(pk=assay_run_id)
-#     #get the result table here
-#     actual_results = .objects.filter(visit__id__in=visit_ids)
+    result_factory = AssayResultFactory(assay_result_id)
+    context['results'] = result_factory.get_results()
+    context['headers'] = result_factory.get_headers()
 
-#     context['actual_results'] = actual_results
-#     response = render_to_response(template, context, context_instance=RequestContext(request))
-#     return HttpResponse(json.dumps({'response': response.content}))
+    response = render_to_response(template, context, context_instance=RequestContext(request))
+    return HttpResponse(json.dumps({'response': response.content}))

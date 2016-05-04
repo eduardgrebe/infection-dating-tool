@@ -2,8 +2,11 @@
 {% load bootstrap3 %}
 {% load endless %}
 
-{% block filter_fields %}
+{% block filter_col_a %}
 {% bootstrap_field filter_form.state %}
+{% endblock %}
+
+{% block filter_col_b %}
 {% bootstrap_field filter_form.has_comment %}
 {% endblock %}
 
