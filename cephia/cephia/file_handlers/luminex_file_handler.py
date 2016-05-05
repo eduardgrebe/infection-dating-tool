@@ -146,15 +146,6 @@ class LuminexFileHandler(FileHandler):
         for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
-                panel = Panel.objects.get(pk=panel_id)
-
-                try:
-                    specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
-                except Specimen.DoesNotExist:
-                    if luminex_result_row.specimen_purpose == 'panel_specimen':
-                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
