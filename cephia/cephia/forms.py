@@ -329,8 +329,8 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'BioRad-Avidity-Glasgow':
                 rows = VitrosResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_glasgow_row_info.html'
-            elif fileinfo.assay.name == 'Luminex':
-                rows = LuminexResultRow.objects.filter(fileinfo=fileinfo)
+            elif fileinfo.assay.name == 'BioPlex-CDC':
+                rows = LuminexCDCResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/luminex_row_info.html'
             elif fileinfo.assay.name == 'IDE-V3':
                 rows = IDEResultRow.objects.filter(fileinfo=fileinfo)

@@ -10,27 +10,57 @@ class LuminexFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(LuminexFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen_label',
-                                   'assay',
-                                   'laboratory',
-                                   'test_date',
-                                   'operator',
-                                   'assay_kit_lot',
-                                   'plate_identifier',
-                                   'well',
-                                   'test_mode',
-                                   'specimen_purpose',
-                                   'result_gp120_n'
-                                   'result_gp160_n',
-                                   'result_gp41_n',
-                                   'result_gp120_a',
-                                   'result_gp160_a',
-                                   'result_gp41_a',
-                                   'result_LuminexIndex']
+        self.registered_columns = ["assay",
+                                   "panel",
+                                   "laboratory",
+                                   "operator",
+                                   "plate_identifier",
+                                   "test_date",
+                                   "assay_kit_lot",
+                                   "test_mode",
+                                   "specimen_purpose",
+                                   "specimen_label",
+                                   "well_untreated",
+                                   "well_treated",
+                                   "BSA_MFI",
+                                   "IgG_MFI",
+                                   "gp120_MFI",
+                                   "gp160_MFI",
+                                   "gp41_MFI",
+                                   "BSA_MFImb",
+                                   "IgG_MFImb",
+                                   "gp120_MFImb",
+                                   "gp160_MFImb",
+                                   "gp41_MFImb",
+                                   "calibrator_BSA",
+                                   "calibrator_IgG",
+                                   "calibrator_gp120",
+                                   "calibrator_gp160",
+                                   "calibrator_gp41",
+                                   "gp120_MFIn",
+                                   "gp160_MFIn",
+                                   "gp41_MFIn",
+                                   "DEA_treated_BSA_MFI",
+                                   "DEA_treated_IgG_MFI",
+                                   "DEA_treated_gp120_MFI",
+                                   "DEA_treated_gp160_MFI",
+                                   "DEA_treated_gp41_MFI",
+                                   "DEA_treated_BSA_MFImb",
+                                   "DEA_treated_IgG_MFImb",
+                                   "DEA_treated_gp120_MFImb",
+                                   "DEA_treated_gp160_MFImb",
+                                   "DEA_treated_gp41_MFImb",
+                                   "DEA_treated_gp120_MFIn",
+                                   "DEA_treated_gp160_MFIn",
+                                   "DEA_treated_gp41_MFIn",
+                                   "gp120_AI",
+                                   "gp160_AI",
+                                   "gp41_AI"]
 
+        self.assay_name = 'BioPlex-CDC'
 
     def parse(self):
-        from assay.models import LuminexResultRow
+        from assay.models import LuminexCDCResultRow
 
         rows_inserted = 0
         rows_failed = 0
@@ -41,27 +71,53 @@ class LuminexFileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    luminex_result_row = LuminexResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                         assay=row_dict['assay'],
-                                                                         laboratory=row_dict['laboratory'],
-                                                                         test_date=row_dict['test_date'],
-                                                                         operator=row_dict['operator'],
-                                                                         assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                         plate_identifier=row_dict['plate_identifier'],
-                                                                         well=row_dict['well'],
-                                                                         test_mode=row_dict['test_mode'],
-                                                                         specimen_purpose=row_dict['specimen_purpose'],
-                                                                         result_gp120_n=row_dict['result_gp120_n'],
-                                                                         result_gp160_n=row_dict['result_gp160_n'],
-                                                                         result_gp41_n=row_dict['result_gp41_n'],
-                                                                         result_gp120_a=row_dict['result_gp120_a'],
-                                                                         result_gp160_a=row_dict['result_gp160_a'],
-                                                                         result_gp41_a=row_dict['result_gp41_a'],
-                                                                         result_LuminexIndex=row_dict['result_LuminexIndex'],
-                                                                         state='pending',
-                                                                         fileinfo=self.upload_file)
-
-
+                    luminex_result_row = LuminexCDCResultRow.objects.create(assay=row_dict["assay"],
+                                                                            laboratory=row_dict["laboratory"],
+                                                                            operator=row_dict["operator"],
+                                                                            plate_identifier=row_dict["plate_identifier"],
+                                                                            test_date=row_dict["test_date"],
+                                                                            assay_kit_lot=row_dict["assay_kit_lot"],
+                                                                            test_mode=row_dict["test_mode"],
+                                                                            specimen_purpose=row_dict["specimen_purpose"],
+                                                                            specimen_label=row_dict["specimen_label"],
+                                                                            well_untreated=row_dict["well_untreated"],
+                                                                            well_treated=row_dict["well_treated"],
+                                                                            BSA_MFI=row_dict["BSA_MFI"],
+                                                                            IgG_MFI=row_dict["IgG_MFI"],
+                                                                            gp120_MFI=row_dict["gp120_MFI"],
+                                                                            gp160_MFI=row_dict["gp160_MFI"],
+                                                                            gp41_MFI=row_dict["gp41_MFI"],
+                                                                            BSA_MFImb=row_dict["BSA_MFImb"],
+                                                                            IgG_MFImb=row_dict["IgG_MFImb"],
+                                                                            gp120_MFImb=row_dict["gp120_MFImb"],
+                                                                            gp160_MFImb=row_dict["gp160_MFImb"],
+                                                                            gp41_MFImb=row_dict["gp41_MFImb"],
+                                                                            calibrator_BSA=row_dict["calibrator_BSA"],
+                                                                            calibrator_IgG=row_dict["calibrator_IgG"],
+                                                                            calibrator_gp120=row_dict["calibrator_gp120"],
+                                                                            calibrator_gp160=row_dict["calibrator_gp160"],
+                                                                            calibrator_gp41=row_dict["calibrator_gp41"],
+                                                                            gp120_MFIn=row_dict["gp120_MFIn"],
+                                                                            gp160_MFIn=row_dict["gp160_MFIn"],
+                                                                            gp41_MFIn=row_dict["gp41_MFIn"],
+                                                                            DEA_treated_BSA_MFI=row_dict["DEA_treated_BSA_MFI"],
+                                                                            DEA_treated_IgG_MFI=row_dict["DEA_treated_IgG_MFI"],
+                                                                            DEA_treated_gp120_MFI=row_dict["DEA_treated_gp120_MFI"],
+                                                                            DEA_treated_gp160_MFI=row_dict["DEA_treated_gp160_MFI"],
+                                                                            DEA_treated_gp41_MFI=row_dict["DEA_treated_gp41_MFI"],
+                                                                            DEA_treated_BSA_MFImb=row_dict["DEA_treated_BSA_MFImb"],
+                                                                            DEA_treated_IgG_MFImb=row_dict["DEA_treated_IgG_MFImb"],
+                                                                            DEA_treated_gp120_MFImb=row_dict["DEA_treated_gp120_MFImb"],
+                                                                            DEA_treated_gp160_MFImb=row_dict["DEA_treated_gp160_MFImb"],
+                                                                            DEA_treated_gp41_MFImb=row_dict["DEA_treated_gp41_MFImb"],
+                                                                            DEA_treated_gp120_MFIn=row_dict["DEA_treated_gp120_MFIn"],
+                                                                            DEA_treated_gp160_MFIn=row_dict["DEA_treated_gp160_MFIn"],
+                                                                            DEA_treated_gp41_MFIn=row_dict["DEA_treated_gp41_MFIn"],
+                                                                            gp120_AI=row_dict["gp120_AI"],
+                                                                            gp160_AI=row_dict["gp160_AI"],
+                                                                            gp41_AI=row_dict["gp41_AI"],
+                                                                            state='pending',
+                                                                            fileinfo=self.upload_file)
 
                     rows_inserted += 1
             except Exception, e:
@@ -82,27 +138,23 @@ class LuminexFileHandler(FileHandler):
 
     def validate(self, panel_id):
         from cephia.models import Specimen, Panel, Assay
-        from assay.models import LuminexResultRow, LuminexResult, PanelMembership
+        from assay.models import LuminexCDCResultRow, LuminexCDCResult, PanelMembership
 
         rows_validated = 0
         rows_failed = 0
 
-        for luminex_result_row in LuminexResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=luminex_result_row.assay)
 
                 try:
                     specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
-
-                # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
-                #     error_msg += "Specimen does not belong to any panel membership.\n"
+                    if luminex_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -129,46 +181,88 @@ class LuminexFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import LuminexResultRow, LuminexResult, AssayResult
+        from assay.models import LuminexCDCResultRow, LuminexCDCResult, AssayResult, PanelMembership
 
         rows_inserted = 0
         rows_failed = 0
 
-        for luminex_result_row in LuminexResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+        assay = Assay.objects.get(name=self.assay_name)
+        panel = Panel.objects.get(pk=panel_id)
+        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
+
+        for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
+                warning_msg = ''
+
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=luminex_result_row.assay)
-                    panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = None
+                    try:
+                        specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
+                                                        specimen_type=panel.specimen_type,
+                                                        parent_label__isnull=False)
+                    except Specimen.DoesNotExist:
+                        if luminex_result_row.specimen_purpose == "panel_specimen":
+                            partial_matches = Specimen.objects.filter(specimen_label__startswith=luminex_result_row.specimen_label[0:4],
+                                                                      specimen_type=panel.specimen_type,
+                                                                      parent_label__isnull=False)
+                            if partial_matches:
+                                warning_msg += "This specimen was the first possible partial match.\n"
+                                specimen = partial_matches[0]
+                        else:
+                            warning_msg += "Specimen not recognised.\n"
+                            specimen = None
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=luminex_result_row.result_LuminexIndex)
+                        pass
 
-                    luminex_result = LuminexResult.objects.create(specimen=specimen,
-                                                                  assay=assay,
-                                                                  laboratory=Laboratory.objects.get(name=luminex_result_row.laboratory),
-                                                                  test_date=datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
-                                                                  operator=luminex_result_row.operator,
-                                                                  assay_kit_lot=luminex_result_row.assay_kit_lot,
-                                                                  plate_identifier=luminex_result_row.plate_identifier,
-                                                                  test_mode=luminex_result_row.test_mode,
-                                                                  well=luminex_result_row.well,
-                                                                  specimen_purpose=luminex_result_row.specimen_purpose,
-                                                                  result_gp120_n=luminex_result_row.result_gp120_n,
-                                                                  result_gp160_n=luminex_result_row.result_gp160_n,
-                                                                  result_gp41_n=luminex_result_row.result_gp41_n,
-                                                                  result_gp120_a=luminex_result_row.result_gp120_a,
-                                                                  result_gp160_a=luminex_result_row.result_gp160_a,
-                                                                  result_gp41_a=luminex_result_row.result_gp41_a,
-                                                                  result_LuminexIndex=luminex_result_row.result_LuminexIndex,
-                                                                  assay_result=assay_result)
+                    luminex_result = LuminexCDCResult.objects.create(specimen=specimen,
+                                                                     assay=assay,
+                                                                     laboratory=Laboratory.objects.get(name=luminex_result_row.laboratory),
+                                                                     test_date=datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
+                                                                     operator=luminex_result_row.operator,
+                                                                     assay_kit_lot=luminex_result_row.assay_kit_lot,
+                                                                     plate_identifier=luminex_result_row.plate_identifier,
+                                                                     test_mode=luminex_result_row.test_mode,
+                                                                     specimen_purpose=luminex_result_row.specimen_purpose,
+                                                                     well_untreated=luminex_result_row.well_untreated,
+                                                                     well_treated=luminex_result_row.well_treated,
+                                                                     BSA_MFI=luminex_result_row.BSA_MFI or None,
+                                                                     IgG_MFI=luminex_result_row.IgG_MFI or None,
+                                                                     gp120_MFI=luminex_result_row.gp120_MFI or None,
+                                                                     gp160_MFI=luminex_result_row.gp160_MFI or None,
+                                                                     gp41_MFI=luminex_result_row.gp41_MFI or None,
+                                                                     BSA_MFImb=luminex_result_row.BSA_MFImb or None,
+                                                                     IgG_MFImb=luminex_result_row.IgG_MFImb or None,
+                                                                     gp120_MFImb=luminex_result_row.gp120_MFImb or None,
+                                                                     gp160_MFImb=luminex_result_row.gp160_MFImb or None,
+                                                                     gp41_MFImb=luminex_result_row.gp41_MFImb or None,
+                                                                     calibrator_BSA=luminex_result_row.calibrator_BSA or None,
+                                                                     calibrator_IgG=luminex_result_row.calibrator_IgG or None,
+                                                                     calibrator_gp120=luminex_result_row.calibrator_gp120 or None,
+                                                                     calibrator_gp160=luminex_result_row.calibrator_gp160 or None,
+                                                                     calibrator_gp41=luminex_result_row.calibrator_gp41 or None,
+                                                                     gp120_MFIn=luminex_result_row.gp120_MFIn or None,
+                                                                     gp160_MFIn=luminex_result_row.gp160_MFIn or None,
+                                                                     gp41_MFIn=luminex_result_row.gp41_MFIn or None,
+                                                                     DEA_treated_BSA_MFI=luminex_result_row.DEA_treated_BSA_MFI or None,
+                                                                     DEA_treated_IgG_MFI=luminex_result_row.DEA_treated_IgG_MFI or None,
+                                                                     DEA_treated_gp120_MFI=luminex_result_row.DEA_treated_gp120_MFI or None,
+                                                                     DEA_treated_gp160_MFI=luminex_result_row.DEA_treated_gp160_MFI or None,
+                                                                     DEA_treated_gp41_MFI=luminex_result_row.DEA_treated_gp41_MFI or None,
+                                                                     DEA_treated_BSA_MFImb=luminex_result_row.DEA_treated_BSA_MFImb or None,
+                                                                     DEA_treated_IgG_MFImb=luminex_result_row.DEA_treated_IgG_MFImb or None,
+                                                                     DEA_treated_gp120_MFImb=luminex_result_row.DEA_treated_gp120_MFImb or None,
+                                                                     DEA_treated_gp160_MFImb=luminex_result_row.DEA_treated_gp160_MFImb or None,
+                                                                     DEA_treated_gp41_MFImb=luminex_result_row.DEA_treated_gp41_MFImb or None,
+                                                                     DEA_treated_gp120_MFIn=luminex_result_row.DEA_treated_gp120_MFIn or None,
+                                                                     DEA_treated_gp160_MFIn=luminex_result_row.DEA_treated_gp160_MFIn or None,
+                                                                     DEA_treated_gp41_MFIn=luminex_result_row.DEA_treated_gp41_MFIn or None,
+                                                                     gp120_AI=luminex_result_row.gp120_AI or None,
+                                                                     gp160_AI=luminex_result_row.gp160_AI or None,
+                                                                     gp41_AI=luminex_result_row.gp41_AI or None,
+                                                                     assay_run=assay_run)
 
                     luminex_result_row.state = 'processed'
                     luminex_result_row.date_processed = timezone.now()
