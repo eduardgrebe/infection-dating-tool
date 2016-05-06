@@ -1,6 +1,7 @@
 from file_handler import FileHandler
 from handler_imports import *
 import logging
+import algorithms
 
 logger = logging.getLogger(__name__)
 
@@ -142,10 +143,22 @@ class LuminexFileHandler(FileHandler):
 
         rows_validated = 0
         rows_failed = 0
+        panel = Panel.objects.get(pk=panel_id)
 
         for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
+                try:
+                    specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
+                                                    specimen_type=panel.specimen_type,
+                                                    parent_label__isnull=False)
+                except Specimen.DoesNotExist:
+                    if luminex_result_row.specimen_purpose == "panel_specimen":
+                        partial_matches = Specimen.objects.filter(specimen_label__startswith=luminex_result_row.specimen_label[0:4],
+                                                                  specimen_type=panel.specimen_type,
+                                                                  parent_label__isnull=False)
+                        if not partial_matches:
+                            error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -187,6 +200,7 @@ class LuminexFileHandler(FileHandler):
         for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 warning_msg = ''
+                error_msg = ''
 
                 with transaction.atomic():
                     specimen = None
@@ -202,10 +216,6 @@ class LuminexFileHandler(FileHandler):
                             if partial_matches:
                                 warning_msg += "This specimen was the first possible partial match.\n"
                                 specimen = partial_matches[0]
-                        else:
-                            warning_msg += "Specimen not recognised.\n"
-                            specimen = None
-
                         pass
 
                     luminex_result = LuminexCDCResult.objects.create(specimen=specimen,
@@ -217,6 +227,7 @@ class LuminexFileHandler(FileHandler):
                                                                      plate_identifier=luminex_result_row.plate_identifier,
                                                                      test_mode=luminex_result_row.test_mode,
                                                                      specimen_purpose=luminex_result_row.specimen_purpose,
+                                                                     specimen_label=luminex_result_row.specimen_label,
                                                                      well_untreated=luminex_result_row.well_untreated,
                                                                      well_treated=luminex_result_row.well_treated,
                                                                      BSA_MFI=luminex_result_row.BSA_MFI or None,
@@ -253,14 +264,20 @@ class LuminexFileHandler(FileHandler):
                                                                      gp120_AI=luminex_result_row.gp120_AI or None,
                                                                      gp160_AI=luminex_result_row.gp160_AI or None,
                                                                      gp41_AI=luminex_result_row.gp41_AI or None,
+                                                                     warning_msg=warning_msg,
                                                                      assay_run=assay_run)
+
+
+                    if luminex_result.specimen_purpose in ['kit_control','panel_specimen']:
+                        algorithms.do_curtis_alg2016(luminex_result)
+                        algorithms.do_curtis_alg2013(luminex_result)
 
                     luminex_result_row.state = 'processed'
                     luminex_result_row.date_processed = timezone.now()
                     luminex_result_row.error_message = ''
+                    luminex_result_row.luminex_result = luminex_result
                     luminex_result_row.save()
                     rows_inserted += 1
-
             except Exception, e:
                 logger.exception(e)
                 luminex_result_row.state = 'error'

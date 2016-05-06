@@ -136,6 +136,7 @@ class BaseAssayResult(models.Model):
     plate_identifier = models.CharField(max_length=255, null=True, blank=True)
     test_mode = models.CharField(max_length=255, null=True, blank=True)
     specimen_purpose = models.CharField(max_length=255, null=True, blank=True)
+    specimen_label = models.CharField(max_length=255, null=True, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
     interpretation = models.CharField(max_length=255, null=True, blank=False)
     exclusion = models.CharField(max_length=255, null=True, blank=False)
@@ -143,11 +144,13 @@ class BaseAssayResult(models.Model):
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
-            if getattr(self, field) == 'NA' and self._meta.get_field(field).get_internal_type() == 'FloatField':
-                setattr(self, field, None)
-            if getattr(self, field) == 'NEG' and self._meta.get_field(field).get_internal_type() == 'FloatField':
-                setattr(self, field, None)
-                setattr(self, 'interpretation', 'neg')
+            if field != 'luminexcdcresultrow':
+                if getattr(self, field) == 'NA' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+                    setattr(self, field, None)
+                if getattr(self, field) == 'NEG' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+                    setattr(self, field, None)
+                    setattr(self, 'interpretation', 'neg')
+
         super(BaseAssayResult, self).save(*args, **kwargs)
 
 
@@ -470,6 +473,53 @@ class BEDResult(BaseAssayResult):
     well= models.CharField(max_length=10, null=False, blank=True)
 
 
+
+class LuminexCDCResult(BaseAssayResult):
+
+    class Meta:
+        db_table = "assayluminexcdc"
+
+    BSA_MFI = models.FloatField(null=True)
+    IgG_MFI = models.FloatField(null=True)
+    gp120_MFI = models.FloatField(null=True)
+    gp160_MFI = models.FloatField(null=True)
+    gp41_MFI = models.FloatField(null=True)
+    BSA_MFImb = models.FloatField(null=True)
+    IgG_MFImb = models.FloatField(null=True)
+    gp120_MFImb = models.FloatField(null=True)
+    gp160_MFImb = models.FloatField(null=True)
+    gp41_MFImb = models.FloatField(null=True)
+    calibrator_BSA = models.FloatField(null=True)
+    calibrator_IgG = models.FloatField(null=True)
+    calibrator_gp120 = models.FloatField(null=True)
+    calibrator_gp160 = models.FloatField(null=True)
+    calibrator_gp41 = models.FloatField(null=True)
+    gp120_MFIn = models.FloatField(null=True)
+    gp160_MFIn = models.FloatField(null=True)
+    gp41_MFIn = models.FloatField(null=True)
+    DEA_treated_BSA_MFI = models.FloatField(null=True)
+    DEA_treated_IgG_MFI = models.FloatField(null=True)
+    DEA_treated_gp120_MFI = models.FloatField(null=True)
+    DEA_treated_gp160_MFI = models.FloatField(null=True)
+    DEA_treated_gp41_MFI = models.FloatField(null=True)
+    DEA_treated_BSA_MFImb = models.FloatField(null=True)
+    DEA_treated_IgG_MFImb = models.FloatField(null=True)
+    DEA_treated_gp120_MFImb = models.FloatField(null=True)
+    DEA_treated_gp160_MFImb = models.FloatField(null=True)
+    DEA_treated_gp41_MFImb = models.FloatField(null=True)
+    DEA_treated_gp120_MFIn = models.FloatField(null=True)
+    DEA_treated_gp160_MFIn = models.FloatField(null=True)
+    DEA_treated_gp41_MFIn = models.FloatField(null=True)
+    gp120_AI = models.FloatField(null=True)
+    gp160_AI = models.FloatField(null=True)
+    gp41_AI = models.FloatField(null=True)
+    recent_curtis_2016_alg = models.NullBooleanField(default=None)
+    recent_curtis_2013_alg35 = models.NullBooleanField(default=None)
+    well_untreated = models.CharField(max_length=10, null=True, blank=False)
+    well_treated = models.CharField(max_length=10, null=True, blank=False)
+
+
+
 class LuminexCDCResultRow(BaseAssayResultRow):
 
     class Meta:
@@ -511,49 +561,7 @@ class LuminexCDCResultRow(BaseAssayResultRow):
     gp41_AI = models.CharField(max_length=255, null=True, blank=False)
     well_untreated = models.CharField(max_length=10, null=True, blank=False)
     well_treated = models.CharField(max_length=10, null=True, blank=False)
-
-
-class LuminexCDCResult(BaseAssayResult):
-
-    class Meta:
-        db_table = "assayluminexcdc"
-
-    BSA_MFI = models.FloatField(null=True)
-    IgG_MFI = models.FloatField(null=True)
-    gp120_MFI = models.FloatField(null=True)
-    gp160_MFI = models.FloatField(null=True)
-    gp41_MFI = models.FloatField(null=True)
-    BSA_MFImb = models.FloatField(null=True)
-    IgG_MFImb = models.FloatField(null=True)
-    gp120_MFImb = models.FloatField(null=True)
-    gp160_MFImb = models.FloatField(null=True)
-    gp41_MFImb = models.FloatField(null=True)
-    calibrator_BSA = models.FloatField(null=True)
-    calibrator_IgG = models.FloatField(null=True)
-    calibrator_gp120 = models.FloatField(null=True)
-    calibrator_gp160 = models.FloatField(null=True)
-    calibrator_gp41 = models.FloatField(null=True)
-    gp120_MFIn = models.FloatField(null=True)
-    gp160_MFIn = models.FloatField(null=True)
-    gp41_MFIn = models.FloatField(null=True)
-    DEA_treated_BSA_MFI = models.FloatField(null=True)
-    DEA_treated_IgG_MFI = models.FloatField(null=True)
-    DEA_treated_gp120_MFI = models.FloatField(null=True)
-    DEA_treated_gp160_MFI = models.FloatField(null=True)
-    DEA_treated_gp41_MFI = models.FloatField(null=True)
-    DEA_treated_BSA_MFImb = models.FloatField(null=True)
-    DEA_treated_IgG_MFImb = models.FloatField(null=True)
-    DEA_treated_gp120_MFImb = models.FloatField(null=True)
-    DEA_treated_gp160_MFImb = models.FloatField(null=True)
-    DEA_treated_gp41_MFImb = models.FloatField(null=True)
-    DEA_treated_gp120_MFIn = models.FloatField(null=True)
-    DEA_treated_gp160_MFIn = models.FloatField(null=True)
-    DEA_treated_gp41_MFIn = models.FloatField(null=True)
-    gp120_AI = models.FloatField(null=True)
-    gp160_AI = models.FloatField(null=True)
-    gp41_AI = models.FloatField(null=True)
-    well_untreated = models.CharField(max_length=10, null=True, blank=False)
-    well_treated = models.CharField(max_length=10, null=True, blank=False)
+    luminex_result = models.ForeignKey(LuminexCDCResult, null=True, db_index=True)
 
 
 class IDEV3ResultRow(BaseAssayResultRow):
