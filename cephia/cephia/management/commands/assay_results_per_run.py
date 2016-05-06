@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
 from assay.models import (LagSediaResult, LagMaximResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
                           BioRadAvidityJHUResult, ArchitectAvidityResult, BEDResult, LSVitrosDiluentResult,
-                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult, ArchitectUnmodifiedResult, VitrosAvidityResult)
+                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult, ArchitectUnmodifiedResult, VitrosAvidityResult,
+                          LuminexCDCResult)
 from django.db.models import Sum, Avg
 from django.db.models import Q, F
 from django.db import transaction
@@ -497,32 +498,34 @@ class Command(BaseCommand):
         specimen_ids = LuminexCDCResult.objects.values_list('specimen', flat=True)\
                                                .filter(assay_run=assay_run)\
                                                .exclude(test_mode='control').distinct()
-        for specimen_id in specimen_ids:
-            spec_results = LuminexCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
-            test_modes = [ spec.test_mode for spec in spec_results ]
-            luminex_result = spec_results[0]
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                method = ''
+                spec_results = LuminexCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                test_modes = [ spec.test_mode for spec in spec_results ]
+                luminex_result = spec_results[0]
 
-            if spec_results.count() == 1:
-                if luminex_result.recent_curtis_2013_alg35:
-                    final_result = 1
-                if not luminex_result.recent_curtis_2013_alg35:
-                    final_result = 0
+                if spec_results.count() == 1:
+                    if luminex_result.recent_curtis_2013_alg35:
+                        final_result = 1
+                    if not luminex_result.recent_curtis_2013_alg35:
+                        final_result = 0
+                    else:
+                        final_result = None
+                    method = 'curtis_2013_3/5_alg'
                 else:
                     final_result = None
-                method = 'curtis_2013_3/5_alg'
-            else:
-                final_result = None
-                warning_msg = 'Unexpected number of records'
+                    warning_msg = 'Unexpected number of records'
 
-            assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                      assay=assay_run.assay,
-                                                      specimen=luminex_result.specimen,
-                                                      assay_run=assay_run,
-                                                      test_date=luminex_result.test_date,
-                                                      method=method,
-                                                      result=final_result,
-                                                      warning_msg=warning_msg)
-            spec_results.update(assay_result=assay_result)
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=luminex_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=luminex_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_bioplex_duke(self, assay_run):
         pass
