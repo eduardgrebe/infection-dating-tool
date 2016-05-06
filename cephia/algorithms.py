@@ -13,7 +13,7 @@ def do_curtis_alg2016(luminex_result):
             else:
                 raise ValueError
 
-        criteria_met = [ field if getattr(luminex_result, field) < cut_off else None for field, cut_off in needed_fields.iteritems() ]
+        criteria_met = [ field for field, cut_off in needed_fields.iteritems() if getattr(luminex_result, field) < cut_off ]
 
         if criteria_met == len(needed_fields):
             luminex_result.recent_curtis_2016_alg = True
@@ -32,8 +32,7 @@ def do_curtis_alg2013(luminex_result):
                          'gp160_AI':25.0,
                          'gp41_AI':35.0}
 
-        criteria_met = [ field if getattr(luminex_result, field) < cut_off\
-                         else None for field, cut_off in needed_fields.iteritems() ]
+        criteria_met = [ field for field, cut_off in needed_fields.iteritems() if getattr(luminex_result, field) < cut_off ]
 
         if len(criteria_met) >= 3:
             luminex_result.recent_curtis_2013_alg35 = True
