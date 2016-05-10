@@ -183,6 +183,10 @@ function submitFilterFormCSV() {
     $(".filter-form").submit();
     return true;
 };
+
+function getSpecificAssayResults() {
+
+};
 //
 // function confirmResultFileUpload() {
 //     var $resultFileModal = $(event.target).closest(".modal");

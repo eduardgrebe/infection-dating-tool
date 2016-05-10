@@ -121,6 +121,12 @@ class AssayResult(models.Model):
     def __unicode__(self):
         return self.specimen.specimen_label
 
+    def get_specific_results(self):
+        if self.assay:
+            return get_results_for_assay(self.assay.name)(self)
+        else:
+            return get_results_for_assay(None)(self)
+
 class BaseAssayResult(models.Model):
 
     class Meta:

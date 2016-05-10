@@ -160,32 +160,14 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
-def panel_results(request, panel_id=None, template="assay/panel_results.html"):
+def specific_results(request, result_id=None, template="assay/specific_result_modal.html"):
     context = {}
-
-    if request.method == 'GET':
-        context['panel_results'] = AssayResult.objects.filter(panel__id=panel_id)
-        context['assays'] = Assay.objects.all()
-
-        return render_to_response(template, context, context_instance=RequestContext(request))
-
-def bed_results(request, panel_id=None, template="assay/bed_results.html"):
-    context = {}
-
-    if request.method == 'GET':
-        context['bed_results'] = BEDResult.objects.filter(panel__id=panel_id)
-        context['assays'] = Assay.objects.all()
-
-        return render_to_response(template, context, context_instance=RequestContext(request))
-
-def specific_results(request, template="reporting/results_modal.html"):
-    context = {}
-
+    import pdb; pdb.set_trace()
     assay_result_id = request.POST.get('assayResultId', None)
+    assay_result = AssayResult.objects.get(pk=assay_result_id)
 
-    result_factory = AssayResultFactory(assay_result_id)
-    context['results'] = result_factory.get_results()
-    context['headers'] = result_factory.get_headers()
+    context['headers'] = assay_result.get_specific_result_headers()
+    context['results'] = assay_result.get_specific_results()
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))

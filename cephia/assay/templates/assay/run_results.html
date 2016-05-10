@@ -16,14 +16,6 @@
       </div>
       <div class="panel-body">
         <div class="row">
-          {% comment %}
-          <ul class="nav nav-pills">
-            <li role="presentation"><a href="#">All</a></li>
-            {% for assay in assays %}
-            <li role="presentation"><a href="#">{{assay.name}}</a></li>
-            {% endfor %}
-          </ul>
-          {% endcomment %}
           <div class="container"
                {% show_pages %}
                <div class="btn-group">
@@ -47,7 +39,7 @@
                    <tbody>
                      {% for result in run_results %}
                      <tr>
-                       <td>{{result.specimen.specimen_label}}</td>
+                       <td><a href="{% url 'assay:specific_results' result_id=result.id %}" class="view-specific-results">{{result.specimen.specimen_label}}</a></td>
                        <td>{{result.specimen.visit.visit_eddi.days_since_eddi}}</td>
                        <td>{{result.specimen.visit.visit_eddi.days_since_lp_ddi}}</td>
                        <td>{{result.specimen.visit.vl}}</td>

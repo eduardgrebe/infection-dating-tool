@@ -1,3 +1,4 @@
+
 # encoding: utf-8
 from lib.fields import ProtectedForeignKey
 from django.db import models

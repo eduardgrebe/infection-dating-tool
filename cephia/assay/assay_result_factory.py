@@ -1,39 +1,33 @@
 from assay.models import *
+import logging
 
-class AssayResultFactory(object):
 
-    def __init__(self, assay_result_id):
-        if assay_result.assay.name == 'LAg-Sedia':
-            self.results = LagSediaResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'LAg-Maxim':
-            self.results = LagMaximResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'ArchitectUnmodified':
-            self.results = ArchitectUnmodifiedResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'ArchitectAvidity':
-            self.results = ArchitectAvidityResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'BioRadAvidity-CDC':
-            self.results = BioRadAvidityCDCResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'BioRadAvidity-JHjU':
-            self.results = BioRadAvidityJHUResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'LSVitros-Diluent':
-            self.results = LSVitrosDiluentResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'LSVitros-Plasma':
-            self.results = LSVitrosPlasmaResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'Geenius':
-            self.results = GeeniusResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'BED':
-            self.results = BEDResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'BioRadAvidity-Glasgow':
-            self.results = BioRadAvidityGlasgowResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'BioPlex-CDC':
-            self.results = BioPlexCDCResult.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'IDE-iV3':
-            self.results = IDEV3Result.objects.filter(assay_result__pk=assay_result_id)
-        elif assay_result.assay.name == 'BioPlex-Duke':
-            self.results = BioPlexDukeResult.objects.filter(assay_result__pk=assay_result_id)
+logger = logging.getLogger(__name__)
 
-    def get_results(self):
-        return self.results
+registered_results = []
 
-    def get_headers(self):
+def register_result(assay_name, cls):
+    registered_results.append((cls, assay_name))
+
+def get_results_for_assay(assay_name):
+    for registered_assay_name, registered_result in registered_results:
         import pdb; pdb.set_trace()
+        if registered_assay_name == assay_name:
+            return registered_result
+    raise Exception("Unknown assay: %s" % assay_name)
+
+
+register_result(ArchitectAvidityResult, 'ArchitectAvidity')
+register_result(ArchitectUnmodifiedResult, 'ArchitectUnmodified')
+register_result(BEDResult, 'BED')
+register_result(BioRadAvidityCDCResult, 'BioRadAvidity-CDC')
+register_result(BioRadAvidityGlasgowResult, 'BioRadAvidity-Glasgow')
+register_result(BioRadAvidityJHUResult, 'BioRadAvidity-JHU')
+register_result(GeeniusResult, 'Geenius')
+register_result(IDEV3Result, 'IDE-V3')
+register_result(LagMaximResult, 'LAg-Maxim')
+register_result(LagSediaResult, 'LAg-Sedia')
+register_result(LSVitrosDiluentResult, 'LSVitros-Diluent')
+register_result(LSVitrosPlasmaResult, 'LSVitros-Plasma')
+register_result(LuminexCDCResult, 'BioPlex-CDC')
+register_result(VitrosAvidityResult, 'Vitros')
