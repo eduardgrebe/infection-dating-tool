@@ -14,7 +14,9 @@
             <table class="table-striped table table-hover">
               <thead>
                 {% for header in report.headers %}
-                <th>{{header}}</th>
+                <tr>
+                  <th>{{header}}</th>
+                <tr>
                 {% endfor %}
               </thead>
               <tbody class="results-modal">

@@ -39,7 +39,7 @@
                    <tbody>
                      {% for result in run_results %}
                      <tr>
-                       <td><a href="{% url 'assay:specific_results' result_id=result.id %}" class="view-specific-results">{{result.specimen.specimen_label}}</a></td>
+                       <td data-result-id="{{result.id}}" ><a class="view-specific-results">{{result.specimen.specimen_label}}</a></td>
                        <td>{{result.specimen.visit.visit_eddi.days_since_eddi}}</td>
                        <td>{{result.specimen.visit.visit_eddi.days_since_lp_ddi}}</td>
                        <td>{{result.specimen.visit.vl}}</td>
@@ -60,5 +60,6 @@
     </div>
   </div>
 </div>
+<div class="result-modal-container">
 </div>
 {% endblock %}

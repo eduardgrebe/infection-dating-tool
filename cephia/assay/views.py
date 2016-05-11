@@ -160,14 +160,11 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
-def specific_results(request, result_id=None, template="assay/specific_result_modal.html"):
+def specific_results(request, result_id=None, template="assay/specific_results_modal.html"):
     context = {}
-    import pdb; pdb.set_trace()
-    assay_result_id = request.POST.get('assayResultId', None)
-    assay_result = AssayResult.objects.get(pk=assay_result_id)
+    assay_result = AssayResult.objects.get(pk=result_id)
 
-    context['headers'] = assay_result.get_specific_result_headers()
-    context['results'] = assay_result.get_specific_results()
+    context['headers'], context['results'] = assay_result.get_specific_results()
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))

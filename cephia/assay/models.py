@@ -3,6 +3,8 @@ from django.db import models
 from cephia.models import (Visit, Specimen, SpecimenType, ImportedRow,
                            Assay, Laboratory, Panel, FileInfo)
 from lib.fields import ProtectedForeignKey
+from assay_result_factory import *
+from django.forms.models import model_to_dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -123,7 +125,10 @@ class AssayResult(models.Model):
 
     def get_specific_results(self):
         if self.assay:
-            return get_results_for_assay(self.assay.name)(self)
+            result_class= get_results_for_assay(self.assay.name)
+            headers = result_class._meta.get_all_field_names()
+            results = [ result.model_to_dict() for result in result_class.objects.filter(assay_result=self) ]
+            return headers, results
         else:
             return get_results_for_assay(None)(self)
 
@@ -158,6 +163,10 @@ class BaseAssayResult(models.Model):
                     setattr(self, 'interpretation', 'neg')
 
         super(BaseAssayResult, self).save(*args, **kwargs)
+
+    def model_to_dict(self):
+        d = model_to_dict(self)
+        return d
 
 
 class BaseAssayResultRow(ImportedRow):
