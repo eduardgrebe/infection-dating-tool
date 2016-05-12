@@ -19,11 +19,11 @@
               </thead>
               <tbody class="specific-results-modal">
                 {% for result in results %}
-                {% for header in headers %}
                 <tr>
+                  {% for header in headers %}
                   <td>{{ result|get_item:header|default:"" }}</td>
+                  {% endfor %}
                 </tr>
-                {% endfor %}
                 {% endfor %}
               </tbody>
             </table>

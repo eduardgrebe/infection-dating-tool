@@ -189,16 +189,15 @@ function submitFilterFormCSV() {
 };
 
 function getSpecificAssayResults() {
-    debugger;
     event.preventDefault();
-    var resultId = $(this).parent().data('result-id');
+    var resultId = $(event.target).parent().data('result-id');
     var url = "/assay/specific_results/" + String(resultId);
 
     $.get(url, function(data, status) {
         var response = JSON.parse(data);
         if (status == "success") {
             $(".result-modal-container").html(response.response);
-            $("#resultModal").modal();
+            $("#specificResultModal").modal();
         }
     });
 };
