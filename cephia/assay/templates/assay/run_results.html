@@ -19,7 +19,7 @@
           <div class="container"
                {% show_pages %}
                <div class="btn-group">
-                 <a href="#" class="btn btn-default" style="text-decoration:none;" onclick="submitFilterFormCSV();">Export actual results</a>
+                 <a href="{% url 'assay:run_results' run_id=run.id %}?csv=1" class="btn btn-default" style="text-decoration:none;">Export actual results</a>
                </div>
                <div class="table-responsive">
                  <table class="table-striped table table-hover" style="overflow:auto;">

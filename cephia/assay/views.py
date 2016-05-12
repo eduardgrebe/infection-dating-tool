@@ -12,6 +12,8 @@ from assay.models import AssayResult, PanelShipment, PanelMembership, AssayRun
 from cephia.models import Assay, Laboratory
 import json
 from django.utils import timezone
+from datetime import datetime
+from csv_helper import get_csv_response
 
 logger = logging.getLogger(__name__)
 
@@ -156,10 +158,26 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
     context = {}
 
     if request.method == 'GET':
-        context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
-        context['run'] = AssayRun.objects.get(pk=run_id)
+        if 'csv' in request.GET:
+            try:
+                first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
+                headers, results = first_result.get_specific_results_for_run()
+                response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
 
-        return render_to_response(template, context, context_instance=RequestContext(request))
+                writer.writerow(headers)
+
+                for result in results:
+                    content = [ result[header] for header in headers ]
+                    writer.writerow(content)
+
+                return response
+            except Exception, e:
+                logger.exception(e)
+                messages.error(request, 'Failed to download file')
+        else:
+            context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
+            context['run'] = AssayRun.objects.get(pk=run_id)
+            return render_to_response(template, context, context_instance=RequestContext(request))
 
 def specific_results(request, result_id=None, template="assay/specific_results_modal.html"):
     context = {}
@@ -169,3 +187,7 @@ def specific_results(request, result_id=None, template="assay/specific_results_m
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
+
+def download_specific_results(request, run_id=None):
+    context = {}
+    assay_result = AssayResult.objects.get(pk=run_id)
