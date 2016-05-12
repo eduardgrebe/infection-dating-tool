@@ -140,6 +140,7 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
+
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
     runs = AssayRun.objects.all()

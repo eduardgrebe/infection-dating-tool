@@ -21,5 +21,5 @@ class Command(BaseCommand):
                                             Q(visit_date__gt=F('subject__art_resumption_date')) |
                                             Q(subject__art_interruption_date__isnull=True))
 
-        treatment_naive.update(treatment_naive=True)
-        on_treatment.update(on_treatment=True)
+        treatment_naive.update(treatment_naive=True, on_treatment=False)
+        on_treatment.update(on_treatment=True, treatment_naive=False)

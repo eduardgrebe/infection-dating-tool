@@ -189,18 +189,17 @@ function submitFilterFormCSV() {
 };
 
 function getSpecificAssayResults() {
-    $('a.view-specific-results').on('click', function(event) {
-        event.preventDefault();
-        var resultId = $(this).parent().data('result-id');
-        var url = "/assay/specific_results/" + String(resultId);
+    debugger;
+    event.preventDefault();
+    var resultId = $(this).parent().data('result-id');
+    var url = "/assay/specific_results/" + String(resultId);
 
-        $.get(url, function(data, status) {
-            var response = JSON.parse(data);
-            if (status == "success") {
-                $(".result-modal-container").html(response.response);
-                $("#resultModal").modal();
-            }
-        });
+    $.get(url, function(data, status) {
+        var response = JSON.parse(data);
+        if (status == "success") {
+            $(".result-modal-container").html(response.response);
+            $("#resultModal").modal();
+        }
     });
 };
 //

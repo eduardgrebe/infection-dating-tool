@@ -2,24 +2,22 @@
 {% load bootstrap3 %}
 
 <div class="container">
-  <div class="modal fade" id="resultModal">
+  <div class="modal fade" id="specificResultModal">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
           <h4 class="modal-title">Specific Results</h4>
         </div>
-        <div class="modal-body results-modal-body">
+        <div class="modal-body specific-results-modal-body">
           <div class="table-responsive" style="overflow:auto; max-height:500px;">
             <table class="table-striped table table-hover">
               <thead>
-                {% for header in report.headers %}
-                <tr>
-                  <th>{{header}}</th>
-                <tr>
+                {% for header in headers %}
+                <th>{{header}}</th>
                 {% endfor %}
               </thead>
-              <tbody class="results-modal">
+              <tbody class="specific-results-modal">
                 {% for result in results %}
                 {% for header in headers %}
                 <tr>
