@@ -191,7 +191,7 @@ class Command(BaseCommand):
                 elif number_of_confirms > 0:
                     confirm_results = spec_results.filter(test_mode__startswith='confirm')
                     untreated_mean = confirm_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / confirm_results.count()
-                    treated_mean = confirm_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / confirm_resultscount()
+                    treated_mean = confirm_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / confirm_results.count()
                     final_result = treated_mean / untreated_mean * 100
                     method = 'mean_SCO_treated/mean_SCO_untreated*100'
 
