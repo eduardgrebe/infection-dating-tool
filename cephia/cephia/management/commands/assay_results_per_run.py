@@ -64,6 +64,8 @@ class Command(BaseCommand):
         with transaction.atomic():
             for specimen_id in specimen_ids:
                 spec_results = LagSediaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
