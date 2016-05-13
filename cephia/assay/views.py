@@ -187,7 +187,3 @@ def specific_results(request, result_id=None, template="assay/specific_results_m
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
-
-def download_specific_results(request, run_id=None):
-    context = {}
-    assay_result = AssayResult.objects.get(pk=run_id)

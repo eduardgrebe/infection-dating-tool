@@ -218,6 +218,7 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 biorad_result = spec_results[0]
@@ -250,6 +251,8 @@ class Command(BaseCommand):
                                                           result=final_result,
                                                           warning_msg=warning_msg)
 
+                spec_results.update(assay_result=assay_result)
+
     def _handle_biorad_avidity_jhu(self, assay_run):
         warning_msg = ''
         specimen_ids = BioRadAvidityJHUResult.objects.values_list('specimen', flat=True) \
@@ -258,6 +261,7 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BioRadAvidityJHUResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 biorad_result = spec_results[0]
@@ -289,6 +293,8 @@ class Command(BaseCommand):
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
+
+                spec_results.update(assay_result=assay_result)
 
     def _handle_vitros_avidity(self, assay_run):
         warning_msg = ''
