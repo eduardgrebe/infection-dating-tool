@@ -304,34 +304,36 @@ class Command(BaseCommand):
                                                   .exclude(test_mode='control').distinct()
 
         for specimen_id in specimen_ids:
-            spec_results = VitrosAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
-            test_modes = [ spec.test_mode for spec in spec_results ]
-            number_of_screens = len([mode for mode in test_modes if "screen" in mode])
-            number_of_confirms = len([mode for mode in test_modes if "confirm" in mode])
-            vitros_result = spec_results[0]
+            with transaction.atomic():
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
+                spec_results = VitrosAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                test_modes = [ spec.test_mode for spec in spec_results ]
+                number_of_screens = len([mode for mode in test_modes if "screen" in mode])
+                number_of_confirms = len([mode for mode in test_modes if "confirm" in mode])
+                vitros_result = spec_results[0]
 
-            final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
-            if spec_results.count() == 1:
-                method = 'singlet'
-            elif spec_results.count() > 1:
-                method = 'mean_of_AIs'
-                warning_msg = 'Unexpected number of results.'
+                final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
+                if spec_results.count() == 1:
+                    method = 'singlet'
+                elif spec_results.count() > 1:
+                    method = 'mean_of_AIs'
+                    warning_msg = 'Unexpected number of results.'
 
-            if number_of_confirms > 0:
-                warning_msg += "Unexpected 'confirm' records."
-            if number_of_screens == 0:
-                warning_msg += "\nNo 'screen' records."
+                if number_of_confirms > 0:
+                    warning_msg += "Unexpected 'confirm' records."
+                if number_of_screens == 0:
+                    warning_msg += "\nNo 'screen' records."
 
-            assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                      assay=assay_run.assay,
-                                                      specimen=vitros_result.specimen,
-                                                      assay_run=assay_run,
-                                                      test_date=vitros_result.test_date,
-                                                      method=method,
-                                                      result=final_result,
-                                                      warning_msg=warning_msg)
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=vitros_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=vitros_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
 
-            spec_results.update(assay_result=assay_result)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_ls_vitros_diluent(self, assay_run):
         warning_msg = ''
@@ -340,6 +342,7 @@ class Command(BaseCommand):
                                                                                       .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = LSVitrosDiluentResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 ls_vitros_result = spec_results[0]
@@ -380,6 +383,7 @@ class Command(BaseCommand):
                                                                                       .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = LSVitrosPlasmaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 ls_vitros_result = spec_results[0]
@@ -423,37 +427,39 @@ class Command(BaseCommand):
                                         .filter(assay_run=assay_run)\
                                         .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
-            spec_results = BEDResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
-            test_modes = [ spec.test_mode for spec in spec_results ]
-            bed_result = spec_results[0]
-            number_of_screens = len([mode for mode in test_modes if "screen" in mode])
-            number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
+            with transaction.atomic():
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
+                spec_results = BEDResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                test_modes = [ spec.test_mode for spec in spec_results ]
+                bed_result = spec_results[0]
+                number_of_screens = len([mode for mode in test_modes if "screen" in mode])
+                number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
 
-            if spec_results.count() == 1:
-                final_result = bed_result.ODn
-                method = 'singlet'
-            elif number_of_screens > 1 and number_of_confirms == 0:
-                final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
-                method = 'mean_ODn_screen'
-            elif number_of_confirms > 1:
-                confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
-                final_result = confirm_results[1]
-                method = 'median_of_confirms'
+                if spec_results.count() == 1:
+                    final_result = bed_result.ODn
+                    method = 'singlet'
+                elif number_of_screens > 1 and number_of_confirms == 0:
+                    final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
+                    method = 'mean_ODn_screen'
+                elif number_of_confirms > 1:
+                    confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
+                    final_result = confirm_results[1]
+                    method = 'median_of_confirms'
 
-            if number_of_confirms > 0 and number_of_confirms != 2:
-                warning_msg += "Unexpected number of 'confirm' records."
-            if number_of_screens == 0:
-                warning_msg += "\nNo 'screen' records."
+                if number_of_confirms > 0 and number_of_confirms != 2:
+                    warning_msg += "Unexpected number of 'confirm' records."
+                if number_of_screens == 0:
+                    warning_msg += "\nNo 'screen' records."
 
-            assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                      assay=assay_run.assay,
-                                                      specimen=bed_result.specimen,
-                                                      assay_run=assay_run,
-                                                      test_date=bed_result.test_date,
-                                                      method=method,
-                                                      result=final_result,
-                                                      warning_msg=warning_msg)
-            spec_results.update(assay_result=assay_result)
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=bed_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=bed_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
+                spec_results.update(assay_result=assay_result)
 
     def _handle_idev3(self, assay_run):
         pass
@@ -464,6 +470,7 @@ class Command(BaseCommand):
                                                          .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 valid_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)\
                                                                   .exclude(exclusion='1')
@@ -543,6 +550,7 @@ class Command(BaseCommand):
                                                .exclude(test_mode='control').distinct()
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 method = ''
                 spec_results = LuminexCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
