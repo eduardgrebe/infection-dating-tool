@@ -142,8 +142,9 @@ class Command(BaseCommand):
                                                         .exclude(test_mode='control').distinct()
         with transaction.atomic():
             for specimen_id in specimen_ids:
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = ArchitectUnmodifiedResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 architect_result = spec_results[0]
 
                 if spec_results.count() == 1:
@@ -219,8 +220,9 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 biorad_result = spec_results[0]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
@@ -262,8 +264,9 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BioRadAvidityJHUResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 biorad_result = spec_results[0]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
@@ -306,8 +309,9 @@ class Command(BaseCommand):
 
         for specimen_id in specimen_ids:
             with transaction.atomic():
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = VitrosAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
                 number_of_confirms = len([mode for mode in test_modes if "confirm" in mode])
@@ -343,8 +347,9 @@ class Command(BaseCommand):
                                                                                       .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = LSVitrosDiluentResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 ls_vitros_result = spec_results[0]
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
@@ -384,8 +389,9 @@ class Command(BaseCommand):
                                                                                       .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = LSVitrosPlasmaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 ls_vitros_result = spec_results[0]
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
@@ -429,8 +435,9 @@ class Command(BaseCommand):
                                         .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BEDResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 bed_result = spec_results[0]
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
@@ -471,8 +478,9 @@ class Command(BaseCommand):
                                                          .exclude(test_mode='control').distinct()
         for specimen_id in specimen_ids:
             with transaction.atomic():
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 valid_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)\
                                                                   .exclude(exclusion='1')
                 exclusion_result_count = spec_results.filter(exclusion='1').count()
@@ -551,9 +559,10 @@ class Command(BaseCommand):
                                                .exclude(test_mode='control').distinct()
         with transaction.atomic():
             for specimen_id in specimen_ids:
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 method = ''
                 spec_results = LuminexCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 luminex_result = spec_results[0]
 
