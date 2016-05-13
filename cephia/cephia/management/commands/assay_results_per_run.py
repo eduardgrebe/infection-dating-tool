@@ -161,8 +161,7 @@ class Command(BaseCommand):
                                                           test_date=architect_result.test_date,
                                                           method=method,
                                                           result=final_result,
-                                                          warning_msg=warning_msg,
-                                                          assay_run=assay_run)
+                                                          warning_msg=warning_msg)
 
                 spec_results.update(assay_result=assay_result)
 
