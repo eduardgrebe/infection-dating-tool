@@ -142,6 +142,7 @@ class Command(BaseCommand):
                                                         .exclude(test_mode='control').distinct()
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 spec_results = ArchitectUnmodifiedResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 architect_result = spec_results[0]
 
@@ -160,7 +161,8 @@ class Command(BaseCommand):
                                                           test_date=architect_result.test_date,
                                                           method=method,
                                                           result=final_result,
-                                                          warning_msg=warning_msg)
+                                                          warning_msg=warning_msg,
+                                                          assay_run=assay_run)
 
                 spec_results.update(assay_result=assay_result)
 
