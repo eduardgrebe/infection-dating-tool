@@ -89,9 +89,9 @@ class BioRadGlasgowCalculation(object):
         return final_result, method, warning_msg
 
     def calculate(self):
-        for specimen_id in self.specimen_ids:
-            try:
-                with transaction.atomic():
+        with transaction.atomic():
+            for specimen_id in self.specimen_ids:
+                try:
                     self.spec_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)
 
                     self.spec_results.update(assay_result=None)
@@ -117,7 +117,7 @@ class BioRadGlasgowCalculation(object):
                     self.total_retests = self.number_of_valid_retests + self.number_of_invalid_retests
                     self.total_confirms = self.number_of_valid_confirms + self.number_of_invalid_confirms
 
-                    if self.number_of_valid_results == 0:
+                    if self.valid_result_count == 0:
                         raise Exception("No valid results on specimen")
                     else:
                         self.first_result = self.valid_results[0]
@@ -144,18 +144,18 @@ class BioRadGlasgowCalculation(object):
                                                               result=final_result,
                                                               warning_msg=warning_msg)
                     self.spec_results.update(assay_result=assay_result)
-            except Exception, e:
-                method = None
-                final_result = None
-                warning_msg = e.message
+                except Exception, e:
+                    method = None
+                    final_result = None
+                    warning_msg = e.message
 
-                assay_result = AssayResult.objects.create(panel=self.assay_run.panel,
-                                                          assay=self.assay_run.assay,
-                                                          specimen=self.spec_results[0].specimen,
-                                                          assay_run=self.assay_run,
-                                                          test_date=self.spec_results[0].test_date,
-                                                          method=method,
-                                                          result=final_result,
-                                                          warning_msg=warning_msg)
-                self.spec_results.update(assay_result=assay_result)
-                continue
+                    assay_result = AssayResult.objects.create(panel=self.assay_run.panel,
+                                                              assay=self.assay_run.assay,
+                                                              specimen=self.spec_results[0].specimen,
+                                                              assay_run=self.assay_run,
+                                                              test_date=self.spec_results[0].test_date,
+                                                              method=method,
+                                                              result=final_result,
+                                                              warning_msg=warning_msg)
+                    self.spec_results.update(assay_result=assay_result)
+                    continue
