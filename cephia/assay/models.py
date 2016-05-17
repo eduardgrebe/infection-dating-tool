@@ -125,18 +125,18 @@ class AssayResult(models.Model):
 
     def get_specific_results(self):
         if self.assay:
-            result_class = get_results_for_assay(self.assay.name)
-            headers = result_class._meta.get_all_field_names()
-            results = [ result.model_to_dict() for result in result_class.objects.filter(assay_result=self) ]
+            result_model = get_results_for_assay(self.assay.name)
+            headers = result_model._meta.get_all_field_names()
+            results = [ result.model_to_dict() for result in result_model.objects.filter(assay_result=self) ]
             return headers, results
         else:
-            return get_results_for_assay(None)(self)
+            return get_result_model(None)(self)
 
     def get_specific_results_for_run(self):
         if self.assay:
-            result_class = get_results_for_assay(self.assay.name)
-            headers = [ header.replace('_id', '') if header.endswith('_id') else header for header in result_class._meta.get_all_field_names() ]
-            results = [ result.model_to_dict() for result in result_class.objects.filter(assay_run=self.assay_run) ]
+            result_model = get_result_model(self.assay.name)
+            headers = [ header.replace('_id', '') if header.endswith('_id') else header for header in result_model._meta.get_all_field_names() ]
+            results = [ result.model_to_dict() for result in result_model.objects.filter(assay_run=self.assay_run) ]
             return headers, results
         else:
             return None
