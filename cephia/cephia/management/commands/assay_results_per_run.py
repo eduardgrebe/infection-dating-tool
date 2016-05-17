@@ -1,11 +1,12 @@
 from django.core.management.base import BaseCommand, CommandError
 from assay.models import (LagSediaResult, LagMaximResult, AssayRun, AssayResult, BioRadAvidityCDCResult,
                           BioRadAvidityJHUResult, ArchitectAvidityResult, BEDResult, LSVitrosDiluentResult,
-                          LSVitrosPlasmaResult, BioRadAvidityGlasgowResult, ArchitectUnmodifiedResult, VitrosAvidityResult,
+                          LSVitrosPlasmaResult, ArchitectUnmodifiedResult, VitrosAvidityResult,
                           LuminexCDCResult)
 from django.db.models import Sum, Avg
 from django.db.models import Q, F
 from django.db import transaction
+from assay.glasgow_calc import BioRadGlasgowCalculation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -473,85 +474,10 @@ class Command(BaseCommand):
 
     def _handle_idev3(self, assay_run):
         pass
+
     def _handle_biorad_avidity_glasgow(self, assay_run):
-        warning_msg = ''
-        specimen_ids = BioRadAvidityGlasgowResult.objects.values_list('specimen', flat=True)\
-                                                         .filter(assay_run=assay_run)\
-                                                         .exclude(test_mode='control').distinct()
-        for specimen_id in specimen_ids:
-            with transaction.atomic():
-                spec_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
-                spec_results.update(assay_result=None)
-                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
-                valid_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)\
-                                                                  .exclude(exclusion='1')
-                exclusion_result_count = spec_results.filter(exclusion='1').count()
-
-                if exclusion_result_count == spec_results.count():
-                    warning_msg += "Specimen met exclusion criteria."
-                    assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                              assay=assay_run.assay,
-                                                              specimen=biorad_glasgow_result.specimen,
-                                                              assay_run=assay_run,
-                                                              test_date=biorad_glasgow_result.test_date,
-                                                              method=method,
-                                                              result=None,
-                                                              warning_msg=warning_msg)
-                    continue
-
-                test_modes = [ spec.test_mode for spec in valid_results ]
-                number_of_retests = len([mode for mode in test_modes if "screen_retest" in mode])
-                number_of_screens = len([mode for mode in test_modes if "screen" in mode]) - number_of_retests
-                number_of_confirms = len([mode for mode in test_modes if "confirm" in mode])
-                biorad_glasgow_result = valid_results[0]
-
-                #NO CONFIRMS
-                if number_of_confirms == 0:
-                    if number_of_screens == 1 and number_of_retests == 0:
-                        final_result = biorad_glasgow_result.AI
-                        method = 'screen_singlet'
-                    elif number_of_screens > 1 and number_of_retests == 0:
-                        final_result = valid_results.aggregate(Sum('AI'))['AI__sum'] / valid_results.count()
-                        method = 'mean_AI_screens'
-                        warning_msg = "Unexpected number of 'screen' records"
-                    elif number_of_retests == 1:
-                        final_result = valid_results.filter(test_mode__endswith='_retest')[0].AI
-                        method = 'retest_singlet'
-                    elif number_of_retests > 1:
-                        final_result = valid_results.filter(test_mode__endswith='_retest')\
-                                                    .aggregate(Sum('AI'))['AI__sum'] / valid_results.count()
-                        method = 'mean_AI_retests'
-                        warning_msg = "Unexpected number of valid 'restest' records"
-                #WITH CONFIRMS
-                if number_of_confirms > 0:
-                    if number_of_confirms != 2:
-                        warning_msg += "Unexpected number of 'confirm' records."
-                    if number_of_screens == 1 and number_of_retests == 0:
-                        final_result = valid_results.aggregate(Sum('AI'))['AI__sum'] / valid_results.count()
-                        method = 'mean_AI_screen_confirm'
-                    elif number_of_retests == 1:
-                        final_result = valid_results.filter(Q(test_mode__endswith='_retest') | Q(test_mode__startswith='confirm'))\
-                                                    .aggregate(Sum('AI'))['AI__sum'] / valid_results.count()
-                        method = 'mean_AI_retest_confirm'
-                    elif number_of_retests > 1:
-                        final_result = valid_results.filter(Q(test_mode__endswith='_retest') | Q(test_mode__startswith='confirm'))\
-                                                    .aggregate(Sum('AI'))['AI__sum'] / valid_results.count()
-                        method = 'mean_AI_retests_confirm'
-                        warning_msg = 'More than 1 valid retest.'
-                    elif number_of_screens > 1 and number_of_retests == 0:
-                        final_result = valid_results.aggregate(Sum('AI'))['AI__sum'] / valid_results.count()
-                        method = 'mean_AI_screens_confirm'
-                        warning_msg = 'More than 1 valid screen.'
-
-                assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                          assay=assay_run.assay,
-                                                          specimen=biorad_glasgow_result.specimen,
-                                                          assay_run=assay_run,
-                                                          test_date=biorad_glasgow_result.test_date,
-                                                          method=method,
-                                                          result=final_result,
-                                                          warning_msg=warning_msg)
-                spec_results.update(assay_result=assay_result)
+        glasgow_calc = BioRadGlasgowCalculation(assay_run)
+        glasgow_calc.calculate()
 
     def _handle_bioplex_cdc(self, assay_run):
         warning_msg = ''

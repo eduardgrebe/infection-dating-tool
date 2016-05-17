@@ -154,6 +154,12 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                         warning_msg += "Specimen not recognised.\n"
                         specimen = None
 
+                    if biorad_result_row.dilution in ['1/100','1/1600']\
+                       and biorad_result_row.test_mode.startswith('screen')\
+                       and not biorad_result_row.test_mode.endswith('_retest'):
+                        biorad_result_row.test_mode = 'mislabeled_retest'
+                        warning_msg += "Relabeled 'screen' with unexpected dilution to 'retest'.\n"
+
                     # if specimen.visit.id not in panel_memberhsip_ids:
                     #     warning_msg += "Specimen does not belong to any panel membership.\n"
 
@@ -174,7 +180,8 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
                                                                               AI=biorad_result_row.AI or None,
                                                                               dilution=biorad_result_row.dilution,
                                                                               exclusion=biorad_result_row.exclusion,
-                                                                              assay_run=assay_run)
+                                                                              assay_run=assay_run,
+                                                                              warning_msg=warning_msg)
 
                     biorad_result_row.state = 'processed'
                     biorad_result_row.date_processed = timezone.now()
