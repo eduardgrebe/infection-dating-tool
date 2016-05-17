@@ -161,10 +161,62 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
         if 'csv' in request.GET:
             try:
                 first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
-                headers, results = first_result.get_specific_results_for_run()
+                specific_headers, results = first_result.get_specific_results_for_run()
                 response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
 
                 writer.writerow(headers)
+
+                common_headers = ['specimen_label'
+                                  'specimen_id',
+                                  'specimen_common (first 4 digits of specimen_label if is a panel specimen)',
+                                  'root_specimen_label',
+                                  'specimen_type',
+                                  'assay',
+                                  'panel',
+                                  'laboratory',
+                                  'test_date',
+                                  'operator',
+                                  'assay_kit_lot',
+                                  'plate_identifier',
+                                  'specimen_purpose',
+                                  'test_mode',
+                                  'exclusion',
+                                  'warning_msg']
+
+                clinical_headers = ['subject_label',
+                                    'subject_id',
+                                    'source_study',
+                                    'visit.visit_date',
+                                    'specimen.reported_draw_date',
+                                    'cohort_entry_date',
+                                    'cohort_entry_hiv_status',
+                                    'visit.visit_hiv_status',
+                                    'subtype',
+                                    'subtype_confirmed',
+                                    'country',
+                                    'sex',
+                                    'age(vist_date-date_of_birth).years',
+                                    'population_group',
+                                    'risk_sex_with_men',
+                                    'risk_sex_with_women',
+                                    'risk_idu',
+                                    'art_initiation_date',
+                                    'aids_diagnosis_date',
+                                    'art_interruption_date',
+                                    'art_resumption_date',
+                                    'visit.treatment_naive',
+                                    'visit.on_treatment',
+                                    'visit.cd4_count',
+                                    'visit.viral_load',
+                                    'subject_eddi.eddi',
+                                    'subject_eddi.ep_ddi',
+                                    'subject_eddi.lp_ddi',
+                                    'visit_eddi.days_since_eddi',
+                                    'visit_eddi.days_since_ep_ddi',
+                                    'visit_eddi.days_since_lp_ddi']
+
+
+                specific_headers = result_model._meta.get_all_field_names()
 
                 for result in results:
                     content = [ result[header] for header in headers ]
