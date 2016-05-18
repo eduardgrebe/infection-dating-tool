@@ -14,6 +14,8 @@ import json
 from django.utils import timezone
 from datetime import datetime
 from csv_helper import get_csv_response
+from assay_result_factory import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -163,67 +165,64 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
                 first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
                 specific_headers, results = first_result.get_specific_results_for_run()
                 response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
+                headers = list(set(download_common_headers) | set(specific_headers) | set(download_clinical_headers))
 
                 writer.writerow(headers)
-
-                common_headers = ['specimen_label'
-                                  'specimen_id',
-                                  'specimen_common (first 4 digits of specimen_label if is a panel specimen)',
-                                  'root_specimen_label',
-                                  'specimen_type',
-                                  'assay',
-                                  'panel',
-                                  'laboratory',
-                                  'test_date',
-                                  'operator',
-                                  'assay_kit_lot',
-                                  'plate_identifier',
-                                  'specimen_purpose',
-                                  'test_mode',
-                                  'exclusion',
-                                  'warning_msg']
-
-                clinical_headers = ['subject_label',
-                                    'subject_id',
-                                    'source_study',
-                                    'visit.visit_date',
-                                    'specimen.reported_draw_date',
-                                    'cohort_entry_date',
-                                    'cohort_entry_hiv_status',
-                                    'visit.visit_hiv_status',
-                                    'subtype',
-                                    'subtype_confirmed',
-                                    'country',
-                                    'sex',
-                                    'age(vist_date-date_of_birth).years',
-                                    'population_group',
-                                    'risk_sex_with_men',
-                                    'risk_sex_with_women',
-                                    'risk_idu',
-                                    'art_initiation_date',
-                                    'aids_diagnosis_date',
-                                    'art_interruption_date',
-                                    'art_resumption_date',
-                                    'visit.treatment_naive',
-                                    'visit.on_treatment',
-                                    'visit.cd4_count',
-                                    'visit.viral_load',
-                                    'subject_eddi.eddi',
-                                    'subject_eddi.ep_ddi',
-                                    'subject_eddi.lp_ddi',
-                                    'visit_eddi.days_since_eddi',
-                                    'visit_eddi.days_since_ep_ddi',
-                                    'visit_eddi.days_since_lp_ddi']
-
-
-                specific_headers = result_model._meta.get_all_field_names()
-
                 for result in results:
-                    content = [ result[header] for header in headers ]
-                    writer.writerow(content)
+                    import pdb; pdb.set_trace()
+                    content = [ result.specimen.specimen_label,
+                                result.specimen.id,
+                                result.specimen.specimen_label[:4],
+                                result.specimen.parent_label,
+                                result.specimen.specimen_type.name,
+                                result.assay_run.assay.name,
+                                result.assay_run.panel.name,
+                                result.laboratory.name,
+                                result.test_date,
+                                result.operator,
+                                result.assay_kit_lot,
+                                result.plate_identifier,
+                                result.specimen_purpose,
+                                result.test_mode,
+                                result.exclusion,
+                                result.warning_msg,
+                                result.specimen.source_study.name,
+                                result.specimen.visit.visit_date,
+                                result.specimen.reported_draw_date,
+                                result.specimen.visit.subject.cohort_entry_date,
+                                result.specimen.visit.subject.cohort_entry_hiv_status,
+                                result.specimen.visit.visit_hivstatus,
+                                result.specimen.visit.subject.subtype.name,
+                                result.specimen.visit.subject.subtype_confirmed,
+                                result.specimen.visit.subject.country.name,
+                                result.specimen.visit.subject.sex,
+                                'age(vist_date-date_of_birth).years',
+                                result.specimen.visit.subject.population_group.name,
+                                result.specimen.visit.subject.risk_sex_with_men,
+                                result.specimen.visit.subject.risk_sex_with_women,
+                                result.specimen.visit.subject.risk_idu,
+                                result.specimen.visit.subject.art_initiation_date,
+                                result.specimen.visit.subject.aids_diagnosis_date,
+                                result.specimen.visit.subject.art_interruption_date,
+                                result.specimen.visit.subject.art_resumption_date,
+                                result.specimen.visit.treatment_naive,
+                                result.specimen.visit.on_treatment,
+                                result.specimen.visit.cd4_count,
+                                result.specimen.visit.viral_load ]
 
+                    if result.specimen.visit.subject.subject_eddi:
+                        content.append(result.specimen.visit.subject.subject_eddi.eddi)
+                        content.append(result.specimen.visit.subject.subject_eddi.ep_ddi)
+                        content.append(result.specimen.visit.subject.subject_eddi.lp_ddi)
+                    if result.specimen.visit.visit_eddi:
+                        content.append(result.specimen.visit.visit_eddi.days_since_eddi)
+                        content.append(result.specimen.visit.visit_eddi.days_since_ep_ddi)
+                        content.append(result.specimen.visit.visit_eddi.days_since_lp_ddi)
+
+                    writer.writerow(content)
                 return response
             except Exception, e:
+                import pdb; pdb.set_trace()
                 logger.exception(e)
                 messages.error(request, 'Failed to download file')
         else:
