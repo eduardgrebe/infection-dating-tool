@@ -125,7 +125,7 @@ class AssayResult(models.Model):
 
     def get_specific_results(self):
         if self.assay:
-            result_model = get_results_for_assay(self.assay.name)
+            result_model = get_result_model(self.assay.name)
             headers = result_model._meta.get_all_field_names()
             results = [ result.model_to_dict() for result in result_model.objects.filter(assay_result=self) ]
             return headers, results
