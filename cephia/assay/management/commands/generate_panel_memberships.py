@@ -7,22 +7,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Insert all panel memberships for existing panels'
+    args = '<panel_id>'
 
     def handle(self, *args, **options):
         try:
-            panel = Panel.objects.get(pk=panel_id)
+            panel = Panel.objects.get(pk=args[0])
+            import pdb; pdb.set_trace()
             assay_runs_for_panel = AssayRun.objects.filter(panel=panel)
+            visits_for_run= []
 
             for run in assay_runs_for_panel:
-                result_row_model = get_result_row_model(run.assay.name)
-                rows_for_run = result_row_model.objects.filter(assay_run=assay_run)
-                [ row.specimen_label for row in rows_for_run ]
+                result_model = get_result_model(run.assay.name)
+                rows_for_run = result_model.objects.filter(assay_run=run)
+                visits_for_run = list(set(visits_for_run) | set([ row.specimen.visit for row in rows_for_run ]))
 
-            PanelMemberships.objects.create()
-
+            import pdb; pdb.set_trace()
+            #PanelMemberships.objects.create()
         except Exception, e:
             import pdb; pdb.set_trace()
-        finally:
-            error_file.close()
-            the_file.close()
