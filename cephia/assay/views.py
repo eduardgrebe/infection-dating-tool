@@ -163,10 +163,16 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
         if 'csv' in request.GET:
             try:
                 first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
-                headers, results = first_result.get_specific_results_for_run()
+
+                if 'generic' in request.GET:
+                    headers, results = first_result.get_results_for_run()
+                elif 'specific' in request.GET:
+                    headers, results = first_result.get_specific_results_for_run()
+
                 response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-                download = SpecificResultDownload(headers, results)
+                download = ResultDownload(headers, results)
                 writer.writerow(download.get_headers())
+
                 for row in download.get_content():
                     writer.writerow(row)
 
@@ -174,10 +180,10 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
             except Exception, e:
                 logger.exception(e)
                 messages.error(request, 'Failed to download file')
-        else:
-            context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
-            context['run'] = AssayRun.objects.get(pk=run_id)
-            return render_to_response(template, context, context_instance=RequestContext(request))
+
+        context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
+        context['run'] = AssayRun.objects.get(pk=run_id)
+        return render_to_response(template, context, context_instance=RequestContext(request))
 
 def specific_results(request, result_id=None, template="assay/specific_results_modal.html"):
     context = {}

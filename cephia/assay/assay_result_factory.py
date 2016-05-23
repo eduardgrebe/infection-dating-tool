@@ -22,7 +22,7 @@ def get_result_row_model(assay_name):
             raise Exception("Unknown assay: %s" % assay_name)
 
 
-class SpecificResultDownload(object):
+class ResultDownload(object):
 
     def __init__(self, specific_columns, results):
 

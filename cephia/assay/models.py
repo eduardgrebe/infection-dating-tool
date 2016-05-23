@@ -123,6 +123,14 @@ class AssayResult(models.Model):
     def __unicode__(self):
         return self.specimen.specimen_label
 
+    def get_results_for_run(self):
+        if self.assay:
+            headers = ['result']
+            results = [ result for result in AssayResult.objects.filter(assay_run=self.assay_run) ]
+            return headers, results
+
+        return None
+
     def get_specific_results(self):
         if self.assay:
             result_model = get_result_model(self.assay.name)
