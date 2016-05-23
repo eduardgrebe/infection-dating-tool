@@ -135,7 +135,10 @@ class AssayResult(models.Model):
     def get_specific_results_for_run(self):
         if self.assay:
             result_model = get_result_model(self.assay.name)
-            headers = [ header.replace('_id', '') if header.endswith('_id') else header for header in result_model._meta.get_all_field_names() ]
+            parent_fields = BaseAssayResult._meta.get_all_field_names()
+            child_fields = result_model._meta.get_all_field_names()
+            local_fields = list(set(child_fields)-set(parent_fields))
+            headers = [ header for header in local_fields if header != 'id']
             results = [ result for result in result_model.objects.filter(assay_run=self.assay_run) ]
             return headers, results
 
