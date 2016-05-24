@@ -32,7 +32,11 @@ class TransferOutFileHandler(FileHandler):
 
                     if row_dict.get('id', None):
                         try:
-                            transfer_out_row = TransferOutRow.objects.get(pk=row_dict['id'], state__in=['error', 'pending', 'validated', 'imported'])
+                            transfer_out_row = TransferOutRow.objects.get(pk=row_dict['id'],
+                                                                          state__in=['error',
+                                                                                     'pending',
+                                                                                     'validated',
+                                                                                     'imported'])
                         except TransferOutRow.DoesNotExist, e:
                             continue
                     else:
