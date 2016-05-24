@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 import datetime
 from cephia.models import Visit
-from assay.models import PanelMemberships, Panel
+from assay.models import PanelMemberships, Panel, AssayRun
 import logging
 
 logger = logging.getLogger(__name__)
