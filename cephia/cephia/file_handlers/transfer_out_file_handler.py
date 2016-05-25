@@ -32,7 +32,11 @@ class TransferOutFileHandler(FileHandler):
 
                     if row_dict.get('id', None):
                         try:
-                            transfer_out_row = TransferOutRow.objects.get(pk=row_dict['id'], state__in=['error', 'pending', 'validated', 'imported'])
+                            transfer_out_row = TransferOutRow.objects.get(pk=row_dict['id'],
+                                                                          state__in=['error',
+                                                                                     'pending',
+                                                                                     'validated',
+                                                                                     'imported'])
                         except TransferOutRow.DoesNotExist, e:
                             continue
                     else:
@@ -98,8 +102,9 @@ class TransferOutFileHandler(FileHandler):
                     error_msg += "Specimen does not exist.\n"
                 else:
                     specimen = specimen[0]
-                    if self.registered_dates.get('shipment_date', default_more_date) < (specimen.created_date.date() or default_less_date):
-                        error_msg += "Shipment date cannot be before created date.\n"
+                    if specimen.parent:
+                        if self.registered_dates.get('shipment_date', default_more_date) < (specimen.created_date.date() or default_less_date):
+                            error_msg += "Shipment date cannot be before created date.\n"
                 
                 # ditto for these
                 # if transfer_out_row.specimen_type in ['1','3','4.1','4.2','6', '8']:

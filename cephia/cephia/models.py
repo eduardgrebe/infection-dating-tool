@@ -314,7 +314,7 @@ class Subject(models.Model):
     first_positive_date = models.DateField(null=True, blank=True)
     edsc_reported  = models.DateField(null=True, blank=True, default=None)
     ars_onset_date = models.DateField(null=True, blank=True)
-    fiebig_stage_at_firstpos = models.CharField(max_length=10, null=False, blank=False)
+    fiebig_stage_at_firstpos = models.CharField(max_length=10, null=True, blank=False)
     date_of_birth = models.DateField(null=True, blank=True)
     date_of_death = models.DateField(null=True, blank=True)
     sex = models.CharField(max_length=6, null=False, blank=True, choices=GENDER_CHOICES)
