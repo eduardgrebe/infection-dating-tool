@@ -13,7 +13,7 @@ from cephia.models import Assay, Laboratory
 import json
 from django.utils import timezone
 from datetime import datetime
-from csv_helper import get_csv_response
+from cephia.csv_helper import get_csv_response
 from assay_result_factory import *
 
 
