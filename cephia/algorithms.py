@@ -32,12 +32,13 @@ def do_curtis_alg2013(luminex_result):
                          'gp160_AI':25.0,
                          'gp41_AI':35.0}
 
-        criteria_met = [ field for field, cut_off in needed_fields.iteritems() if getattr(luminex_result, field) < cut_off ]
+        #Criteria for long term classification
+        criteria_met = [ field for field, cut_off in needed_fields.iteritems() if getattr(luminex_result, field) > cut_off ]
 
         if len(criteria_met) >= 3:
-            luminex_result.recent_curtis_2013_alg35 = True
-        else:
             luminex_result.recent_curtis_2013_alg35 = False
+        else:
+            luminex_result.recent_curtis_2013_alg35 = True
         luminex_result.save()
     except ValueError:
         pass
