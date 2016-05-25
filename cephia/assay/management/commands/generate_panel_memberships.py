@@ -13,7 +13,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             panel = Panel.objects.get(pk=args[0])
-            import pdb; pdb.set_trace()
             assay_runs_for_panel = AssayRun.objects.filter(panel=panel)
             visits_for_run= []
 
