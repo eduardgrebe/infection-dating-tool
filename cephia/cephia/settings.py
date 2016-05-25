@@ -5,6 +5,8 @@ import git
 import sys
 from django.conf import global_settings
 import raven
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
@@ -23,18 +25,13 @@ SECRET_KEY = '%ikqh(&mt)5&$t^h19eb2o5g^^hbrx2i(_cby$(48xcd00_61v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TEMPLATE_DEBUG = True
+TEMPLATE_CONTEXT_PROCESSORS += (
+    'django.core.context_processors.request',
+)
 
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "cephia.CephiaUser"
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_HOME, "templates"),
-)
 
 ENDLESS_PAGINATION_PER_PAGE=20
 ENDLESS_PAGINATION_ADD_NOFOLLOW=True #from endless docs: Set to True if your SEO alchemist wants search engines not to follow pagination links.
@@ -77,7 +74,7 @@ INSTALLED_APPS = (
     'paranoidsessions',
     'simple_history',
     'bootstrap3',
-    'endless_pagination',
+    'el_pagination',
     'cephia',
     'reporting',
     'user_management',
