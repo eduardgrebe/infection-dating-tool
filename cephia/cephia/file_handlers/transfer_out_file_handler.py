@@ -102,8 +102,9 @@ class TransferOutFileHandler(FileHandler):
                     error_msg += "Specimen does not exist.\n"
                 else:
                     specimen = specimen[0]
-                    if self.registered_dates.get('shipment_date', default_more_date) < (specimen.created_date.date() or default_less_date):
-                        error_msg += "Shipment date cannot be before created date.\n"
+                    if specimen.parent:
+                        if self.registered_dates.get('shipment_date', default_more_date) < (specimen.created_date.date() or default_less_date):
+                            error_msg += "Shipment date cannot be before created date.\n"
                 
                 # ditto for these
                 # if transfer_out_row.specimen_type in ['1','3','4.1','4.2','6', '8']:
