@@ -143,7 +143,6 @@ class LagSediaFileHandler(FileHandler):
 
                     # if specimen.visit.id not in panel_memberhsip_ids:
                     #     warning_msg += "Specimen does not belong to any panel membership.\n"
-
                     lag_result = LagSediaResult.objects.create(specimen=specimen,
                                                                assay=assay,
                                                                laboratory=Laboratory.objects.get(name=lag_row.laboratory),

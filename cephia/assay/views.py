@@ -116,6 +116,7 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
                                                 run_date=timezone.now())
 
             result_file.get_handler().process(panel_id, assay_run)
+
             call_command('assay_results_per_run', str(assay_run.id))
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:

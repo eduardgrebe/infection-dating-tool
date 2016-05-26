@@ -175,10 +175,11 @@ class BaseAssayResult(models.Model):
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
-            if field != 'luminexcdcresultrow':
-                if getattr(self, field) == 'NA' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+            field_type = self._meta.get_field(field)
+            if not field_type.one_to_many and not field_type.related_model:
+                if getattr(self, field) == 'NA' and field_type.get_internal_type() == 'FloatField':
                     setattr(self, field, None)
-                if getattr(self, field) == 'NEG' and self._meta.get_field(field).get_internal_type() == 'FloatField':
+                if getattr(self, field) == 'NEG' and field_type.get_internal_type() == 'FloatField':
                     setattr(self, field, None)
                     setattr(self, 'interpretation', 'neg')
 
