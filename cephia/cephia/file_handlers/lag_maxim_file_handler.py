@@ -162,6 +162,7 @@ class LagMaximFileHandler(FileHandler):
                     lag_row.state = 'processed'
                     lag_row.date_processed = timezone.now()
                     lag_row.error_message = ''
+                    lag_row.lag_maxim_result = lag_result
                     lag_row.save()
                     rows_inserted += 1
 

@@ -166,6 +166,7 @@ class BEDFileHandler(FileHandler):
                     bed_result_row.state = 'processed'
                     bed_result_row.date_processed = timezone.now()
                     bed_result_row.error_message = ''
+                    bed_result_row.bed_result = bed_result
                     bed_result_row.save()
                     rows_inserted += 1
 

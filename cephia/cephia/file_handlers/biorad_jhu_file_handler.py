@@ -170,6 +170,7 @@ class BioRadAvidityJHUFileHandler(FileHandler):
                     biorad_result_row.state = 'processed'
                     biorad_result_row.date_processed = timezone.now()
                     biorad_result_row.error_message = ''
+                    biorad_result_row.biorad_avidity_jhu_result = biorad_result
                     biorad_result_row.save()
                     rows_inserted += 1
 

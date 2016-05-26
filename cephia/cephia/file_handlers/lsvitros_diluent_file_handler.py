@@ -162,6 +162,7 @@ class LSVitrosDiluentFileHandler(FileHandler):
                     lsvitros_result_row.state = 'processed'
                     lsvitros_result_row.date_processed = timezone.now()
                     lsvitros_result_row.error_message = ''
+                    lsvitros_result_row.lsvitros_diluent_result = lsvitros_result
                     lsvitros_result_row.save()
                     rows_inserted += 1
 

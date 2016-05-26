@@ -173,6 +173,7 @@ class IDEV3FileHandler(FileHandler):
                     ide_result_row.state = 'processed'
                     ide_result_row.date_processed = timezone.now()
                     ide_result_row.error_message = ''
+                    ide_result_row.idev3_result = ide_result
                     ide_result_row.save()
                     rows_inserted += 1
 

@@ -175,6 +175,7 @@ class VitrosAvidityFileHandler(FileHandler):
                     vitros_result_row.state = 'processed'
                     vitros_result_row.date_processed = timezone.now()
                     vitros_result_row.error_message = ''
+                    vitros_result_row.vitros_avidity_result = vitros_result
                     vitros_result_row.save()
                     rows_inserted += 1
 

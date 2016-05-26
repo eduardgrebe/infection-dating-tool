@@ -161,6 +161,7 @@ class ArchitectAvidityFileHandler(FileHandler):
                     architect_result_row.state = 'processed'
                     architect_result_row.date_processed = timezone.now()
                     architect_result_row.error_message = ''
+                    architect_result_row.architect_avidity_result = architect_result
                     architect_result_row.save()
                     rows_inserted += 1
 

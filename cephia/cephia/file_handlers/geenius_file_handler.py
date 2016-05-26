@@ -179,6 +179,7 @@ class GeeniusFileHandler(FileHandler):
                     geenius_result_row.state = 'processed'
                     geenius_result_row.date_processed = timezone.now()
                     geenius_result_row.error_message = ''
+                    geenius_result_row.geenius_result = geenius_result
                     geenius_result_row.save()
                     rows_inserted += 1
 
