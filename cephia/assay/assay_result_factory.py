@@ -32,7 +32,6 @@ class ResultDownload(object):
         self.results = results
         self.common_columns = [ "specimen.specimen_label",
                                 "specimen.id",
-                                "specimen.specimen_label[:4]",
                                 "specimen.parent_label",
                                 "specimen.specimen_type.name",
                                 "assay_run.assay.name",
