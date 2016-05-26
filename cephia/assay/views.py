@@ -156,6 +156,9 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
             runs = form.filter()
         context['runs'] = runs
         context['form'] = form
+    elif request.method == 'POST':
+        import pdb; pdb.set_trace()
+
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 def run_results(request, run_id=None, template="assay/run_results.html"):
@@ -195,3 +198,13 @@ def specific_results(request, result_id=None, template="assay/specific_results_m
 
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
+
+def purge_run(request, run_id=None):
+    try:
+        run = AssayRun.objects.get(pk=run_id)
+        generic_results = AssayResult.objects.filter(assay_run=run)
+        specific_results = get_result_model(run.assay.name).objects.filter(assay_run=run)
+        specific_result_rows = get_result_row_model(run.assay.name).objects.filter(assay_run=run)
+    except Exception, e:
+        logger.exception(e)
+        messages.error(request, 'Failed to delete assay run. Please check the log file.')
