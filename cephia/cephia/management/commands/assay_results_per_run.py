@@ -432,7 +432,6 @@ class Command(BaseCommand):
 
     def _handle_BED(self, assay_run):
         warning_msg = ''
-
         specimen_ids = BEDResult.objects.values_list('specimen', flat=True)\
                                         .filter(assay_run=assay_run)\
                                         .exclude(test_mode='control').distinct()
