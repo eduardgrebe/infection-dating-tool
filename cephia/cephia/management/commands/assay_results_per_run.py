@@ -57,13 +57,14 @@ class Command(BaseCommand):
             self._handle_immunetics_newmixpeptide(assay_run)
 
     def _handle_lag_sedia(self, assay_run):
-        warning_msg = ''
         specimen_ids = LagSediaResult.objects.values_list('specimen', flat=True)\
                                              .filter(assay_run=assay_run)\
                                              .exclude(test_mode='control').distinct()
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
+
                 spec_results = LagSediaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -99,13 +100,14 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_lag_maxim(self, assay_run):
-        warning_msg = ''
         specimen_ids = LagMaximResult.objects.values_list('specimen', flat=True)\
                                              .filter(assay_run=assay_run)\
                                              .exclude(test_mode='control').distinct()
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
+
                 spec_results = LagMaximResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
@@ -139,12 +141,13 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_architect_unmodified(self, assay_run):
-        warning_msg = ''
         specimen_ids = ArchitectUnmodifiedResult.objects.values_list('specimen', flat=True)\
                                                         .filter(assay_run=assay_run)\
                                                         .exclude(test_mode='control').distinct()
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
+
                 spec_results = ArchitectUnmodifiedResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -170,13 +173,13 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_architect_avidity(self, assay_run):
-        warning_msg = ''
         specimen_ids = ArchitectAvidityResult.objects.values_list('specimen', flat=True)\
                                                      .filter(assay_run=assay_run)\
                                                      .exclude(test_mode='control').distinct()
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
                 spec_results = ArchitectAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
@@ -216,13 +219,14 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_biorad_avidity_cdc(self, assay_run):
-        warning_msg = ''
         specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True) \
                                                      .filter(assay_run=assay_run) \
                                                      .exclude(test_mode='control').distinct()
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
+
                 spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -260,13 +264,14 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_biorad_avidity_jhu(self, assay_run):
-        warning_msg = ''
         specimen_ids = BioRadAvidityJHUResult.objects.values_list('specimen', flat=True) \
                                                      .filter(assay_run=assay_run) \
                                                      .exclude(test_mode='control').distinct()
 
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
+
                 spec_results = BioRadAvidityJHUResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -304,14 +309,13 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_vitros_avidity(self, assay_run):
-        warning_msg = ''
-
         specimen_ids = VitrosAvidityResult.objects.values_list('specimen',flat=True)\
                                                   .filter(assay_run=assay_run)\
                                                   .exclude(test_mode='control').distinct()
 
-        for specimen_id in specimen_ids:
-            with transaction.atomic():
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                warning_msg = ''
                 spec_results = VitrosAvidityResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -344,12 +348,11 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_ls_vitros_diluent(self, assay_run):
-        warning_msg = ''
-
         specimen_ids = LSVitrosDiluentResult.objects.values_list('specimen',flat=True).filter(assay_run=assay_run)\
                                                                                       .exclude(test_mode='control').distinct()
-        for specimen_id in specimen_ids:
-            with transaction.atomic():
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                warning_msg = ''
                 spec_results = LSVitrosDiluentResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -386,12 +389,11 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_ls_vitros_plasma(self, assay_run):
-        warning_msg = ''
-
         specimen_ids = LSVitrosPlasmaResult.objects.values_list('specimen',flat=True).filter(assay_run=assay_run)\
                                                                                       .exclude(test_mode='control').distinct()
-        for specimen_id in specimen_ids:
-            with transaction.atomic():
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                warning_msg = ''
                 spec_results = LSVitrosPlasmaResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -431,12 +433,12 @@ class Command(BaseCommand):
         pass
 
     def _handle_BED(self, assay_run):
-        warning_msg = ''
         specimen_ids = BEDResult.objects.values_list('specimen', flat=True)\
                                         .filter(assay_run=assay_run)\
                                         .exclude(test_mode='control').distinct()
-        for specimen_id in specimen_ids:
-            with transaction.atomic():
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                warning_msg = ''
                 spec_results = BEDResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
                 AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
@@ -479,13 +481,12 @@ class Command(BaseCommand):
         glasgow_calc.calculate()
 
     def _handle_bioplex_cdc(self, assay_run):
-        warning_msg = ''
-
         specimen_ids = LuminexCDCResult.objects.values_list('specimen', flat=True)\
                                                .filter(assay_run=assay_run)\
                                                .exclude(test_mode='control').distinct()
         with transaction.atomic():
             for specimen_id in specimen_ids:
+                warning_msg = ''
                 method = ''
                 spec_results = LuminexCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 spec_results.update(assay_result=None)
