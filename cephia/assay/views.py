@@ -203,9 +203,10 @@ def specific_results(request, result_id=None, template="assay/specific_results_m
 def purge_run(request, run_id=None):
     try:
         run = AssayRun.objects.get(pk=run_id)
-        generic_results = AssayResult.objects.filter(assay_run=run)
-        specific_results = get_result_model(run.assay.name).objects.filter(assay_run=run)
-        specific_result_rows = get_result_row_model(run.assay.name).objects.filter(assay_run=run)
+        AssayResult.objects.filter(assay_run=run).delete()
+        get_result_model(run.assay.name).objects.filter(assay_run=run).delete()
+        run.delete()
+        return HttpResponseRedirect(reverse('assay:assay_runs'))
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to delete assay run. Please check the log file.')
