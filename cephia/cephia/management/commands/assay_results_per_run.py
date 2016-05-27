@@ -79,15 +79,18 @@ class Command(BaseCommand):
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_ODn_screen'
+                    warning_msg += "Unexpected number of screen records."
                 elif number_of_confirms > 0:
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
                     method = 'median_of_confirms'
+                    if number_of_confirms != 2:
+                        warning_msg += "Unexpected number of 'confirm' records."
 
-                if number_of_confirms != 2:
-                    warning_msg += "Unexpected number of 'confirm' records."
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
+                if number_of_screens == 1 and number_of_confirms == 0 and result.ODn < 2:
+                    warning_msg += "ODn is < 2 and no confirm records."
 
                 assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                           assay=assay_run.assay,
@@ -125,8 +128,8 @@ class Command(BaseCommand):
                     final_result = confirm_results[1]
                     method = 'median_of_confirms'
 
-                if number_of_confirms != 2:
-                    warning_msg += "Unexpected number of 'confirm' records."
+                    if number_of_confirms != 2:
+                        warning_msg += "Unexpected number of 'confirm' records."
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
 
