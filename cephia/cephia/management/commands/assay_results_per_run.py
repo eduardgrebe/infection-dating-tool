@@ -84,7 +84,7 @@ class Command(BaseCommand):
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
                     method = 'median_of_confirms'
-                    if number_of_confirms != 2:
+                    if number_of_confirms != 3:
                         warning_msg += "Unexpected number of 'confirm' records."
 
                 if number_of_screens == 0:
@@ -112,6 +112,8 @@ class Command(BaseCommand):
                 warning_msg = ''
 
                 spec_results = LagMaximResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
@@ -123,15 +125,18 @@ class Command(BaseCommand):
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_ODn_screen'
+                    warning_msg += "Unexpected number of screen records."
                 elif number_of_confirms > 0:
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
                     method = 'median_of_confirms'
-
-                    if number_of_confirms != 2:
+                    if number_of_confirms != 3:
                         warning_msg += "Unexpected number of 'confirm' records."
+
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
+                if number_of_screens == 1 and number_of_confirms == 0 and lag_result.ODn < 2:
+                    warning_msg += "ODn is < 2 and no confirm records."
 
                 assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                           assay=assay_run.assay,
@@ -460,11 +465,13 @@ class Command(BaseCommand):
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
                     method = 'median_of_confirms'
+                    if number_of_confirms != 3:
+                        warning_msg += "Unexpected number of 'confirm' records."
 
-                if number_of_confirms > 0 and number_of_confirms != 2:
-                    warning_msg += "Unexpected number of 'confirm' records."
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
+                if number_of_screens == 1 and number_of_confirms == 0 and lag_result.ODn < 1.2:
+                    warning_msg += "ODn is < 2 and no confirm records."
 
                 assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                           assay=assay_run.assay,
