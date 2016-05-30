@@ -440,6 +440,27 @@ class Visit(models.Model):
         return self.subject_label
 
 
+class VisitCalculation(models.Model):
+
+    class Meta:
+        db_table = "cephia_visit_details"
+
+    after_aids_diagnosis = models.NullBooleanField()
+    age = models.IntegerField(null=True)
+    ever_aids_diagnosis = models.NullBooleanField()
+    ever_scope_ec = models.NullBooleanField()
+    earliest_visit_date = models.DateField(null=True)
+    time_since_cohort_entry = models.IntegerField(null=True)
+    time_since_first_draw = models.IntegerField(null=True)
+    time_since_first_art = models.IntegerField(null=True)
+    time_since_current_art_init = models.IntegerField(null=True)
+    time_from_eddi_to_tx = models.IntegerField(null=True)
+    visit = ProtectedForeignKey(Visit, null=True, blank=False)
+
+    def __unicode__(self):
+        return self.visit.subject_label
+
+
 class VisitRow(ImportedRow):
 
     class Meta:
