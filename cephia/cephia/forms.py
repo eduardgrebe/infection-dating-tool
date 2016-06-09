@@ -378,6 +378,7 @@ class FileInfoFilterForm(forms.Form):
     file_type = forms.ChoiceField(choices=FILE_TYPE_CHOICES, required=False)
     state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
     created = forms.DateField(required=False)
+    filename = forms.CharField(required=False)
     
     def __init__(self, *args, **kwargs):
         super(FileInfoFilterForm, self).__init__(*args, **kwargs)
@@ -396,6 +397,9 @@ class FileInfoFilterForm(forms.Form):
             qs = qs.filter(state=state)
         if created:
             qs = qs.filter(created=created)
+
+        if self.cleaned_data.get('filename'):
+            qs = qs.filter(data_file__icontains=self.cleaned_data['filename'].strip())
             
         return qs
 

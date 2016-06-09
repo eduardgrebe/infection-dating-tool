@@ -15,7 +15,11 @@
 {% endblock %}
 
 {% block filter_col_c %}
-{% bootstrap_field filter_form.created %}
+  {% bootstrap_field filter_form.created %}
+{% endblock %}
+
+{% block filter_col_d %}
+  {% bootstrap_field filter_form.filename %}
 {% endblock %}
 
 {% block page_content %}
