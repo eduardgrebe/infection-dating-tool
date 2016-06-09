@@ -66,8 +66,10 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
 
         if rows_failed > 0:
             self.upload_file.state = 'row_error'
+            
         else:
             self.upload_file.state = 'imported'
+
         fail_msg = 'Failed to import ' + str(rows_failed) + ' rows.'
         success_msg = 'Successfully imported ' + str(rows_inserted) + ' rows.'
 
@@ -166,7 +168,7 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 architect_result_row.state = 'error'
-                architect_result_row.error_message = e.message
+                architect_result_row.error_message = str(e)
                 architect_result_row.save()
                 rows_failed += 1
                 continue

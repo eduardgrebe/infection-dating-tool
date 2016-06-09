@@ -172,6 +172,7 @@ class BaseAssayResult(models.Model):
     interpretation = models.CharField(max_length=255, null=True, blank=False)
     exclusion = models.CharField(max_length=255, null=True, blank=False)
     warning_msg = models.CharField(max_length=255, null=True, blank=False)
+    error_message = models.CharField(max_length=255, null=True, blank=False)
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
@@ -274,7 +275,7 @@ class ArchitectUnmodifiedResult(BaseAssayResult):
         db_table = "assay_architect_unmodified"
 
     SCO = models.FloatField(null=True, blank=False)
-    well= models.CharField(max_length=255, null=False, blank=True)
+    well= models.CharField(max_length=255, null=True, blank=True)
 
 
 class ArchitectUnmodifiedResultRow(BaseAssayResultRow):

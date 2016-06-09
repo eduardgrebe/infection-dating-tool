@@ -292,7 +292,7 @@ def upload_file(request):
             'visit': 2,
             'transfer_in': 3,
             'aliquot': 4,
-            'transfer_out': 5
+            'transfer_out': 5,
         }
 
         if request.method == "POST":
