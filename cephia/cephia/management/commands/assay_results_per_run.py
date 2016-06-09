@@ -507,10 +507,8 @@ class Command(BaseCommand):
                 if spec_results.count() == 1:
                     if luminex_result.recent_curtis_2013_alg35:
                         final_result = 1
-                    if not luminex_result.recent_curtis_2013_alg35:
-                        final_result = 0
                     else:
-                        final_result = None
+                        final_result = 0
                     method = 'curtis_2013_3/5_alg'
                 else:
                     final_result = None
@@ -540,4 +538,3 @@ class Command(BaseCommand):
 
     def _handle_immunetics_newmixpeptide(self, assay_run):
         pass
-
