@@ -19,9 +19,11 @@ class IDEV3FileHandler(FileHandler):
             'assay_kit_lot',
             'plate_identifier',
             'specimen_purpose',
+            'exclusion',
+            'interpretation', 
+            'test_mode',
             'well_tm',
             'well_v3',
-            'test_mode',
             'tm_OD',
             'v3_OD',
             'tm_ratio_reported',
@@ -32,8 +34,7 @@ class IDEV3FileHandler(FileHandler):
             'intermediare',
             'conclusion_reported',
             'conclusion',
-            'exclusion',
-            'interpretation', 
+            
         ]
 
     def parse(self):
@@ -49,26 +50,32 @@ class IDEV3FileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     ide_result_row = IDEV3ResultRow.objects.create(
-                        specimen_label=row_dict['specimen_label'],
-                        assay=row_dict['assay'],
-                        laboratory=row_dict['laboratory'],
-                        test_date=row_dict['test_date'],
-                        operator=row_dict['operator'],
-                        assay_kit_lot=row_dict['assay_kit_lot'],
-                        plate_identifier=row_dict['plate_identifier'],
-                        well=row_dict['well'],
-                        test_mode=row_dict['test_mode'],
-                        specimen_purpose=row_dict['specimen_purpose'],
-                        result_tm_OD=row_dict['result_tm_OD'],
-                        result_v3_OD=row_dict['result_v3_OD'],
-                        result_ratioTM=row_dict['result_ratioTM'],
-                        result_ratioV3=row_dict['result_ratioV3'],
-                        result_intermediate=row_dict['result_intermediate'],
-                        result_conclusion=row_dict['result_conclusion'],
-                        result_conclusion_recalc=row_dict['result_conclusion_recalc'],
+                        specimen_label = row_dict['specimen_label'],
+                        assay = row_dict['assay'],
+                        laboratory = row_dict['laboratory'],
+                        test_date = row_dict['test_date'],
+                        operator = row_dict['operator'],
+                        assay_kit_lot = row_dict['assay_kit_lot'],
+                        plate_identifier = row_dict['plate_identifier'],
+                        specimen_purpose = row_dict['specimen_purpose'],
+                        exclusion = row_dict['exclusion'],
+                        interpretation = row_dict['interpretation'],
+                        test_mode = row_dict['test_mode'],
+                        well_tm = row_dict['well_tm'],
+                        well_v3 = row_dict['well_v3'],
+                        tm_OD = row_dict['tm_OD'],
+                        v3_OD = row_dict['v3_OD'],
+                        tm_ratio_reported = row_dict['tm_ratio_reported'],
+                        v3_ratio_reported = row_dict['v3_ratio_reported'],
+                        tm_ratio = row_dict['tm_ratio'],
+                        v3_ratio = row_dict['v3_ratio'],
+                        intermediaire_reported = row_dict['intermediaire_reported'],
+                        intermediare = row_dict['intermediare'],
+                        conclusion_reported = row_dict['conclusion_reported'],
+                        conclusion = row_dict['conclusion'],
                         state='pending',
-                        fileinfo=self.upload_file)
-
+                        fileinfo=self.upload_file
+                    )
 
                     rows_inserted += 1
             except Exception, e:
@@ -97,14 +104,17 @@ class IDEV3FileHandler(FileHandler):
         for ide_result_row in IDEV3ResultRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
+                # might only need to be used in the future
                 panel = Panel.objects.get(pk=panel_id)
                 panel_memberships = PanelMembership.objects.filter(panel=panel)
                 assay = Assay.objects.get(name=ide_result_row.assay)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=ide_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    Specimen.objects.get(
+                        specimen_label=ide_result_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False
+                    )
                 except Specimen.DoesNotExist:
                     if ide_result_row.specimen_purpose == 'panel_specimen':
                         error_msg += "Specimen not recognised.\n"

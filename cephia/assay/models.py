@@ -617,13 +617,18 @@ class IDEV3Result(BaseAssayResult):
     class Meta:
         db_table = "assay_idev3"
 
-    tm_OD = models.FloatField(null=True, blank=False)
-    v3_OD = models.FloatField(null=True, blank=False)
-    ratioTM = models.FloatField(null=True, blank=False)
-    ratioV3 = models.FloatField(null=True, blank=False)
-    intermediate = models.FloatField(null=True, blank=False)
-    conclusion = models.FloatField(null=True, blank=False)
-    conclusion_recalc = models.FloatField(null=True, blank=False)
+    well_tm = models.CharField(max_length=10, null=True)
+    well_v3 = models.CharField(max_length=10, null=True)
+    tm_OD = models.FloatField(null=True)
+    v3_OD = models.FloatField(null=True)
+    tm_ratio_reported = models.FloatField(null=True)
+    v3_ratio_reported = models.FloatField(null=True)
+    tm_ratio = models.FloatField(null=True)
+    v3_ratio = models.FloatField(null=True)
+    intermediaire_reported = models.FloatField(null=True)
+    intermediare = models.FloatField(null=True)
+    conclusion_reported = models.FloatField(null=True)
+    conclusion = models.FloatField(null=True)
 
 
 class IDEV3ResultRow(BaseAssayResultRow):
@@ -631,11 +636,17 @@ class IDEV3ResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "assay_idev3_row"
 
-    tm_OD = models.CharField(max_length=255, null=False, blank=True)
-    v3_OD = models.CharField(max_length=255, null=False, blank=True)
-    ratioTM = models.CharField(max_length=255, null=False, blank=True)
-    ratioV3 = models.CharField(max_length=255, null=False, blank=True)
-    intermediate = models.CharField(max_length=255, null=False, blank=True)
-    conclusion = models.CharField(max_length=255, null=False, blank=True)
-    conclusion_recalc = models.CharField(max_length=255, null=False, blank=True)
-    idev3_result = models.ForeignKey(IDEV3Result, null=True, db_index=True)
+
+    well_tm = models.CharField(max_length=255, null=False, blank=True)
+    well_v3 = models.CharField(max_length=255)
+    tm_OD = models.CharField(max_length=255)
+    v3_OD = models.CharField(max_length=255)
+    tm_ratio_reported = models.CharField(max_length=255)
+    v3_ratio_reported = models.CharField(max_length=255)
+    tm_ratio = models.CharField(max_length=255)
+    v3_ratio = models.CharField(max_length=255)
+    intermediaire_reported = models.CharField(max_length=255)
+    intermediare = models.CharField(max_length=255)
+    conclusion_reported = models.CharField(max_length=255)
+    conclusion = models.CharField(max_length=255)
+    

@@ -42,3 +42,9 @@ def do_curtis_alg2013(luminex_result):
         luminex_result.save()
     except ValueError:
         pass
+
+
+def do_ide_v3(result):
+    if result.tm_OD is not None:
+        result.ratio_tm = result.tm_OD / 0.05
+    
