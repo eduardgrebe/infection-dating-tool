@@ -1,3 +1,5 @@
+import math
+
 def do_curtis_alg2016(luminex_result):
     try:
         needed_fields = {'gp120_MFIn':4.2,
@@ -44,7 +46,4 @@ def do_curtis_alg2013(luminex_result):
         pass
 
 
-def do_ide_v3(result):
-    if result.tm_OD is not None:
-        result.ratio_tm = result.tm_OD / 0.05
-    
+

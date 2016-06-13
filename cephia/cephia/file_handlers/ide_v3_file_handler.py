@@ -147,7 +147,7 @@ class IDEV3FileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import IDEV3ResultRow, IDEV3Result, AssayResult
 
@@ -169,30 +169,31 @@ class IDEV3FileHandler(FileHandler):
                                                               test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
                                                               result=ide_result_row.result_conclusion_recalc)
 
-                    ide_result = IDEV3Result.objects.create(specimen=specimen,
-                                                            assay=assay,
-                                                            laboratory=Laboratory.objects.get(name=ide_result_row.laboratory),
-                                                            test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
-                                                            operator=ide_result_row.operator,
-                                                            assay_kit_lot=ide_result_row.assay_kit_lot,
-                                                            plate_identifier=ide_result_row.plate_identifier,
-                                                            test_mode=ide_result_row.test_mode,
-                                                            well=ide_result_row.well,
-                                                            specimen_purpose=ide_result_row.specimen_purpose,
-                                                            result_tm_OD=ide_result_row.result_tm_OD,
-                                                            result_v3_OD=ide_result_row.result_v3_OD,
-                                                            result_ratioTM=ide_result_row.result_ratioTM,
-                                                            result_ratioV3=ide_result_row.result_ratioV3,
-                                                            result_intermediate=ide_result_row.result_intermediate,
-                                                            result_conclusion=ide_result_row.result_conclusion,
-                                                            result_conclusion_recalc=ide_result_row.result_conclusion_recalc,
-                                                            assay_result=assay_result)
+                    ide_result = IDEV3Result.objects.create(
+                        specimen=specimen,
+                        assay=assay,
+                        laboratory=Laboratory.objects.get(name=ide_result_row.laboratory),
+                        test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
+                        operator=ide_result_row.operator,
+                        assay_kit_lot=ide_result_row.assay_kit_lot,
+                        plate_identifier=ide_result_row.plate_identifier,
+                        test_mode=ide_result_row.test_mode,
+                        well=ide_result_row.well,
+                        specimen_purpose=ide_result_row.specimen_purpose,
+                        result_tm_OD=ide_result_row.result_tm_OD,
+                        result_v3_OD=ide_result_row.result_v3_OD,
+                        result_ratioTM=ide_result_row.result_ratioTM,
+                        result_ratioV3=ide_result_row.result_ratioV3,
+                        result_intermediate=ide_result_row.result_intermediate,
+                        result_conclusion=ide_result_row.result_conclusion,
+                        result_conclusion_recalc=ide_result_row.result_conclusion_recalc,
+                        assay_result=assay_result)
 
                     ide_result_row.state = 'processed'
                     ide_result_row.date_processed = timezone.now()
                     ide_result_row.error_message = ''
                     ide_result_row.idev3_result = ide_result
-                    ide_result_row.save()
+                    ide_result.calculate_and_save()
                     rows_inserted += 1
 
             except Exception, e:

@@ -3,12 +3,12 @@ from django.db import models
 from cephia.models import (Visit, Specimen, SpecimenType, ImportedRow,
                            Assay, Laboratory, Panel, FileInfo)
 from lib.fields import ProtectedForeignKey
+from lib import log_exception
 from assay_result_factory import *
 from django.forms.models import model_to_dict
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 class PanelMembershipRow(ImportedRow):
 
@@ -157,6 +157,11 @@ class BaseAssayResult(models.Model):
     class Meta:
         abstract = True
 
+    INTEPRETATIONS = [
+        ('recent', 'Recent'),
+        ('non_recent', 'Non-Recent')
+    ]
+
     specimen = models.ForeignKey(Specimen, null=True, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
@@ -169,7 +174,7 @@ class BaseAssayResult(models.Model):
     specimen_purpose = models.CharField(max_length=255, null=True, blank=True)
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
-    interpretation = models.CharField(max_length=255, null=True, blank=False)
+    interpretation = models.CharField(choices=INTEPRETATIONS, max_length=255, null=True, blank=False)
     exclusion = models.CharField(max_length=255, null=True, blank=False)
     warning_msg = models.CharField(max_length=255, null=True, blank=False)
     error_message = models.CharField(max_length=255, null=True, blank=False)
@@ -630,7 +635,28 @@ class IDEV3Result(BaseAssayResult):
     conclusion_reported = models.FloatField(null=True)
     conclusion = models.FloatField(null=True)
 
+    def calculate_and_save(self):
+        try:
+            if self.tm_OD is not None:
+                self.ratio_tm = self.tm_OD / 0.05
 
+            if self.v3_OD is not None:
+                self.ratio_v3 = self.v3_OD / 0.05
+
+            if self.tm_OD is None or self.v3_OD is None:
+                self.intermediare = None
+                self.conclusion = None
+                self.interpretation = None
+            else:
+                # numbers are arbitrary as per the SOP
+                self.intermediare = -(3.8565 + 0.09502 * self.ratio_tm +  0.0379 * self.ratio_v3)
+                self.conclusion = math.exp(self.intermediare) / (1 + math.exp(self.intermediare))
+                self.interpretation = 'recent'  if self.conclusion < 0.5 else 'non_recent'
+        except Exception, e:
+            self.warning_msg = "Unable to calculate final result: " + log_exception(e, logger)
+        finally:
+            self.save()
+            
 class IDEV3ResultRow(BaseAssayResultRow):
 
     class Meta:

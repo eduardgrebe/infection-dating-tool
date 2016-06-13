@@ -1,4 +1,4 @@
-from django.db.functions import Length, Substr
+from django.db.models.functions import Length, Substr
 from file_handler import FileHandler
 from handler_imports import *
 import logging
