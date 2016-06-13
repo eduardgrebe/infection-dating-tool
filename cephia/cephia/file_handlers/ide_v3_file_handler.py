@@ -1,6 +1,7 @@
 from file_handler import FileHandler
 from handler_imports import *
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -48,13 +49,13 @@ class IDEV3FileHandler(FileHandler):
                                                                    operator=row_dict['operator'],
                                                                    assay_kit_lot=row_dict['assay_kit_lot'],
                                                                    plate_identifier=row_dict['plate_identifier'],
-                                                                   well=row_dict['well'],
+                                                                   well=row_dict.get('well', 'well_v3'),
                                                                    test_mode=row_dict['test_mode'],
                                                                    specimen_purpose=row_dict['specimen_purpose'],
-                                                                   result_tm_OD=row_dict['result_tm_OD'],
-                                                                   result_v3_OD=row_dict['result_v3_OD'],
-                                                                   result_ratioTM=row_dict['result_ratioTM'],
-                                                                   result_ratioV3=row_dict['result_ratioV3'],
+                                                                   result_tm_OD=row_dict['tm_OD'],
+                                                                   result_v3_OD=row_dict['v3_OD'],
+                                                                   result_ratioTM=row_dict['tm_ratio'],
+                                                                   result_ratioV3=row_dict['v3_ratio'],
                                                                    result_intermediate=row_dict['result_intermediate'],
                                                                    result_conclusion=row_dict['result_conclusion'],
                                                                    result_conclusion_recalc=row_dict['result_conclusion_recalc'],
@@ -66,7 +67,7 @@ class IDEV3FileHandler(FileHandler):
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.message = "row " + str(row_num) + ": " +  traceback.format_exception(type(e), e, None)[0]
                 self.upload_file.save()
                 return 0, 1
 
@@ -114,7 +115,7 @@ class IDEV3FileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 ide_result_row.state = 'error'
-                ide_result_row.error_message = e.message
+                ide_result_row.error_message = unicode(e)
                 rows_failed += 1
                 ide_result_row.save()
                 continue
@@ -129,7 +130,7 @@ class IDEV3FileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import IDEV3ResultRow, IDEV3Result, AssayResult
 
@@ -149,10 +150,12 @@ class IDEV3FileHandler(FileHandler):
                                                               assay=assay,
                                                               specimen=specimen,
                                                               test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=ide_result_row.result_conclusion_recalc)
+                                                              result=ide_result_row.result_conclusion_recalc,
+                                                              assay_run=assay_run)
 
                     ide_result = IDEV3Result.objects.create(specimen=specimen,
                                                             assay=assay,
+                                                            assay_run=assay_run,
                                                             laboratory=Laboratory.objects.get(name=ide_result_row.laboratory),
                                                             test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
                                                             operator=ide_result_row.operator,
@@ -180,7 +183,7 @@ class IDEV3FileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 ide_result_row.state = 'error'
-                ide_result_row.error_message = e.message
+                ide_result_row.error_message = unicode(e)
                 ide_result_row.save()
                 rows_failed += 1
                 continue

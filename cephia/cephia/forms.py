@@ -327,14 +327,14 @@ class RowFilterForm(forms.Form):
                 rows = BEDResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/bed_row_info.html'
             elif fileinfo.assay.name == 'BioRad-Avidity-Glasgow':
-                rows = VitrosResultRow.objects.filter(fileinfo=fileinfo)
+                rows = BioRadAvidityGlasgowResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/biorad_glasgow_row_info.html'
             elif fileinfo.assay.name == 'BioPlex-CDC':
                 rows = LuminexCDCResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/luminex_row_info.html'
             elif fileinfo.assay.name == 'IDE-V3':
-                rows = IDEResultRow.objects.filter(fileinfo=fileinfo)
-                template = 'assay/ide_row_info.html'
+                rows = IDEV3ResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/ide_v3_row_info.html'
             elif fileinfo.assay.name == 'Duke-BioPlex':
                 rows = DukeResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/duke_row_info.html'

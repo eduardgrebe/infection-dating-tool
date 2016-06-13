@@ -431,7 +431,7 @@ class Command(BaseCommand):
 
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
-                if number_of_screens == 1 and number_of_confirms == 0 and lag_result.ODn < 1.2:
+                if number_of_screens == 1 and number_of_confirms == 0 and bed_result.ODn < 1.2:
                     warning_msg += "ODn is < 2 and no confirm records."
 
                 assay_result = AssayResult.objects.create(panel=assay_run.panel,
