@@ -157,8 +157,6 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
             runs = form.filter()
         context['runs'] = runs
         context['form'] = form
-    elif request.method == 'POST':
-        import pdb; pdb.set_trace()
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 

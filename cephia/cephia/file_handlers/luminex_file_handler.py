@@ -1,4 +1,4 @@
-from django.db.models.functions import Length, Substr
+from django.db.models.functions import Length, Substr, Lower
 from file_handler import FileHandler
 from handler_imports import *
 import logging
@@ -225,7 +225,7 @@ class LuminexFileHandler(FileHandler):
                             )
                             
                             if partial_matches.count():
-                                warning_msg += "This specimen was the first possible partial match.\n"
+                                warning_msg += "This specimen was the first possible partial match. Looked for: %s \n" % luminex_result_row.specimen_label
                                 specimen = partial_matches[0]
                             else:
                                 warning_msg += "Specimen not found\n"
@@ -280,8 +280,11 @@ class LuminexFileHandler(FileHandler):
                                                                      warning_msg=warning_msg,
                                                                      assay_run=assay_run)
 
+                    
 
+                    luminex_result = LuminexCDCResult.objects.get(pk=luminex_result.pk)
                     if luminex_result.specimen_purpose in ['kit_control','panel_specimen']:
+                        
                         algorithms.do_curtis_alg2016(luminex_result)
                         algorithms.do_curtis_alg2013(luminex_result)
 

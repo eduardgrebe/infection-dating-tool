@@ -529,6 +529,7 @@ class Command(BaseCommand):
         specimen_ids = LuminexCDCResult.objects.values_list('specimen', flat=True)\
                                                .filter(assay_run=assay_run)\
                                                .exclude(test_mode='control').distinct()
+
         with transaction.atomic():
             for specimen_id in specimen_ids:
                 warning_msg = ''
