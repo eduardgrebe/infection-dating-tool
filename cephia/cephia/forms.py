@@ -2,7 +2,7 @@ from django import forms
 from cephia.models import (FileInfo, SubjectRow, Ethnicity,
                            VisitRow, Specimen, TransferInRow,
                            TransferOutRow, AliquotRow, ImportedRowComment, Assay,
-                           Laboratory)
+                           Laboratory, Panel, Assay)
 from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodifiedResultRow,
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
@@ -22,7 +22,8 @@ class BaseFilterForm(forms.Form):
 
 
 class FileInfoForm(forms.ModelForm):
-
+    assay = forms.ModelChoiceField(queryset=Assay.objects.order_by('name'), required=False)
+    panel = forms.ModelChoiceField(queryset=Panel.objects.order_by('name'), required=False)
     laboratory = forms.ChoiceField(required=False)
 
     class Meta:
@@ -45,7 +46,7 @@ class FileInfoForm(forms.ModelForm):
         self.fields['assay'].required = False
 
         lab_choices = [('','---------')]
-        [ lab_choices.append((x.id, x.name)) for x in Laboratory.objects.all() ]
+        [ lab_choices.append((x.id, x.name)) for x in Laboratory.objects.all().order_by('name') ]
         self.fields['laboratory'].choices = lab_choices
 
 

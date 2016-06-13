@@ -158,18 +158,18 @@ class FileInfo(models.Model):
 
     FILE_TYPE_CHOICES = (
         ('','---------'),
-        ('subject','Subject'),
-        ('visit','Visit'),
-        ('transfer_in','Transfer In'),
         ('aliquot','Aliquot'),
-        ('transfer_out','Transfer Out'),
         ('assay','Assay'),
+        ('diagnostic_test','Diagnostic Test'),
         ('panel_shipment','Panel Shipment'),
         ('panel_membership','Panel Membership'),
-        ('diagnostic_test','Diagnostic Test'),
         ('protocol_lookup','Protocol Lookup'),
+        ('subject','Subject'),
         ('test_history','Diagnostic Test History'),
         ('test_property','Diagnostic Test Properties'),
+        ('transfer_in','Transfer In'),
+        ('transfer_out','Transfer Out'),
+        ('visit','Visit'),
     )
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
