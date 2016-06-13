@@ -1,7 +1,6 @@
 from file_handler import FileHandler
 from handler_imports import *
 import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -11,24 +10,31 @@ class IDEV3FileHandler(FileHandler):
     def __init__(self, upload_file):
         super(IDEV3FileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen_label',
-                                   'assay',
-                                   'laboratory',
-                                   'test_date',
-                                   'operator',
-                                   'assay_kit_lot',
-                                   'plate_identifier',
-                                   'well',
-                                   'test_mode',
-                                   'specimen_purpose',
-                                   'result_tm_OD',
-                                   'result_v3_OD',
-                                   'result_ratioTM',
-                                   'result_ratioV3',
-                                   'result_intermediate',
-                                   'result_conclusion',
-                                   'result_conclusion_recalc']
-
+        self.registered_columns = [
+            'specimen_label',
+            'assay',
+            'laboratory',
+            'test_date',
+            'operator',
+            'assay_kit_lot',
+            'plate_identifier',
+            'specimen_purpose',
+            'well_tm',
+            'well_v3',
+            'test_mode',
+            'tm_OD',
+            'v3_OD',
+            'tm_ratio_reported',
+            'v3_ratio_reported',
+            'tm_ratio',
+            'v3_ratio',
+            'intermediaire_reported',
+            'intermediare',
+            'conclusion_reported',
+            'conclusion',
+            'exclusion',
+            'interpretation', 
+        ]
 
     def parse(self):
         from assay.models import IDEV3ResultRow
@@ -42,32 +48,32 @@ class IDEV3FileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
-                    ide_result_row = IDEV3ResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                   assay=row_dict['assay'],
-                                                                   laboratory=row_dict['laboratory'],
-                                                                   test_date=row_dict['test_date'],
-                                                                   operator=row_dict['operator'],
-                                                                   assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                   plate_identifier=row_dict['plate_identifier'],
-                                                                   well=row_dict.get('well', 'well_v3'),
-                                                                   test_mode=row_dict['test_mode'],
-                                                                   specimen_purpose=row_dict['specimen_purpose'],
-                                                                   result_tm_OD=row_dict['tm_OD'],
-                                                                   result_v3_OD=row_dict['v3_OD'],
-                                                                   result_ratioTM=row_dict['tm_ratio'],
-                                                                   result_ratioV3=row_dict['v3_ratio'],
-                                                                   result_intermediate=row_dict['result_intermediate'],
-                                                                   result_conclusion=row_dict['result_conclusion'],
-                                                                   result_conclusion_recalc=row_dict['result_conclusion_recalc'],
-                                                                   state='pending',
-                                                                   fileinfo=self.upload_file)
-
+                    ide_result_row = IDEV3ResultRow.objects.create(
+                        specimen_label=row_dict['specimen_label'],
+                        assay=row_dict['assay'],
+                        laboratory=row_dict['laboratory'],
+                        test_date=row_dict['test_date'],
+                        operator=row_dict['operator'],
+                        assay_kit_lot=row_dict['assay_kit_lot'],
+                        plate_identifier=row_dict['plate_identifier'],
+                        well=row_dict['well'],
+                        test_mode=row_dict['test_mode'],
+                        specimen_purpose=row_dict['specimen_purpose'],
+                        result_tm_OD=row_dict['result_tm_OD'],
+                        result_v3_OD=row_dict['result_v3_OD'],
+                        result_ratioTM=row_dict['result_ratioTM'],
+                        result_ratioV3=row_dict['result_ratioV3'],
+                        result_intermediate=row_dict['result_intermediate'],
+                        result_conclusion=row_dict['result_conclusion'],
+                        result_conclusion_recalc=row_dict['result_conclusion_recalc'],
+                        state='pending',
+                        fileinfo=self.upload_file)
 
 
                     rows_inserted += 1
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " +  traceback.format_exception(type(e), e, None)[0]
+                self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
                 return 0, 1
 
@@ -92,7 +98,7 @@ class IDEV3FileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
+                panel_memberships = PanelMembership.objects.filter(panel=panel)
                 assay = Assay.objects.get(name=ide_result_row.assay)
 
                 try:
@@ -100,7 +106,8 @@ class IDEV3FileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
+                    if ide_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
                 #     error_msg += "Specimen does not belong to any panel membership.\n"
@@ -115,7 +122,7 @@ class IDEV3FileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 ide_result_row.state = 'error'
-                ide_result_row.error_message = unicode(e)
+                ide_result_row.error_message = e.message
                 rows_failed += 1
                 ide_result_row.save()
                 continue
@@ -130,7 +137,7 @@ class IDEV3FileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id, assay_run):
+    def process(self, panel_id):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import IDEV3ResultRow, IDEV3Result, AssayResult
 
@@ -150,12 +157,10 @@ class IDEV3FileHandler(FileHandler):
                                                               assay=assay,
                                                               specimen=specimen,
                                                               test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=ide_result_row.result_conclusion_recalc,
-                                                              assay_run=assay_run)
+                                                              result=ide_result_row.result_conclusion_recalc)
 
                     ide_result = IDEV3Result.objects.create(specimen=specimen,
                                                             assay=assay,
-                                                            assay_run=assay_run,
                                                             laboratory=Laboratory.objects.get(name=ide_result_row.laboratory),
                                                             test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
                                                             operator=ide_result_row.operator,
@@ -183,7 +188,7 @@ class IDEV3FileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 ide_result_row.state = 'error'
-                ide_result_row.error_message = unicode(e)
+                ide_result_row.error_message = e.message
                 ide_result_row.save()
                 rows_failed += 1
                 continue

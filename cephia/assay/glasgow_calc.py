@@ -25,10 +25,13 @@ class BioRadCalculation(object):
         if self.number_of_valid_screens == 1:
             final_result = self.valid_results[0].AI
             method = 'screen_singlet'
-            if not self.first_result.AI >= 30 and self.first_result.AI <= 50:
+            if self.first_result.AI >= 20 and self.first_result.AI <= 50:
                 warning_msg += 'Greyzone AI - Confirms absent.'
-            if treated_od < 1 or (untreated_od > 4 and treated_od < 3.5):
+
+            # only applies to glasgow
+            if treated_od < 1 or (untreated_od > 4 and treated_od < 3.5): 
                 warning_msg += 'Retests absent.'
+            
         elif self.number_of_valid_screens > 1:
             warning_msg += "More than 1 non-excluded screen.\n"
             final_result = None
@@ -164,3 +167,4 @@ class BioRadCalculation(object):
                                                               warning_msg=warning_msg)
                     self.spec_results.update(assay_result=assay_result)
                     continue
+

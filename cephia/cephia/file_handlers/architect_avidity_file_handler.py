@@ -95,7 +95,8 @@ class ArchitectAvidityFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
+                    if architect_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
                 #     error_msg += "Specimen does not belong to any panel membership.\n"

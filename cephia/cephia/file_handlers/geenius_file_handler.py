@@ -1,6 +1,7 @@
 from file_handler import FileHandler
 from handler_imports import *
 import logging
+from lib import log_exception
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +70,7 @@ class GeeniusFileHandler(FileHandler):
 
                     rows_inserted += 1
             except Exception, e:
-                logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.message = "row " + str(row_num) + ": " + log_exception(e, logger)
                 self.upload_file.save()
                 return 0, 1
 
@@ -103,7 +103,8 @@ class GeeniusFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    error_msg += "Specimen not recognised.\n"
+                    if geenius_result_row.specimen_purpose == 'panel_specimen':
+                        error_msg += "Specimen not recognised.\n"
 
                 # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
                 #     error_msg += "Specimen does not belong to any panel membership.\n"
@@ -116,9 +117,8 @@ class GeeniusFileHandler(FileHandler):
                 rows_validated += 1
                 geenius_result_row.save()
             except Exception, e:
-                logger.exception(e)
                 geenius_result_row.state = 'error'
-                geenius_result_row.error_message = e.message
+                geenius_result_row.error_message = log_exception(e, logger)
                 rows_failed += 1
                 geenius_result_row.save()
                 continue
@@ -133,7 +133,7 @@ class GeeniusFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
-    def process(self, panel_id):
+    def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import GeeniusResultRow, GeeniusResult, AssayResult
 
@@ -174,7 +174,8 @@ class GeeniusFileHandler(FileHandler):
                                                                   result_ctrl_BI=geenius_result_row.result_ctrl_BI,
                                                                   result_GeeniusIndex=geenius_result_row.result_GeeniusIndex,
                                                                   result_GeeniusIndex_recalc=geenius_result_row.result_GeeniusIndex_recalc,
-                                                                  assay_result=assay_result)
+                                                                  assay_result=assay_result,
+                                                                  assay_run=assay_run)
 
                     geenius_result_row.state = 'processed'
                     geenius_result_row.date_processed = timezone.now()

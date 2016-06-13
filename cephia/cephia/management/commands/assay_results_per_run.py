@@ -211,8 +211,9 @@ class Command(BaseCommand):
                     final_result = treated_mean / untreated_mean * 100
                     method = 'mean_SCO_treated/mean_SCO_untreated*100'
 
-                if number_of_confirms != 2:
+                if number_of_confirms not in [0,2]:
                     warning_msg += "Unexpected number of 'confirm' records."
+                    
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."
 
@@ -227,10 +228,51 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_biorad_avidity_cdc(self, assay_run):
-        calc = BioRadCalculation(
-            assay_run, BioRadAvidityCDCResult,
-            ['treatment_DEA_OD', 'untreated_dilwashsoln_OD'])
-        calc.calculate()
+        specimen_ids = BioRadAvidityCDCResult.objects.values_list('specimen', flat=True) \
+                                                     .filter(assay_run=assay_run) \
+                                                     .exclude(test_mode='control').distinct()
+
+        with transaction.atomic():
+            for specimen_id in specimen_ids:
+                warning_msg = ''
+
+                spec_results = BioRadAvidityCDCResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
+                spec_results.update(assay_result=None)
+                AssayResult.objects.filter(assay_run=assay_run, specimen__id=specimen_id).delete()
+                test_modes = [ spec.test_mode for spec in spec_results ]
+                biorad_result = spec_results[0]
+                number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
+                number_of_screens = len([mode for mode in test_modes if "screen" in mode])
+                
+                if spec_results.count() == 1:
+                    final_result = biorad_result.AI
+                    method = 'singlet'
+                elif spec_results.count() > 1 and number_of_confirms == 0:
+                    spec_results = spec_results.filter(test_mode__startswith='screen')
+                    final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
+                    warning_msg += 'More than 1 screen result.'
+                    method = 'mean_of_screen_AIs'
+                elif spec_results.count() > 1 and number_of_confirms > 0:
+                    spec_results = spec_results.filter(test_mode__startswith='confirm')
+                    final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
+                    method = 'mean_of_confirm_AIs'
+
+                if number_of_confirms in [0, 2]:
+                    warning_msg += "Unexpected number of 'confirm' records. Expected 0 or 2, found %s" % number_of_confirms
+                    
+                if number_of_screens == 0:
+                    warning_msg += "\nNo 'screen' records."
+
+                assay_result = AssayResult.objects.create(panel=assay_run.panel,
+                                                          assay=assay_run.assay,
+                                                          specimen=biorad_result.specimen,
+                                                          assay_run=assay_run,
+                                                          test_date=biorad_result.test_date,
+                                                          method=method,
+                                                          result=final_result,
+                                                          warning_msg=warning_msg)
+
+                spec_results.update(assay_result=assay_result)
 
     def _handle_biorad_avidity_jhu(self, assay_run):
         specimen_ids = BioRadAvidityJHUResult.objects.values_list('specimen', flat=True) \
@@ -398,7 +440,7 @@ class Command(BaseCommand):
                                                           warning_msg=warning_msg)
                 spec_results.update(assay_result=assay_result)
 
-    def _handle_geenius(self, assay_run, specimen_ids):
+    def _handle_geenius(self, assay_run):
         pass
 
     def _handle_BED(self, assay_run):

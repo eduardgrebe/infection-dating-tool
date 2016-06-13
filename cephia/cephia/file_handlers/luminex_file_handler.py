@@ -1,3 +1,4 @@
+from django.db.functions import Length, Substr
 from file_handler import FileHandler
 from handler_imports import *
 import logging
@@ -210,13 +211,25 @@ class LuminexFileHandler(FileHandler):
                                                         parent_label__isnull=False)
                     except Specimen.DoesNotExist:
                         if luminex_result_row.specimen_purpose == "panel_specimen":
-                            partial_matches = Specimen.objects.filter(specimen_label__startswith=luminex_result_row.specimen_label[0:4],
-                                                                      specimen_type=panel.specimen_type,
-                                                                      parent_label__isnull=False)
-                            if partial_matches:
+                            partial_label = luminex_result_row.specimen_label[0:4]
+                            specimen_allowed_length = 7
+                            
+                            partial_matches = Specimen.objects.annotate(specimen_label_len=Length('specimen_label'))
+                            partial_matches = partial_matches.annotate(hyphen=Lower(Substr('specimen_label', 5, 1)))
+                            partial_matches = partial_matches.filter(
+                                hyphen="-",
+                                specimen_label_len=specimen_allowed_length,
+                                specimen_label__startswith=partial_label,
+                                specimen_type=panel.specimen_type,
+                                parent_label__isnull=False
+                            )
+                            
+                            if partial_matches.count():
                                 warning_msg += "This specimen was the first possible partial match.\n"
                                 specimen = partial_matches[0]
-                        pass
+                            else:
+                                warning_msg += "Specimen not found\n"
+                                continue
 
                     luminex_result = LuminexCDCResult.objects.create(specimen=specimen,
                                                                      assay=assay,
