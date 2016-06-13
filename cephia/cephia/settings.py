@@ -188,7 +188,7 @@ LOGGING = {
             'class':'logging.handlers.RotatingFileHandler',
             'filename':os.path.join(LOG_FOLDER, LOG_FILENAME),
             'formatter': 'verbose',
-            'maxBytes':604800,
+            'maxBytes':604800, 
             'backupCount':50
         },
         'sentry': {
@@ -204,12 +204,12 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['file', 'console', 'sentry'],
+            'handlers': ['file', 'console', 'mail_admins'],
             'propagate': True,
             'level': 'ERROR'
         },
         'django': {
-            'handlers': ['file', 'console', 'sentry'],
+            'handlers': ['file', 'console', 'mail_admins'],
             'propagate': True,
             'level': 'ERROR'
         },

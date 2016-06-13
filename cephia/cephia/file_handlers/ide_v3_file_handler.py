@@ -1,6 +1,7 @@
 from file_handler import FileHandler
 from handler_imports import *
 import logging
+from lib import log_exception
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class IDEV3FileHandler(FileHandler):
             'tm_ratio',
             'v3_ratio',
             'intermediaire_reported',
-            'intermediare',
+            'intermediaire',
             'conclusion_reported',
             'conclusion',
             
@@ -42,6 +43,7 @@ class IDEV3FileHandler(FileHandler):
 
         rows_inserted = 0
         rows_failed = 0
+        
 
         for row_num in range(self.num_rows):
             try:
@@ -70,7 +72,7 @@ class IDEV3FileHandler(FileHandler):
                         tm_ratio = row_dict['tm_ratio'],
                         v3_ratio = row_dict['v3_ratio'],
                         intermediaire_reported = row_dict['intermediaire_reported'],
-                        intermediare = row_dict['intermediare'],
+                        intermediaire = row_dict['intermediaire'],
                         conclusion_reported = row_dict['conclusion_reported'],
                         conclusion = row_dict['conclusion'],
                         state='pending',
@@ -79,8 +81,7 @@ class IDEV3FileHandler(FileHandler):
 
                     rows_inserted += 1
             except Exception, e:
-                logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                self.upload_file.message = "row " + str(row_num) + ": " + log_exception(e, logger)
                 self.upload_file.save()
                 return 0, 1
 
@@ -149,7 +150,7 @@ class IDEV3FileHandler(FileHandler):
 
     def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
-        from assay.models import IDEV3ResultRow, IDEV3Result, AssayResult
+        from assay.models import IDEV3ResultRow, IDEV3Result
 
         rows_inserted = 0
         rows_failed = 0
@@ -163,11 +164,6 @@ class IDEV3FileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=ide_result_row.result_conclusion_recalc)
 
                     ide_result = IDEV3Result.objects.create(
                         specimen=specimen,
@@ -178,22 +174,31 @@ class IDEV3FileHandler(FileHandler):
                         assay_kit_lot=ide_result_row.assay_kit_lot,
                         plate_identifier=ide_result_row.plate_identifier,
                         test_mode=ide_result_row.test_mode,
-                        well=ide_result_row.well,
                         specimen_purpose=ide_result_row.specimen_purpose,
-                        result_tm_OD=ide_result_row.result_tm_OD,
-                        result_v3_OD=ide_result_row.result_v3_OD,
-                        result_ratioTM=ide_result_row.result_ratioTM,
-                        result_ratioV3=ide_result_row.result_ratioV3,
-                        result_intermediate=ide_result_row.result_intermediate,
-                        result_conclusion=ide_result_row.result_conclusion,
-                        result_conclusion_recalc=ide_result_row.result_conclusion_recalc,
-                        assay_result=assay_result)
+                        assay_run=assay_run,
+                        
+                        well_tm=ide_result_row.well_tm,
+                        well_v3=ide_result_row.well_v3,
+                        tm_OD=ide_result_row.tm_OD,
+                        v3_OD=ide_result_row.v3_OD,
+                        tm_ratio_reported=ide_result_row.tm_ratio_reported,
+                        v3_ratio_reported=ide_result_row.v3_ratio_reported,
+                        tm_ratio=ide_result_row.tm_ratio,
+                        v3_ratio=ide_result_row.v3_ratio,
+                        intermediaire_reported=ide_result_row.intermediaire_reported,
+                        intermediaire=ide_result_row.intermediaire,
+                        conclusion_reported=ide_result_row.conclusion_reported,
+                        conclusion=ide_result_row.conclusion,
+                        
+                    )
+
+                    IDEV3Result.objects.get(pk=ide_result.pk).calculate_and_save()
 
                     ide_result_row.state = 'processed'
                     ide_result_row.date_processed = timezone.now()
                     ide_result_row.error_message = ''
                     ide_result_row.idev3_result = ide_result
-                    ide_result.calculate_and_save()
+                    ide_result_row.save()
                     rows_inserted += 1
 
             except Exception, e:

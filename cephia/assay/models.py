@@ -7,8 +7,14 @@ from lib import log_exception
 from assay_result_factory import *
 from django.forms.models import model_to_dict
 import logging
+import math
 
 logger = logging.getLogger(__name__)
+
+INTEPRETATIONS = [
+        ('recent', 'Recent'),
+        ('non_recent', 'Non-Recent')
+    ]
 
 class PanelMembershipRow(ImportedRow):
 
@@ -119,6 +125,7 @@ class AssayResult(models.Model):
     unit = models.CharField(max_length=10, null=True, blank=False, choices=UNIT_CHOICES)
     method = models.CharField(max_length=50, null=True, blank=False)
     warning_msg = models.CharField(max_length=255, null=False, blank=True)
+    interpretation = models.CharField(choices=INTEPRETATIONS, max_length=255, null=True, blank=False)
 
     def __unicode__(self):
         return self.specimen.specimen_label
@@ -157,10 +164,7 @@ class BaseAssayResult(models.Model):
     class Meta:
         abstract = True
 
-    INTEPRETATIONS = [
-        ('recent', 'Recent'),
-        ('non_recent', 'Non-Recent')
-    ]
+
 
     specimen = models.ForeignKey(Specimen, null=True, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
@@ -631,30 +635,31 @@ class IDEV3Result(BaseAssayResult):
     tm_ratio = models.FloatField(null=True)
     v3_ratio = models.FloatField(null=True)
     intermediaire_reported = models.FloatField(null=True)
-    intermediare = models.FloatField(null=True)
+    intermediaire = models.FloatField(null=True)
     conclusion_reported = models.FloatField(null=True)
     conclusion = models.FloatField(null=True)
 
     def calculate_and_save(self):
         try:
             if self.tm_OD is not None:
-                self.ratio_tm = self.tm_OD / 0.05
+                self.tm_ratio = self.tm_OD / 0.05
 
             if self.v3_OD is not None:
-                self.ratio_v3 = self.v3_OD / 0.05
+                self.v3_ratio = self.v3_OD / 0.05
 
             if self.tm_OD is None or self.v3_OD is None:
-                self.intermediare = None
+                self.intermediaire = None
                 self.conclusion = None
                 self.interpretation = None
             else:
                 # numbers are arbitrary as per the SOP
-                self.intermediare = -(3.8565 + 0.09502 * self.ratio_tm +  0.0379 * self.ratio_v3)
-                self.conclusion = math.exp(self.intermediare) / (1 + math.exp(self.intermediare))
+                self.intermediare = -3.8565 + (0.09502 * self.tm_ratio) +  (0.0379 * self.v3_ratio)
+                self.conclusion = math.exp(self.intermediaire) / (1 + math.exp(self.intermediaire))
                 self.interpretation = 'recent'  if self.conclusion < 0.5 else 'non_recent'
         except Exception, e:
             self.warning_msg = "Unable to calculate final result: " + log_exception(e, logger)
         finally:
+            import pdb; pdb.set_trace()
             self.save()
             
 class IDEV3ResultRow(BaseAssayResultRow):
@@ -672,7 +677,7 @@ class IDEV3ResultRow(BaseAssayResultRow):
     tm_ratio = models.CharField(max_length=255)
     v3_ratio = models.CharField(max_length=255)
     intermediaire_reported = models.CharField(max_length=255)
-    intermediare = models.CharField(max_length=255)
+    intermediaire = models.CharField(max_length=255)
     conclusion_reported = models.CharField(max_length=255)
     conclusion = models.CharField(max_length=255)
     

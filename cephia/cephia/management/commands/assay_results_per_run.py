@@ -47,7 +47,7 @@ class Command(BaseCommand):
             self._handle_bioplex_cdc(assay_run)
         elif assay == 'BioPlex-Duke':
             self._handle_bioplex_duke(assay_run)
-        elif assay == 'IDE-iV3':
+        elif assay == 'IDE-V3':
             self._handle_idev3(assay_run)
         elif assay == '':
             self._handle_immunetics_mixl(assay_run)
@@ -55,6 +55,7 @@ class Command(BaseCommand):
             self._handle_immunetics_newmix(assay_run)
         elif assay == '':
             self._handle_immunetics_newmixpeptide(assay_run)
+
 
     def _handle_lag_sedia(self, assay_run):
         specimen_ids = LagSediaResult.objects.values_list('specimen', flat=True)\
@@ -486,11 +487,12 @@ class Command(BaseCommand):
                                                           warning_msg=warning_msg)
                 spec_results.update(assay_result=assay_result)
 
-    def _handle_idev3(self, panel_id, assay_run):
+    def _handle_idev3(self, assay_run):
         specimen_ids = IDEV3Result.objects.values_list('specimen', flat=True)\
                                                .filter(assay_run=assay_run)\
                                                .exclude(test_mode='control').distinct()
         with transaction.atomic():
+            
             for specimen_id in specimen_ids:
                 spec_results = IDEV3Result.objects.filter(assay_run=assay_run, specimen__id=specimen_id)
                 
@@ -504,6 +506,7 @@ class Command(BaseCommand):
                         idev3_result.warning_msg = "Unhandled number of results. Expected 1, found %s, %s" % (
                             result_count, [z.pk for z in spec_results])
                     else:
+                        idev3_result.calculate_and_save()
                         assay_result = AssayResult.objects.create(
                             panel=assay_run.panel,
                             assay=assay_run.assay,
@@ -512,8 +515,8 @@ class Command(BaseCommand):
                             test_date=idev3_result.test_date,
                             method=u'singlet',
                             result=idev3_result.conclusion,
-                            warning_msg=idev3_result.warning_msg,
-                            interpretation=idev3_result.interpretation
+                            warning_msg=idev3_result.warning_msg or '',
+                            interpretation=idev3_result.interpretation,
                         )
                         idev3_result.assay_result = assay_result
                         idev3_result.save()
@@ -558,9 +561,6 @@ class Command(BaseCommand):
                 spec_results.update(assay_result=assay_result)
 
     def _handle_bioplex_duke(self, assay_run):
-        pass
-
-    def _handle_idev3(self, assay_run):
         pass
 
     def _handle_immunetics_mixl(self, assay_run):
