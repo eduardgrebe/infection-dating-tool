@@ -158,6 +158,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
         context['runs'] = runs
         context['form'] = form
 
+
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 def run_results(request, run_id=None, template="assay/run_results.html"):

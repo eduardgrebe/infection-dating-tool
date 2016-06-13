@@ -284,8 +284,7 @@ class LuminexFileHandler(FileHandler):
 
                     luminex_result = LuminexCDCResult.objects.get(pk=luminex_result.pk)
                     if luminex_result.specimen_purpose in ['kit_control','panel_specimen']:
-                        
-                        algorithms.do_curtis_alg2016(luminex_result)
+                        # algorithms.do_curtis_alg2016(luminex_result)
                         algorithms.do_curtis_alg2013(luminex_result)
 
                     luminex_result_row.state = 'processed'

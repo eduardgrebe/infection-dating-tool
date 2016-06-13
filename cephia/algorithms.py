@@ -1,12 +1,16 @@
 import math
 
 def do_curtis_alg2016(luminex_result):
+    # needs to be checked for correctness
+    return 
     try:
-        needed_fields = {'gp120_MFIn':4.2,
-                         'gp160_MFIn':3.1,
-                         'gp120_AI':24.9,
-                         'gp160_AI':31.8,
-                         'gp41_AI':31.8}
+        needed_fields = {
+            'gp120_MFIn':4.2,
+            'gp160_MFIn':3.1,
+            'gp120_AI':24.9,
+            'gp160_AI':31.8,
+            'gp41_AI':31.8
+        }
 
         for field in needed_fields:
             field_value = getattr(luminex_result, field)
@@ -44,6 +48,5 @@ def do_curtis_alg2013(luminex_result):
         luminex_result.save()
     except ValueError:
         pass
-
 
 
