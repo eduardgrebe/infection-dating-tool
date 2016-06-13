@@ -506,7 +506,6 @@ class Command(BaseCommand):
                         idev3_result.warning_msg = "Unhandled number of results. Expected 1, found %s, %s" % (
                             result_count, [z.pk for z in spec_results])
                     else:
-                        idev3_result.calculate_and_save()
                         assay_result = AssayResult.objects.create(
                             panel=assay_run.panel,
                             assay=assay_run.assay,

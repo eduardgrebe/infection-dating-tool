@@ -659,7 +659,6 @@ class IDEV3Result(BaseAssayResult):
         except Exception, e:
             self.warning_msg = "Unable to calculate final result: " + log_exception(e, logger)
         finally:
-            import pdb; pdb.set_trace()
             self.save()
             
 class IDEV3ResultRow(BaseAssayResultRow):
