@@ -2,11 +2,16 @@ from assay.models import BioRadAvidityGlasgowResult, AssayResult
 from django.db.models import Sum, Q
 from django.db import transaction
 
-class BioRadGlasgowCalculation(object):
+class BioRadCalculation(object):
 
-    def __init__(self, assay_run):
+    def __init__(self, assay_run, result_class=None, treatment_columns = None):
+
+        treatment_columns = treatment_columns or ['treated_urea_OD', 'untreated_buffer_OD']
+        self._treated_column = treatment_columns[0]
+        self._untreated_column = treatment_columns[1]
         self.assay_run = assay_run
-        self.specimen_ids = BioRadAvidityGlasgowResult.objects.values_list('specimen', flat=True)\
+        self.result_class = result_class or BioRadAvidityGlasgowResult
+        self.specimen_ids = self.result_class.objects.values_list('specimen', flat=True)\
                                                               .filter(assay_run=self.assay_run)\
                                                               .exclude(test_mode='control').distinct()
 
@@ -14,15 +19,15 @@ class BioRadGlasgowCalculation(object):
         method = None
         warning_msg = ''
         final_result = None
+        treated_od = getattr(self.first_result, self._treated_column)
+        untreated_od = getattr(self.first_result, self._untreated_column)
 
         if self.number_of_valid_screens == 1:
             final_result = self.valid_results[0].AI
             method = 'screen_singlet'
             if not self.first_result.AI >= 30 and self.first_result.AI <= 50:
                 warning_msg += 'Greyzone AI - Confirms absent.'
-            if self.first_result.untreated_buffer_OD < 1 or\
-               (self.first_result.untreated_buffer_OD > 4 and\
-                self.first_result.treated_urea_OD < 3.5):
+            if treated_od < 1 or (untreated_od > 4 and treated_od < 3.5):
                 warning_msg += 'Retests absent.'
         elif self.number_of_valid_screens > 1:
             warning_msg += "More than 1 non-excluded screen.\n"
@@ -92,12 +97,12 @@ class BioRadGlasgowCalculation(object):
         with transaction.atomic():
             for specimen_id in self.specimen_ids:
                 try:
-                    self.spec_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)
+                    self.spec_results = self.result_class.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)
 
                     self.spec_results.update(assay_result=None)
                     AssayResult.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id).delete()
 
-                    self.valid_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)\
+                    self.valid_results = self.result_class.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)\
                                                                            .exclude(exclusion='1')
                     self.valid_result_count = self.valid_results.count()
                     self.valid_test_modes = [ spec.test_mode for spec in self.valid_results ]
@@ -105,7 +110,7 @@ class BioRadGlasgowCalculation(object):
                     self.number_of_valid_screens = len([mode for mode in self.valid_test_modes if mode.startswith('screen')\
                                                         and not mode.endswith('_retest') ])
                     self.number_of_valid_confirms = len([ mode for mode in self.valid_test_modes if "confirm" in mode ])
-                    self.invalid_results = BioRadAvidityGlasgowResult.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)\
+                    self.invalid_results = self.result_class.objects.filter(assay_run=self.assay_run, specimen__id=specimen_id)\
                                                                              .exclude(exclusion='0')
                     self.invalid_result_count = self.invalid_results.count()
                     self.invalid_test_modes = [ spec.test_mode for spec in self.spec_results ]

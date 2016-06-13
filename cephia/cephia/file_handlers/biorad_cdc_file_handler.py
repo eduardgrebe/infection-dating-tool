@@ -34,6 +34,8 @@ class BioRadAvidityCDCFileHandler(FileHandler):
         rows_inserted = 0
         rows_failed = 0
 
+        sp = transaction.savepoint()
+
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -65,7 +67,10 @@ class BioRadAvidityCDCFileHandler(FileHandler):
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
+                transaction.savepoint_commit(sp)
                 return 0, 1
+            
+        transaction.savepoint_commit(sp)
 
         if rows_failed > 0:
             self.upload_file.state = 'row_error'
