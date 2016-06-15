@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "cephia.CephiaUser"
 
-ENDLESS_PAGINATION_PER_PAGE=20
+EL_PAGINATION_PER_PAGE=100
 ENDLESS_PAGINATION_ADD_NOFOLLOW=True #from endless docs: Set to True if your SEO alchemist wants search engines not to follow pagination links.
 
 
