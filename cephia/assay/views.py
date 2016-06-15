@@ -186,7 +186,7 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
                 logger.exception(e)
                 messages.error(request, 'Failed to download file')
 
-        context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id)
+        context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id).order_by('-warning_msg')
         context['run'] = AssayRun.objects.get(pk=run_id)
         return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -209,3 +209,4 @@ def purge_run(request, run_id=None):
     except Exception, e:
         logger.exception(e)
         messages.error(request, 'Failed to delete assay run. Please check the log file.')
+        return HttpResponseRedirect(request.path)

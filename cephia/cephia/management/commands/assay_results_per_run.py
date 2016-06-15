@@ -304,7 +304,7 @@ class Command(BaseCommand):
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
                     method = 'mean_of_confirm_AIs'
 
-                if number_of_confirms != 2:
+                if number_of_confirms not in [0, 2]:
                     warning_msg += "Unexpected number of 'confirm' records."
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."

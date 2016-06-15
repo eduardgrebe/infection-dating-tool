@@ -48,7 +48,7 @@ class GeeniusFileHandler(FileHandler):
                                                                          assay=row_dict['assay'],
                                                                          laboratory=row_dict['laboratory'],
                                                                          test_date=row_dict['test_date'],
-                                                                         operator=row_dict['operator'],
+                                                                         operator=row_dict.get('operator'),
                                                                          assay_kit_lot=row_dict['assay_kit_lot'],
                                                                          plate_identifier=row_dict['plate_identifier'],
                                                                          well=row_dict['well'],
@@ -149,11 +149,28 @@ class GeeniusFileHandler(FileHandler):
                                                     specimen_type=panel.specimen_type,
                                                     parent_label__isnull=False)
 
-                    assay_result = AssayResult.objects.create(panel=panel,
-                                                              assay=assay,
-                                                              specimen=specimen,
-                                                              test_date=datetime.strptime(geenius_result_row.test_date, '%Y-%m-%d').date(),
-                                                              result=geenius_result_row.result_GeeniusIndex)
+
+                    warning_msg = ''
+                    try:
+                        is_excluded = bool(int(geenius_result_row.exclusion))
+                    except (ValueError, TypeError):
+                        warning_msg += 'exclusion could no be converted to an integer'
+                        is_excluded = True
+
+                    try:
+                        final_result = float(geenius_result_row.result_GeeniusIndex)
+                    except (ValueError, TypeError):
+                        final_result = None
+                        warning_msg += 'GeeniusIndex could no be converted to a float'
+                        
+                    assay_result = AssayResult.objects.create(
+                        panel=panel,
+                        assay=assay,
+                        specimen=specimen,
+                        test_date=datetime.strptime(geenius_result_row.test_date, '%Y-%m-%d').date(),
+                        warning_msg=warning_msg,
+                        result=None if is_excluded else final_result)
+                    
 
                     geenius_result = GeeniusResult.objects.create(specimen=specimen,
                                                                   assay=assay,

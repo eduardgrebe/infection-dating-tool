@@ -20,9 +20,7 @@ class BioRadCalculation(object):
         method = None
         warning_msg = []
         final_result = None
-        treated_od = getattr(self.first_result, self._treated_column)
-        untreated_od = getattr(self.first_result, self._untreated_column)
-
+        
         if self.number_of_valid_screens == 1:
             final_result = self.valid_results[0].AI
             method = 'screen_singlet'
@@ -41,28 +39,30 @@ class BioRadCalculation(object):
             final_result = None
             warning_msg.append("All screen records excluded.")
 
-        return final_result, method, warning_msg.join(' ')
+        return final_result, method, ''.join(warning_msg)
 
-    def screen_and_restest_only(self):
+    def screen_and_retest_only(self):
         method = None
-        warning_msg = ''
+        warning_msg = []
         final_result = None
 
         if self.number_of_valid_retests == 1:
-
             final_result = self.valid_results.filter(test_mode__endswith='_retest')[0].AI
             
             if final_result >= 30 and final_result <= 50:
                 warning_msg.append('Greyzone AI - Confirms absent.')
+
+            if self.total_screens == 0:
+                warning_msg.append('Retests, but no screen records.')
             
             method = 'retest_singlet'
         elif self.number_of_valid_retests > 1:
-            warning_msg += "More than 1 non-excluded retest. Found %s\n" % self.number_of_valid_retests
+            warning_msg.append("More than 1 non-excluded retest. Found %s\n" % self.number_of_valid_retests)
             final_result = None
         elif self.number_of_valid_retests == 0 and self.number_of_valid_screens > 0:
             final_result, method, warning_msg = self.screen_only()
 
-        return final_result, method, warning_msg
+        return final_result, method, ''.join(warning_msg)
 
     def screen_and_conf_only(self):
         method = None
@@ -88,8 +88,10 @@ class BioRadCalculation(object):
         warning_msg = ''
         final_result = None
 
-        if self.number_of_valid_retests == 0:
+        if self.number_of_valid_retests == 0 and self.number_of_valid_confirms > 0:
             final_result, method, warning_msg = self.screen_and_conf_only()
+        elif self.number_of_valid_confirms == 0:
+            final_result, method, warning_msg = self.screen_and_retest_only()
         elif self.number_of_valid_retests > 1:
             warning_msg += 'Unexpected number of retests. Found %s.\n' % self.number_of_valid_retests
         elif self.number_of_valid_confirms != 2:
@@ -141,11 +143,11 @@ class BioRadCalculation(object):
 
                     if self.total_screens > 0 and self.total_retests == 0 and self.total_confirms == 0:
                         final_result, method, warning_msg = self.screen_only()
-                    elif self.total_retests > 0 and self.total_screens > 0 and self.total_confirms == 0:
-                        final_result, method, warning_msg = self.screen_and_restest_only()
+                    elif self.total_retests > 0 and self.total_confirms == 0:
+                        final_result, method, warning_msg = self.screen_and_retest_only()
                     elif self.total_retests == 0 and self.total_screens > 0 and self.total_confirms > 0:
                         final_result, method, warning_msg = self.screen_and_conf_only()
-                    elif self.total_retests > 0 and self.total_screens > 0 and self.total_confirms > 0:
+                    elif self.total_retests > 0 and self.total_confirms > 0:
                         final_result, method, warning_msg = self.screen_retest_conf()
                     else:
                         method = None
