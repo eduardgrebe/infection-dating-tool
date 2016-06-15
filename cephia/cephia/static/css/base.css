@@ -744,11 +744,7 @@ table#change-history tbody th {
   background: #eeeeee url(../images/nav-bg.gif) bottom left repeat-x;
   color: #666;
 }
-.logo {
-  margin: -16px 0 56px -3px;
-  height: 60pt;
-  width: 245pt;
-}
+
 .user {
   margin: 0 0 -46px 0;
   padding: 6px;
@@ -758,4 +754,16 @@ table#change-history tbody th {
   margin: 0 0 -45px 0;
   padding: 7px;
   background-color: #1C1E28;
+}
+
+
+.container.footer {
+    width: 100%;
+    text-align: center;
+}
+
+
+#footer img {
+    margin-left: 10px;
+    margin-right: 10px;
 }
