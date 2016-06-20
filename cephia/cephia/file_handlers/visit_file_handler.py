@@ -145,7 +145,7 @@ class VisitFileHandler(FileHandler):
                                                  visit_hivstatus = visit_row.visit_hivstatus,
                                                  source_study = Study.objects.get(name=visit_row.source_study),
                                                  cd4_count = visit_row.cd4_count or None,
-                                                 vl = visit_row.vl or None,
+                                                 vl_reported = visit_row.vl or None,
                                                  scopevisit_ec = self.get_bool(visit_row.scopevisit_ec) or False,
                                                  pregnant = self.get_bool(visit_row.pregnant),
                                                  hepatitis = self.get_bool(visit_row.hepatitis),

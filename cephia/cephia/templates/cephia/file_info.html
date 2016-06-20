@@ -38,7 +38,8 @@
             <div class="table-responsive" style="height:auto; max-height:100%x; overflow:auto;">
               <table class="table-striped table table-hover" style="overflow:auto;">
                 <thead>
-	              <th></th>
+	                <th></th>
+                  <th>ID</th>
 	              <th>Name</th>
 	              <th>Type</th>
                   <th>Panel</th>
@@ -50,7 +51,8 @@
                 </thead>
                 <tbody>
 	              {% for file in files %}
-	              <tr>
+	                <tr>
+                    <td>{{ file.id }}</td>
 	                <td><a href="{% url 'row_info' file.id %}">Detail</a></td>
 	                <td>{{file.filename}}</td>
 	                <td>{{file.file_type}}</td>
