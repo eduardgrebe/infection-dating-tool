@@ -336,22 +336,8 @@ class Subject(models.Model):
         return self.subject_label
 
     @property
-    def age_in_years(self):
-        now = datetime.now()
-        born = self.date_of_birth
-        return now.year - born.year - ((today.month, today.day) < (born.month, born.day))
-
-    def ever_scope_ec(self, visit=None):
-        qs = Visit.objects.filter(subject=self, scopevisit_ec=True)
-        if visit:
-            qs = qs.filter(visit_date__gte=visit)
-        return qs.exists()
-
-    @property
     def earliest_visit_date(self):
         return self.visits.order_by('-visit_date').first()
-
-    
 
 
 class SubjectRow(ImportedRow):
@@ -468,22 +454,32 @@ class Visit(models.Model):
         vd.days_since_current_art_init = self.days_since_current_art_init
         vd.days_since_first_art = self.days_since_first_art
         vd.days_from_eddi_to_treatment = self.days_from_eddi_to_treatment
+        vd.days_since_first_draw = self.days_since_first_draw
         vd.region = self
-        
+
+    @property
+    def age_in_years(self):
+        visit_date = self.visit_date
+        born = self.subject.date_of_birth
+        return visit_date.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
     def get_region(self):
         pass
         
     @property
     def after_aids_diagnosis(self):
-        return self.subject.aids_diagnosis_date and self.visit_date > self.subject.aids_diagnosis_date
+        return bool(self.subject.aids_diagnosis_date and self.visit_date > self.subject.aids_diagnosis_date)
+
+    @property
+    def ever_aids_diagnosis(self):
+        return bool(self.subject.aids_diagnosis_date)
 
     @property
     def days_since_cohort_entry(self):
         return as_days(self.visit_date - self.subject.cohort_entry_date)
 
     @property
-    def days_sinc_first_draw(self):
+    def days_since_first_draw(self):
         return as_days(self.visit_date - self.subject.earliest_visit_date)
 
     @property
@@ -499,28 +495,18 @@ class Visit(models.Model):
     @property
     def days_since_current_art_init(self):
         if not self.on_treatment:
-            return none
+            return None
 
-        if self.subject.art_resumption_date:
-            return as_days(self.visit_date - self.art_resumption_date)
+        if self.subject.art_resumption_date and self.subject.art_resumption_date < self.visit_date:
+            return as_days(self.visit_date - self.subject.art_resumption_date)
 
         if self.subject.art_initiation_date:
-            return as_days(self.visit_date - self.art_initiation_date)
+            return as_days(self.visit_date - self.subject.art_initiation_date)
 
         return None
 
     @property
-    def days_since_first_art(self):
-        if not self.on_treatment:
-            return None
-
-        if self.subject.art_interruption_date is None:
-            return True
-
-        return self.visit_date < self.subject.art_interruption_date
-
-    @property
-    def days_from_eddi_to_treatment(self):
+    def days_from_eddi_to_current_art(self):
         if self.on_treatment and self.subject.eddi and self.subject.art_initiation_date:
             return as_days(self.subject.eddi.eddi - self.subject.art_initiation_date)
         return None
