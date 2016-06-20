@@ -352,7 +352,7 @@ class Subject(models.Model):
 
     @property
     def earliest_visit_date(self):
-        v = self.visit_set.order_by('-visit_date').first()
+        v = self.visit_set.order_by('visit_date').first()
         return v.visit_date if v else None
 
 
@@ -509,8 +509,8 @@ class Visit(models.Model):
     def days_since_first_draw(self):
         earliest_visit_date = self.subject.earliest_visit_date
         if earliest_visit_date:
-            return as_days(self.visit_date - self.subject.earliest_visit_date)
-
+            return as_days(self.visit_date - self.subject.earliest_visit_date) or None
+        
     @property
     def days_since_first_art(self):
         if not self.subject.art_initiation_date:
