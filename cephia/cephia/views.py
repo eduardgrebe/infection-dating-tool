@@ -306,6 +306,7 @@ def upload_file(request):
                 post_data.__setitem__('priority', priority)
     
             form = FileInfoForm(post_data, request.FILES)
+            form.fields['laboratory'].required = False
             if form.is_valid():
                 new_file = form.save()
                 if new_file.file_type == 'test_history':
@@ -316,7 +317,7 @@ def upload_file(request):
                     new_file.get_handler().process()
                 messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
             else:
-                messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
+                messages.add_message(request, messages.ERROR, 'Failed to upload file: %s' % dict(form._errors))
     
             return HttpResponseRedirect(reverse('file_info'))
 

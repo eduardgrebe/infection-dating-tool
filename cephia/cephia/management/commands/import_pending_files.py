@@ -10,6 +10,7 @@ class Command(BaseCommand):
         for file_to_import in FileInfo.objects.filter(state='pending', priority__gt=0):
             try:
                 file_handler = file_to_import.get_handler()
+                
                 msg = file_handler.validate_file()
 
                 if msg:
