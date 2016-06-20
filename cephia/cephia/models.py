@@ -11,7 +11,7 @@ from simple_history.models import HistoricalRecords
 import collections
 from user_management.models import BaseUser
 from fields import ProtectedForeignKey
-from world_regions.models import Region
+from world_regions import models as wr_models
 
 import datetime
 
@@ -28,6 +28,18 @@ class CephiaUser(BaseUser):
         return "%s" % (self.username)
 
 
+class Region(models.Model):
+
+    class Meta:
+        db_table = "cephia_regions"
+
+    name = models.CharField(max_length=100, null=False, blank=False)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
+
 class Country(models.Model):
 
     class Meta:
@@ -35,7 +47,7 @@ class Country(models.Model):
 
     code = models.CharField(max_length=5, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    region = ProtectedForeignKey(Region, null=False, blank=False)
+    region = ProtectedForeignKey('Region', null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -44,7 +56,10 @@ class Country(models.Model):
 
     @property
     def region_name(self):
-        return self.region.name
+        try:
+            return wr_models.Region.objects.get(countries__country=self.code).name
+        except wr_models.Region.DoesNotExist:
+            return None
 
 
 class Laboratory(models.Model):
@@ -337,7 +352,8 @@ class Subject(models.Model):
 
     @property
     def earliest_visit_date(self):
-        return self.visits.order_by('-visit_date').first()
+        v = self.visit_set.order_by('-visit_date').first()
+        return v.visit_date if v else None
 
 
 class SubjectRow(ImportedRow):
@@ -433,7 +449,6 @@ class Visit(models.Model):
     visit_eddi = ProtectedForeignKey(VisitEDDI, null=True, blank=True)
     treatment_naive = models.BooleanField(default=True)
     on_treatment = models.BooleanField(default=False)
-    days_on_art = models.IntegerField(null=True, blank=False)
     first_treatment = models.NullBooleanField()
     history = HistoricalRecords()
 
@@ -445,29 +460,40 @@ class Visit(models.Model):
         if vd is None:
             vd = VisitDetail(visit=self)
         
-        vd.after_aids_diagnosis = self.after_aids_diagnosis
-        vd.age_in_years = self.subject.age_in_years
-        vd.ever_scope_ec = self.subject.ever_scope_ec(self)
+        
+        vd.age_in_years = self.age_in_years
         vd.earliest_visit_date = self.subject.earliest_visit_date
+        vd.ever_scope_ec = self.ever_scope_ec
+        vd.is_after_aids_diagnosis = self.is_after_aids_diagnosis
+        vd.ever_aids_diagnosis = self.ever_aids_diagnosis
         vd.days_since_cohort_entry = self.days_since_cohort_entry
-        vd.days_since_first_art = self.days_since_first_art
-        vd.days_since_current_art_init = self.days_since_current_art_init
-        vd.days_since_first_art = self.days_since_first_art
-        vd.days_from_eddi_to_treatment = self.days_from_eddi_to_treatment
         vd.days_since_first_draw = self.days_since_first_draw
-        vd.region = self
-
-    @property
-    def age_in_years(self):
-        visit_date = self.visit_date
-        born = self.subject.date_of_birth
-        return visit_date.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        vd.days_since_first_art = self.days_since_first_art
+        vd.days_since_current_art = self.days_since_current_art
+        vd.days_from_eddi_to_first_art = self.days_from_eddi_to_first_art
+        vd.days_from_eddi_to_current_art = self.days_from_eddi_to_current_art
+        vd.region = self.subject.country.region_name
+        vd.save()
+        return vd
 
     def get_region(self):
         pass
-        
+
     @property
-    def after_aids_diagnosis(self):
+    def ever_scope_ec(self):
+        return Visit.objects.filter(subject=self.subject, scopevisit_ec=True).exists()
+    
+
+    @property
+    def age_in_years(self):
+        if not self.subject.date_of_birth:
+            return None
+        visit_date = self.visit_date
+        born = self.subject.date_of_birth
+        return visit_date.year - born.year - ((visit_date.month, visit_date.day) < (born.month, born.day))
+
+    @property
+    def is_after_aids_diagnosis(self):
         return bool(self.subject.aids_diagnosis_date and self.visit_date > self.subject.aids_diagnosis_date)
 
     @property
@@ -476,24 +502,28 @@ class Visit(models.Model):
 
     @property
     def days_since_cohort_entry(self):
-        return as_days(self.visit_date - self.subject.cohort_entry_date)
+        if self.subject.cohort_entry_date:
+            return as_days(self.visit_date - self.subject.cohort_entry_date)
 
     @property
     def days_since_first_draw(self):
-        return as_days(self.visit_date - self.subject.earliest_visit_date)
+        earliest_visit_date = self.subject.earliest_visit_date
+        if earliest_visit_date:
+            return as_days(self.visit_date - self.subject.earliest_visit_date)
 
     @property
     def days_since_first_art(self):
-        # how to handle visit after art
-        if self.art_initiation_date > self.visit_date:
+        if not self.subject.art_initiation_date:
+            return None
+        if self.subject.art_initiation_date > self.visit_date:
             return None
         
-        if self.subject.art_initiation_date is not None and self.on_treatment is True:
-            return as_days(self.visit_date - subject.art_initiation_date)
+        if self.subject.art_initiation_date is not None and self.on_treatment:
+            return as_days(self.visit_date - self.subject.art_initiation_date)
         return None
 
     @property
-    def days_since_current_art_init(self):
+    def days_since_current_art(self):
         if not self.on_treatment:
             return None
 
@@ -506,23 +536,44 @@ class Visit(models.Model):
         return None
 
     @property
-    def days_from_eddi_to_current_art(self):
-        if self.on_treatment and self.subject.eddi and self.subject.art_initiation_date:
-            return as_days(self.subject.eddi.eddi - self.subject.art_initiation_date)
+    def days_from_eddi_to_first_art(self):
+        if self.subject.subject_eddi and self.subject.subject_eddi.eddi and self.subject.art_initiation_date:
+            return as_days(self.subject.art_initiation_date - self.subject.subject_eddi.eddi)
         return None
-            
+
+
+    @property
+    def days_from_eddi_to_current_art(self):
+        if not self.on_treatment:
+            return None
+
+        if not (self.subject.subject_eddi and self.subject.subject_eddi.eddi):
+            return None
+
+        if self.subject.art_resumption_date and self.subject.art_resumption_date < self.visit_date:
+            return as_days(self.subject.art_resumption_date - self.subject.subject_eddi.eddi)
+
+        if self.subject.art_initiation_date:
+            return as_days(self.subject.art_initiation_date - self.subject.subject_eddi.eddi)
+
+        return None
     
+
 class VisitDetail(models.Model):
     visit = OneToOneOrNoneField('Visit', related_name='visitdetail')
+
     after_aids_diagnosis = models.NullBooleanField()
     age_in_years = models.PositiveIntegerField(null=True)
     ever_aids_diagnosis = models.NullBooleanField()
     ever_scope_ec = models.NullBooleanField()
     earliest_visit_date = models.DateTimeField(null=True)
-    days_since_cohort_entry = models.TimeField(null=True)
-    days_since_first_draw = models.TimeField(null=True)
-    days_since_first_art_visit = models.TimeField(null=True)
-    days_from_eddi_to_treatment = models.TimeField(null=True)
+    
+    days_since_cohort_entry = models.PositiveIntegerField(null=True)
+    days_since_first_draw = models.PositiveIntegerField(null=True)
+    days_since_first_art_visit = models.PositiveIntegerField(null=True)
+    days_from_eddi_to_first_art = models.PositiveIntegerField(null=True)
+    days_from_eddi_to_current_art = models.PositiveIntegerField(null=True)
+    
     region = models.CharField(max_length=255, null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
