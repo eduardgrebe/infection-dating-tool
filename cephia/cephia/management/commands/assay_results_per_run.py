@@ -52,6 +52,8 @@ class Command(BaseCommand):
             laboratory=models.Laboratory.objects.get(name=lab),
             fileinfo=result_file,
             run_date=timezone.now())
+
+        result_file.get_handler().process(panel.pk, assay_run)
         
         return assay_run
 

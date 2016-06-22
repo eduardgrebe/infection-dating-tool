@@ -23,15 +23,18 @@
   <th>well</th>
   <th>test_mode</th>
   <th>specimen_purpose</th>
-  <th>result_gp36_BI</th>
-  <th>result_gp140_BI</th>
-  <th>result_p31_BI</th>
-  <th>result_gp160_BI</th>
-  <th>result_p24_BI</th>
-  <th>result_gp41_BI</th>
-  <th>result_ctrl_BI</th>
-  <th>result_GeeniusIndex</th>
-  <th>result_GeeniusIndex_recalc</th>
+  
+  <th>gp36_bi</th>
+  <th>gp140_bi</th>
+  <th>p31_bi</th>
+  <th>gp160_bi</th>
+  <th>p24_bi</th>
+  <th>gp41_bi</th>
+  <th>ctrl_bi</th>
+  <th>GeeniusIndex</th>
+  <th>exclusion</th>
+  <th>interpretation</th>
+  
   <th>State</th>
   <th>Message</th>
 </thead>
@@ -53,15 +56,17 @@
     <td>{{row.well}}</td>
     <td>{{row.test_mode}}</td>
     <td>{{row.specimen_purpose}}</td>
-    <td>{{result_gp36_BI}}</td>
-    <td>{{result_gp140_BI}}</td>
-    <td>{{result_p31_BI}}</td>
-    <td>{{result_gp160_BI}}</td>
-    <td>{{result_p24_BI}}</td>
-    <td>{{result_gp41_BI}}</td>
-    <td>{{result_ctrl_BI}}</td>
-    <td>{{result_GeeniusIndex}}</td>
-    <td>{{result_GeeniusIndex_recalc}}</td>
+    <td>{{ row.gp36_bi }}</th>
+    <td>{{ row.gp140_bi }}</th>
+    <td>{{ row.p31_bi }}</th>
+    <td>{{ row.gp160_bi }}</th>
+    <td>{{ row.p24_bi }}</th>
+    <td>{{ row.gp41_bi }}</th>
+    <td>{{ row.ctrl_bi }}</th>
+    <td>{{ row.GeeniusIndex }}</th>
+    <td>{{ row.exclusion }}</th>
+    <td>{{ row.interpretation }}</th>
+
     <td>{{row.message}}</td>
     <td>{{row.state}}</td>
     <td><pre>{{row.error_message}}</pre></td>

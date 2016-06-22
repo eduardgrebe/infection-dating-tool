@@ -479,15 +479,15 @@ class GeeniusResult(BaseAssayResult):
     class Meta:
         db_table = "assay_geenius"
 
-    gp36_BI = models.FloatField(null=True, blank=False)
-    gp140_BI = models.FloatField(null=True, blank=False)
-    p31_BI = models.FloatField(null=True, blank=False)
-    gp160_BI = models.FloatField(null=True, blank=False)
-    p24_BI = models.FloatField(null=True, blank=False)
-    gp41_BI = models.FloatField(null=True, blank=False)
-    ctrl_BI = models.FloatField(null=True, blank=False)
+    gp36_bi = models.FloatField(null=True, blank=True)
+    gp140_bi = models.FloatField(null=True)
+    p31_bi = models.FloatField(null=True)
+    gp160_bi = models.FloatField(null=True)
+    p24_bi = models.FloatField(null=True)
+    gp41_bi = models.FloatField(null=True)
+    ctrl_bi = models.FloatField(null=True)
+    GeeniusIndex = models.FloatField(null=True)
     GeeniusIndex_reported = models.FloatField(null=True, blank=False)
-    GeeniusIndex = models.FloatField(null=True, blank=False)
 
 
 class GeeniusResultRow(BaseAssayResultRow):
@@ -495,15 +495,15 @@ class GeeniusResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "assay_geenius_row"
 
-    gp36_BI = models.CharField(max_length=255, null=False, blank=True)
-    gp140_BI = models.CharField(max_length=255, null=False, blank=True)
-    p31_BI = models.CharField(max_length=255, null=False, blank=True)
-    gp160_BI = models.CharField(max_length=255, null=False, blank=True)
-    p24_BI = models.CharField(max_length=255, null=False, blank=True)
-    gp41_BI = models.CharField(max_length=255, null=False, blank=True)
-    ctrl_BI = models.CharField(max_length=255, null=False, blank=True)
-    GeeniusIndex_reported = models.CharField(max_length=255, null=False, blank=True)
-    GeeniusIndex = models.CharField(max_length=255, null=False, blank=True)
+    gp36_bi = models.CharField(max_length=255, null=True, blank=True)
+    gp140_bi = models.CharField(max_length=255, null=True)
+    p31_bi = models.CharField(max_length=255, null=True)
+    gp160_bi = models.CharField(max_length=255, null=True)
+    p24_bi = models.CharField(max_length=255, null=True)
+    gp41_bi = models.CharField(max_length=255, null=True)
+    ctrl_bi = models.CharField(max_length=255, null=True)
+    GeeniusIndex = models.CharField(max_length=255, null=True)
+    
     geenius_result = models.ForeignKey(GeeniusResult, null=True, blank=False, db_index=True)
 
 

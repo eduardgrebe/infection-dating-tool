@@ -11,62 +11,46 @@ class GeeniusFileHandler(FileHandler):
     def __init__(self, upload_file):
         super(GeeniusFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['specimen_label',
-                                   'assay',
-                                   'laboratory',
-                                   'test_date',
-                                   'operator',
-                                   'assay_kit_lot',
-                                   'plate_identifier',
-                                   'well',
-                                   'test_mode',
-                                   'specimen_purpose',
-                                   'result_gp36_BI',
-                                   'result_gp140_BI',
-                                   'result_p31_BI',
-                                   'result_gp160_BI',
-                                   'result_p24_BI',
-                                   'result_gp41_BI',
-                                   'result_ctrl_BI',
-                                   'result_GeeniusIndex',
-                                   'result_GeeniusIndex_recalc']
-
+        self.registered_columns = [
+            'specimen_label',
+            'assay',
+            'laboratory',
+            'test_date',
+            'assay_kit_lot',
+            'plate_identifier',
+            'test_mode',
+            'specimen_purpose',
+            
+            'gp36_bi',
+            'gp140_bi',
+            'p31_bi',
+            'gp160_bi',
+            'p24_bi',
+            'gp41_bi',
+            'ctrl_bi',
+            'GeeniusIndex',
+            'exclusion',
+            'interpretation',
+        ]
 
     def parse(self):
         from assay.models import GeeniusResultRow
 
         rows_inserted = 0
         rows_failed = 0
+        valid_columns = set(self.registered_columns)
 
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
                     self.header = [ x.strip() for x in self.header ]
-                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
+                    row_dict = dict((k,v) for (k,v) in zip(self.header, self.file_rows[row_num]) if k in valid_columns)
 
-                    geenius_result_row = GeeniusResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                         assay=row_dict['assay'],
-                                                                         laboratory=row_dict['laboratory'],
-                                                                         test_date=row_dict['test_date'],
-                                                                         operator=row_dict.get('operator'),
-                                                                         assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                         plate_identifier=row_dict['plate_identifier'],
-                                                                         well=row_dict['well'],
-                                                                         test_mode=row_dict['test_mode'],
-                                                                         specimen_purpose=row_dict['specimen_purpose'],
-                                                                         result_gp36_BI=row_dict['result_gp36_BI'],
-                                                                         result_gp140_BI=row_dict['result_gp140_BI'],
-                                                                         result_p31_BI=row_dict['result_p31_BI'],
-                                                                         result_gp160_BI=row_dict['result_gp160_BI'],
-                                                                         result_p24_BI=row_dict['result_p24_BI'],
-                                                                         result_gp41_BI=row_dict['result_gp41_BI'],
-                                                                         result_ctrl_BI=row_dict['result_ctrl_BI'],
-                                                                         result_GeeniusIndex=row_dict['result_GeeniusIndex'],
-                                                                         result_GeeniusIndex_recalc=row_dict['result_GeeniusIndex_recalc'],
-                                                                         state='pending',
-                                                                         fileinfo=self.upload_file)
-
-
+                    GeeniusResultRow.objects.create(
+                        state='pending',
+                        fileinfo=self.upload_file,
+                        **row_dict
+                    )
 
                     rows_inserted += 1
             except Exception, e:
@@ -95,15 +79,14 @@ class GeeniusFileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-                assay = Assay.objects.get(name=geenius_result_row.assay)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=geenius_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    Specimen.objects.get(
+                        specimen_label=geenius_result_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False)
                 except Specimen.DoesNotExist:
-                    if geenius_result_row.specimen_purpose == 'panel_specimen':
+                    if geenius_result_row.specimen_purpose != 'panel_specimen':
                         error_msg += "Specimen not recognised.\n"
 
                 # if specimen.visit.id not in [ membership.id for membership in panel_memberhsips ]:
@@ -158,41 +141,46 @@ class GeeniusFileHandler(FileHandler):
                         is_excluded = True
 
                     try:
-                        final_result = float(geenius_result_row.result_GeeniusIndex)
+                        final_result = float(geenius_result_row.GeeniusIndex)
                     except (ValueError, TypeError):
                         final_result = None
                         warning_msg += 'GeeniusIndex could no be converted to a float'
-                        
+
                     assay_result = AssayResult.objects.create(
                         panel=panel,
                         assay=assay,
                         specimen=specimen,
                         test_date=datetime.strptime(geenius_result_row.test_date, '%Y-%m-%d').date(),
                         warning_msg=warning_msg,
-                        result=None if is_excluded else final_result)
+                        assay_run=assay_run,
+                        result=None if is_excluded else final_result
+                    )
                     
 
-                    geenius_result = GeeniusResult.objects.create(specimen=specimen,
-                                                                  assay=assay,
-                                                                  laboratory=Laboratory.objects.get(name=geenius_result_row.laboratory),
-                                                                  test_date=datetime.strptime(geenius_result_row.test_date, '%Y-%m-%d').date(),
-                                                                  operator=geenius_result_row.operator,
-                                                                  assay_kit_lot=geenius_result_row.assay_kit_lot,
-                                                                  plate_identifier=geenius_result_row.plate_identifier,
-                                                                  test_mode=geenius_result_row.test_mode,
-                                                                  well=geenius_result_row.well,
-                                                                  specimen_purpose=geenius_result_row.specimen_purpose,
-                                                                  result_gp36_BI=geenius_result_row.result_gp36_BI,
-                                                                  result_gp140_BI=geenius_result_row.result_gp140_BI,
-                                                                  result_p31_BI=geenius_result_row.result_p31_BI,
-                                                                  result_gp160_BI=geenius_result_row.result_gp160_BI,
-                                                                  result_p24_BI=geenius_result_row.result_p24_BI,
-                                                                  result_gp41_BI=geenius_result_row.result_gp41_BI,
-                                                                  result_ctrl_BI=geenius_result_row.result_ctrl_BI,
-                                                                  result_GeeniusIndex=geenius_result_row.result_GeeniusIndex,
-                                                                  result_GeeniusIndex_recalc=geenius_result_row.result_GeeniusIndex_recalc,
-                                                                  assay_result=assay_result,
-                                                                  assay_run=assay_run)
+                    geenius_result = GeeniusResult.objects.create(
+                        specimen=specimen,
+                        assay=assay,
+                        laboratory=Laboratory.objects.get(name=geenius_result_row.laboratory),
+                        test_date=datetime.strptime(geenius_result_row.test_date, '%Y-%m-%d').date(),
+                        operator=geenius_result_row.operator,
+                        assay_kit_lot=geenius_result_row.assay_kit_lot,
+                        plate_identifier=geenius_result_row.plate_identifier,
+                        test_mode=geenius_result_row.test_mode,
+
+                        gp36_bi = geenius_result_row.gp36_bi,
+                        gp140_bi = geenius_result_row.gp140_bi,
+                        gp160_bi = geenius_result_row.gp160_bi,
+                        p24_bi = geenius_result_row.p24_bi,
+                        gp41_bi = geenius_result_row.gp41_bi,
+                        ctrl_bi = geenius_result_row.ctrl_bi,
+                        GeeniusIndex = geenius_result_row.GeeniusIndex,
+                        exclusion = geenius_result_row.exclusion,
+                        interpretation = geenius_result_row.interpretation,
+                        assay_result=assay_result,
+                        assay_run=assay_run
+                    )
+
+                    print geenius_result.pk
 
                     geenius_result_row.state = 'processed'
                     geenius_result_row.date_processed = timezone.now()
