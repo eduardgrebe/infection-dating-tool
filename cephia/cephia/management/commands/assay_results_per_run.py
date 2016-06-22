@@ -118,7 +118,7 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = lag_result.ODn
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_ODn_screen'
@@ -126,7 +126,7 @@ class Command(BaseCommand):
                 elif number_of_confirms > 0:
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
-                    method = 'median_of_confirms'
+                    method = 'sop_median_of_confirms'
                     if number_of_confirms != 3:
                         warning_msg += "Unexpected number of 'confirm' records."
 
@@ -164,7 +164,7 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = lag_result.ODn
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_ODn_screen'
@@ -172,7 +172,7 @@ class Command(BaseCommand):
                 elif number_of_confirms > 0:
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
-                    method = 'median_of_confirms'
+                    method = 'sop_median_of_confirms'
                     if number_of_confirms != 3:
                         warning_msg += "Unexpected number of 'confirm' records."
 
@@ -206,10 +206,11 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = architect_result.SCO
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif spec_results.count() > 1:
-                    final_result = spec_result.aggregate(Sum('SCO')) / spec_results.count()
-                    method = 'mean_of_SCOs'
+                    # this should never happen
+                    # but it can
+                    final_result = None
                     warning_msg += "Unexpected number of results."
 
                 assay_result = AssayResult.objects.create(panel=assay_run.panel,
@@ -239,20 +240,20 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = architect_result.AI
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     screen_results = spec_results.filter(test_mode__startswith='screen')
                     untreated_mean = screen_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / screen_results.count()
                     treated_mean = screen_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / screen_results.count()
                     final_result = treated_mean / untreated_mean * 100
-                    method = 'mean_SCO_treated/mean_SCO_untreated*100'
+                    method = 'mean_SCO_treated/mean_SCO_untreated_of_screens*100'
                     warning_msg += 'More than 1 screen result.'
                 elif number_of_confirms > 0:
                     confirm_results = spec_results.filter(test_mode__startswith='confirm')
                     untreated_mean = confirm_results.aggregate(Sum('untreated_pbs_SCO'))['untreated_pbs_SCO__sum'] / confirm_results.count()
                     treated_mean = confirm_results.aggregate(Sum('treated_guanidine_SCO'))['treated_guanidine_SCO__sum'] / confirm_results.count()
                     final_result = treated_mean / untreated_mean * 100
-                    method = 'mean_SCO_treated/mean_SCO_untreated*100'
+                    method = 'sop_mean_SCO_treated/mean_SCO_untreated_of_confirms*100'
 
                 if number_of_confirms not in [0,2]:
                     warning_msg += "Unexpected number of 'confirm' records."
@@ -289,7 +290,7 @@ class Command(BaseCommand):
                 
                 if spec_results.count() == 1:
                     final_result = biorad_result.AI
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif spec_results.count() > 1 and number_of_confirms == 0:
                     spec_results = spec_results.filter(test_mode__startswith='screen')
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
@@ -298,7 +299,7 @@ class Command(BaseCommand):
                 elif spec_results.count() > 1 and number_of_confirms > 0:
                     spec_results = spec_results.filter(test_mode__startswith='confirm')
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
-                    method = 'mean_of_confirm_AIs'
+                    method = 'sop_mean_of_confirm_AIs'
 
                 if number_of_confirms not in [0, 2]:
                     warning_msg += "Unexpected number of 'confirm' records. Expected 0 or 2, found %s" % number_of_confirms
@@ -335,7 +336,7 @@ class Command(BaseCommand):
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
                 if spec_results.count() == 1:
                     final_result = biorad_result.AI
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif spec_results.count() > 1 and number_of_confirms == 0:
                     spec_results = spec_results.filter(test_mode__startswith='screen')
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
@@ -344,7 +345,7 @@ class Command(BaseCommand):
                 elif spec_results.count() > 1 and number_of_confirms > 0:
                     spec_results = spec_results.filter(test_mode__startswith='confirm')
                     final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
-                    method = 'mean_of_confirm_AIs'
+                    method = 'sop_mean_of_confirm_AIs'
 
                 if number_of_confirms not in [0, 2]:
                     warning_msg += "Unexpected number of 'confirm' records."
@@ -380,7 +381,7 @@ class Command(BaseCommand):
 
                 final_result = spec_results.aggregate(Sum('AI'))['AI__sum'] / spec_results.count()
                 if spec_results.count() == 1:
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif spec_results.count() > 1:
                     method = 'mean_of_AIs'
                     warning_msg = 'Unexpected number of results.'
@@ -417,7 +418,7 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = ls_vitros_result.SCO
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif number_of_screens > 0 and number_of_confirms == 0:
                     screen_results = spec_results.filter(test_mode__startswith='screen')
                     final_result = screen_results.aggregate(Sum('SCO'))['SCO__sum'] / screen_results.count()
@@ -425,7 +426,7 @@ class Command(BaseCommand):
                 elif number_of_confirms > 0:
                     confirm_results = spec_results.filter(test_mode__startswith='confirm')
                     final_result = confirm_results.aggregate(Sum('SCO'))['SCO__sum'] / confirm_results.count()
-                    method = 'mean_of_confirm_SCOs'
+                    method = 'sop_mean_of_confirm_SCOs'
 
                 if number_of_confirms > 0 and number_of_confirms != 2:
                     warning_msg += "Unexpected number of 'confirm' records."
@@ -458,7 +459,7 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = ls_vitros_result.SCO
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif number_of_screens > 0 and number_of_confirms == 0:
                     screen_results = spec_results.filter(test_mode__startswith='screen')
                     final_result = screen_results.aggregate(Sum('SCO'))['SCO__sum'] / screen_results.count()
@@ -466,7 +467,7 @@ class Command(BaseCommand):
                 elif number_of_confirms > 0:
                     confirm_results = spec_results.filter(test_mode__startswith='confirm')
                     final_result = confirm_results.aggregate(Sum('SCO'))['SCO__sum'] / confirm_results.count()
-                    method = 'mean_of_confirm_SCOs'
+                    method = 'sop_mean_of_confirm_SCOs'
 
                 if number_of_confirms > 0 and number_of_confirms != 2:
                     warning_msg += "Unexpected number of 'confirm' records."
@@ -503,14 +504,14 @@ class Command(BaseCommand):
 
                 if spec_results.count() == 1:
                     final_result = bed_result.ODn
-                    method = 'singlet'
+                    method = 'sop_singlet'
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_ODn_screen'
                 elif number_of_confirms > 1:
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
-                    method = 'median_of_confirms'
+                    method = 'sop_median_of_confirms'
                     if number_of_confirms != 3:
                         warning_msg += "Unexpected number of 'confirm' records."
 
@@ -554,7 +555,7 @@ class Command(BaseCommand):
                             specimen=idev3_result.specimen,
                             assay_run=assay_run,
                             test_date=idev3_result.test_date,
-                            method=u'singlet',
+                            method=u'sop_singlet',
                             result=idev3_result.conclusion,
                             warning_msg=idev3_result.warning_msg or '',
                             interpretation=idev3_result.interpretation,
@@ -587,7 +588,7 @@ class Command(BaseCommand):
                         final_result = 1
                     else:
                         final_result = 0
-                    method = 'curtis_2013_3/5_alg'
+                    method = 'sop_curtis_2013_3/5_alg'
                 else:
                     final_result = None
                     warning_msg = 'Unexpected number of records'

@@ -1,6 +1,7 @@
 from file_handler import FileHandler
 from handler_imports import *
 import logging
+from lib import log_exception
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,10 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
                                    "exclusion",
                                    "panel",
                                    "interpretation"]
+
+        self.float_columns = [
+            "SCO",
+        ]
 
         self.assay_name = 'ArchitectUnmodified'
 
@@ -95,6 +100,15 @@ class ArchitectUnmodifiedFileHandler(FileHandler):
                 except Specimen.DoesNotExist:
                     if architect_result_row.specimen_purpose == 'panel_specimen':
                         error_msg += "Specimen not recognised.\n"
+
+                # only applicable to this file, can be null otherwise.
+                for column in self.float_columns:
+                    value = getattr(architect_result_row, column)
+                    
+                    try:
+                        value = float(value)
+                    except (ValueError, TypeError), e:
+                        error_msg = "Could not convert column %s to float: %s" % (column, log_exception(e))
 
                 if error_msg:
                     raise Exception(error_msg)

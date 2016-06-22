@@ -191,8 +191,6 @@ class GeeniusFileHandler(FileHandler):
                         assay_run=assay_run
                     )
 
-                    print geenius_result.pk
-
                     geenius_result_row.state = 'processed'
                     geenius_result_row.date_processed = timezone.now()
                     geenius_result_row.error_message = ''

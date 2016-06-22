@@ -23,7 +23,7 @@ class BioRadCalculation(object):
         
         if self.number_of_valid_screens == 1:
             final_result = self.valid_results[0].AI
-            method = 'screen_singlet'
+            method = 'sop_screen_singlet'
             
             if self.first_result.AI >= 30 and self.first_result.AI <= 50:
                 warning_msg.append('Greyzone AI - Confirms absent.')
@@ -55,7 +55,7 @@ class BioRadCalculation(object):
             if self.total_screens == 0:
                 warning_msg.append('Retests, but no screen records.')
             
-            method = 'retest_singlet'
+            method = 'sop_retest_singlet'
         elif self.number_of_valid_retests > 1:
             warning_msg.append("More than 1 non-excluded retest. Found %s\n" % self.number_of_valid_retests)
             final_result = None
@@ -73,7 +73,7 @@ class BioRadCalculation(object):
             final_result, method, warning_msg = self.screen_only()
         elif self.number_of_valid_screens == 1 and self.number_of_valid_confirms == 2:
             final_result = self.valid_results.aggregate(Sum('AI'))['AI__sum'] / 3
-            method = 'mean_screen_confirms'
+            method = 'sop_mean_screen_confirms'
         elif self.number_of_valid_screens > 1:
             final_result = None
             warning_msg += 'Unexpected number of screens. Found %s.\n' % self.number_of_valid_screens
@@ -99,7 +99,7 @@ class BioRadCalculation(object):
         elif self.number_of_valid_retests == 1 and self.number_of_valid_confirms == 2:
             final_result = self.valid_results.filter(Q(test_mode__endswith='_retest') | Q(test_mode__startswith='confirm'))\
                                              .aggregate(Sum('AI'))['AI__sum'] / 3
-            method = 'mean_retest_confirms'
+            method = 'sop_mean_retest_confirms'
         else:
             warning_msg += 'Unexpected number of records.\n'
 

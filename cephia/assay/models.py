@@ -187,11 +187,24 @@ class BaseAssayResult(models.Model):
         for field in self._meta.get_all_field_names():
             field_type = self._meta.get_field(field)
             if not field_type.one_to_many and not field_type.related_model:
-                if getattr(self, field) == 'NA' and field_type.get_internal_type() == 'FloatField':
-                    setattr(self, field, None)
-                if getattr(self, field) == 'NEG' and field_type.get_internal_type() == 'FloatField':
-                    setattr(self, field, None)
-                    setattr(self, 'interpretation', 'neg')
+                value = getattr(self, field)
+                self.error_message = 'Could not convert field %s to float. Found value: ' % (field,)
+                if field_type.get_internal_type() == 'FloatField':
+                    if value is None:
+                        self.error_message = 'Field %s is null' % field
+                    else:
+                        try:
+                            float(value)
+                        except (TypeError, ValueError):
+                            self.error_message = 'Could not convert field %s to float. Found value: ' % (field, value)
+                            setattr(self, field, None)
+                        
+
+                # if getattr(self, field) == 'NA' and field_type.get_internal_type() == 'FloatField':
+                #     setattr(self, field, None)
+                # if getattr(self, field) == 'NEG' and field_type.get_internal_type() == 'FloatField':
+                #     setattr(self, field, None)
+                #     setattr(self, 'interpretation', 'neg')
 
         super(BaseAssayResult, self).save(*args, **kwargs)
 
@@ -504,9 +517,6 @@ class GeeniusResultRow(BaseAssayResultRow):
     ctrl_bi = models.CharField(max_length=255, null=True)
     GeeniusIndex = models.CharField(max_length=255, null=True)
     geenius_result = models.ForeignKey(GeeniusResult, null=True, blank=False, db_index=True)
-
-    def calculate_final_result(self):
-        final_result = float(self.GeeniusIndex)
 
 
 class BEDResult(BaseAssayResult):
