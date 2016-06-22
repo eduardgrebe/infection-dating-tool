@@ -5,9 +5,13 @@ from assay.models import (LagSediaResult, LagMaximResult, AssayRun, AssayResult,
                           LuminexCDCResult, BioRadAvidityGlasgowResult, IDEV3Result)
 from django.db.models import Sum, Avg
 from django.db.models import Q, F
+from cephia import models
 from django.db import transaction
 from assay.glasgow_calc import BioRadCalculation
+from django.core.files import File
 import logging
+import os
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +20,43 @@ class Command(BaseCommand):
     args = '<run_id>'
 
     def handle(self, *args, **options):
-        assay_run = AssayRun.objects.get(pk=args[0])
+
+        assay_run_id = args[0]
+        if os.path.exists(assay_run_id):
+            panel = args[1]
+            lab = args[2]
+            filename=args[0]
+            assay_name = args[3]
+            assay = self.load_assay_file(filename, assay_name, panel, lab)
+            self.do_assay_run(assay.pk)
+        else:
+            self.do_assay_run(assay_run_id)
+
+    def load_assay_file(self, filename, assay_name, panel, lab):
+        fo = File(open(filename, 'rb'))
+        panel = models.Panel.objects.get(short_name=panel)
+        result_file = models.FileInfo.objects.create(
+            priority=0,
+            file_type='assay',
+            panel=panel,
+            data_file=fo,
+            assay=models.Assay.objects.get(name__istartswith=assay_name)
+        )
+
+        result_file.get_handler().parse()
+        result_file.get_handler().validate(panel.pk)
+
+        assay_run = AssayRun.objects.create(
+            panel=panel,
+            assay=result_file.assay,
+            laboratory=models.Laboratory.objects.get(name=lab),
+            fileinfo=result_file,
+            run_date=timezone.now())
+        
+        return assay_run
+
+    def do_assay_run(self, run_id):
+        assay_run = AssayRun.objects.get(pk=run_id)
         assay = assay_run.assay.name
 
         if assay == 'LAg-Sedia':
