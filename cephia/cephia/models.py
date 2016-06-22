@@ -1,6 +1,6 @@
 
 # encoding: utf-8
-from lib.fields import ProtectedForeignKey
+from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
 from django.db import models
 from django.conf import settings
 import os
@@ -11,8 +11,14 @@ from simple_history.models import HistoricalRecords
 import collections
 from user_management.models import BaseUser
 from fields import ProtectedForeignKey
+from world_regions import models as wr_models
+
+import datetime
 
 logger = logging.getLogger(__name__)
+
+def as_days(tdelta):
+    return tdelta.days
 
 class CephiaUser(BaseUser):
     class Meta:
@@ -34,7 +40,6 @@ class Region(models.Model):
     def __unicode__(self):
         return self.name
 
-
 class Country(models.Model):
 
     class Meta:
@@ -42,12 +47,19 @@ class Country(models.Model):
 
     code = models.CharField(max_length=5, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    region = ProtectedForeignKey(Region, null=False, blank=False)
+    region = ProtectedForeignKey('Region', null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.code
+
+    @property
+    def region_name(self):
+        try:
+            return wr_models.Region.objects.get(countries__country=self.code).name
+        except wr_models.Region.DoesNotExist:
+            return None
 
 
 class Laboratory(models.Model):
@@ -338,6 +350,11 @@ class Subject(models.Model):
     def __unicode__(self):
         return self.subject_label
 
+    @property
+    def earliest_visit_date(self):
+        v = self.visit_set.order_by('visit_date').first()
+        return v.visit_date if v else None
+
 
 class SubjectRow(ImportedRow):
 
@@ -432,12 +449,134 @@ class Visit(models.Model):
     visit_eddi = ProtectedForeignKey(VisitEDDI, null=True, blank=True)
     treatment_naive = models.BooleanField(default=True)
     on_treatment = models.BooleanField(default=False)
-    days_on_art = models.IntegerField(null=True, blank=False)
     first_treatment = models.NullBooleanField()
     history = HistoricalRecords()
 
     def __unicode__(self):
         return self.subject_label
+
+    def update_visit_detail(self):
+        vd = self.visitdetail
+        if vd is None:
+            vd = VisitDetail(visit=self)
+        
+        
+        vd.age_in_years = self.age_in_years
+        vd.earliest_visit_date = self.subject.earliest_visit_date
+        vd.ever_scope_ec = self.ever_scope_ec
+        vd.is_after_aids_diagnosis = self.is_after_aids_diagnosis
+        vd.ever_aids_diagnosis = self.ever_aids_diagnosis
+        vd.days_since_cohort_entry = self.days_since_cohort_entry
+        vd.days_since_first_draw = self.days_since_first_draw
+        vd.days_since_first_art = self.days_since_first_art
+        vd.days_since_current_art = self.days_since_current_art
+        vd.days_from_eddi_to_first_art = self.days_from_eddi_to_first_art
+        vd.days_from_eddi_to_current_art = self.days_from_eddi_to_current_art
+        vd.region = self.subject.country.region_name
+        vd.save()
+        return vd
+
+    def get_region(self):
+        pass
+
+    @property
+    def ever_scope_ec(self):
+        return Visit.objects.filter(subject=self.subject, scopevisit_ec=True).exists()
+    
+
+    @property
+    def age_in_years(self):
+        if not self.subject.date_of_birth:
+            return None
+        visit_date = self.visit_date
+        born = self.subject.date_of_birth
+        return visit_date.year - born.year - ((visit_date.month, visit_date.day) < (born.month, born.day))
+
+    @property
+    def is_after_aids_diagnosis(self):
+        return bool(self.subject.aids_diagnosis_date and self.visit_date > self.subject.aids_diagnosis_date)
+
+    @property
+    def ever_aids_diagnosis(self):
+        return bool(self.subject.aids_diagnosis_date)
+
+    @property
+    def days_since_cohort_entry(self):
+        if self.subject.cohort_entry_date:
+            return as_days(self.visit_date - self.subject.cohort_entry_date)
+
+    @property
+    def days_since_first_draw(self):
+        earliest_visit_date = self.subject.earliest_visit_date
+        if earliest_visit_date:
+            return as_days(self.visit_date - self.subject.earliest_visit_date) or None
+        
+    @property
+    def days_since_first_art(self):
+        if not self.subject.art_initiation_date:
+            return None
+        if self.subject.art_initiation_date > self.visit_date:
+            return None
+        
+        if self.subject.art_initiation_date is not None and self.on_treatment:
+            return as_days(self.visit_date - self.subject.art_initiation_date)
+        return None
+
+    @property
+    def days_since_current_art(self):
+        if not self.on_treatment:
+            return None
+
+        if self.subject.art_resumption_date and self.subject.art_resumption_date < self.visit_date:
+            return as_days(self.visit_date - self.subject.art_resumption_date)
+
+        if self.subject.art_initiation_date:
+            return as_days(self.visit_date - self.subject.art_initiation_date)
+
+        return None
+
+    @property
+    def days_from_eddi_to_first_art(self):
+        if self.subject.subject_eddi and self.subject.subject_eddi.eddi and self.subject.art_initiation_date:
+            return as_days(self.subject.art_initiation_date - self.subject.subject_eddi.eddi)
+        return None
+
+
+    @property
+    def days_from_eddi_to_current_art(self):
+        if not self.on_treatment:
+            return None
+
+        if not (self.subject.subject_eddi and self.subject.subject_eddi.eddi):
+            return None
+
+        if self.subject.art_resumption_date and self.subject.art_resumption_date < self.visit_date:
+            return as_days(self.subject.art_resumption_date - self.subject.subject_eddi.eddi)
+
+        if self.subject.art_initiation_date:
+            return as_days(self.subject.art_initiation_date - self.subject.subject_eddi.eddi)
+
+        return None
+    
+
+class VisitDetail(models.Model):
+    visit = OneToOneOrNoneField('Visit', related_name='visitdetail')
+
+    after_aids_diagnosis = models.NullBooleanField()
+    age_in_years = models.PositiveIntegerField(null=True)
+    ever_aids_diagnosis = models.NullBooleanField()
+    ever_scope_ec = models.NullBooleanField()
+    earliest_visit_date = models.DateTimeField(null=True)
+    
+    days_since_cohort_entry = models.PositiveIntegerField(null=True)
+    days_since_first_draw = models.PositiveIntegerField(null=True)
+    days_since_first_art_visit = models.PositiveIntegerField(null=True)
+    days_from_eddi_to_first_art = models.PositiveIntegerField(null=True)
+    days_from_eddi_to_current_art = models.PositiveIntegerField(null=True)
+    
+    region = models.CharField(max_length=255, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
 
 class VisitRow(ImportedRow):
@@ -589,3 +728,7 @@ class AliquotRow(ImportedRow):
 
     def __unicode__(self):
         return self.parent_label
+
+
+
+    

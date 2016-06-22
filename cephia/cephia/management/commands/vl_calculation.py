@@ -18,7 +18,7 @@ class Command(BaseCommand):
         with transaction.atomic():
             for visit in quantitative:
                 try:
-                    if "=" in visit.vl_reported:
+                    if visit.vl_reported.startswith('='):
                         visit.viral_load = visit.vl_reported[1:]
                     else:
                         visit.viral_load = visit.vl_reported

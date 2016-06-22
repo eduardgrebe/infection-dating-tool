@@ -79,7 +79,8 @@ INSTALLED_APPS = (
     'reporting',
     'user_management',
     'diagnostics',
-    'assay'
+    'assay',
+    'world_regions'
 )
 
 MIDDLEWARE_CLASSES = (
