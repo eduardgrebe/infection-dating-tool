@@ -63,3 +63,12 @@ class AssayRunFilterForm(forms.Form):
             qs = qs.filter(laboratory__id=laboratory)
 
         return qs
+
+class AssayRunResultsFilterForm(forms.Form):
+    specimen_label = forms.CharField(required=False)
+
+    def filter(self, qs):
+        if self.cleaned_data.get('specimen_label'):
+            qs = qs.filter(specimen__specimen_label__icontains=self.cleaned_data.get('specimen_label')).distinct()
+        return qs
+            

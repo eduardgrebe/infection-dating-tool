@@ -2,7 +2,8 @@
 {% load bootstrap3 %}
 {% load el_pagination_tags %}
 
-{% block filter_content %}
+{% block filter_col_a %}
+  {% bootstrap_field filter_form.specimen_label %}
 {% endblock %}
 
 {% block page_content %}

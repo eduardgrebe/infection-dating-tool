@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
 from cephia.models import Panel
-from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm
+from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm, AssayRunResultsFilterForm
 from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership, AssayRun
 from cephia.models import Assay, Laboratory
@@ -186,7 +186,12 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
                 logger.exception(e)
                 messages.error(request, 'Failed to download file')
 
-        context['run_results'] = AssayResult.objects.filter(assay_run__id=run_id).order_by('-warning_msg')
+        qs = AssayResult.objects.filter(assay_run__id=run_id).order_by('-warning_msg')
+        filter_form = AssayRunResultsFilterForm(request.GET or None)
+        if filter_form.is_valid():
+            qs = filter_form.filter(qs)
+        context['filter_form'] = filter_form
+        context['run_results'] = qs
         context['run'] = AssayRun.objects.get(pk=run_id)
         return render_to_response(template, context, context_instance=RequestContext(request))
 

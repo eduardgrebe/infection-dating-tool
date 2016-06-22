@@ -503,8 +503,10 @@ class GeeniusResultRow(BaseAssayResultRow):
     gp41_bi = models.CharField(max_length=255, null=True)
     ctrl_bi = models.CharField(max_length=255, null=True)
     GeeniusIndex = models.CharField(max_length=255, null=True)
-    
     geenius_result = models.ForeignKey(GeeniusResult, null=True, blank=False, db_index=True)
+
+    def calculate_final_result(self):
+        final_result = float(self.GeeniusIndex)
 
 
 class BEDResult(BaseAssayResult):

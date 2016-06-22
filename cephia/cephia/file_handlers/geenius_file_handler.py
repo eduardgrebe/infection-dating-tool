@@ -128,24 +128,33 @@ class GeeniusFileHandler(FileHandler):
                 with transaction.atomic():
                     assay = Assay.objects.get(name=geenius_result_row.assay)
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=geenius_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
-
+                    specimen = Specimen.objects.get(
+                        specimen_label=geenius_result_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False)
 
                     warning_msg = ''
                     try:
                         is_excluded = bool(int(geenius_result_row.exclusion))
                     except (ValueError, TypeError):
-                        warning_msg += 'exclusion could no be converted to an integer'
+                        warning_msg += 'exclusion could not be converted to an integer'
                         is_excluded = True
 
                     try:
                         final_result = float(geenius_result_row.GeeniusIndex)
                     except (ValueError, TypeError):
                         final_result = None
-                        warning_msg += 'GeeniusIndex could no be converted to a float'
+                        warning_msg += 'GeeniusIndex could not be converted to a float'
 
+
+                    try:
+                        result_columns = ['gp41_bi', 'gp160_bi', 'p31_bi']
+                        result_sum = sum([float(getattr(geenius_result_row, column)) for column in result_columns])
+                        final_result = result_sum / float(geenius_result_row.ctrl_bi)
+                    except Exception, e:
+                        warning_msg += 'Could not recalc: ' + log_exception(e)
+                        final_result = None
+                    
                     assay_result = AssayResult.objects.create(
                         panel=panel,
                         assay=assay,
@@ -173,7 +182,9 @@ class GeeniusFileHandler(FileHandler):
                         p24_bi = geenius_result_row.p24_bi,
                         gp41_bi = geenius_result_row.gp41_bi,
                         ctrl_bi = geenius_result_row.ctrl_bi,
-                        GeeniusIndex = geenius_result_row.GeeniusIndex,
+                        
+                        GeeniusIndex = final_result,
+                        
                         exclusion = geenius_result_row.exclusion,
                         interpretation = geenius_result_row.interpretation,
                         assay_result=assay_result,
