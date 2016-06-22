@@ -6,27 +6,50 @@
 {% endblock %}
 
 {% block page_content %}
-<ul>
-  <li>
-    <a href="{% url 'reporting:visit_material' %}">Visit Material, filtered by Visit Date</a>
-  </li>
-  <li>
-    <a href="{% url 'reporting:all_subject_material' %}">All Subject’s Material, filtered by Visit Date</a>
-  </li>
-  <li>
-    <a href="{% url 'reporting:generic_report' %}">Generic Report</a>
-  </li>
-  <li>
-    <a href="{% url 'reporting:fixed_query_template' %}">Fixed query template</a>
-  </li>
-  <li>
-    <a href="{% url 'diagnostics:eddi_report' %}">EDDI Report</a>
-  </li>
-  {% for report in reports %}
-  <li>
-    <a href="{% url 'reporting:saved_report' report_id=report.id %}">{{report.name}}</a>
-  </li>
-  {% endfor %}
-</ul>
+  <h2>Standard Reports</h2>
+  <table class="table table-condensed table-hover">
+    <tr>
+      <th width="20%">Name</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td><a href="{% url 'reporting:visit_material' %}">Visit Material, filtered by Visit Date</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="{% url 'reporting:all_subject_material' %}">All Subject’s Material, filtered by Visit Date</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="{% url 'diagnostics:eddi_report' %}">EDDI Report</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="{% url 'reporting:fixed_query_template' %}">Fixed query template</a></td>
+      <td></td>
+    </tr>
+  </table>
+  
+  <h2>Generic Reports</h2>
+  
+  <div class="form-group">
+    <a class="btn btn-primary" href="{% url 'reporting:generic_report' %}">Create Generic Report</a>
+  </div>
+  
+  <table class="table table-condensed table-hover">
+    <tr>
+      <th width="20%">Name</th>
+      <th>Description</th>
+      <th width="10%"></th>
+    </tr>
+    {% for report in reports %}
+      <tr>
+        <td><a href="{% url 'reporting:saved_report' report_id=report.id %}">{{report.name}}</a></td>
+        <td>{{ report.description }}</td>
+        <td><button class="btn btn-danger">Delete Report</button></td>
+      </tr>
+    {% endfor %}
+  </table>
+
 
 {% endblock %}
