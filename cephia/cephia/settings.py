@@ -75,12 +75,12 @@ INSTALLED_APPS = (
     'simple_history',
     'bootstrap3',
     'el_pagination',
+    'world_regions',
     'cephia',
     'reporting',
     'user_management',
     'diagnostics',
     'assay',
-    'world_regions'
 )
 
 MIDDLEWARE_CLASSES = (

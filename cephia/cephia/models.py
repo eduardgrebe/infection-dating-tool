@@ -18,7 +18,7 @@ import datetime
 logger = logging.getLogger(__name__)
 
 def as_days(tdelta):
-    return tdelta.days
+    return tdelta.days if tdelta.days >= 0 else None
 
 class CephiaUser(BaseUser):
     class Meta:
@@ -460,7 +460,6 @@ class Visit(models.Model):
         if vd is None:
             vd = VisitDetail(visit=self)
         
-        
         vd.age_in_years = self.age_in_years
         vd.earliest_visit_date = self.subject.earliest_visit_date
         vd.ever_scope_ec = self.ever_scope_ec
@@ -562,7 +561,7 @@ class Visit(models.Model):
 class VisitDetail(models.Model):
     visit = OneToOneOrNoneField('Visit', related_name='visitdetail')
 
-    after_aids_diagnosis = models.NullBooleanField()
+    is_after_aids_diagnosis = models.NullBooleanField()
     age_in_years = models.PositiveIntegerField(null=True)
     ever_aids_diagnosis = models.NullBooleanField()
     ever_scope_ec = models.NullBooleanField()
@@ -570,7 +569,8 @@ class VisitDetail(models.Model):
     
     days_since_cohort_entry = models.PositiveIntegerField(null=True)
     days_since_first_draw = models.PositiveIntegerField(null=True)
-    days_since_first_art_visit = models.PositiveIntegerField(null=True)
+    days_since_first_art = models.PositiveIntegerField(null=True)
+    days_since_current_art = models.PositiveIntegerField(null=True)
     days_from_eddi_to_first_art = models.PositiveIntegerField(null=True)
     days_from_eddi_to_current_art = models.PositiveIntegerField(null=True)
     

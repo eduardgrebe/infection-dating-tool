@@ -12,10 +12,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with transaction.atomic():
-            for visit in Visit.objects.select_related('subject'):
-                try:
-                    visit.update_visit_detail()
-                except Exception:
-                    logger.error('Error with creating detail for visit: %s' % visit.pk)
-                    traceback.print_exc()
-                    continue
+            for visit in Visit.objects.select_related('subject', 'visitdetail', 'subject__subject_eddi'):
+                with transaction.atomic():
+                    try:
+                        visit.update_visit_detail()
+                    except Exception, e:
+                        logger.error('Error with creating detail for visit: %s' % visit.pk)
+                        traceback.print_exc()
+                        continue
