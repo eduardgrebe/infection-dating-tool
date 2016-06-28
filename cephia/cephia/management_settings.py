@@ -13,24 +13,25 @@ LOG_FILENAME="cephia_management.log"
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(process)d %(asctime)s %(module)s.%(funcName)s[%(lineno)d]: %(message)s'
-            },
+            'format': '%(levelname)s %(asctime)s %(process)d %(filename)s %(lineno)d: %(message)s'
+        },
         'simple': {
             'format': '%(asctime)s %(levelname)s %(message)s'
-            },
         },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'logging.NullHandler',
-        },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-            },
+        },
         'file':{
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
@@ -38,32 +39,28 @@ LOGGING = {
             'formatter': 'verbose',
             'maxBytes':604800, 
             'backupCount':50
-            }
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+         'console': {
+             'level': 'INFO',
+             'class': 'logging.StreamHandler',
+             'filters': ['require_debug_true'],
+             'formatter': 'verbose'
+        }
+    },
     'loggers': {
-        'django.request': {
-            'handlers': ['file', 'mail_admins'],
-            'level': 'DEBUG',
+        '': {
+            'handlers': ['file', 'console', 'mail_admins'],
             'propagate': True,
+            'level': 'ERROR'
         },
         'django': {
-            'handlers':['file', 'mail_admins',],
+            'handlers': ['file', 'console', 'mail_admins'],
             'propagate': True,
-            'level':'INFO',
-            },
-        'django.schema': {
-            'handlers':['file', 'mail_admins',],
-            'propagate': True,
-            'level':'INFO',
-            },
-        'django.db': {
-            'handlers': ['file','mail_admins',],
-            'propagate': True,
-            'level': 'INFO'
+            'level': 'ERROR'
         },
-
-    }
-    }
-    
-
-
+    },
+}
