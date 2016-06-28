@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
 LOG_FOLDER=os.path.join(PROJECT_HOME, "..", "..", 'logs')
-LOG_FILENAME="cephia.log"
+LOG_FILENAME="cephia_management.log" if 'manage.py' in sys.argv else 'cephia.log'
 LOG_LEVEL="INFO"
 
 LOGIN_REDIRECT_URL = "/"
