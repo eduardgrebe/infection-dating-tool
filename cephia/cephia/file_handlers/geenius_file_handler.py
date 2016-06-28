@@ -162,7 +162,8 @@ class GeeniusFileHandler(FileHandler):
                         test_date=datetime.strptime(geenius_result_row.test_date, '%Y-%m-%d').date(),
                         warning_msg=warning_msg,
                         assay_run=assay_run,
-                        result=None if is_excluded else final_result
+                        result=None if is_excluded else final_result,
+                        method='sop_singlet'
                     )
                     
 

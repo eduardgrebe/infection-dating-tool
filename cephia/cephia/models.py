@@ -565,7 +565,7 @@ class VisitDetail(models.Model):
     age_in_years = models.PositiveIntegerField(null=True)
     ever_aids_diagnosis = models.NullBooleanField()
     ever_scope_ec = models.NullBooleanField()
-    earliest_visit_date = models.DateTimeField(null=True)
+    earliest_visit_date = models.DateField(null=True)
     
     days_since_cohort_entry = models.IntegerField(null=True)
     days_since_first_draw = models.IntegerField(null=True)
