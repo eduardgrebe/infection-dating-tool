@@ -3,8 +3,16 @@ from cephia.models import Visit, Subject
 from django.db.models import Q, F
 from django.db import transaction
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
+
+def vl_as_int(value):
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        value = None
+    return value
 
 class Command(BaseCommand):
     help = 'Update viral load data for all visits'
@@ -18,33 +26,39 @@ class Command(BaseCommand):
         with transaction.atomic():
             for visit in quantitative:
                 try:
-                    if visit.vl_reported.startswith('='):
-                        visit.viral_load = visit.vl_reported[1:]
-                    else:
-                        visit.viral_load = visit.vl_reported
 
+                    if visit.vl_reported.startswith('='):
+                        value = visit.vl_reported[1:]
+                    else:
+                        value = visit.vl_reported
+
+                    visit.viral_load = vl_as_int(value)
                     visit.vl_detectable = True
                     visit.vl_type = 'quantitative'
                     visit.save()
                 except Exception, e:
-                    continue
+                    traceback.print_exc()
+                    break
 
         with transaction.atomic():
             for visit in upper_limit:
                 try:
-                    visit.viral_load = visit.vl_reported[1:]
+                    visit.viral_load = vl_as_int(visit.vl_reported[1:])
                     visit.vl_detectable = False
                     visit.vl_type = 'upper_limit'
                     visit.save()
                 except Exception, e:
-                    continue
+                    traceback.print_exc()
+                    break
+                    
 
         with transaction.atomic():
             for visit in lower_limit:
                 try:
-                    visit.viral_load = visit.vl_reported[1:]
+                    visit.viral_load = vl_as_int(visit.vl_reported[1:])
                     visit.vl_detectable = True
                     visit.vl_type = 'lower_limit'
                     visit.save()
                 except Exception, e:
-                    continue
+                    traceback.print_exc()
+                    break
