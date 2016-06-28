@@ -18,7 +18,7 @@ import datetime
 logger = logging.getLogger(__name__)
 
 def as_days(tdelta):
-    return tdelta.days if tdelta.days >= 0 else None
+    return tdelta.days
 
 class CephiaUser(BaseUser):
     class Meta:
@@ -567,12 +567,12 @@ class VisitDetail(models.Model):
     ever_scope_ec = models.NullBooleanField()
     earliest_visit_date = models.DateTimeField(null=True)
     
-    days_since_cohort_entry = models.PositiveIntegerField(null=True)
-    days_since_first_draw = models.PositiveIntegerField(null=True)
-    days_since_first_art = models.PositiveIntegerField(null=True)
-    days_since_current_art = models.PositiveIntegerField(null=True)
-    days_from_eddi_to_first_art = models.PositiveIntegerField(null=True)
-    days_from_eddi_to_current_art = models.PositiveIntegerField(null=True)
+    days_since_cohort_entry = models.IntegerField(null=True)
+    days_since_first_draw = models.IntegerField(null=True)
+    days_since_first_art = models.IntegerField(null=True)
+    days_since_current_art = models.IntegerField(null=True)
+    days_from_eddi_to_first_art = models.IntegerField(null=True)
+    days_from_eddi_to_current_art = models.IntegerField(null=True)
     
     region = models.CharField(max_length=255, null=True)
     created = models.DateTimeField(auto_now_add=True)

@@ -59,12 +59,15 @@ class DiagnosticTestHistory(models.Model):
     class Meta:
         db_table = "cephia_diagnostic_test_history"
 
-    subject = models.ForeignKey(Subject, null=True, blank=False)
+    subject = models.ForeignKey(Subject, null=True, blank=False, related_name='test_history')
     test = models.ForeignKey(DiagnosticTest, null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
     test_result = models.CharField(max_length=15, null=True, blank=False)
     ignore = models.BooleanField(blank=False, default=False)
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.test_date, self.test_result)
     
 
 class DiagnosticTestHistoryRow(ImportedRow):
