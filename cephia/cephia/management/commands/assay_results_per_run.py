@@ -114,7 +114,7 @@ class Command(BaseCommand):
                 test_modes = [ spec.test_mode for spec in spec_results ]
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
-                lag_result = spec_results[0]
+                lag_result = spec_results.last()
 
                 if spec_results.count() == 1:
                     final_result = lag_result.ODn
@@ -135,14 +135,15 @@ class Command(BaseCommand):
                 if number_of_screens == 1 and number_of_confirms == 0 and lag_result.ODn < 2:
                     warning_msg += "ODn is < 2 and no confirm records."
 
-                assay_result = AssayResult.objects.create(panel=assay_run.panel,
-                                                          assay=assay_run.assay,
-                                                          specimen=lag_result.specimen,
-                                                          assay_run=assay_run,
-                                                          test_date=lag_result.test_date,
-                                                          method=method,
-                                                          result=final_result,
-                                                          warning_msg=warning_msg)
+                assay_result = AssayResult.objects.create(
+                    panel=assay_run.panel,
+                    assay=assay_run.assay,
+                    specimen=lag_result.specimen,
+                    assay_run=assay_run,
+                    test_date=spec_results.latest('test_date').test_date,
+                    method=method,
+                    result=final_result,
+                    warning_msg=warning_msg)
                 spec_results.update(assay_result=assay_result)
 
     def _handle_lag_maxim(self, assay_run):
@@ -185,7 +186,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=lag_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=lag_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -217,7 +218,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=architect_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=architect_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -265,7 +266,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=architect_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=architect_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -311,7 +312,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=biorad_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=biorad_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -356,7 +357,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=biorad_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=biorad_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -395,7 +396,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=vitros_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=vitros_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -437,7 +438,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=ls_vitros_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=ls_vitros_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -478,7 +479,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=ls_vitros_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=ls_vitros_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -524,7 +525,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=bed_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=bed_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)
@@ -597,7 +598,7 @@ class Command(BaseCommand):
                                                           assay=assay_run.assay,
                                                           specimen=luminex_result.specimen,
                                                           assay_run=assay_run,
-                                                          test_date=luminex_result.test_date,
+                                                          test_date=spec_results.latest('test_date').test_date,
                                                           method=method,
                                                           result=final_result,
                                                           warning_msg=warning_msg)

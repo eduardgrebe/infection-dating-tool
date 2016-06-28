@@ -1,9 +1,10 @@
 from django.core.management.base import BaseCommand, CommandError
 import datetime
 from cephia.models import Visit
-from assay.models import PanelMemberships, Panel, AssayRun
+from assay.models import PanelMembership, Panel, AssayRun, AssayResult
 from assay import assay_result_factory
 import logging
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -12,17 +13,24 @@ class Command(BaseCommand):
     args = '<panel_id>'
 
     def handle(self, *args, **options):
-        try:
-            panel = Panel.objects.get(pk=args[0])
-            assay_runs_for_panel = AssayRun.objects.filter(panel=panel)
-            visits_for_run= []
 
-            for run in assay_runs_for_panel:
-                result_model = get_result_model(run.assay.name)
-                rows_for_run = result_model.objects.filter(assay_run=run)
-                visits_for_run = list(set(visits_for_run) | set([ row.specimen.visit for row in rows_for_run ]))
+        assay_run = AssayRun.objects.get(pk=args[0])
+        
+        results = AssayResult.objects.filter(assay_run__pk=args[0]).select_related('specimen', 'specimen__visit')
 
-            import pdb; pdb.set_trace()
-            #PanelMemberships.objects.create()
-        except Exception, e:
-            import pdb; pdb.set_trace()
+        visit_totals = defaultdict(lambda: 0)
+
+        for result in results:
+            visit = result.specimen.visit
+            visit_totals[visit.pk] += 1
+
+        for visit, visit_count in visit_totals.iteritems():
+            PanelMembership.objects.create(
+                visit_id=visit,
+                replicates=visit_count,
+                panel=assay_run.panel,
+                category='',
+                panel_inclusion_criterion=''
+            )
+                
+

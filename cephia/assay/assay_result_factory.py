@@ -24,27 +24,39 @@ def get_result_row_model(assay_name):
 
 class ResultDownload(object):
 
-    def __init__(self, specific_columns, results):
+    def __init__(self, specific_columns, results, generic=False):
 
         self.headers = []
         self.content = []
         self.specific_columns = specific_columns
         self.results = results
+
+        specific_columns = [
+            "operator",
+            "assay_kit_lot",
+            "plate_identifier",
+            "specimen_purpose",
+            "test_mode",
+            "exclusion",
+        ]
+        
         self.common_columns = [ "specimen.specimen_label",
                                 "specimen.id",
                                 "specimen.parent_label",
                                 "specimen.specimen_type.name",
                                 "assay_run.assay.name",
                                 "assay_run.panel.name",
-                                "laboratory.name",
+                                "assay_run.laboratory.name",
                                 "test_date",
-                                "operator",
-                                "assay_kit_lot",
-                                "plate_identifier",
-                                "specimen_purpose",
-                                "test_mode",
-                                "exclusion",
-                                "warning_msg" ]
+        ]
+
+        if not generic:
+            self.common_columns += specific_columns
+
+        self.common_columns += [
+            "warning_msg",
+            "method",
+        ]
 
         self.clinical_columns = [ 'specimen.visit.subject.subject_label',
                                   'specimen.visit.subject.id',

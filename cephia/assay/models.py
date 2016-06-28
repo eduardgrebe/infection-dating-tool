@@ -133,8 +133,7 @@ class AssayResult(models.Model):
     def get_results_for_run(self):
         if self.assay:
             headers = ['result']
-            results = [ result for result in AssayResult.objects.filter(assay_run=self.assay_run) ]
-            return headers, results
+            return headers, list(AssayResult.objects.filter(assay_run=self.assay_run))
 
         return None
 

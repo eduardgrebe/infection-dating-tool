@@ -135,7 +135,7 @@ def panel_memberships(request, panel_id=None, template="assay/panel_memberships.
     context = {}
 
     if request.method == 'GET':
-        context['panel_memberships'] = PanelMembership.objects.filter(panel__id=panel_id)
+        context['panel_memberships'] = PanelMembership.objects.filter(panel__id=panel_id).order_by('-replicates')
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -175,7 +175,7 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
                     headers, results = first_result.get_specific_results_for_run()
 
                 response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-                download = ResultDownload(headers, results)
+                download = ResultDownload(headers, results, 'generic' in request.GET)
                 writer.writerow(download.get_headers())
 
                 for row in download.get_content():
