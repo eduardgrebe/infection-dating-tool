@@ -169,13 +169,26 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
             try:
                 first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
 
+                result_model = None
+                result_type = ''
                 if 'generic' in request.GET:
                     headers, results = first_result.get_results_for_run()
+                    result_type = 'generic'
                 elif 'specific' in request.GET:
                     headers, results = first_result.get_specific_results_for_run()
+                    result_type = 'specific'
+                elif 'detail' in request.GET:
+                    headers, results, result_model = first_result.get_detailed_results_for_run()
+                    result_type = 'detailed'
 
-                response, writer = get_csv_response('run_results_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
-                download = ResultDownload(headers, results, 'generic' in request.GET)
+                if result_model:
+                    download = ResultDownload(headers, results, 'generic' in request.GET, [result_model])
+                else:
+                    download = ResultDownload(headers, results, 'generic' in request.GET)
+
+                response, writer = get_csv_response('%s_results_run_%s_%s.csv' % (
+                    result_type, run_id, datetime.today().strftime('%d%b%Y_%H%M')))
+
                 writer.writerow(download.get_headers())
 
                 for row in download.get_content():
@@ -183,8 +196,7 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
 
                 return response
             except Exception, e:
-                logger.exception(e)
-                messages.error(request, 'Failed to download file')
+                messages.error(request, u'Failed to download file: %s' % unicode(e))
 
         qs = AssayResult.objects.filter(assay_run__id=run_id).order_by('-warning_msg')
         filter_form = AssayRunResultsFilterForm(request.GET or None)

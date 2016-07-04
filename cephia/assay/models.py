@@ -133,7 +133,15 @@ class AssayResult(models.Model):
     def get_results_for_run(self):
         if self.assay:
             headers = ['result']
-            return headers, list(AssayResult.objects.filter(assay_run=self.assay_run))
+            return headers, AssayResult.objects.filter(assay_run=self.assay_run)
+
+        return None
+
+    def get_detailed_results_for_run(self):
+        if self.assay:
+            result_model = get_result_model(self.assay.name)
+            headers = ['result']
+            return headers, AssayResult.objects.filter(assay_run=self.assay_run), result_model
 
         return None
 
@@ -153,8 +161,7 @@ class AssayResult(models.Model):
             child_fields = result_model._meta.get_all_field_names()
             local_fields = list(set(child_fields)-set(parent_fields))
             headers = [ header for header in local_fields if header != 'id']
-            results = [ result for result in result_model.objects.filter(assay_run=self.assay_run) ]
-            return headers, results
+            return headers, result_model.objects.filter(assay_run=self.assay_run)
 
         return None
 
@@ -235,7 +242,8 @@ class LagSediaResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_lagsedia"
-        result_detail_fields = ['ODn']
+
+    result_detail_fields = ['ODn']
 
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
@@ -266,7 +274,8 @@ class LagMaximResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_lagmaxim"
-        result_detail_fields = ['ODn']
+
+    result_detail_fields = ['ODn']
 
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
@@ -297,7 +306,8 @@ class ArchitectUnmodifiedResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_architect_unmodified"
-        result_detail_fields = ['SCO']
+
+    result_detail_fields = ['SCO']
 
     SCO = models.FloatField(null=True, blank=False)
     well= models.CharField(max_length=255, null=True, blank=True)
@@ -316,7 +326,8 @@ class ArchitectAvidityResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_architect_avidity"
-        result_detail_fields = ['treated_guanidine_SCO', 'untreated_pbs_SCO', 'AI']
+
+    result_detail_fields = ['treated_guanidine_SCO', 'untreated_pbs_SCO', 'AI']
 
     treated_guanidine_SCO = models.FloatField(null=True)
     untreated_pbs_SCO = models.FloatField(null=True)
@@ -349,7 +360,8 @@ class BioRadAvidityCDCResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_biorad_avidity_cdc"
-        result_detail_fields = ['treated_DEA_OD', 'untreated_dilwashsoln_OD', 'AI']
+
+    result_detail_fields = ['treated_DEA_OD', 'untreated_dilwashsoln_OD', 'AI']
 
     treated_DEA_OD = models.FloatField(null=True)
     untreated_dilwashsoln_OD = models.FloatField(null=True)
@@ -376,7 +388,8 @@ class BioRadAvidityCDCResultRow(BaseAssayResultRow):
 class BioRadAvidityJHUResult(BaseAssayResult):
     class Meta:
         db_table = "assay_biorad_avidity_jhu"
-        result_detail_fields = ['treated_DEA_OD', 'untreated_dilwashsoln_OD', 'AI']
+
+    result_detail_fields = ['treated_DEA_OD', 'untreated_dilwashsoln_OD', 'AI']
 
     treated_DEA_OD = models.FloatField(null=True, blank=False)
     untreated_dilwashsoln_OD = models.FloatField(null=True, blank=False)
@@ -403,7 +416,8 @@ class BioRadAvidityJHUResultRow(BaseAssayResultRow):
 class BioRadAvidityGlasgowResult(BaseAssayResult):
     class Meta:
         db_table = "assay_biorad_avidity_glasgow"
-        result_detail_fields = ['treated_urea_OD', 'untreated_buffer_OD', 'AI']
+
+    result_detail_fields = ['treated_urea_OD', 'untreated_buffer_OD', 'AI']
 
     treated_urea_OD = models.FloatField(null=True, blank=False)
     untreated_buffer_OD = models.FloatField(null=True, blank=False)
@@ -433,7 +447,8 @@ class VitrosAvidityResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_vitros_avidity"
-        result_detail_fields = ['treated_guanidine_OD' , 'untreated_pbs_OD' , 'AI']
+
+    result_detail_fields = ['treated_guanidine_OD' , 'untreated_pbs_OD' , 'AI']
 
     treated_guanidine_OD = models.FloatField(max_length=255, null=True)
     untreated_pbs_OD = models.FloatField(max_length=255, null=True)
@@ -461,7 +476,8 @@ class LSVitrosDiluentResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_lsvitros_diluent"
-        result_detail_fields = ['SCO']
+
+    result_detail_fields = ['SCO']
 
     SCO = models.FloatField(null=True, blank=False)
     well= models.CharField(max_length=10, null=False, blank=True)
@@ -481,7 +497,8 @@ class LSVitrosPlasmaResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_lsvitros_plasma"
-        result_detail_fields = ['SCO']
+
+    result_detail_fields = ['SCO']
 
     SCO = models.FloatField(null=True, blank=False)
     well= models.CharField(max_length=255, null=False, blank=True)
@@ -501,7 +518,8 @@ class GeeniusResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_geenius"
-        result_detail_fields = [
+
+    result_detail_fields = [
             'gp36_bi', 'gp140_bi', 'p31_bi',
             'gp160_bi', 'p24_bi', 'gp41_bi',
             'ctrl_bi', 'GeeniusIndex']
@@ -537,7 +555,8 @@ class BEDResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_bed"
-        result_detail_fields = ['ODn']
+
+    result_detail_fields = ['ODn']
 
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
@@ -563,9 +582,10 @@ class LuminexCDCResult(BaseAssayResult):
 
     class Meta:
         db_table = "assay_luminex_cdc"
-        result_detail_fields = [
-            'gp120_MFIn', 'gp160_MFIn', 'gp41_MFIn',
-            'gp120_AI', 'gp160_AI', 'gp41_AI']
+
+    result_detail_fields = [
+        'gp120_MFIn', 'gp160_MFIn', 'gp41_MFIn',
+        'gp120_AI', 'gp160_AI', 'gp41_AI']
 
     BSA_MFI = models.FloatField(null=True)
     IgG_MFI = models.FloatField(null=True)
@@ -655,9 +675,10 @@ class IDEV3Result(BaseAssayResult):
 
     class Meta:
         db_table = "assay_idev3"
-        result_detail_fields = [
-            'tm_OD', 'v3_OD', 'conclusion', 'intermediaire',
-        ]
+
+    result_detail_fields = [
+        'tm_OD', 'v3_OD', 'conclusion', 'intermediaire',
+    ]
 
     well_tm = models.CharField(max_length=10, null=True)
     well_v3 = models.CharField(max_length=10, null=True)
