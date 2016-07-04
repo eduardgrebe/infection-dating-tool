@@ -12,6 +12,7 @@ import collections
 from user_management.models import BaseUser
 from fields import ProtectedForeignKey
 from world_regions import models as wr_models
+from django.models import QuerySet
 
 import datetime
 
@@ -611,16 +612,34 @@ class VisitRow(ImportedRow):
         return self.subject_label
 
 
+class SpecimenQuerySet(models.Model):
+    def partial_matches(self, label):
+        partial_label = label[0:4] # max 4 chars
+        partial_label = u''.join(d for d in partial_label if d.isdigit())
+        partial_label = partial_label.zfill(4)
+        specimen_allowed_length = 7
 
-
+        partial_matches = self.annotate(specimen_label_len=Length('specimen_label'))
+        partial_matches = partial_matches.annotate(label_splitting_character=Lower(Substr('specimen_label', 5, 1)))
+        partial_matches = partial_matches.filter(
+            label_splitting_character="-",
+            specimen_label_len=specimen_allowed_length,
+            specimen_label__startswith=partial_label,
+            specimen_type=panel.specimen_type,
+            parent_label__isnull=False
+        )
+        
+        return partial_matches
 
 class Specimen(models.Model):
-
+    objects = SpecimenQuerySet.as_manager()
+    
     VISIT_LINKAGE_CHOICES = (
         ('provisional','Provisional'),
         ('confirmed','Confirmed'),
         ('artificial','Artificial'),
     )
+    ARTIFICIAL_LABEL_FORMAT = u'{parent_label}-{specimen_index}-AA'
 
     class Meta:
         db_table = "cephia_specimens"
@@ -649,8 +668,8 @@ class Specimen(models.Model):
     parent = ProtectedForeignKey('Specimen', null=True, blank=False, default=None)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
     is_available = models.BooleanField(default=True)
+    is_artificicial = models.BooleanField(default=False)
     history = HistoricalRecords()
-
 
     def __unicode__(self):
         return self.specimen_label
@@ -659,6 +678,61 @@ class Specimen(models.Model):
         d = model_to_dict(self)
         return d
 
+
+    @classmethod
+    def create_from_parent(cls, parent_specimen):
+        inherited_fields = [
+            'subject', 'subject_label', 'reported_draw_date', 
+            'visit', 'visit_linkage', 'specimen_type',
+            'volume_units', 'source_study'
+        ]
+        child_specimen = cls()
+        for field in inherited_fields:
+            setattr(child_specimen, getattr(parent_specimen, field))
+
+        child_specimen.parent_label = parent_specimen.specimen_label
+        child_specimen.parent = parent_specimen
+        child_specimen.transfer_out_date = None #TODO: Add later
+        child_specimen.shipped_to = None #TODO: Add later
+        child_specimen.created_date = None
+        child_specimen.aliquoting_reason = 'artificially_created'
+        child_specimen.number_of_containers = 1
+
+        child_specimen.is_artificicial = True
+        return child_specimen
+
+    @classmethod
+    def get_artificial_label(cls, label, **kwargs):
+        index = 0
+        specimen_label = cls.ARTIFICIAL_LABEL_FORMAT.format(specimen_label=label, index=index.zfill(2))
+
+        while cls.objects.get(specimen_label=specimen_label, **kwargs).first():
+            index += 1
+            specimen_label = self.ARTIFICIAL_LABEL_FORMAT.format(specimen_label=label, index=zfill(2))
+        return specimen_label
+
+    @classmethod
+    def update_or_create_specimen_for_label(cls, label, specimen_label_type=None, **kwargs):
+        if specimen_label_type == 'aliquot_label' or specimen_label_type is None:
+            return cls.objects.get(specimen_label=label, **kwargs)
+        elif specimen_label_type == 'root_specimen':
+            parent_specimen = cls.objects.get(specimen_label=label, parent__isnull=True, **kwargs)
+
+            child_specimen = cls.create_from_parent(parent_specimen)
+            child_specimen.specimen_label = cls.get_artificial_label(parent_specimen.label, **kwargs)
+            child_specimen.save()
+            return child_specimen
+        
+        elif specimen_label_type == 'aliquot_base':
+            partial_match = cls.objects.partial_matches(label).first()
+            if partial_match is None:
+                raise cls.DoesNotExist()
+            child_specimen = cls.create_from_parent(partial_match.parent)
+            child_specimen.specimen_label = cls.get_artificial_label(label_, **kwargs)
+            child_specimen.save()
+            return child_specimen
+            
+        
 
 class TransferInRow(ImportedRow):
 

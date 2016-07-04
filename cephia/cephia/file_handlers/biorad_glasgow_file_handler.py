@@ -92,12 +92,12 @@ class BioRadAvidityGlasgowFileHandler(FileHandler):
             try:
                 error_msg = ''
                 panel = Panel.objects.get(pk=panel_id)
-                panel_memberhsips = PanelMembership.objects.filter(panel=panel)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=biorad_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = Specimen.objects.get(
+                        specimen_label=biorad_result_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False)
                 except Specimen.DoesNotExist:
                     if biorad_result_row.specimen_purpose == 'panel_specimen':
                         error_msg += "Specimen not recognised.\n"

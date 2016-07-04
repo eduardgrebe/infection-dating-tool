@@ -152,14 +152,17 @@ class LuminexFileHandler(FileHandler):
             try:
                 error_msg = ''
                 try:
-                    specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    # need test_date and run for the lab
+                    specimen = Specimen.objects.get(
+                        specimen_label=luminex_result_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False)
                 except Specimen.DoesNotExist:
                     if luminex_result_row.specimen_purpose == "panel_specimen":
-                        partial_matches = Specimen.objects.filter(specimen_label__startswith=luminex_result_row.specimen_label[0:4],
-                                                                  specimen_type=panel.specimen_type,
-                                                                  parent_label__isnull=False)
+                        partial_matches = Specimen.objects.filter(
+                            specimen_label__startswith=luminex_result_row.specimen_label[0:4],
+                            specimen_type=panel.specimen_type,
+                            parent_label__isnull=False)
                         if not partial_matches:
                             error_msg += "Specimen not recognised.\n"
 
@@ -198,40 +201,32 @@ class LuminexFileHandler(FileHandler):
         assay = Assay.objects.get(name=self.assay_name)
         panel = Panel.objects.get(pk=panel_id)
         panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
 
         for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 warning_msg = ''
-                error_msg = ''
-
                 with transaction.atomic():
-                    specimen = None
                     try:
-                        specimen = Specimen.objects.get(specimen_label=luminex_result_row.specimen_label,
-                                                        specimen_type=panel.specimen_type,
-                                                        parent_label__isnull=False)
-                    except Specimen.DoesNotExist:
-                        if luminex_result_row.specimen_purpose == "panel_specimen":
-                            partial_label = luminex_result_row.specimen_label[0:4]
-                            specimen_allowed_length = 7
-                            
-                            partial_matches = Specimen.objects.annotate(specimen_label_len=Length('specimen_label'))
-                            partial_matches = partial_matches.annotate(hyphen=Lower(Substr('specimen_label', 5, 1)))
-                            partial_matches = partial_matches.filter(
-                                hyphen="-",
-                                specimen_label_len=specimen_allowed_length,
-                                specimen_label__startswith=partial_label,
+                        specimen = Specimen.objects.filter(
+                            specimen_label=luminex_result_row.specimen_label,
+                            specimen_type=panel.specimen_type,
+                            parent_label__isnull=False
+                        ).first()
+                        
+                        if specimen is None:
+                            specimen = Specimen.update_or_create_specimen_for_label(
+                                luminex_result_row.specimen_label,
+                                self.upload_file.specimen_label_type,
+
                                 specimen_type=panel.specimen_type,
                                 parent_label__isnull=False
                             )
-                            
-                            if partial_matches.count():
-                                warning_msg += "This specimen was the first possible partial match. Looked for: %s \n" % luminex_result_row.specimen_label
-                                specimen = partial_matches[0]
-                            else:
-                                warning_msg += "Specimen not found\n"
-                                continue
+                            if specimen.is_artificicial:
+                                warning_msg += "Artificial aliquot created"
+                        
+                    except Specimen.DoesNotExist:
+                        warning_msg += "Specimen not found\n"
+                        continue
 
                     luminex_result = LuminexCDCResult.objects.create(specimen=specimen,
                                                                      assay=assay,

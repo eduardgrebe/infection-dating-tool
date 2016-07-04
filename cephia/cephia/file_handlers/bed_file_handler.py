@@ -39,22 +39,24 @@ class BEDFileHandler(FileHandler):
                     self.header = [ x.strip() for x in self.header ]
 
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    bed_result_row = BEDResultRow.objects.create(specimen_label=row_dict['specimen_label'],
-                                                                 assay=row_dict['assay'],
-                                                                 laboratory=row_dict['laboratory'],
-                                                                 test_date=row_dict['test_date'],
-                                                                 operator=row_dict['operator'],
-                                                                 assay_kit_lot=row_dict['assay_kit_lot'],
-                                                                 plate_identifier=row_dict['plate_identifier'],
-                                                                 test_mode=row_dict['test_mode'],
-                                                                 well=row_dict['well'],
-                                                                 specimen_purpose=row_dict['specimen_purpose'],
-                                                                 OD=row_dict['OD'],
-                                                                 calibrator_OD=row_dict['calibrator_OD'],
-                                                                 ODn=row_dict['ODn'],
-                                                                 ODn_reported=row_dict['ODn_reported'],
-                                                                 state='pending',
-                                                                 fileinfo=self.upload_file)
+                    bed_result_row = BEDResultRow.objects.create(
+                        specimen_label=row_dict['specimen_label'],
+                        assay=row_dict['assay'],
+                        laboratory=row_dict['laboratory'],
+                        test_date=row_dict['test_date'],
+                        operator=row_dict['operator'],
+                        assay_kit_lot=row_dict['assay_kit_lot'],
+                        plate_identifier=row_dict['plate_identifier'],
+                        test_mode=row_dict['test_mode'],
+                        well=row_dict['well'],
+                        specimen_purpose=row_dict['specimen_purpose'],
+                        OD=row_dict['OD'],
+                        calibrator_OD=row_dict['calibrator_OD'],
+                        ODn=row_dict['ODn'],
+                        ODn_reported=row_dict['ODn_reported'],
+                        state='pending',
+                        fileinfo=self.upload_file
+                    )
 
                     rows_inserted += 1
             except Exception, e:
