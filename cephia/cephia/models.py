@@ -625,7 +625,7 @@ class Specimen(models.Model):
     reported_draw_date = models.DateField(null=True, blank=True)
     transfer_in_date = models.DateField(null=True, blank=True)
     transfer_out_date = models.DateField(null=True, blank=True)
-    created_date = models.DateTimeField(null=True, blank=True)
+    created_date = models.DateField(null=True, blank=True)
     modified_date = models.DateField(null=True, blank=True)
     transfer_reason = models.CharField(max_length=50, null=True, blank=True)
     subject = ProtectedForeignKey(Subject, null=True, blank=False)
