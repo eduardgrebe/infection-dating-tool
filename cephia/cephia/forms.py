@@ -28,7 +28,7 @@ class FileInfoForm(forms.ModelForm):
 
     class Meta:
         model = FileInfo
-        fields = ['data_file','file_type', 'priority', 'panel', 'assay']
+        fields = ['data_file','file_type', 'priority', 'panel', 'assay', 'specimen_label_type']
         widgets = {
             'data_file': forms.FileInput(attrs={'accept':'.xls, .xlsx, .csv'}),
             'priority':forms.HiddenInput(),

@@ -14,7 +14,7 @@ class PanelCaptureForm(forms.ModelForm):
 class PanelFileForm(forms.ModelForm):
     class Meta:
         model = FileInfo
-        fields = ['data_file','file_type', 'priority', 'panel']
+        fields = ['data_file','file_type', 'priority', 'panel', 'specimen_label_type']
         widgets = {
             'data_file': forms.FileInput(attrs={'accept':'.xls, .xlsx, .csv'}),
             'priority':forms.HiddenInput(),

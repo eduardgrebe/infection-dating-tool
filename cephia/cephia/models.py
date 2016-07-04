@@ -184,6 +184,12 @@ class FileInfo(models.Model):
         ('visit','Visit'),
     )
 
+    SPECIMEN_LABEL_TYPES = [
+        ('aliquot_label', 'Aliquot Label'),
+        ('root_specimen', 'Root Specimen'),
+        ('aliquot_base', 'Aliquot Base'),
+    ]
+
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
     file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
     assay = ProtectedForeignKey(Assay, db_index=True, default=None, null=True)
@@ -193,6 +199,7 @@ class FileInfo(models.Model):
     priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
     history = HistoricalRecords()
+    specimen_label_type = models.CharField(max_length=255, choices=SPECIMEN_LABEL_TYPES, blank=True, default='aliquot_label')
 
     def __unicode__(self):
         return self.data_file.name
