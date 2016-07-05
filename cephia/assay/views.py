@@ -16,6 +16,8 @@ from datetime import datetime
 from cephia.csv_helper import get_csv_response
 from assay_result_factory import *
 from django.core.management import call_command
+from tasks import process_file_info
+from django.db import transaction
 
 
 logger = logging.getLogger(__name__)
@@ -106,18 +108,9 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         file_info_form = FileInfoForm(post_data, request.FILES)
         if file_info_form.is_valid():
             result_file = file_info_form.save()
-            result_file.get_handler().parse()
-            result_file.get_handler().validate(panel_id)
 
-            assay_run = AssayRun.objects.create(panel=result_file.panel,
-                                                assay=result_file.assay,
-                                                laboratory=Laboratory.objects.get(pk=request.POST['laboratory']),
-                                                fileinfo=result_file,
-                                                run_date=timezone.now())
-
-            result_file.get_handler().process(panel_id, assay_run)
-
-            call_command('assay_results_per_run', str(assay_run.id))
+            x = lambda: process_file_info.delay(result_file.pk, Laboratory.objects.get(pk=request.POST['laboratory']))
+            transaction.on_commit(x)
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
@@ -227,3 +220,5 @@ def purge_run(request, run_id=None):
         logger.exception(e)
         messages.error(request, 'Failed to delete assay run. Please check the log file.')
         return HttpResponseRedirect(request.path)
+
+    _

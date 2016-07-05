@@ -28,6 +28,7 @@ def help():
 def host_impd():
     env.user = 'impd'
     env.hosts = ['cephia.impd.co.za']
+    env.staging_dir = '/home/cephia'
 
 def host_cephia_test():
     env.user = 'cephia'
