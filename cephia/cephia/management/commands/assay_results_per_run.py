@@ -136,7 +136,7 @@ class Command(BaseCommand):
                 if number_of_screens == 1 and number_of_confirms == 0 and lag_result.ODn < 2:
                     warning_msg += "ODn is < 2 and no confirm records."
 
-                if lag_result.specimen.is_artificicial:
+                if lag_result.specimen and lag_result.specimen.is_artificicial:
                     warning_msg += "Artificial aliquot created\n"
 
                 assay_result = AssayResult.objects.create(

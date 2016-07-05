@@ -2,6 +2,7 @@ from file_handler import FileHandler
 from handler_imports import *
 from datetime import datetime
 import logging
+from lib import log_exception
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +57,8 @@ class LagSediaFileHandler(FileHandler):
 
                     rows_inserted += 1
             except Exception, e:
-                logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                
+                self.upload_file.message = "row " + str(row_num) + ": " + log_exception(e, logger)
                 self.upload_file.save()
                 return 0, 1
 
@@ -102,9 +103,8 @@ class LagSediaFileHandler(FileHandler):
                 rows_validated += 1
                 lag_row.save()
             except Exception, e:
-                logger.exception(e)
                 lag_row.state = 'error'
-                lag_row.error_message = e.message
+                lag_row.error_message = log_exception(e, logger)
                 rows_failed += 1
                 lag_row.save()
                 continue
@@ -184,9 +184,8 @@ class LagSediaFileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
-                logger.exception(e)
                 lag_row.state = 'error'
-                lag_row.error_message = e.message
+                lag_row.error_message =  log_exception(e, logger)
                 lag_row.save()
                 rows_failed += 1
                 continue
