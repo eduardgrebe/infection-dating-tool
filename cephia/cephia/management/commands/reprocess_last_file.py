@@ -14,6 +14,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         result_file = FileInfo.objects.last()
+        result_file.message = ''
+        result_file.save()
         run = AssayRun.objects.filter(fileinfo=result_file).first()
 
         if run:

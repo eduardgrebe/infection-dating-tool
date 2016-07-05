@@ -84,12 +84,15 @@ class LagSediaFileHandler(FileHandler):
                 panel = Panel.objects.get(pk=panel_id)
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = Specimen.objects.get(
+                        specimen_label=lag_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False)
                 except Specimen.DoesNotExist:
                     if lag_row.specimen_purpose == 'panel_specimen':
-                        error_msg += "Specimen not recognised.\n"
+                        partial_matches = Specimen.objects.partial_matches(lag_row.specimen_label, panel.specimen_type)
+                        if not partial_matches.count():
+                            error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -126,7 +129,6 @@ class LagSediaFileHandler(FileHandler):
         assay = Assay.objects.get(name=self.assay_name)
         panel = Panel.objects.get(pk=panel_id)
         panel_memberhsips = PanelMembership.objects.filter(panel=panel)
-        panel_memberhsip_ids = [ membership.id for membership in panel_memberhsips ]
 
         for lag_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
@@ -135,11 +137,27 @@ class LagSediaFileHandler(FileHandler):
                 with transaction.atomic():
                     specimen = None
                     try:
-                        specimen = Specimen.objects.get(specimen_label=lag_row.specimen_label,
-                                                        specimen_type=panel.specimen_type,
-                                                        parent_label__isnull=False)
+                        specimen = Specimen.objects.filter(
+                            specimen_label=lag_row.specimen_label,
+                            specimen_type=panel.specimen_type,
+                            parent_label__isnull=False).first()
+
+                        if specimen is None:
+                            specimen = Specimen.update_or_create_specimen_for_label(
+                                lag_row.specimen_label,
+                                panel.specimen_type,
+                                self.upload_file.specimen_label_type,
+                                parent_label__isnull=False
+                            )
+                            
+                            if specimen.is_artificicial:
+                                warning_msg += "Artificial aliquot created"
                     except Specimen.DoesNotExist:
-                        warning_msg += "Specimen not recognised.\n"
+                        if lag_row.specimen_purpose == "panel_specimen":
+                            warning_msg += "Specimen not found\n"
+                            specimen = None
+                        else:
+                            continue
 
                     # if specimen.visit.id not in panel_memberhsip_ids:
                     #     warning_msg += "Specimen does not belong to any panel membership.\n"

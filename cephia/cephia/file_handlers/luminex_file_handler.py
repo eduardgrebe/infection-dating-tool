@@ -160,11 +160,8 @@ class LuminexFileHandler(FileHandler):
                         parent_label__isnull=False)
                 except Specimen.DoesNotExist:
                     if luminex_result_row.specimen_purpose == "panel_specimen":
-                        partial_matches = Specimen.objects.filter(
-                            specimen_label__startswith=luminex_result_row.specimen_label[0:4],
-                            specimen_type=panel.specimen_type,
-                            parent_label__isnull=False)
-                        if not partial_matches:
+                        partial_matches = Specimen.objects.partial_matches(luminex_result_row.specimen_label, panel.specimen_type)
+                        if not partial_matches.count():
                             error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
