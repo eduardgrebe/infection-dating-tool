@@ -12,7 +12,8 @@ import collections
 from user_management.models import BaseUser
 from fields import ProtectedForeignKey
 from world_regions import models as wr_models
-from django.models import QuerySet
+from django.db.models import QuerySet
+from django.db.models.functions import Length, Substr, Lower
 
 import datetime
 
@@ -612,8 +613,8 @@ class VisitRow(ImportedRow):
         return self.subject_label
 
 
-class SpecimenQuerySet(models.Model):
-    def partial_matches(self, label):
+class SpecimenQuerySet(QuerySet):
+    def partial_matches(self, label, specimen_type):
         partial_label = label[0:4] # max 4 chars
         partial_label = u''.join(d for d in partial_label if d.isdigit())
         partial_label = partial_label.zfill(4)
@@ -625,7 +626,7 @@ class SpecimenQuerySet(models.Model):
             label_splitting_character="-",
             specimen_label_len=specimen_allowed_length,
             specimen_label__startswith=partial_label,
-            specimen_type=panel.specimen_type,
+            specimen_type=specimen_type,
             parent_label__isnull=False
         )
         
@@ -639,7 +640,7 @@ class Specimen(models.Model):
         ('confirmed','Confirmed'),
         ('artificial','Artificial'),
     )
-    ARTIFICIAL_LABEL_FORMAT = u'{parent_label}-{specimen_index}-AA'
+    ARTIFICIAL_LABEL_FORMAT = u'{specimen_label}-{specimen_index}-AA'
 
     class Meta:
         db_table = "cephia_specimens"
@@ -688,7 +689,7 @@ class Specimen(models.Model):
         ]
         child_specimen = cls()
         for field in inherited_fields:
-            setattr(child_specimen, getattr(parent_specimen, field))
+            setattr(child_specimen, field, getattr(parent_specimen, field))
 
         child_specimen.parent_label = parent_specimen.specimen_label
         child_specimen.parent = parent_specimen
@@ -697,22 +698,21 @@ class Specimen(models.Model):
         child_specimen.created_date = None
         child_specimen.aliquoting_reason = 'artificially_created'
         child_specimen.number_of_containers = 1
-
         child_specimen.is_artificicial = True
         return child_specimen
 
     @classmethod
     def get_artificial_label(cls, label, **kwargs):
-        index = 0
-        specimen_label = cls.ARTIFICIAL_LABEL_FORMAT.format(specimen_label=label, index=index.zfill(2))
+        index = 1
+        specimen_label = cls.ARTIFICIAL_LABEL_FORMAT.format(specimen_label=label, specimen_index=unicode(index).zfill(2))
 
-        while cls.objects.get(specimen_label=specimen_label, **kwargs).first():
+        while cls.objects.filter(specimen_label=specimen_label, **kwargs).first():
             index += 1
-            specimen_label = self.ARTIFICIAL_LABEL_FORMAT.format(specimen_label=label, index=zfill(2))
+            specimen_label = cls.ARTIFICIAL_LABEL_FORMAT.format(specimen_label=label, specimen_index=unicode(index).zfill(2))
         return specimen_label
 
     @classmethod
-    def update_or_create_specimen_for_label(cls, label, specimen_label_type=None, **kwargs):
+    def update_or_create_specimen_for_label(cls, label, specimen_type, specimen_label_type=None, **kwargs):
         if specimen_label_type == 'aliquot_label' or specimen_label_type is None:
             return cls.objects.get(specimen_label=label, **kwargs)
         elif specimen_label_type == 'root_specimen':
@@ -724,11 +724,12 @@ class Specimen(models.Model):
             return child_specimen
         
         elif specimen_label_type == 'aliquot_base':
-            partial_match = cls.objects.partial_matches(label).first()
+            partial_match = cls.objects.partial_matches(label, specimen_type).first()
+
             if partial_match is None:
-                raise cls.DoesNotExist()
+                raise cls.DoesNotExist('Could not find a partial match')
             child_specimen = cls.create_from_parent(partial_match.parent)
-            child_specimen.specimen_label = cls.get_artificial_label(label_, **kwargs)
+            child_specimen.specimen_label = cls.get_artificial_label(label, **kwargs)
             child_specimen.save()
             return child_specimen
             

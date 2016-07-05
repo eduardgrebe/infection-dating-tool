@@ -87,3 +87,14 @@ pre.error-log {
     background-color:#0066FF;
     color:black;
 }
+
+.endless_page_link {
+    display: inline-block;
+    text-decoration: none;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.view-specific-results {
+    cursor: pointer;
+}

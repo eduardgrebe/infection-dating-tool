@@ -592,7 +592,10 @@ class Command(BaseCommand):
                     method = 'sop_curtis_2013_3/5_alg'
                 else:
                     final_result = None
-                    warning_msg = 'Unexpected number of records'
+                    warning_msg += 'Unexpected number of records\n'
+
+                if luminex_result.specimen.is_artificicial:
+                    warning_msg += "Artificial aliquot created\n"
 
                 assay_result = AssayResult.objects.create(panel=assay_run.panel,
                                                           assay=assay_run.assay,

@@ -3,6 +3,7 @@ from file_handler import FileHandler
 from handler_imports import *
 import logging
 import algorithms
+from lib import log_exception
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +177,7 @@ class LuminexFileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 luminex_result_row.state = 'error'
-                luminex_result_row.error_message = e.message
+                luminex_result_row.error_message = log_exception(e, logger)
                 rows_failed += 1
                 luminex_result_row.save()
                 continue
@@ -200,7 +201,6 @@ class LuminexFileHandler(FileHandler):
 
         assay = Assay.objects.get(name=self.assay_name)
         panel = Panel.objects.get(pk=panel_id)
-        panel_memberhsips = PanelMembership.objects.filter(panel=panel)
 
         for luminex_result_row in LuminexCDCResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
@@ -216,68 +216,70 @@ class LuminexFileHandler(FileHandler):
                         if specimen is None:
                             specimen = Specimen.update_or_create_specimen_for_label(
                                 luminex_result_row.specimen_label,
+                                panel.specimen_type,
                                 self.upload_file.specimen_label_type,
-
-                                specimen_type=panel.specimen_type,
                                 parent_label__isnull=False
                             )
                             if specimen.is_artificicial:
                                 warning_msg += "Artificial aliquot created"
                         
                     except Specimen.DoesNotExist:
-                        warning_msg += "Specimen not found\n"
-                        continue
+                         if luminex_result_row.specimen_purpose == "panel_specimen":
+                             warning_msg += "Specimen not found\n"
+                             specimen = None
+                         else:
+                             continue
 
-                    luminex_result = LuminexCDCResult.objects.create(specimen=specimen,
-                                                                     assay=assay,
-                                                                     laboratory=Laboratory.objects.get(name=luminex_result_row.laboratory),
-                                                                     test_date=datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
-                                                                     operator=luminex_result_row.operator,
-                                                                     assay_kit_lot=luminex_result_row.assay_kit_lot,
-                                                                     plate_identifier=luminex_result_row.plate_identifier,
-                                                                     test_mode=luminex_result_row.test_mode,
-                                                                     specimen_purpose=luminex_result_row.specimen_purpose,
-                                                                     specimen_label=luminex_result_row.specimen_label,
-                                                                     well_untreated=luminex_result_row.well_untreated,
-                                                                     well_treated=luminex_result_row.well_treated,
-                                                                     BSA_MFI=luminex_result_row.BSA_MFI or None,
-                                                                     IgG_MFI=luminex_result_row.IgG_MFI or None,
-                                                                     gp120_MFI=luminex_result_row.gp120_MFI or None,
-                                                                     gp160_MFI=luminex_result_row.gp160_MFI or None,
-                                                                     gp41_MFI=luminex_result_row.gp41_MFI or None,
-                                                                     BSA_MFImb=luminex_result_row.BSA_MFImb or None,
-                                                                     IgG_MFImb=luminex_result_row.IgG_MFImb or None,
-                                                                     gp120_MFImb=luminex_result_row.gp120_MFImb or None,
-                                                                     gp160_MFImb=luminex_result_row.gp160_MFImb or None,
-                                                                     gp41_MFImb=luminex_result_row.gp41_MFImb or None,
-                                                                     calibrator_BSA=luminex_result_row.calibrator_BSA or None,
-                                                                     calibrator_IgG=luminex_result_row.calibrator_IgG or None,
-                                                                     calibrator_gp120=luminex_result_row.calibrator_gp120 or None,
-                                                                     calibrator_gp160=luminex_result_row.calibrator_gp160 or None,
-                                                                     calibrator_gp41=luminex_result_row.calibrator_gp41 or None,
-                                                                     gp120_MFIn=luminex_result_row.gp120_MFIn or None,
-                                                                     gp160_MFIn=luminex_result_row.gp160_MFIn or None,
-                                                                     gp41_MFIn=luminex_result_row.gp41_MFIn or None,
-                                                                     DEA_treated_BSA_MFI=luminex_result_row.DEA_treated_BSA_MFI or None,
-                                                                     DEA_treated_IgG_MFI=luminex_result_row.DEA_treated_IgG_MFI or None,
-                                                                     DEA_treated_gp120_MFI=luminex_result_row.DEA_treated_gp120_MFI or None,
-                                                                     DEA_treated_gp160_MFI=luminex_result_row.DEA_treated_gp160_MFI or None,
-                                                                     DEA_treated_gp41_MFI=luminex_result_row.DEA_treated_gp41_MFI or None,
-                                                                     DEA_treated_BSA_MFImb=luminex_result_row.DEA_treated_BSA_MFImb or None,
-                                                                     DEA_treated_IgG_MFImb=luminex_result_row.DEA_treated_IgG_MFImb or None,
-                                                                     DEA_treated_gp120_MFImb=luminex_result_row.DEA_treated_gp120_MFImb or None,
-                                                                     DEA_treated_gp160_MFImb=luminex_result_row.DEA_treated_gp160_MFImb or None,
-                                                                     DEA_treated_gp41_MFImb=luminex_result_row.DEA_treated_gp41_MFImb or None,
-                                                                     DEA_treated_gp120_MFIn=luminex_result_row.DEA_treated_gp120_MFIn or None,
-                                                                     DEA_treated_gp160_MFIn=luminex_result_row.DEA_treated_gp160_MFIn or None,
-                                                                     DEA_treated_gp41_MFIn=luminex_result_row.DEA_treated_gp41_MFIn or None,
-                                                                     gp120_AI=luminex_result_row.gp120_AI or None,
-                                                                     gp160_AI=luminex_result_row.gp160_AI or None,
-                                                                     gp41_AI=luminex_result_row.gp41_AI or None,
-                                                                     warning_msg=warning_msg,
-                                                                     assay_run=assay_run)
-
-                    
+                    luminex_result = LuminexCDCResult.objects.create(
+                        specimen=specimen,
+                        assay=assay,
+                        laboratory=Laboratory.objects.get(name=luminex_result_row.laboratory),
+                        test_date=datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
+                        operator=luminex_result_row.operator,
+                        assay_kit_lot=luminex_result_row.assay_kit_lot,
+                        plate_identifier=luminex_result_row.plate_identifier,
+                        test_mode=luminex_result_row.test_mode,
+                        specimen_purpose=luminex_result_row.specimen_purpose,
+                        specimen_label=luminex_result_row.specimen_label,
+                        well_untreated=luminex_result_row.well_untreated,
+                        well_treated=luminex_result_row.well_treated,
+                        BSA_MFI=luminex_result_row.BSA_MFI or None,
+                        IgG_MFI=luminex_result_row.IgG_MFI or None,
+                        gp120_MFI=luminex_result_row.gp120_MFI or None,
+                        gp160_MFI=luminex_result_row.gp160_MFI or None,
+                        gp41_MFI=luminex_result_row.gp41_MFI or None,
+                        BSA_MFImb=luminex_result_row.BSA_MFImb or None,
+                        IgG_MFImb=luminex_result_row.IgG_MFImb or None,
+                        gp120_MFImb=luminex_result_row.gp120_MFImb or None,
+                        gp160_MFImb=luminex_result_row.gp160_MFImb or None,
+                        gp41_MFImb=luminex_result_row.gp41_MFImb or None,
+                        calibrator_BSA=luminex_result_row.calibrator_BSA or None,
+                        calibrator_IgG=luminex_result_row.calibrator_IgG or None,
+                        calibrator_gp120=luminex_result_row.calibrator_gp120 or None,
+                        calibrator_gp160=luminex_result_row.calibrator_gp160 or None,
+                        calibrator_gp41=luminex_result_row.calibrator_gp41 or None,
+                        gp120_MFIn=luminex_result_row.gp120_MFIn or None,
+                        gp160_MFIn=luminex_result_row.gp160_MFIn or None,
+                        gp41_MFIn=luminex_result_row.gp41_MFIn or None,
+                        DEA_treated_BSA_MFI=luminex_result_row.DEA_treated_BSA_MFI or None,
+                        DEA_treated_IgG_MFI=luminex_result_row.DEA_treated_IgG_MFI or None,
+                        DEA_treated_gp120_MFI=luminex_result_row.DEA_treated_gp120_MFI or None,
+                        DEA_treated_gp160_MFI=luminex_result_row.DEA_treated_gp160_MFI or None,
+                        DEA_treated_gp41_MFI=luminex_result_row.DEA_treated_gp41_MFI or None,
+                        DEA_treated_BSA_MFImb=luminex_result_row.DEA_treated_BSA_MFImb or None,
+                        DEA_treated_IgG_MFImb=luminex_result_row.DEA_treated_IgG_MFImb or None,
+                        DEA_treated_gp120_MFImb=luminex_result_row.DEA_treated_gp120_MFImb or None,
+                        DEA_treated_gp160_MFImb=luminex_result_row.DEA_treated_gp160_MFImb or None,
+                        DEA_treated_gp41_MFImb=luminex_result_row.DEA_treated_gp41_MFImb or None,
+                        DEA_treated_gp120_MFIn=luminex_result_row.DEA_treated_gp120_MFIn or None,
+                        DEA_treated_gp160_MFIn=luminex_result_row.DEA_treated_gp160_MFIn or None,
+                        DEA_treated_gp41_MFIn=luminex_result_row.DEA_treated_gp41_MFIn or None,
+                        gp120_AI=luminex_result_row.gp120_AI or None,
+                        gp160_AI=luminex_result_row.gp160_AI or None,
+                        gp41_AI=luminex_result_row.gp41_AI or None,
+                        warning_msg=warning_msg,
+                        assay_run=assay_run
+                    )
 
                     luminex_result = LuminexCDCResult.objects.get(pk=luminex_result.pk)
                     if luminex_result.specimen_purpose in ['kit_control','panel_specimen']:

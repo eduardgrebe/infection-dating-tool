@@ -170,8 +170,6 @@ class BaseAssayResult(models.Model):
     class Meta:
         abstract = True
 
-
-
     specimen = models.ForeignKey(Specimen, null=True, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     assay_result = models.ForeignKey(AssayResult, null=True, blank=False, db_index=True)
@@ -205,14 +203,7 @@ class BaseAssayResult(models.Model):
                             self.error_message = 'Could not convert field %s to float. Found value: ' % (field, value)
                             setattr(self, field, None)
                         
-
-                # if getattr(self, field) == 'NA' and field_type.get_internal_type() == 'FloatField':
-                #     setattr(self, field, None)
-                # if getattr(self, field) == 'NEG' and field_type.get_internal_type() == 'FloatField':
-                #     setattr(self, field, None)
-                #     setattr(self, 'interpretation', 'neg')
-
-        super(BaseAssayResult, self).save(*args, **kwargs)
+        return super(BaseAssayResult, self).save(*args, **kwargs)
 
     def model_to_dict(self):
         d = model_to_dict(self)
