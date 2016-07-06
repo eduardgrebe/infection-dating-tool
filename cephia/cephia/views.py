@@ -150,6 +150,10 @@ def subjects(request, template="cephia/subjects.html"):
     else:
         return render_to_response(template, context, context_instance=RequestContext(request))
 
+@login_required
+def visit_export(request, template='cephia/visit_export.html'):
+    context = {}
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
 def visits(request, template="cephia/visits.html"):
@@ -784,6 +788,7 @@ def row_comment(request, file_type=None, file_id=None, row_id=None, template="ce
         logger.exception(e)
         messages.add_message(request, messages.ERROR, 'Failed comment on row')
         return HttpResponseRedirect(reverse('file_info'))
+
 
 
 def release_notes(request, template="cephia/release_notes.html"):
