@@ -3,15 +3,15 @@
 {% load el_pagination_tags %}
 
 {% block submit_action %}
-{% url 'file_info' %}
+  {% url 'file_info' %}
 {% endblock %}
 
 {% block filter_col_a %}
-{% bootstrap_field filter_form.file_type %}
+  {% bootstrap_field filter_form.file_type %}
 {% endblock %}
 
 {% block filter_col_b %}
-{% bootstrap_field filter_form.state %}
+  {% bootstrap_field filter_form.state %}
 {% endblock %}
 
 {% block filter_col_c %}
@@ -24,53 +24,101 @@
 
 {% block page_content %}
 
-{% paginate files %}
-<div class="container">
-  <div class="row">
-    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Files</h3>
+  <div class="container">
+  {% if files_in_process %}
+      <div class="row">
+        <div class="panel panel-success" style="box-shadow: 10px 10px 5px #888888;">
+          <div class="panel-heading">
+            <h3 class="panel-title">Files in process</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="container">
+                <div class="table-responsive" style="height:auto; max-height:100%x; overflow:auto;">
+                  <table class="table-striped table table-hover" style="overflow:auto;">
+                    <thead>
+	                    <th></th>
+                      <th>ID</th>
+	                    <th>Name</th>
+	                    <th>Type</th>
+                      <th>Panel</th>
+                      <th>Assay</th>
+	                    <th>Created</th>
+	                    <th>State</th>
+	                    <th>Download</th>
+	                    <th>Message</th>
+                    </thead>
+                    <tbody>
+	                    {% for file in files_in_process %}
+	                      <tr>
+                          <td>{{ file.id }}</td>
+	                        <td><a href="{% url 'row_info' file.id %}">Detail</a></td>
+	                        <td>{{file.filename}}</td>
+	                        <td>{{file.file_type}}</td>
+                          <td>{{file.panel.name}}</td>
+                          <td>{{file.assay.name}}</td>
+	                        <td>{{file.created}}</td>
+	                        <td>{{file.state}}</td>
+	                        <td><a href="{% url 'download_file' file.id %}">Download</a></td>
+	                        <td><pre style="white-space: pre-wrap; overflow:auto; max-width:600px;">{{file.message}}</pre></td>
+	                      </tr>
+	                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="container">
-            {% show_pages %}
-            <div class="table-responsive" style="height:auto; max-height:100%x; overflow:auto;">
-              <table class="table-striped table table-hover" style="overflow:auto;">
-                <thead>
-	                <th></th>
-                  <th>ID</th>
-	              <th>Name</th>
-	              <th>Type</th>
-                  <th>Panel</th>
-                  <th>Assay</th>
-	              <th>Created</th>
-	              <th>State</th>
-	              <th>Download</th>
-	              <th>Message</th>
-                </thead>
-                <tbody>
-	              {% for file in files %}
-	                <tr>
-                    <td>{{ file.id }}</td>
-	                <td><a href="{% url 'row_info' file.id %}">Detail</a></td>
-	                <td>{{file.filename}}</td>
-	                <td>{{file.file_type}}</td>
-                    <td>{{file.panel.name}}</td>
-                    <td>{{file.assay.name}}</td>
-	                <td>{{file.created}}</td>
-	                <td>{{file.state}}</td>
-	                <td><a href="{% url 'download_file' file.id %}">Download</a></td>
-	                <td><pre style="white-space: pre-wrap; overflow:auto; max-width:600px;">{{file.message}}</pre></td>
-	              </tr>
-	              {% endfor %}
-                </tbody>
-              </table>
-              {% include 'cephia/upload_file.html' with upload_form=upload_form %}
+  {% endif %}
+
+  {% paginate files %}
+    <div class="row">
+      <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+        <div class="panel-heading">
+          <h3 class="panel-title">Files</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="container">
+              {% show_pages %}
+              <div class="table-responsive" style="height:auto; max-height:100%x; overflow:auto;">
+                <table class="table-striped table table-hover" style="overflow:auto;">
+                  <thead>
+	                  <th></th>
+                    <th>ID</th>
+	                  <th>Name</th>
+	                  <th>Type</th>
+                    <th>Panel</th>
+                    <th>Assay</th>
+	                  <th>Created</th>
+	                  <th>State</th>
+	                  <th>Download</th>
+	                  <th>Message</th>
+                  </thead>
+                  <tbody>
+	                  {% for file in files %}
+	                    <tr>
+                        <td>{{ file.id }}</td>
+	                      <td><a href="{% url 'row_info' file.id %}">Detail</a></td>
+	                      <td>{{file.filename}}</td>
+	                      <td>{{file.file_type}}</td>
+                        <td>{{file.panel.name}}</td>
+                        <td>{{file.assay.name}}</td>
+	                      <td>{{file.created}}</td>
+	                      <td>{{file.state}}</td>
+	                      <td><a href="{% url 'download_file' file.id %}">Download</a></td>
+	                      <td><pre style="white-space: pre-wrap; overflow:auto; max-width:600px;">{{file.message}}</pre></td>
+	                    </tr>
+	                  {% endfor %}
+                  </tbody>
+                </table>
+                {% include 'cephia/upload_file.html' with upload_form=upload_form %}
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  {% endblock %}
+{% endblock %}

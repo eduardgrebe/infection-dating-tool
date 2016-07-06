@@ -201,6 +201,7 @@ class FileInfo(models.Model):
     priority = models.IntegerField(null=False, blank=False, default=1)
     message = models.TextField(blank=True)
     history = HistoricalRecords()
+    task_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     specimen_label_type = models.CharField(max_length=255, choices=SPECIMEN_LABEL_TYPES, blank=True, default='aliquot_label')
 
     def __unicode__(self):

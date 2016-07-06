@@ -237,6 +237,7 @@ def file_info(request, template="cephia/file_info.html"):
             files = FileInfo.objects.all().order_by('-created')
 
         context['files'] = files
+        context['files_in_process'] = list(FileInfo.objects.filter(task_id__isnull=False).order_by('-created'))
         context['upload_form'] = upload_form
         context['filter_form'] = filter_form
         
@@ -257,6 +258,7 @@ def row_info(request, file_id, template=None):
         else:
             rows, template = filter_form.filter(fileinfo)
 
+        
         context['rows'] = rows
         context['file_id'] = fileinfo.id
         context['file'] = fileinfo.filename()
