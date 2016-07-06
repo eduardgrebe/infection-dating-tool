@@ -16,7 +16,7 @@ class Command(BaseCommand):
         result_file = FileInfo.objects.last()
         result_file.message = ''
         result_file.save()
-        run = AssayRun.objects.filter(fileinfo=result_file).first()
+        run = AssayRun.objbects.filter(fileinfo=result_file).first()
 
         if run:
             AssayResult.objects.filter(assay_run=run).delete()
