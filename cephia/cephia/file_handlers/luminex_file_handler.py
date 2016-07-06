@@ -217,7 +217,7 @@ class LuminexFileHandler(FileHandler):
                                 self.upload_file.specimen_label_type,
                                 parent_label__isnull=False
                             )
-                            if specimen.is_artificicial:
+                            if specimen.is_artificial:
                                 warning_msg += "Artificial aliquot created"
                         
                     except Specimen.DoesNotExist:

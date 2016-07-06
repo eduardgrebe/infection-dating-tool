@@ -150,7 +150,7 @@ class LagSediaFileHandler(FileHandler):
                                 parent_label__isnull=False
                             )
                             
-                            if specimen.is_artificicial:
+                            if specimen.is_artificial:
                                 warning_msg += "Artificial aliquot created"
                     except Specimen.DoesNotExist:
                         if lag_row.specimen_purpose == "panel_specimen":

@@ -670,7 +670,7 @@ class Specimen(models.Model):
     parent = ProtectedForeignKey('Specimen', null=True, blank=False, default=None)
     aliquoting_reason = models.CharField(max_length=20, null=True, blank=True)
     is_available = models.BooleanField(default=True)
-    is_artificicial = models.BooleanField(default=False)
+    is_artificial = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __unicode__(self):
@@ -699,7 +699,7 @@ class Specimen(models.Model):
         child_specimen.created_date = None
         child_specimen.aliquoting_reason = 'artificially_created'
         child_specimen.number_of_containers = 1
-        child_specimen.is_artificicial = True
+        child_specimen.artificial = True
         return child_specimen
 
     @classmethod
