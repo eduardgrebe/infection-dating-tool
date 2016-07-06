@@ -30,8 +30,12 @@ class ExcelHelper(object):
         self.y = 0
 
     def _open_for_read(self, f, sheet_number):
+        if not isinstance(f, basestring):
+            self.wb = xlrd.open_workbook(file_contents=f.read(), formatting_info=False)
+        else:
+            self.wb = xlrd.open_workbook(f, formatting_info=False)
         self.sheet_number = sheet_number
-        self.wb = xlrd.open_workbook(f, formatting_info=False)
+        
         self._goto_sheet(int(sheet_number))
 
     def _open_for_write(self, sheet_name):
@@ -140,5 +144,7 @@ class ExcelHelper(object):
         else:
             return ''
     
-    
+    def rows(self):
+        for row in range(self.nrows):
+            yield self.read_row(row)
 

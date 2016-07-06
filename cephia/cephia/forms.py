@@ -1,14 +1,18 @@
 from django import forms
+import os
 from cephia.models import (FileInfo, SubjectRow, Ethnicity,
                            VisitRow, Specimen, TransferInRow,
                            TransferOutRow, AliquotRow, ImportedRowComment, Assay,
-                           Laboratory, Panel, Assay)
+                           Laboratory, Panel, Assay, Visit)
 from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodifiedResultRow,
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
                           LSVitrosPlasmaResultRow, GeeniusResultRow, BEDResultRow, LuminexCDCResultRow,
                           IDEV3ResultRow)
 from diagnostics.models import DiagnosticTestHistoryRow
+from excel_helper import ExcelHelper
+import unicodecsv as csv
+from csv_helper import get_csv_response
 
 class BaseFilterForm(forms.Form):
 
@@ -425,3 +429,51 @@ class AssociationFilterForm(forms.Form):
             #qs = qs.filter(state=state)
             
         return qs
+
+class VisitExportForm(forms.Form):
+    specimen_file = forms.FileField(required=False, label='Upload a list of specimen labels')
+    specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
+    panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Which panels?')
+
+    def clean_specimen_file(self):
+        specimen_file = self.cleaned_data.get('specimen_file')
+        if not specimen_file:
+            return specimen_file
+        filename = specimen_file.name
+        extension = os.path.splitext(filename)[1][1:].lower()
+        if extension == 'csv':
+            rows = [z[0] for z in csv.reader(specimen_file) if z]
+        elif extension in ['xls', 'xlsx']:
+            rows = list(z[0] for z in ExcelHelper(specimen_file).rows() if z)
+        else:
+            raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
+
+        self.cleaned_data['imported_specimen_labels'] = rows
+        return rows
+
+
+    def clean_specimen_labels(self):
+        value = self.cleaned_data.get('specimen_labels')
+        if not value:
+            return value
+        rows = [z.strip() for z in value.split(u'\n')]
+        self.cleaned_data['imported_specimen_labels'] = rows
+        return value
+    
+    def clean(self):
+        if self.cleaned_data.get('specimen_file') and self.cleaned_data.get('specimen_labels'):
+            raise forms.ValidationError('Options are exclusive, please complete only one.')
+
+        return self.cleaned_data
+
+    def get_visits(self):
+        specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        visits = Visit.objects.all().distinct()
+        if specimen_labels:
+            visits = visits.filter(specimens__specimen_label__in=specimen_labels)
+
+        panels = self.cleaned_data.get('panels')
+        if panels:
+            visits = visits.filter(panels__in=panels)
+        return visits.order_by('pk')
+        

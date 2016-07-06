@@ -147,6 +147,8 @@ $(document).ready(function() {
     });
     //
 
+    $("select[multiple='multiple']").selectize();
+
     $('a.show-eddi-detail').on('click', function(event) {
         event.preventDefault();
         var subjectId = $(this).parent().parent().data('subject-id');

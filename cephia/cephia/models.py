@@ -153,9 +153,10 @@ class Panel(models.Model):
     n_total = models.IntegerField(null=True, blank=False)
     blinded = models.NullBooleanField()
     notes = models.TextField(null=True, blank=False)
+    visits = models.ManyToManyField('Visit', through='assay.PanelMembership', related_name='panels')
 
     def __unicode__(self):
-        return self.short_name
+        return self.short_name or self.name
 
 
 class FileInfo(models.Model):
@@ -657,7 +658,7 @@ class Specimen(models.Model):
     modified_date = models.DateField(null=True, blank=True)
     transfer_reason = models.CharField(max_length=50, null=True, blank=True)
     subject = ProtectedForeignKey(Subject, null=True, blank=False)
-    visit = ProtectedForeignKey(Visit, null=True, blank=False, related_name='visit')
+    visit = ProtectedForeignKey(Visit, null=True, blank=False, related_name='specimens')
     visit_linkage = models.CharField(max_length=12, null=True, blank=False, choices=VISIT_LINKAGE_CHOICES)
     specimen_type = ProtectedForeignKey(SpecimenType, null=True, blank=True, db_index=True)
     volume = models.FloatField(null=True, blank=True)

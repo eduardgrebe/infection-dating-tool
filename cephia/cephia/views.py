@@ -11,7 +11,7 @@ from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
 from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
-                   FileInfoFilterForm)
+                   FileInfoFilterForm, VisitExportForm)
 from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
 from datetime import datetime
@@ -153,6 +153,18 @@ def subjects(request, template="cephia/subjects.html"):
 @login_required
 def visit_export(request, template='cephia/visit_export.html'):
     context = {}
+    export_form = VisitExportForm(request.POST or None, request.FILES or None)
+    context['export_form'] = export_form
+
+    if request.method == 'POST' and export_form.is_valid():
+        visits = export_form.get_visits()
+        filename = 'visits_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M')
+        response, writer = get_csv_response(filename)
+        writer.writerow(['visit_id'])
+        for visit in visits:
+            writer.writerow([visit.pk])
+        return response
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
