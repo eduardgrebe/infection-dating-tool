@@ -2,12 +2,6 @@ from __future__ import with_statement
 import os
 from fabric.api import *
 
-local_code_dir = os.path.dirname(os.path.realpath(__file__))
-imp_remote_code_staging_dir = "/home/cephia"
-cephia_test_remote_code_staging_dir = "/home/cephia/cephia"
-cephia_prod_remote_code_prod_dir = "/home/cephia/cephia_prod"
-
-
 # ===== Usage =====
 
 usage = """
@@ -28,64 +22,30 @@ def help():
 def host_impd():
     env.user = 'impd'
     env.hosts = ['cephia.impd.co.za']
-    env.staging_dir = '/home/cephia'
+    env.code_dir = '/home/cephia'
 
 def host_cephia_test():
     env.user = 'cephia'
     env.hosts = ['cephiadb2.incidence-estimation.org']
+    env.code_dir = "/home/cephia/cephia"
 
 def host_cephia_prod():
     env.user = 'cephia'
     env.hosts = ['cephiadb.incidence-estimation.org']
+    env.code_dir = "/home/cephia/cephia_prod"
 
 # ===== top level commands ======
 
 def deploy(branch_name="master"):
-    if env.host == 'cephiadb2.incidence-estimation.org':
-        return _deploy_cephia_test(branch_name)
-    elif env.host == 'cephiadb.incidence-estimation.org':
-        return _deploy_cephia_prod(branch_name)
-    elif env.host == 'cephia.impd.co.za':
-        return _deploy_staging(branch_name)
-    else:
-        raise Exception("Unknown host: %s" % env.host)
-
-def _deploy_staging(branch_name="master"):
     print("   Deploying: ** %s **" % branch_name)
-    with cd(imp_remote_code_staging_dir):
+    with cd(env.code_dir):
         run("git reset --hard HEAD")
         run("git fetch origin")
         run("git checkout origin/%s" % branch_name)
         run("git pull origin %s" % branch_name)
-        run("./scripts/deploy_impd.sh")
+        run("./scripts/deploy_server.sh")
 
-    print("Deployed to: http://cephia.impd.co.za/")
-
-def _deploy_cephia_test(branch_name="master"):
-    print("   Deploying: ** %s **" % branch_name)
-    with cd(cephia_test_remote_code_staging_dir):
-        run("git reset --hard HEAD")
-        run("git fetch origin %s" % branch_name)
-        run("git checkout %s" % branch_name)
-        run("git pull origin %s" % branch_name)
-        run("./scripts/deploy_cephia_test.sh")
-        
-    _update_cron_jobs()
-    
-    print("Deployed to: http://cephiadb2.incidence-estimation.org/")
-
-def _deploy_cephia_prod(branch_name="master"):
-    print("   Deploying: ** %s **" % branch_name)
-    with cd(cephia_prod_remote_code_prod_dir):
-        run("git reset --hard HEAD")
-        run("git fetch origin %s" % branch_name)
-        run("git checkout %s" % branch_name)
-        run("git pull origin %s" % branch_name)
-        run("./scripts/deploy_cephia_prod.sh")
-        
-    _update_cron_jobs()
-    
-    print("Deployed to: http://cephiadb.incidence-estimation.org/")
+    print("Deployed to: %s" % env.hosts[0])
 
 def _update_cron_jobs():
 
