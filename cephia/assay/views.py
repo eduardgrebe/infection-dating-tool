@@ -29,6 +29,7 @@ def panels(request, template="assay/panels.html"):
     panel_capture_form = PanelCaptureForm(request.POST or None)
     panel_file_form = PanelFileForm(request.POST or None)
     upload_form = FileInfoForm(request.POST or None)
+    upload_form.filter_options(request)
     
     if request.method == 'POST':
         if panel_capture_form.is_valid():
@@ -107,6 +108,7 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         post_data.__setitem__('panel', panel_id)
 
         file_info_form = FileInfoForm(post_data, request.FILES)
+        file_info_form.filter_options(request)
         if file_info_form.is_valid():
             result_file = file_info_form.save()
 
@@ -118,6 +120,7 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
         form = FileInfoForm()
+        form.filter_options(request)
         context['upload_form'] = form
         context['data'] = {
             'panel_id':panel_id

@@ -1,3 +1,4 @@
+{% load bootstrap3 %}
 <div class="container">
   <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Upload a file</button>
   <div class="modal fade" id="myModal">
@@ -10,8 +11,8 @@
             <h4 class="modal-title">Upload File</h4>
           </div>
           <div class="modal-body">
-	          {{upload_form.data_file}}
-	          {{upload_form.file_type}}
+	          {% bootstrap_field upload_form.data_file %}
+            {% bootstrap_field upload_form.file_type %}
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

@@ -53,6 +53,10 @@ class FileInfoForm(forms.ModelForm):
         [ lab_choices.append((x.id, x.name)) for x in Laboratory.objects.all().order_by('name') ]
         self.fields['laboratory'].choices = lab_choices
 
+    def filter_options(self, request):
+        self.fields['file_type'].choices = request.user.allowed_file_uploads
+        
+
 
 class RowCommentForm(forms.ModelForm):
     class Meta:
@@ -462,7 +466,7 @@ class VisitExportForm(forms.Form):
     
     def clean(self):
         if self.cleaned_data.get('specimen_file') and self.cleaned_data.get('specimen_labels'):
-            raise forms.ValidationError('Options are exclusive, please complete only one.')
+            raise forms.ValidationError('Options are bexclusive, please complete only one.')
 
         return self.cleaned_data
 

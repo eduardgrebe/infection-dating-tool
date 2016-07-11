@@ -42,6 +42,7 @@ def home(request, file_id=None, template="cephia/home.html"):
         transfer_out_rows = TransferOutRow.objects.filter(fileinfo=transfer_out_file)
 
         form = FileInfoForm()
+        form.filter_options(request)
         
         context['form'] = form
         context['subject_file'] = subject_file
@@ -246,6 +247,7 @@ def file_info(request, template="cephia/file_info.html"):
 
     if request.method == "GET":
         upload_form = FileInfoForm()
+        upload_form.filter_options(request)
         filter_form = FileInfoFilterForm(request.GET or None)
         if filter_form.is_valid():
             files = filter_form.filter()
@@ -324,6 +326,7 @@ def upload_file(request):
                 post_data.__setitem__('priority', priority)
     
             form = FileInfoForm(post_data, request.FILES)
+            form.filter_options(request)
             form.fields['laboratory'].required = False
             if form.is_valid():
                 new_file = form.save()

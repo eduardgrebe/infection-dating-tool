@@ -19,6 +19,22 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
+FILE_TYPE_CHOICES = (
+    ('','---------'),
+    ('aliquot','Aliquot'),
+    ('assay','Assay'),
+    ('diagnostic_test','Diagnostic Test'),
+    ('panel_shipment','Panel Shipment'),
+    ('panel_membership','Panel Membership'),
+    ('protocol_lookup','Protocol Lookup'),
+    ('subject','Subject'),
+    ('test_history','Diagnostic Test History'),
+    ('test_property','Diagnostic Test Properties'),
+    ('transfer_in','Transfer In'),
+    ('transfer_out','Transfer Out'),
+    ('visit','Visit'),
+)
+
 def as_days(tdelta):
     return tdelta.days
 
@@ -37,6 +53,25 @@ class CephiaUser(BaseUser):
     def __unicode__(self):
         return "%s" % (self.username)
 
+    @property
+    def allowed_file_uploads(self):
+        choices = dict(FILE_TYPE_CHOICES)
+        permissions = {
+            'can_upload_panel_data': ['panel_membership', 'panel_shipment'],
+            'can_upload_results': ['assay'],
+            'can_upload_clinical_data': ['subject', 'visit'],
+            'can_upload_specimen_data': ['aliquot', 'transfer_in', 'transfer_out'],
+            'can_upload_eddi_data': ['diagnostic_test', 'protocol_lookup', 'test_history',
+                                     'test_property']
+        }
+
+        allowed = []
+        
+        for perm, options in permissions.iteritems():
+            if self.has_perm('cephia.' + perm):
+                allowed.extend((option,choices[option]) for option in options)
+
+        return sorted(allowed)
 
 class Region(models.Model):
 
@@ -179,21 +214,7 @@ class FileInfo(models.Model):
         ('error','Error')
     )
 
-    FILE_TYPE_CHOICES = (
-        ('','---------'),
-        ('aliquot','Aliquot'),
-        ('assay','Assay'),
-        ('diagnostic_test','Diagnostic Test'),
-        ('panel_shipment','Panel Shipment'),
-        ('panel_membership','Panel Membership'),
-        ('protocol_lookup','Protocol Lookup'),
-        ('subject','Subject'),
-        ('test_history','Diagnostic Test History'),
-        ('test_property','Diagnostic Test Properties'),
-        ('transfer_in','Transfer In'),
-        ('transfer_out','Transfer Out'),
-        ('visit','Visit'),
-    )
+    
 
     SPECIMEN_LABEL_TYPES = [
         ('aliquot_label', 'Aliquot Label'),
