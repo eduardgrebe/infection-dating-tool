@@ -433,7 +433,7 @@ class AssociationFilterForm(forms.Form):
 class VisitExportForm(forms.Form):
     specimen_file = forms.FileField(required=False, label='Upload a list of specimen labels')
     specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
-    panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Which panels?')
+    panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Restrict export to panels:')
 
     def clean_specimen_file(self):
         specimen_file = self.cleaned_data.get('specimen_file')

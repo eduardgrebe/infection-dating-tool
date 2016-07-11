@@ -49,7 +49,6 @@ class ResultDownload(object):
             "plate_identifier",
             "specimen_purpose",
             "test_mode",
-            "exclusion",
         ]
         
         self.common_columns = [ "specimen.specimen_label",
@@ -68,11 +67,12 @@ class ResultDownload(object):
 
         if self.detailed:
             self.common_columns += ['result_field', 'result_value']
-            self.common_columns = ['generic_id', 'specific_id'] + self.common_columns
+            self.common_columns = ['generic_id', 'specific_id', 'test_mode'] + self.common_columns
 
         self.common_columns += [
             "warning_msg",
             "method",
+            "exclusion"
         ]
 
         self.clinical_columns = [
@@ -106,9 +106,11 @@ class ResultDownload(object):
             "specimen.visit.treatment_naive",
             "specimen.visit.on_treatment",
             "specimen.visit.first_treatment",
+            "specimen.visit.pregnant",
             "specimen.visit.cd4_count",
             "specimen.visit.viral_load",
             "specimen.visit.vl_type",
+            "specimen.visit.vl_detectable",
             "specimen.visit.vl_detectable",
             "specimen.visit.scopevisit_ec",
             "specimen.visit.subject.subject_eddi.eddi",
@@ -158,21 +160,12 @@ class ResultDownload(object):
             result_value_index = combined_columns.index('result_value')
             specific_id_index = combined_columns.index('specific_id')
             generic_id_index = combined_columns.index('generic_id')
-            # need to add the run id
-            # add excluded flags, test_mode
-            # rename result to final_result
-            # add test_mode
-            # run id
-            # visits - assay type to selected assays 
+            test_mode_field_index = combined_columns.index('test_mode')
+            method_field_index = combined_columns.index('method')
+            exclusion_field_index = combined_columns.index('exclusion')
             
         except (IndexError, ValueError):
             pass
-        import time
-
-        def m(result):
-            for c in combined_columns:
-                print c, self.getattr_or_none(result, c)
-                time.sleep(1)
 
         for result in self.results:
             row = [ self.getattr_or_none(result, c) for c in combined_columns ]
@@ -183,10 +176,17 @@ class ResultDownload(object):
                     related_name = model.__name__.lower() + '_set'
                     for specific_result in getattr(result, related_name).all():
                         row[specific_id_index] = specific_result.pk
+                        row[test_mode_field_index] = specific_result.test_mode
                         for field in model.result_detail_fields:
                             row[result_field_index] = field
                             row[result_value_index] = getattr(specific_result, field, None)
+                            row[method_field_index] = ''
+                            row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
                             self.content.append(list(row))
+                    row[result_field_index] = 'final_result'
+                    row[result_value_index] = result.result
+                    row[method_field_index] = result.method
+                    self.content.append(list(row))
             else:
                 self.content.append(row)
 

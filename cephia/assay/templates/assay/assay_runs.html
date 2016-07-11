@@ -3,66 +3,86 @@
 {% load el_pagination_tags %}
 
 {% block filter_col_a %}
-{% bootstrap_field form.panel %}
+  {% bootstrap_field form.panel %}
 {% endblock %}
 
 {% block filter_col_b %}
-{% bootstrap_field form.assay %}
+  {% bootstrap_field form.assay %}
 {% endblock %}
 
 {% block filter_col_c %}
-{% bootstrap_field form.laboratory %}
+  {% bootstrap_field form.laboratory %}
 {% endblock %}
 
 {% block page_content %}
 
-{% paginate runs %}
-<div class="container">
+  {% paginate runs %}
+
   <div class="row">
-    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Assay Runs</h3>
+    <div class="col-md-4">
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <h3 class="panel-title">Combine assay results for visits</h3>
+        </div>
+        <div class="panel-body">
+          <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form by_visits_form %}
+            <div class="form-group">
+              <button class="btn btn-default">Get results</button>
+            </div>
+          </form>
+        </div>
       </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="container"
-               {% show_pages %}
-            <div class="table-responsive">
-              <table class="table-striped table table-hover" style="overflow:auto;">
-                <thead>
-                  <th>Run ID</th>
-                  <th>Panel</th>
-                  <th>Assay</th>
-                  <th>Laboratory</th>
-                  <th>File</th>
-                  <th>Run Date</th>
-                </thead>
-                <tbody>
-                  {% for run in runs %}
-                    <tr>
-                      <td>{{run.pk}}</td>
-                      <td>{{run.panel.name}}</td>
-                      <td>{{run.assay.name}}</td>
-                      <td>{{run.laboratory.name}}</td>
-                      <td>{{run.fileinfo.filename}}</td>
-                      <td>{{run.run_date}}</td>
-                      <td><a href="{% url 'assay:run_results' run_id=run.id %}" target="_blank" class="btn btn-default" style="text-decoration:none;">Preview Results</a></td>
-                    <td><a href="{% url 'assay:purge_run' run_id=run.id %}" class="btn btn-danger" style="text-decoration:none;">Purge</a></td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="row">
+      <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+        <div class="panel-heading">
+          <h3 class="panel-title">Assay Runs</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="container"
+                 {% show_pages %}
+              <div class="table-responsive">
+                <table class="table-striped table table-hover" style="overflow:auto;">
+                  <thead>
+                    <th>Run ID</th>
+                    <th>Panel</th>
+                    <th>Assay</th>
+                    <th>Laboratory</th>
+                    <th>File</th>
+                    <th>Run Date</th>
+                  </thead>
+                  <tbody>
+                    {% for run in runs %}
+                      <tr>
+                        <td>{{run.pk}}</td>
+                        <td>{{run.panel.name}}</td>
+                        <td>{{run.assay.name}}</td>
+                        <td>{{run.laboratory.name}}</td>
+                        <td>{{run.fileinfo.filename}}</td>
+                        <td>{{run.run_date}}</td>
+                        <td><a href="{% url 'assay:run_results' run_id=run.id %}" target="_blank" class="btn btn-default" style="text-decoration:none;">Preview Results</a></td>
+                        <td><a href="{% url 'assay:purge_run' run_id=run.id %}" class="btn btn-danger" style="text-decoration:none;">Purge</a></td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-<div class="result-modal">
-</div>
-<div class="membership-modal">
-</div>
-<div class="shipment-modal">
-</div>
+  <div class="result-modal">
+  </div>
+  <div class="membership-modal">
+  </div>
+  <div class="shipment-modal">
+  </div>
 {% endblock %}

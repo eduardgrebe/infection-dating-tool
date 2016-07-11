@@ -25,6 +25,13 @@ def as_days(tdelta):
 class CephiaUser(BaseUser):
     class Meta:
         db_table = "cephia_users"
+        permissions = [
+            ('can_upload_panel_data', 'Can upload memberships and shipments'),
+            ('can_upload_results', 'Can upload results'),
+            ('can_upload_clinical_data', 'Can upload subjects and visits'),
+            ('can_upload_eddi_data', 'Can upload diagnostic data'),
+            ('can_upload_specimen_data', 'Can upload aliquot, transfer in, transfer out'),
+        ]
 
     def __unicode__(self):
         return "%s" % (self.username)

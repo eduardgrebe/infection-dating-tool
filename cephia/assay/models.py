@@ -140,7 +140,7 @@ class AssayResult(models.Model):
     def get_detailed_results_for_run(self):
         if self.assay:
             result_model = get_result_model(self.assay.name)
-            headers = ['result']
+            headers = []
             return headers, AssayResult.objects.filter(assay_run=self.assay_run), result_model
 
         return None

@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
 from cephia.models import Panel
-from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm, AssayRunResultsFilterForm
+from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm, AssayRunResultsFilterForm, AssaysByVisitForm
+
 from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership, AssayRun
 from cephia.models import Assay, Laboratory
@@ -152,6 +153,11 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
         context['form'] = form
 
 
+    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
+    context['by_visits_form'] = by_visits_form
+    if request.method == 'POST' and by_visits_form.is_valid():
+        return by_visits_form.get_csv_response()
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 def run_results(request, run_id=None, template="assay/run_results.html"):
