@@ -4,16 +4,29 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
+
+class PermissionChoiceField(ModelMultipleChoiceField):
+    def label_from_instance(self, instance):
+        return instance.name
+
+
 class UserEditForm(ModelForm):
 
     password = CharField(widget=PasswordInput, required=False, label="Password (leave blank to keep previous password)")
     verify_password = CharField(widget=PasswordInput, required=False)
     force_unlock = BooleanField(required=False)
+    user_permissions = PermissionChoiceField(
+        widget=CheckboxSelectMultiple(),
+        required=False,
+        queryset=Permission.objects.filter(content_type__app_label='cephia', content_type__model='CephiaUser', name__icontains='upload'), label='Permissions')
 
     class Meta:
         model = get_user_model()
         fields=["username", "first_name", "last_name", "email", "password", "verify_password", "is_superuser",
-                "is_active", 'is_staff', 'force_unlock', 'groups']
+                "is_active", 'is_staff', 'force_unlock', 'user_permissions']
+
+    def label_from_instance(self, instance):
+        return instance.name
 
     def __init__(self, *args, **kwargs):
         super(UserEditForm, self).__init__(*args, **kwargs)
@@ -22,9 +35,6 @@ class UserEditForm(ModelForm):
 
         self.fields['is_superuser'].help_text = ""
         self.fields['is_active'].help_text = ""
-
-        self.fields['groups'].widget = CheckboxSelectMultiple( choices=[ (x.id, x.name) for x in Group.objects.all().order_by("name") ] )
-        self.fields['groups'].help_text = ""
 
         self.fields['username'].help_text = ""
 

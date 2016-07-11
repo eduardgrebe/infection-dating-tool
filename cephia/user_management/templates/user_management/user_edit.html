@@ -8,12 +8,13 @@
 
 <div class="content">
 
-  <div class="medium-4 columns">
-
-    <form action="{% url 'users:user_edit' form.instance.id %}" method="post" class="form">
-      {% csrf_token %}
-      {% include "user_management/_user_form.html" %}
-    </form>
+  <div class="container">
+    <div class="col-md-4">
+      <form action="{% url 'users:user_edit' form.instance.id %}" method="post" class="form">
+        {% csrf_token %}
+        {% include "user_management/_user_form.html" %}
+      </form>
+    </div>
   </div>
 
 </div>

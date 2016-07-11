@@ -46,7 +46,11 @@
       <tr>
         <td><a href="{% url 'reporting:saved_report' report_id=report.id %}">{{report.name}}</a></td>
         <td>{{ report.description }}</td>
-        <td><button class="btn btn-danger">Delete Report</button></td>
+        <td>
+          {% if request.user.is_superuser or report.created_by.pk == request.user.pk %}
+            <button class="btn btn-sm btn-danger">Delete Report</button>
+          {% endif %}
+        </td>
       </tr>
     {% endfor %}
   </table>

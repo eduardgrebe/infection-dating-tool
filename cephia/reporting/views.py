@@ -158,7 +158,9 @@ def generic_report(request, template="reporting/generic_report.html"):
 
     if 'save' in request.POST:
         if save_form.is_valid():
-            save_form.save()
+            instance = save_form.save(commit=False)
+            instance.created_by = request.user
+            instance.save()
             return HttpResponseRedirect(reverse('reporting:report_landing_page'))
 
         return render_to_response(template, context, context_instance=RequestContext(request))

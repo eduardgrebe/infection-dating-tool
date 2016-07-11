@@ -31,6 +31,7 @@ class CephiaUser(BaseUser):
             ('can_upload_clinical_data', 'Can upload subjects and visits'),
             ('can_upload_eddi_data', 'Can upload diagnostic data'),
             ('can_upload_specimen_data', 'Can upload aliquot, transfer in, transfer out'),
+            ('can_purge_assay_results', 'Can purge assay results'),
         ]
 
     def __unicode__(self):

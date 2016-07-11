@@ -98,3 +98,7 @@ pre.error-log {
 .view-specific-results {
     cursor: pointer;
 }
+
+a.btn {
+    text-decoration: none;
+}
