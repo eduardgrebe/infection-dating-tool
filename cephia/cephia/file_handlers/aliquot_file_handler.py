@@ -129,9 +129,11 @@ class AliquotFileHandler(FileHandler):
                         error_msg += 'volume must be less than or equal to 10 for this specimen_type.\n'
 
                 try:
-                    specimen = Specimen.objects.get(specimen_label=aliquot_row.parent_label,
-                                                    specimen_type__spec_type=aliquot_row.specimen_type)
+                    specimen = Specimen.objects.get(
+                        specimen_label=aliquot_row.parent_label,
+                        specimen_type__spec_type=aliquot_row.specimen_type)
                 except Specimen.DoesNotExist:
+                    specimen = None
                     error_msg += "Parent specimen does not exist.\n"
 
                 if specimen:

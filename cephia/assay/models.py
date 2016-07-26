@@ -39,7 +39,8 @@ class PanelMembership(models.Model):
     CATEGORY_CHOICES = (
         ('mdri','MDRI'),
         ('frr','FRR'),
-        ('challenge','Challenge')
+        ('challenge','Challenge'),
+        ('control','Control')
     )
 
     PANEL_INCLUSION_CHOICES = (
