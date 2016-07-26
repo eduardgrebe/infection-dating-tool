@@ -156,6 +156,7 @@ class IDEV3FileHandler(FileHandler):
         rows_failed = 0
 
         for ide_result_row in IDEV3ResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+            
             try:
                 with transaction.atomic():
                     assay = Assay.objects.get(name=ide_result_row.assay)
@@ -202,9 +203,8 @@ class IDEV3FileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
-                logger.exception(e)
                 ide_result_row.state = 'error'
-                ide_result_row.error_message = e.message
+                ide_result_row.error_message = log_exception(e, logger)
                 ide_result_row.save()
                 rows_failed += 1
                 continue

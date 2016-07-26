@@ -147,7 +147,7 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
 
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
-    runs = AssayRun.objects.all()
+    runs = AssayRun.objects.all().order_by('-id')
     if request.method == 'GET':
         form = AssayRunFilterForm(request.GET or None)
         if form.is_valid():

@@ -193,7 +193,7 @@ class BaseAssayResult(models.Model):
             field_type = self._meta.get_field(field)
             if not field_type.one_to_many and not field_type.related_model:
                 value = getattr(self, field)
-                self.error_message = 'Could not convert field %s to float. Found value: %s' % (field,)
+                self.error_message = 'Could not convert field %s to float. Found value: %s' % (field, value)
                 if field_type.get_internal_type() == 'FloatField':
                     if value is None:
                         self.error_message = 'Field %s is null' % field
