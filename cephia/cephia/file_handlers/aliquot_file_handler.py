@@ -32,10 +32,10 @@ class AliquotFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
                     if row_dict.get('id', None):
-                        try:
-                            aliquot_row = AliquotRow.objects.get(pk=row_dict['id'], state__in=['error', 'pending', 'validated', 'imported'])
-                        except AliquotRow.DoesNotExist, e:
-                            continue
+                        aliquot_row = AliquotRow.objects.get(
+                            pk=row_dict['id'],
+                            state__in=['error', 'pending', 'validated', 'imported']
+                        )
                     else:
                         aliquot_row = AliquotRow.objects.create(parent_label=row_dict['parent_label'],
                                                                 aliquot_label=row_dict['aliquot_label'],

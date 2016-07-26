@@ -123,13 +123,18 @@ class Command(BaseCommand):
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_ODn_screen'
                     warning_msg += "Unexpected number of screen records."
-                elif number_of_confirms > 0:
+                elif number_of_confirms == 3:
                     confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
                     final_result = confirm_results[1]
                     method = 'sop_median_of_confirms'
-                    if number_of_confirms != 3:
-                        warning_msg += "Unexpected number of 'confirm' records."
-
+                elif number_of_confirms == 1:
+                    final_result = spec_results.filter(test_mode__startswith='confirm').first().ODn
+                    warning_msg += "Single 'confirm' record"
+                    method = 'ODn_of_confirm_singleton'
+                else:
+                    final_result = None
+                    warning_msg += "Unexpected number of 'confirm' records. Found %s" % number_of_confirms
+                    
                 
                 if number_of_screens == 0:
                     warning_msg += "\nNo 'screen' records."

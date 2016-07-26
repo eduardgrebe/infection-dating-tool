@@ -23,7 +23,7 @@ REVISION = git.Repo(os.path.join(PROJECT_HOME, "..", "..")).head.commit.hexsha
 MAILQUEUE_CELERY = True
 CELERYBEAT_SCHEDULE_FILENAME = os.path.join(LOG_FOLDER, '.celery-beat-schedule')
 CELERY_TIMEZONE = 'UTC'
-BROKER_URL = 'amqp://cephia_celery:cephia_celery@localhost:5672/cephia_celery'
+BROKER_URL = 'amqp://guest@localhost:5672/cephia_celery'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '%ikqh(&mt)5&$t^h19eb2o5g^^hbrx2i(_cby$(48xcd00_61v'

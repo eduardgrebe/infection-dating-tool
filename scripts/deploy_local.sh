@@ -12,7 +12,7 @@ VENV=${ROOT}/venv
 echo "checking for virtualenv"
 if [ ! -d ${VENV} ]; then
     cd ${ROOT}
-    virtualenv --no-site-packages venv
+    virtualenv --no-site-packages venv --python=python2.7
 fi
 
 echo "activate virtualenv"

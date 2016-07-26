@@ -8,7 +8,7 @@ from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodif
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
                           LSVitrosPlasmaResultRow, GeeniusResultRow, BEDResultRow, LuminexCDCResultRow,
-                          IDEV3ResultRow)
+                          IDEV3ResultRow, PanelMembershipRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 from excel_helper import ExcelHelper
 import unicodecsv as csv
