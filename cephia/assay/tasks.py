@@ -18,7 +18,7 @@ def process_file_info(pk, lab_id):
         assay_run = AssayRun.objects.create(
             panel=result_file.panel,
             assay=result_file.assay,
-            laboratory=Laboratory.objects.last(),
+            laboratory=Laboratory.objects.filter(pk=lab_id).first(),
             fileinfo=result_file,
             run_date=timezone.now())
 
@@ -26,4 +26,3 @@ def process_file_info(pk, lab_id):
         call_command('assay_results_per_run', str(assay_run.id))
     finally:
         FileInfo.objects.filter(pk=pk).update(task_id=None)
-

@@ -112,7 +112,7 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         if file_info_form.is_valid():
             result_file = file_info_form.save()
 
-            x = lambda: process_file_info.delay(result_file.pk, Laboratory.objects.get(pk=request.POST['laboratory']))
+            x = lambda: process_file_info.delay(result_file.pk, pk=request.POST['laboratory'])
             transaction.on_commit(x)
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
