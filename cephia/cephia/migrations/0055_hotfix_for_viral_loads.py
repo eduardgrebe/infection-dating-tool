@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+import datetime
 
 def hotfix_viral_loads(apps, schema):
     Visit = apps.get_model('cephia', 'Visit')
