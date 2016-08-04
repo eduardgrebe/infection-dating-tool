@@ -89,6 +89,8 @@ class Command(BaseCommand):
             self._handle_bioplex_cdc(assay_run)
         elif assay == 'BioPlex-Duke':
             self._handle_bioplex_duke(assay_run)
+        elif assay == 'ISGlobal':
+            pass
         elif assay == 'IDE-V3':
             self._handle_idev3(assay_run)
         elif assay == '':

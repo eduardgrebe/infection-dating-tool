@@ -169,7 +169,7 @@ class ResultDownload(object):
 
         for result in self.results:
             row = [ self.getattr_or_none(result, c) for c in combined_columns ]
-            
+
             if self.detailed:
                 for model in self.result_models:
                     row[generic_id_index] = result.pk
@@ -181,7 +181,9 @@ class ResultDownload(object):
                             row[result_field_index] = field
                             row[result_value_index] = getattr(specific_result, field, None)
                             row[method_field_index] = ''
-                            row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
+                            if exclusion_field_index > -1:
+                                row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
+                            
                             self.content.append(list(row))
                     row[result_field_index] = 'final_result'
                     row[result_value_index] = result.result

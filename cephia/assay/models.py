@@ -119,6 +119,7 @@ class AssayResult(models.Model):
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
+    # visit = models.ForeignKey(Visit, null=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
     reported_date = models.DateField(null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
@@ -219,6 +220,7 @@ class BaseAssayResultRow(ImportedRow):
     specimen_label = models.CharField(max_length=255, null=True, blank=True)
     assay = models.CharField(max_length=255, null=True, blank=True)
     laboratory = models.CharField(max_length=255, null=True, blank=True)
+    
     test_date = models.CharField(max_length=255, null=True, blank=True)
     operator = models.CharField(max_length=255, null=True, blank=True)
     assay_kit_lot = models.CharField(max_length=255, null=True, blank=True)
@@ -726,3 +728,26 @@ class IDEV3ResultRow(BaseAssayResultRow):
     conclusion_reported = models.CharField(max_length=255)
     conclusion = models.CharField(max_length=255)
     
+class ISGlobalResult(BaseAssayResult):
+    class Meta:
+        db_table = 'assay_isglobal'
+
+    result_detail_fields = ['classification_weighted_model', 'classification_unweighted_model']
+
+    classification_weighted_model = models.CharField(max_length=255, null=True)
+    classification_unweighted_model = models.CharField(max_length=255, null=True)
+        
+    recent_weighted_model = models.NullBooleanField()
+    recent_unweighted_model = models.NullBooleanField()
+    
+class ISGlobalResultRow(BaseAssayResultRow):
+    result_detail_fields = ['classification_weighted_model', 'classification_unweighted_model']
+    
+    classification_weighted_model = models.CharField(max_length=255, null=True)
+    classification_unweighted_model = models.CharField(max_length=255, null=True)
+
+    isg_result = models.ForeignKey(ISGlobalResult, null=True)
+
+    
+
+

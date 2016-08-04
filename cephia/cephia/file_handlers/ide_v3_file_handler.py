@@ -159,11 +159,13 @@ class IDEV3FileHandler(FileHandler):
             
             try:
                 with transaction.atomic():
-                    assay = Assay.objects.get(name=ide_result_row.assay)
+                    assay = assay_run.assay
                     panel = Panel.objects.get(pk=panel_id)
-                    specimen = Specimen.objects.get(specimen_label=ide_result_row.specimen_label,
-                                                    specimen_type=panel.specimen_type,
-                                                    parent_label__isnull=False)
+                    specimen = Specimen.objects.get(
+                        specimen_label=ide_result_row.specimen_label,
+                        specimen_type=panel.specimen_type,
+                        parent_label__isnull=False
+                    )
 
 
                     ide_result = IDEV3Result.objects.create(

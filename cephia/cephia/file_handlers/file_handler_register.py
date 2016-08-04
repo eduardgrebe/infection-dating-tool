@@ -30,6 +30,7 @@ from lsvitros_diluent_file_handler import LSVitrosDiluentFileHandler
 from lsvitros_plasma_file_handler import LSVitrosPlasmaFileHandler
 from luminex_file_handler import LuminexFileHandler
 from vitros_file_handler import VitrosAvidityFileHandler
+from isglobal_file_handler import ISGlobalFileHandler
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +74,4 @@ register_file_handler("assay", LSVitrosDiluentFileHandler, 'LSVitros-Diluent')
 register_file_handler("assay", LSVitrosPlasmaFileHandler, 'LSVitros-Plasma')
 register_file_handler("assay", LuminexFileHandler, 'BioPlex-CDC')
 register_file_handler("assay", VitrosAvidityFileHandler, 'Vitros')
+register_file_handler("assay", ISGlobalFileHandler, 'ISGlobal')

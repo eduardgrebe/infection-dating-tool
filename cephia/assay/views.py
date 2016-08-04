@@ -87,7 +87,7 @@ def membership_file_upload(request, panel_id=None, template="assay/membership_mo
             membership_file.get_handler().process(panel_id)
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
-            messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
+            messages.add_message(request, messages.ERROR, 'Failed to upload file')
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
         panel_file_form = PanelFileForm()
@@ -109,14 +109,16 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
 
         file_info_form = FileInfoForm(post_data, request.FILES)
         file_info_form.filter_options(request)
+
         if file_info_form.is_valid():
             result_file = file_info_form.save()
 
+            # process_file_info(result_file.pk, request.POST['laboratory'])
             x = lambda: process_file_info.delay(result_file.pk, request.POST['laboratory'])
             transaction.on_commit(x)
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
-            messages.add_message(request, messages.ERROR, 'Failed to uploaded file')
+            messages.add_message(request, messages.ERROR, 'Failed to upload file')
         return HttpResponseRedirect(reverse('assay:panels'))
     elif request.method == 'GET':
         form = FileInfoForm()
