@@ -328,6 +328,7 @@ def upload_file(request):
             form = FileInfoForm(post_data, request.FILES)
             form.filter_options(request)
             form.fields['laboratory'].required = False
+            form.fields['specimen_label_type'].required = False
             if form.is_valid():
                 new_file = form.save()
                 if new_file.file_type == 'test_history':
