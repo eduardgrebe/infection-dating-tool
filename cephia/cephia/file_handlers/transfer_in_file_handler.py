@@ -299,11 +299,10 @@ class TransferInFileHandler(FileHandler):
                                                  specimen_label=transfer_in_row['specimen_label'],
                                                  specimen_type=transfer_in_row['specimen_type'])
 
-                    rows_to_update.update(state = 'processed',
+                    rows_inserted += rows_to_update.update(state = 'processed',
                                           date_processed = timezone.now(),
                                           specimen = specimen)
 
-                    rows_inserted += rows_to_update.count()
             except Exception, e:
                 logger.exception(e)
                 TransferInRow.objects.filter(fileinfo=self.upload_file,
