@@ -728,6 +728,24 @@ class IDEV3ResultRow(BaseAssayResultRow):
     conclusion_reported = models.CharField(max_length=255)
     conclusion = models.CharField(max_length=255)
     
+class BioPlexDukeResult(BaseAssayResult):
+    class Meta:
+        db_table = 'assay_duke'
+
+    result_detail_fields = ['classification']
+    
+    classification = models.CharField(max_length=255, null=True)
+    recent = models.NullBooleanField()
+
+    
+class BioPlexDukeResultRow(BaseAssayResultRow):
+    result_detail_fields = ['classification']
+    
+    classification = models.CharField(max_length=255, null=True)
+
+    duke_result = models.ForeignKey(BioPlexDukeResult, null=True)
+    
+
 class ISGlobalResult(BaseAssayResult):
     class Meta:
         db_table = 'assay_isglobal'
@@ -749,5 +767,6 @@ class ISGlobalResultRow(BaseAssayResultRow):
     isg_result = models.ForeignKey(ISGlobalResult, null=True)
 
     
+
 
 

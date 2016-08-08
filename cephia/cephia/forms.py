@@ -8,7 +8,7 @@ from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodif
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
                           LSVitrosPlasmaResultRow, GeeniusResultRow, BEDResultRow, LuminexCDCResultRow,
-                          IDEV3ResultRow, PanelMembershipRow, ISGlobalResultRow)
+                          IDEV3ResultRow, PanelMembershipRow, ISGlobalResultRow, BioPlexDukeResultRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 from excel_helper import ExcelHelper
 import unicodecsv as csv
@@ -344,9 +344,9 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'IDE-V3':
                 rows = IDEV3ResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/ide_v3_row_info.html'
-            elif fileinfo.assay.name == 'Duke-BioPlex':
-                rows = DukeResultRow.objects.filter(fileinfo=fileinfo)
-                template = 'assay/duke_row_info.html'
+            elif fileinfo.assay.name == 'BioPlex-Duke':
+                rows = BioPlexDukeResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/bioplex_duke_row_info.html'
             elif fileinfo.assay.name == 'ISGlobal':
                 rows = ISGlobalResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/isglobal_row_info.html'

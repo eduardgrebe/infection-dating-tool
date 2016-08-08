@@ -24,6 +24,7 @@ class AssayConfig(AppConfig):
         register_result_model(LuminexCDCResult, 'BioPlex-CDC')
         register_result_model(VitrosAvidityResult, 'Vitros')
         register_result_model(ISGlobalResult, 'ISGlobal')
+        register_result_model(BioPlexDukeResult, 'BioPlex-Duke')
 
         register_result_row_model(ArchitectAvidityResultRow, 'ArchitectAvidity')
         register_result_row_model(ArchitectUnmodifiedResultRow, 'ArchitectUnmodified')
@@ -40,3 +41,4 @@ class AssayConfig(AppConfig):
         register_result_row_model(LuminexCDCResultRow, 'BioPlex-CDC')
         register_result_row_model(VitrosAvidityResultRow, 'Vitros')
         register_result_row_model(ISGlobalResultRow, 'ISGlobal')
+        register_result_row_model(BioPlexDukeResultRow, 'BioPlex-Duke')

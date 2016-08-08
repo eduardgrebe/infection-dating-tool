@@ -166,10 +166,12 @@ class ResultDownload(object):
             
         except (IndexError, ValueError):
             pass
+        
+        import pdb; pdb.set_trace()
 
         for result in self.results:
             row = [ self.getattr_or_none(result, c) for c in combined_columns ]
-
+            
             if self.detailed:
                 for model in self.result_models:
                     row[generic_id_index] = result.pk
