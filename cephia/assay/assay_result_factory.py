@@ -167,8 +167,6 @@ class ResultDownload(object):
         except (IndexError, ValueError):
             pass
         
-        import pdb; pdb.set_trace()
-
         for result in self.results:
             row = [ self.getattr_or_none(result, c) for c in combined_columns ]
             

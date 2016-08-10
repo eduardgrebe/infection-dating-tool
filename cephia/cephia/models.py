@@ -276,6 +276,7 @@ class ImportedRow(models.Model):
         abstract = True
     
     STATE_CHOICES = (
+        ('recalled', 'Recalled'),
         ('pending','Pending'),
         ('validated','Validated'),
         ('imported','Imported'),

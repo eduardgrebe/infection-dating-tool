@@ -171,7 +171,7 @@ class IDEV3FileHandler(FileHandler):
                     ide_result = IDEV3Result.objects.create(
                         specimen=specimen,
                         assay=assay,
-                        laboratory=Laboratory.objects.get(name=ide_result_row.laboratory),
+                        laboratory=assay_run.laboratory,
                         test_date=datetime.strptime(ide_result_row.test_date, '%Y-%m-%d').date(),
                         operator=ide_result_row.operator,
                         assay_kit_lot=ide_result_row.assay_kit_lot,

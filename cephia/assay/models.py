@@ -579,7 +579,9 @@ class LuminexCDCResult(BaseAssayResult):
 
     result_detail_fields = [
         'gp120_MFIn', 'gp160_MFIn', 'gp41_MFIn',
-        'gp120_AI', 'gp160_AI', 'gp41_AI']
+        'gp120_AI', 'gp160_AI', 'gp41_AI',
+        'classification_method1', 'classification_method2', 
+    ]
 
     BSA_MFI = models.FloatField(null=True)
     IgG_MFI = models.FloatField(null=True)
@@ -615,6 +617,12 @@ class LuminexCDCResult(BaseAssayResult):
     gp120_AI = models.FloatField(null=True)
     gp160_AI = models.FloatField(null=True)
     gp41_AI = models.FloatField(null=True)
+    classification_method1 = models.CharField(max_length=255, null=True)
+    classification_method2 = models.CharField(max_length=255, null=True)
+
+    recent_method1 = models.NullBooleanField()
+    recent_method2 = models.NullBooleanField()
+    
     recent_curtis_2016_alg = models.NullBooleanField(default=None)
     recent_curtis_2013_alg35 = models.NullBooleanField(default=None)
     well_untreated = models.CharField(max_length=10, null=True, blank=False)
@@ -662,6 +670,8 @@ class LuminexCDCResultRow(BaseAssayResultRow):
     gp41_AI = models.CharField(max_length=255, null=True, blank=False)
     well_untreated = models.CharField(max_length=10, null=True, blank=False)
     well_treated = models.CharField(max_length=10, null=True, blank=False)
+    classification_method1 = models.CharField(max_length=255, null=True)
+    classification_method2 = models.CharField(max_length=255, null=True)
     luminex_result = models.ForeignKey(LuminexCDCResult, null=True, db_index=True)
 
 

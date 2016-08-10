@@ -58,7 +58,10 @@ class LuminexFileHandler(FileHandler):
                                    "DEA_treated_gp41_MFIn",
                                    "gp120_AI",
                                    "gp160_AI",
-                                   "gp41_AI"]
+                                   "gp41_AI",
+                                   "classification_method1",
+                                   "classification_method2",
+        ]
 
         self.assay_name = 'BioPlex-CDC'
 
@@ -75,51 +78,60 @@ class LuminexFileHandler(FileHandler):
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     luminex_result_row = LuminexCDCResultRow.objects.create(
-                        assay=row_dict["assay"],
-                                                                            laboratory=row_dict["laboratory"],
-                        operator=row_dict["operator"],
-                        plate_identifier=row_dict["plate_identifier"],
-                        test_date=row_dict["test_date"],
-                        assay_kit_lot=row_dict["assay_kit_lot"],
-                        test_mode=row_dict["test_mode"],
+                        assay=row_dict.get("assay"),
+                        laboratory=row_dict.get("laboratory"),
+                        operator=row_dict.get("operator"),
+                        plate_identifier=row_dict.get("plate_identifier"),
+                        test_date=row_dict.get("test_date"),
+                        assay_kit_lot=row_dict.get("assay_kit_lot"),
+                        test_mode=row_dict.get("test_mode"),
+                        
                         specimen_purpose=row_dict["specimen_purpose"],
                         specimen_label=row_dict["specimen_label"],
-                        well_untreated=row_dict["well_untreated"],
-                        well_treated=row_dict["well_treated"],
-                        BSA_MFI=row_dict["BSA_MFI"],
-                        IgG_MFI=row_dict["IgG_MFI"],
-                        gp120_MFI=row_dict["gp120_MFI"],
-                        gp160_MFI=row_dict["gp160_MFI"],
-                        gp41_MFI=row_dict["gp41_MFI"],
-                        BSA_MFImb=row_dict["BSA_MFImb"],
-                        IgG_MFImb=row_dict["IgG_MFImb"],
-                        gp120_MFImb=row_dict["gp120_MFImb"],
-                        gp160_MFImb=row_dict["gp160_MFImb"],
-                        gp41_MFImb=row_dict["gp41_MFImb"],
-                        calibrator_BSA=row_dict["calibrator_BSA"],
-                        calibrator_IgG=row_dict["calibrator_IgG"],
-                        calibrator_gp120=row_dict["calibrator_gp120"],
-                        calibrator_gp160=row_dict["calibrator_gp160"],
-                        calibrator_gp41=row_dict["calibrator_gp41"],
-                        gp120_MFIn=row_dict["gp120_MFIn"],
-                        gp160_MFIn=row_dict["gp160_MFIn"],
-                        gp41_MFIn=row_dict["gp41_MFIn"],
-                        DEA_treated_BSA_MFI=row_dict["DEA_treated_BSA_MFI"],
-                        DEA_treated_IgG_MFI=row_dict["DEA_treated_IgG_MFI"],
-                        DEA_treated_gp120_MFI=row_dict["DEA_treated_gp120_MFI"],
-                        DEA_treated_gp160_MFI=row_dict["DEA_treated_gp160_MFI"],
-                        DEA_treated_gp41_MFI=row_dict["DEA_treated_gp41_MFI"],
-                        DEA_treated_BSA_MFImb=row_dict["DEA_treated_BSA_MFImb"],
-                        DEA_treated_IgG_MFImb=row_dict["DEA_treated_IgG_MFImb"],
-                        DEA_treated_gp120_MFImb=row_dict["DEA_treated_gp120_MFImb"],
-                        DEA_treated_gp160_MFImb=row_dict["DEA_treated_gp160_MFImb"],
-                        DEA_treated_gp41_MFImb=row_dict["DEA_treated_gp41_MFImb"],
-                        DEA_treated_gp120_MFIn=row_dict["DEA_treated_gp120_MFIn"],
-                        DEA_treated_gp160_MFIn=row_dict["DEA_treated_gp160_MFIn"],
-                        DEA_treated_gp41_MFIn=row_dict["DEA_treated_gp41_MFIn"],
+
                         gp120_AI=row_dict["gp120_AI"],
                         gp160_AI=row_dict["gp160_AI"],
                         gp41_AI=row_dict["gp41_AI"],
+                        gp120_MFIn=row_dict["gp120_MFIn"],
+                        gp160_MFIn=row_dict["gp160_MFIn"],
+                        
+                        well_untreated=row_dict.get("well_untreated"),
+                        well_treated=row_dict.get("well_treated"),
+                        BSA_MFI=row_dict.get("BSA_MFI"),
+                        IgG_MFI=row_dict.get("IgG_MFI"),
+
+                        gp120_MFI=row_dict.get("gp120_MFI"),
+                        gp160_MFI=row_dict.get("gp160_MFI"),
+                        gp41_MFI=row_dict.get("gp41_MFI"),
+                        BSA_MFImb=row_dict.get("BSA_MFImb"),
+                        IgG_MFImb=row_dict.get("IgG_MFImb"),
+                        gp120_MFImb=row_dict.get("gp120_MFImb"),
+                        gp160_MFImb=row_dict.get("gp160_MFImb"),
+                        gp41_MFImb=row_dict.get("gp41_MFImb"),
+                        calibrator_BSA=row_dict.get("calibrator_BSA"),
+                        calibrator_IgG=row_dict.get("calibrator_IgG"),
+                        calibrator_gp120=row_dict.get("calibrator_gp120"),
+                        calibrator_gp160=row_dict.get("calibrator_gp160"),
+                        calibrator_gp41=row_dict.get("calibrator_gp41"),
+
+                        gp41_MFIn=row_dict.get("gp41_MFIn"),
+                        DEA_treated_BSA_MFI=row_dict.get("DEA_treated_BSA_MFI"),
+                        DEA_treated_IgG_MFI=row_dict.get("DEA_treated_IgG_MFI"),
+                        DEA_treated_gp120_MFI=row_dict.get("DEA_treated_gp120_MFI"),
+                        DEA_treated_gp160_MFI=row_dict.get("DEA_treated_gp160_MFI"),
+                        DEA_treated_gp41_MFI=row_dict.get("DEA_treated_gp41_MFI"),
+                        DEA_treated_BSA_MFImb=row_dict.get("DEA_treated_BSA_MFImb"),
+                        DEA_treated_IgG_MFImb=row_dict.get("DEA_treated_IgG_MFImb"),
+                        DEA_treated_gp120_MFImb=row_dict.get("DEA_treated_gp120_MFImb"),
+                        DEA_treated_gp160_MFImb=row_dict.get("DEA_treated_gp160_MFImb"),
+                        DEA_treated_gp41_MFImb=row_dict.get("DEA_treated_gp41_MFImb"),
+                        DEA_treated_gp120_MFIn=row_dict.get("DEA_treated_gp120_MFIn"),
+                        DEA_treated_gp160_MFIn=row_dict.get("DEA_treated_gp160_MFIn"),
+                        DEA_treated_gp41_MFIn=row_dict.get("DEA_treated_gp41_MFIn"),
+
+                        classification_method1=row_dict.get("classification_method1"),
+                        classification_method2=row_dict.get("classification_method2"),
+                        
                         state='pending',
                         fileinfo=self.upload_file
                     )
@@ -230,8 +242,8 @@ class LuminexFileHandler(FileHandler):
                     luminex_result = LuminexCDCResult.objects.create(
                         specimen=specimen,
                         assay=assay,
-                        laboratory=Laboratory.objects.get(name=luminex_result_row.laboratory),
-                        test_date=datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
+                        laboratory=assay_run.laboratory,
+                        test_date=None if not luminex_result_row.test_date else datetime.strptime(luminex_result_row.test_date, '%Y-%m-%d').date(),
                         operator=luminex_result_row.operator,
                         assay_kit_lot=luminex_result_row.assay_kit_lot,
                         plate_identifier=luminex_result_row.plate_identifier,
@@ -274,6 +286,10 @@ class LuminexFileHandler(FileHandler):
                         gp120_AI=luminex_result_row.gp120_AI or None,
                         gp160_AI=luminex_result_row.gp160_AI or None,
                         gp41_AI=luminex_result_row.gp41_AI or None,
+
+                        classification_method1=luminex_result_row.classification_method1,
+                        classification_method2=luminex_result_row.classification_method2,
+                        
                         warning_msg=warning_msg,
                         assay_run=assay_run
                     )
@@ -282,6 +298,13 @@ class LuminexFileHandler(FileHandler):
                     if luminex_result.specimen_purpose in ['kit_control','panel_specimen']:
                         # algorithms.do_curtis_alg2016(luminex_result)
                         algorithms.do_curtis_alg2013(luminex_result)
+
+                    if luminex_result_row.classification_method1 is not None:
+                        luminex_result.recent_method1 = luminex_result_row.classification_method1 == 'Recent'
+
+                    if luminex_result_row.classification_method2 is not None:
+                        luminex_result.recent_method2 = luminex_result_row.classification_method2 == 'Recent'
+                        
 
                     luminex_result_row.state = 'processed'
                     luminex_result_row.date_processed = timezone.now()
