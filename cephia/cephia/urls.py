@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^studies/$', views.studies, name='studies'),
     url(r'^labs/$', views.labs, name='labs'),
     url(r'^subjects/$', views.subjects, name='subjects'),
+    url(r'^visits/(?P<visit_id>\d+)/$', views.visits, name='visits'),
     url(r'^visits/$', views.visits, name='visits'),
     url(r'^visits/export$', views.visit_export, name='visit_export'),
     url(r'^specimen/$', views.specimen, name='specimen'),

@@ -25,6 +25,7 @@ def process_file_info(pk, lab_id):
 
         result_file.get_handler().process(result_file.panel.id, assay_run)
         call_command('assay_results_per_run', str(assay_run.id))
+        assay_run.check_replicate_counts()
     except Exception, e:
         result_file.message = 'Could not process file: ' + log_exception(e)
         result_file.state = 'row_error'

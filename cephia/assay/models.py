@@ -8,6 +8,7 @@ from assay_result_factory import *
 from django.forms.models import model_to_dict
 import logging
 import math
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,8 @@ class PanelMembership(models.Model):
         ('longstanding_infection_ec','Longstanding Infection Elite Controller')
     )
 
-    visit = models.ForeignKey(Visit, null=True, blank=False, db_index=True)
-    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
+    visit = models.ForeignKey(Visit, null=True, blank=False, db_index=True, related_name='visits')
+    panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True, related_name='memberships')
     replicates = models.IntegerField(null=True, blank=False)
     category = models.CharField(max_length=255, null=False, blank=True, choices=CATEGORY_CHOICES)
     panel_inclusion_criterion = models.CharField(max_length=255, null=False, blank=True, choices=PANEL_INCLUSION_CHOICES)
@@ -98,6 +99,51 @@ class AssayRun(models.Model):
     fileinfo = ProtectedForeignKey(FileInfo, null=False, db_index=True)
     run_date = models.DateField(null=False)
     comment = models.CharField(max_length=255, null=True, blank=False)
+
+    contains_all_panel_visits = models.BooleanField(default=False)
+    contains_visits_not_in_panel = models.BooleanField(default=False)
+    has_expected_num_replicates = models.BooleanField(default=False)
+
+    visits_not_in_panel = models.ManyToManyField('cephia.Visit', related_name='assay_run_extra_visits')
+    visits_missing_from_panel = models.ManyToManyField('cephia.Visit', related_name='assay_run_missing_visits')
+    inconsistent_replicates = models.ManyToManyField(PanelMembership)
+
+    @property
+    def visits(self):
+        specimens = Specimen.objects.filter(assayresult__assay_run=self)
+        return Visit.objects.filter(specimens__in=specimens)
+
+
+    def check_replicate_counts(self):
+        panel_visits = self.panel.memberships.values_list('visit__pk', flat=True).distinct()
+        
+        run_visits = self.visits.values_list('pk', flat=True)
+        
+        extra_visits = run_visits.exclude(pk__in=panel_visits).distinct()
+        missing_visits = panel_visits.exclude(visit__pk__in=run_visits).distinct()
+
+        self.visits_not_in_panel = list(extra_visits)
+        self.visits_missing_from_panel = list(missing_visits)
+
+        self.contains_visits_not_in_panel = bool(extra_visits)
+        self.contains_all_panel_visits = not bool(missing_visits)
+
+        inconsistent_replicates = []
+
+        replicate_counts = defaultdict(lambda: 0)
+        for visit_id in self.assayresult_set.values_list('specimen__visit__pk', flat=True):
+            replicate_counts[visit_id] += 1
+
+        for m in self.panel.memberships.all().select_related('visit'):
+            if m.visit_id not in replicate_counts:
+                continue
+            
+            if m.replicates != replicate_counts[m.visit_id]:
+                inconsistent_replicates.append(m)
+        self.inconsistent_replicates = inconsistent_replicates
+        self.has_expected_num_replicates = bool(inconsistent_replicates)
+
+        self.save()
 
 
 class AssayResult(models.Model):

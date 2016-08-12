@@ -169,9 +169,11 @@ def visit_export(request, template='cephia/visit_export.html'):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
-def visits(request, template="cephia/visits.html"):
+def visits(request, visit_id=None, template="cephia/visits.html"):
     context = {}
     visits = Visit.objects.all()
+    if visit_id is not None:
+        visits = visits.filter(pk=visit_id)
 
     form = VisitFilterForm(request.GET or None)
     if form.is_valid():

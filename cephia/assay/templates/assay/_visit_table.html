@@ -1,0 +1,15 @@
+<table class="table table-condensed">
+  <thead>
+    <th>Visit ID</th>
+    <th>Subject Label</th>
+    <th>Visit Date</th>
+  </thead>
+  {% for row in visits %}
+    <tr>
+      <td><a href='{% url 'visits' row.pk %}'>{{ row.pk }}</a></td>
+      <td>{{ row.subject.subject_label }}</td>
+      <td>{{ row.visit_date }}</td>
+    </tr>
+  {% endfor %}
+
+</table>
