@@ -482,7 +482,7 @@ class Visit(models.Model):
     viral_load = models.IntegerField(null=True, blank=False)
     vl_type = models.CharField(max_length=20, null=True, blank=False)
     vl_detectable = models.NullBooleanField()
-    scopevisit_ec = models.CharField(max_length=100, null=True, blank=False)
+    scopevisit_ec = models.NullBooleanField()
     pregnant = models.NullBooleanField()
     hepatitis = models.NullBooleanField()
     artificial = models.BooleanField(default=False)
