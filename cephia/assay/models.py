@@ -141,7 +141,7 @@ class AssayRun(models.Model):
             if m.replicates != replicate_counts[m.visit_id]:
                 inconsistent_replicates.append(m)
         self.inconsistent_replicates = inconsistent_replicates
-        self.has_expected_num_replicates = bool(inconsistent_replicates)
+        self.has_expected_num_replicates = not inconsistent_replicates
 
         self.save()
 

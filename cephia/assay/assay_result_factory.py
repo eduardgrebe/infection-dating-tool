@@ -111,8 +111,6 @@ class ResultDownload(object):
             "specimen.visit.viral_load",
             "specimen.visit.vl_type",
             "specimen.visit.vl_detectable",
-            "specimen.visit.vl_detectable",
-            "specimen.visit.scopevisit_ec",
             "specimen.visit.subject.subject_eddi.eddi",
             "specimen.visit.subject.subject_eddi.ep_ddi",
             "specimen.visit.subject.subject_eddi.lp_ddi",
@@ -122,7 +120,7 @@ class ResultDownload(object):
 
             "specimen.visit.visitdetail.age_in_years",
             "specimen.visit.visitdetail.earliest_visit_date",
-            "specimen.visit.visitdetail.scopevisit_ec",
+            "specimen.visit.scopevisit_ec",
             "specimen.visit.visitdetail.ever_scope_ec",
             "specimen.visit.visitdetail.is_after_aids_diagnosis",
             "specimen.visit.visitdetail.ever_aids_diagnosis",
