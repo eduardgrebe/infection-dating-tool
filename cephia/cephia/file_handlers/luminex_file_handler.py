@@ -229,15 +229,14 @@ class LuminexFileHandler(FileHandler):
                                 self.upload_file.specimen_label_type,
                                 parent_label__isnull=False
                             )
+                            specimen.save()
                             if specimen.is_artificial:
                                 warning_msg += "Artificial aliquot created"
                         
                     except Specimen.DoesNotExist:
-                         if luminex_result_row.specimen_purpose == "panel_specimen":
-                             warning_msg += "Specimen not found\n"
-                             specimen = None
-                         else:
-                             continue
+                        specimen = None
+                        if luminex_result_row.specimen_purpose == "panel_specimen":
+                            warning_msg += "Specimen not found\n"
 
                     luminex_result = LuminexCDCResult.objects.create(
                         specimen=specimen,

@@ -751,8 +751,7 @@ class Specimen(models.Model):
             parent_specimen = cls.objects.get(specimen_label=label, parent__isnull=True, specimen_type=specimen_type, **kwargs)
 
             child_specimen = cls.create_from_parent(parent_specimen)
-            child_specimen.specimen_label = cls.get_artificial_label(parent_specimen.label, **kwargs)
-            child_specimen.save()
+            child_specimen.specimen_label = cls.get_artificial_label(parent_specimen.specimen_label, **kwargs)
             return child_specimen
         
         elif specimen_label_type == 'aliquot_base':
@@ -762,7 +761,6 @@ class Specimen(models.Model):
                 raise cls.DoesNotExist('Could not find a partial match')
             child_specimen = cls.create_from_parent(partial_match.parent)
             child_specimen.specimen_label = cls.get_artificial_label(label, **kwargs)
-            child_specimen.save()
             return child_specimen
             
         

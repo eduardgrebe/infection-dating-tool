@@ -13,6 +13,13 @@ import logging
 import os
 from django.utils import timezone
 
+def median(list):
+    half = len(list) // 2 
+    list.sort()
+    if not len(list) % 2: # if is divisible by 2
+        return (list[half - 1] + list[half]) / 2.0
+    return list[half]
+
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
@@ -124,20 +131,24 @@ class Command(BaseCommand):
                     method = 'sop_singlet'
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
-                    method = 'mean_ODn_screen'
+                    method = 'mean_screens'
                     warning_msg += "Unexpected number of screen records."
-                elif number_of_confirms == 3:
-                    confirm_results = sorted([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
-                    final_result = confirm_results[1]
-                    method = 'sop_median_of_confirms'
+
                 elif number_of_confirms == 1:
                     final_result = spec_results.filter(test_mode__startswith='confirm').first().ODn
                     warning_msg += "Single 'confirm' record"
-                    method = 'ODn_of_confirm_singleton'
+                    method = 'confirm_singleton'
                 elif number_of_confirms == 2:
                     final_result = spec_results.filter(test_mode__startswith='confirm').aggregate(Sum('ODn'))['ODn__sum'] / number_of_confirms
                     warning_msg += "Unexpected number of 'confirm' records. Found %s" % number_of_confirms
-                    method = 'mean_ODn_confirms'
+                    method = 'mean_confirms'
+                elif number_of_confirms == 3:
+                    final_result = median([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
+                    method = 'sop_median_confirms'
+                elif number_of_confirms > 3:
+                    final_result = median([ result.ODn for result in spec_results.filter(test_mode__startswith='confirm') ])
+                    method = 'median_confirms'
+                    warning_msg += "Unexpected number of 'confirm' records. Found %s" % number_of_confirms
                 else:
                     final_result = None
                     warning_msg += "Unexpected number of 'confirm' records. Found %s" % number_of_confirms

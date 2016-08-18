@@ -3,6 +3,7 @@ from handler_imports import *
 from datetime import datetime
 import logging
 from lib import log_exception
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -85,15 +86,13 @@ class LagSediaFileHandler(FileHandler):
                 panel = Panel.objects.get(pk=panel_id)
 
                 try:
-                    specimen = Specimen.objects.get(
-                        specimen_label=lag_row.specimen_label,
-                        specimen_type=panel.specimen_type,
-                        parent_label__isnull=False)
+                    specimen = self.find_specimen(lag_row.specimen_label, lag_row.specimen_purpose)
+                    
                 except Specimen.DoesNotExist:
                     if lag_row.specimen_purpose == 'panel_specimen':
-                        partial_matches = Specimen.objects.partial_matches(lag_row.specimen_label, panel.specimen_type)
-                        if not partial_matches.count():
-                            error_msg += "Specimen not recognised.\n"
+                        # partial_matches = Specimen.objects.partial_matches(lag_row.specimen_label, panel.specimen_type)
+                        # if not partial_matches.count():
+                        error_msg += "Specimen not recognised.\n"
 
                 if error_msg:
                     raise Exception(error_msg)
@@ -119,6 +118,36 @@ class LagSediaFileHandler(FileHandler):
         self.upload_file.message += fail_msg + '\n' + success_msg + '\n'
         self.upload_file.save()
 
+    def find_specimen(self, specimen_label, specimen_purpose):
+        from cephia.models import Specimen
+        if specimen_purpose != 'panel_specimen':
+            return None
+
+        panel = self.upload_file.panel
+        specimen_label_type = self.upload_file.specimen_label_type
+        
+        if specimen_label_type == 'aliquot_label':
+            return Specimen.objects.get(
+                specimen_label=specimen_label,
+                specimen_type=panel.specimen_type,
+                parent_label__isnull=False
+                )
+        elif specimen_label_type == 'root_specimen':
+            return Specimen.update_or_create_specimen_for_label(
+                specimen_label,
+                panel.specimen_type,
+                specimen_label_type,
+            )
+        elif specimen_label_type == 'aliquot_base':
+            return Specimen.update_or_create_specimen_for_label(
+                specimen_label,
+                panel.specimen_type,
+                specimen_label_type,
+                parent_label__isnull=False
+            )
+        return None
+        
+
     def process(self, panel_id, assay_run):
         from cephia.models import Specimen, Laboratory, Assay, Panel
         from assay.models import LagSediaResultRow, LagSediaResult, AssayResult, PanelMembership
@@ -130,51 +159,49 @@ class LagSediaFileHandler(FileHandler):
         panel = Panel.objects.get(pk=panel_id)
         panel_memberhsips = PanelMembership.objects.filter(panel=panel)
 
+        created_specimens = { }
+
         for lag_row in LagSediaResultRow.objects.filter(fileinfo=self.upload_file, state='validated'):
             try:
                 warning_msg = ''
 
                 with transaction.atomic():
                     specimen = None
+                    
                     try:
-                        specimen = Specimen.objects.filter(
-                            specimen_label=lag_row.specimen_label,
-                            specimen_type=panel.specimen_type,
-                            parent_label__isnull=False).first()
+                        specimen_hash = u'%s-%s' % (lag_row.specimen_label, lag_row.specimen_purpose)
 
-                        if specimen is None:
-                            specimen = Specimen.update_or_create_specimen_for_label(
-                                lag_row.specimen_label,
-                                panel.specimen_type,
-                                self.upload_file.specimen_label_type,
-                                parent_label__isnull=False
-                            )
-                            
+                        if specimen_hash in created_specimens:
+                            specimen, warning_msg = created_specimens[specimen_hash]
+                        else:
+                            specimen = self.find_specimen(lag_row.specimen_label, lag_row.specimen_purpose)
+                            if specimen is not None:
+                                specimen.save()
+
                             if specimen.is_artificial:
                                 warning_msg += "Artificial aliquot created"
+                                
                     except Specimen.DoesNotExist:
                         if lag_row.specimen_purpose == "panel_specimen":
-                            warning_msg += "Specimen not found\n"
-                            specimen = None
-                        else:
-                            continue
+                            raise Exception("Specimen not found")
 
-                    # if specimen.visit.id not in panel_memberhsip_ids:
-                    #     warning_msg += "Specimen does not belong to any panel membership.\n"
-                    lag_result = LagSediaResult.objects.create(specimen=specimen,
-                                                               assay=assay,
-                                                               laboratory=Laboratory.objects.get(name=lag_row.laboratory),
-                                                               test_date=datetime.strptime(lag_row.test_date, '%Y-%m-%d').date(),
-                                                               operator=lag_row.operator,
-                                                               assay_kit_lot=lag_row.assay_kit_lot,
-                                                               plate_identifier=lag_row.plate_identifier,
-                                                               test_mode=lag_row.test_mode,
-                                                               well=lag_row.well,
-                                                               specimen_purpose=lag_row.specimen_purpose,
-                                                               OD=lag_row.OD or None,
-                                                               calibrator_OD=lag_row.calibrator_OD or None,
-                                                               ODn=lag_row.ODn or None,
-                                                               assay_run=assay_run)
+                    created_specimens[specimen_hash] = (specimen, warning_msg)
+
+                    lag_result = LagSediaResult.objects.create(
+                        specimen=specimen,
+                        assay=assay,
+                        laboratory=Laboratory.objects.get(name=lag_row.laboratory),
+                        test_date=datetime.strptime(lag_row.test_date, '%Y-%m-%d').date(),
+                        operator=lag_row.operator,
+                        assay_kit_lot=lag_row.assay_kit_lot,
+                        plate_identifier=lag_row.plate_identifier,
+                        test_mode=lag_row.test_mode,
+                        well=lag_row.well,
+                        specimen_purpose=lag_row.specimen_purpose,
+                        OD=lag_row.OD or None,
+                        calibrator_OD=lag_row.calibrator_OD or None,
+                        ODn=lag_row.ODn or None,
+                        assay_run=assay_run)
 
                     lag_row.state = 'processed'
                     lag_row.date_processed = timezone.now()

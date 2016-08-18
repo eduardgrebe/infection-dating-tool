@@ -291,7 +291,7 @@ class LagSediaResult(BaseAssayResult):
     well= models.CharField(max_length=10, null=False, blank=True)
 
     def __unicode__(self):
-        return self.specimen
+        return unicode(self.specimen) if self.specimen is not None else self.pk
 
 
 class LagSediaResultRow(BaseAssayResultRow):
