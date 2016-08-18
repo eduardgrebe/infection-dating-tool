@@ -178,7 +178,7 @@ class LagSediaFileHandler(FileHandler):
                             if specimen is not None:
                                 specimen.save()
 
-                            if specimen.is_artificial:
+                            if specimen is not None and specimen.is_artificial:
                                 warning_msg += "Artificial aliquot created"
                                 
                     except Specimen.DoesNotExist:
