@@ -132,7 +132,7 @@ class Command(BaseCommand):
                 elif number_of_screens > 1 and number_of_confirms == 0:
                     final_result = spec_results.aggregate(Sum('ODn'))['ODn__sum'] / spec_results.count()
                     method = 'mean_screens'
-                    warning_msg += "Unexpected number of screen records."
+                    warning_msg += "Unexpected number of screen records. Found %s." % number_of_screens
 
                 elif number_of_confirms == 1:
                     final_result = spec_results.filter(test_mode__startswith='confirm').first().ODn
