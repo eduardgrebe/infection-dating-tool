@@ -28,7 +28,7 @@ def process_file_info(pk, lab_id):
         assay_run.check_replicate_counts()
     except Exception, e:
         result_file.message = 'Could not process file: ' + log_exception(e)
-        result_file.state = 'row_error'
+        result_file.state = 'error'
         result_file.save()
         
     finally:

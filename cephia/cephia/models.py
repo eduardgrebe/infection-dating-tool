@@ -748,7 +748,7 @@ class Specimen(models.Model):
         if specimen_label_type == 'aliquot_label' or specimen_label_type is None:
             return cls.objects.get(specimen_label=label, **kwargs)
         elif specimen_label_type == 'root_specimen':
-            parent_specimen = cls.objects.get(specimen_label=label, parent__isnull=True, **kwargs)
+            parent_specimen = cls.objects.get(specimen_label=label, parent__isnull=True, specimen_type=specimen_type, **kwargs)
 
             child_specimen = cls.create_from_parent(parent_specimen)
             child_specimen.specimen_label = cls.get_artificial_label(parent_specimen.label, **kwargs)

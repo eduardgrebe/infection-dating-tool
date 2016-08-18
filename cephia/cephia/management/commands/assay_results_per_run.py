@@ -117,6 +117,7 @@ class Command(BaseCommand):
                 number_of_confirms = len([mode for mode in test_modes if "conf" in mode])
                 number_of_screens = len([mode for mode in test_modes if "screen" in mode])
                 lag_result = spec_results.last()
+                method = None
 
                 if spec_results.count() == 1:
                     final_result = lag_result.ODn
@@ -133,6 +134,10 @@ class Command(BaseCommand):
                     final_result = spec_results.filter(test_mode__startswith='confirm').first().ODn
                     warning_msg += "Single 'confirm' record"
                     method = 'ODn_of_confirm_singleton'
+                elif number_of_confirms == 2:
+                    final_result = spec_results.filter(test_mode__startswith='confirm').aggregate(Sum('ODn'))['ODn__sum'] / number_of_confirms
+                    warning_msg += "Unexpected number of 'confirm' records. Found %s" % number_of_confirms
+                    method = 'mean_ODn_confirms'
                 else:
                     final_result = None
                     warning_msg += "Unexpected number of 'confirm' records. Found %s" % number_of_confirms
