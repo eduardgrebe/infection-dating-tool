@@ -33,6 +33,7 @@ FILE_TYPE_CHOICES = (
     ('transfer_in','Transfer In'),
     ('transfer_out','Transfer Out'),
     ('visit','Visit'),
+    ('viral_load','Viral Load'),
 )
 
 def as_days(tdelta):
@@ -59,7 +60,7 @@ class CephiaUser(BaseUser):
         permissions = {
             'can_upload_panel_data': ['panel_membership', 'panel_shipment'],
             'can_upload_results': ['assay'],
-            'can_upload_clinical_data': ['subject', 'visit'],
+            'can_upload_clinical_data': ['subject', 'visit', 'viral_load'],
             'can_upload_specimen_data': ['aliquot', 'transfer_in', 'transfer_out'],
             'can_upload_eddi_data': ['diagnostic_test', 'protocol_lookup', 'test_history',
                                      'test_property']
@@ -261,6 +262,8 @@ class FileInfo(models.Model):
             return PanelMembershipRow.objects.get(fileinfo__id=self.id, id=row_id)
         elif self.file_type == 'panel_shipment':
             return PanelShipmentRow.objects.get(fileinfo__id=self.id, id=row_id)
+        if self.file_type == 'viral_load':
+            return ViralLoadRow.objects.get(fileinfo__id=self.id, id=row_id)
         elif self.file_type == 'assay':
             if self.assay.name == 'lag':
                 return LagResultRow.objects.get(fileinfo__id=self.id, id=row_id)
@@ -284,7 +287,7 @@ class ImportedRow(models.Model):
         ('error','Error')
     )
 
-    state = models.CharField(max_length=10, choices=STATE_CHOICES, null=False, blank=False)
+    state = models.CharField(max_length=20, choices=STATE_CHOICES, null=False, blank=False)
     error_message = models.TextField(blank=True)
     date_processed = models.DateTimeField(auto_now_add=True)
     fileinfo = ProtectedForeignKey(FileInfo, db_index=True)
@@ -461,7 +464,6 @@ class VisitEDDI(models.Model):
     days_since_ep_ddi = models.IntegerField(null=True)
     days_since_lp_ddi = models.IntegerField(null=True)
 
-
 class Visit(models.Model):
 
     class Meta:
@@ -478,10 +480,14 @@ class Visit(models.Model):
     visit_hivstatus = models.CharField(max_length=8, null=False, blank=False, choices=STATUS_CHOICES)
     source_study = ProtectedForeignKey(Study, null=True, blank=True)
     cd4_count = models.IntegerField(null=True, blank=False)
-    vl_reported = models.CharField(max_length=10, null=True, blank=False)
+    
+    vl_reported = models.CharField(max_length=20, null=True, blank=False)
+    vl_cephia = models.CharField(max_length=20, null=True, blank=False)
+
     viral_load = models.IntegerField(null=True, blank=False)
     vl_type = models.CharField(max_length=20, null=True, blank=False)
     vl_detectable = models.NullBooleanField()
+
     scopevisit_ec = models.BooleanField(default=False)
     pregnant = models.NullBooleanField()
     hepatitis = models.NullBooleanField()
@@ -842,5 +848,10 @@ class AliquotRow(ImportedRow):
         return self.parent_label
 
 
-
+class ViralLoadRow(ImportedRow):
+    specimen_label = models.CharField(null=True, max_length=255)
+    relation = models.CharField(null=True, max_length=255)
+    value = models.CharField(null=True, max_length=255)
+    comment = models.CharField(null=True, max_length=255)
     
+    visit = models.ForeignKey(Visit, null=True)

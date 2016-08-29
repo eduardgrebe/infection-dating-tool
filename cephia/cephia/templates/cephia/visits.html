@@ -64,7 +64,7 @@
 	            <td>{{visit.visit_hivstatus}}</td>
 	            <td>{{visit.source_study.name}}</td>
 	            <td>{{visit.cd4_count}}</td>
-	            <td>{{visit.vl}}</td>
+	            <td>{{ visit.vl_type }} {{visit.viral_load}}</td>
 	            <td>{{visit.scopevisit_ec}}</td>
 	            <td>{% if visit.pregnant %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
 	            <td>{% if visit.hepatitis %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>

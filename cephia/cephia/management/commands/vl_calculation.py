@@ -18,11 +18,28 @@ class Command(BaseCommand):
     help = 'Update viral load data for all visits'
 
     def handle(self, *args, **options):
+        self.update_source_study_viral_loads()
+        self.update_cephia_viral_loads()
+
+    def update_cephia_viral_loads(self):
+        upper_limit = Visit.objects.filter(vl_cephia__isnull=False, vl_cephia__startswith='<')
+        lower_limit = Visit.objects.filter(vl_cephia__isnull=False, vl_cephia__startswith='>')
+        quantitative = Visit.objects.filter(vl_cephia__isnull=False)\
+                                    .exclude(pk__in=[ visit.id for visit in upper_limit ])\
+                                    .exclude(pk__in=[ visit.id for visit in lower_limit ])
+
+        self.update_viral_loads(upper_limit, lower_limit, quantitative)
+        
+    def update_source_study_viral_loads(self):
         upper_limit = Visit.objects.filter(vl_reported__isnull=False, vl_reported__startswith='<')
         lower_limit = Visit.objects.filter(vl_reported__isnull=False, vl_reported__startswith='>')
         quantitative = Visit.objects.filter(vl_reported__isnull=False)\
                                     .exclude(pk__in=[ visit.id for visit in upper_limit ])\
                                     .exclude(pk__in=[ visit.id for visit in lower_limit ])
+
+        self.update_viral_loads(upper_limit, lower_limit, quantitative)
+
+    def update_viral_loads(self, upper_limit, lower_limit, quantitative):
         with transaction.atomic():
             for visit in quantitative:
                 try:

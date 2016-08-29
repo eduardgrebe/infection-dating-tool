@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = 'Process files in status - validated'
 
     def handle(self, *args, **options):
-        for file_to_process in FileInfo.objects.filter(state__in=['validated','row_error'], priority__in=[4,5]).order_by('priority'):
+        for file_to_process in FileInfo.objects.filter(state__in=['validated','row_error'], priority__in=[4,5, 6]).order_by('priority'):
             try:
                 file_handler = file_to_process.get_handler()
         

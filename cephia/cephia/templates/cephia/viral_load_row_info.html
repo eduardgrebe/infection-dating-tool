@@ -8,20 +8,15 @@
 {% endblock %}
 
 {% block filename %}{{file}}{% endblock %}
-
 {% block table_header %}
 <thead>
-  <th>Subject Label</th>
-  <th>Visit Date</th>
-  <th></th>
-  <th></th>
-  <th>Visit HIV Status</th>
-  <th>Source Study</th>
-  <th>CD4 Count</th>
-  <th>VL</th>
-  <th>Scope Visit EC</th>
-  <th>Pregnant</th>
-  <th>Hepatitis</th>
+  <th>Specimen Label</th>
+  <th>Relation</th>
+  <th>Value</th>
+  <th>Comment</th>
+  <th>Visit</th>
+  <th>Subject</th>
+  <th>Comment</th>
   <th>State</th>
   <th>Message</th>
 </thead>
@@ -33,30 +28,38 @@
 <tbody>
   {% for row in rows %}
   <tr>
-    <td>{{row.subject_label}}</td>
-    <td>{{row.visitdate_yyyy}}</td>
-    <td>{{row.visitdate_mm}}</td>
-    <td>{{row.visitdate_dd}}</td>
-    <td>{{row.visit_hivstatus}}</td>
-    <td>{{row.source_study}}</td>
-    <td>{{row.cd4_count}}</td>
-    <td>{{row.viral_load}}</td>
-    <td>{{row.scopevisit_ec}}</td>
-    <td>{{row.pregnant}}</td>
-    <td>{{row.hepatitis}}</td>
+    <td>{{row.specimen_label }}</td>
+    <td>{{row.relation}}</td>
+    <td>{{row.value}}</td>
+    <td>{{row.comment}}</td>
+    <td>
+      {% if row.visit %}
+        <a href='{% url 'visits' row.visit.pk %}'>{{ row.visit.pk }}</a>
+      {% endif %}
+    </td>
+    <td>
+      {{row.visit.subject.subject_label}}
+    </td>
     <td>{{row.state}}</td>
     <td><pre>{{row.error_message}}</pre></td>
     <td data-row-id="{{row.id}}" data-file-id="{{row.fileinfo.id}}" data-file-type="{{row.fileinfo.file_type}}">
       {% if row.state == 'error' %}
-      <a href="#" class="btn btn-success btn-comment-modal">
+      <button class="btn btn-success btn-comment-modal">
         {% bootstrap_icon "comment" %}
-      </a>
+      </button>
       {% endif %}
     </td>
   </tr>
   {% endfor %}
 </tbody>
 {% endblock %}
+
+
+
+
+
+
+
 
 
 

@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AliquotRow)
+                    Study, TransferOutRow, AliquotRow, ViralLoadRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
@@ -22,6 +22,7 @@ import os
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
+from lib import log_exception
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +147,8 @@ def subjects(request, template="cephia/subjects.html"):
 
             return response
         except Exception, e:
+            import traceback
+            traceback.print_exc()
             logger.exception(e)
             messages.error(request, 'Failed to download file')
     else:
@@ -315,6 +318,7 @@ def upload_file(request):
             'transfer_in': 3,
             'aliquot': 4,
             'transfer_out': 5,
+            'viral_load': 6,
         }
 
         if request.method == "POST":
@@ -346,8 +350,8 @@ def upload_file(request):
             return HttpResponseRedirect(reverse('file_info'))
 
     except Exception, e:
-        logger.exception(e)
-        messages.add_message(request, messages.ERROR, 'Failed to upload file')
+        raise e
+        messages.add_message(request, messages.ERROR, 'Failed to upload file %s' % log_exception(e, logger))
         return HttpResponseRedirect(reverse('file_info'))
 
 
@@ -564,7 +568,7 @@ def download_subjects_no_visits(request):
 @user_passes_test(lambda u: u.is_staff)
 def export_file_data(request, file_id=None, state=None):
 
-    try:
+
         fileinfo = FileInfo.objects.get(pk=file_id)
 
         if state == 'all':
@@ -684,6 +688,13 @@ def export_file_data(request, file_id=None, state=None):
                        'test_result',
                        'source',
                        'protocol']
+        elif fileinfo.file_type == 'viral_load':
+            rows = ViralLoadRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['specimen_label',
+                       'relation',
+                       'value',
+                       'comment',
+            ]
 
         response, writer = get_csv_response('file_dump_%s.csv' % datetime.today().strftime('%d%b%Y_%H%M'))
         headers.insert(0, 'id')
@@ -697,7 +708,9 @@ def export_file_data(request, file_id=None, state=None):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if row.comment:
+            if isinstance(row.comment, basestring):
+                model_dict['comment'] = row.comment
+            elif row.comment:
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
@@ -708,14 +721,11 @@ def export_file_data(request, file_id=None, state=None):
                 model_dict['resolve_date'] = None
                 model_dict['assigned_to'] = None
 
-            content = [ model_dict[x] for x in headers ]
+            content = [ model_dict.get(x, '') for x in headers ]
             writer.writerow(content)
 
         return response
-    except Exception, e:
-        logger.exception(e)
-        messages.error(request, 'Failed to download file')
-        return HttpResponseRedirect(reverse('file_info'))
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)

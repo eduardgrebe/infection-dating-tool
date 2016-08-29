@@ -6,6 +6,7 @@ from visit_file_handler import VisitFileHandler
 from transfer_in_file_handler import TransferInFileHandler
 from aliquot_file_handler import AliquotFileHandler
 from transfer_out_file_handler import TransferOutFileHandler
+from viral_load_file_handler import ViralLoadFileHandler
 
 #DIAGNOSTIC TESTS
 from panel_membership_file_handler import PanelMembershipFileHandler
@@ -52,6 +53,7 @@ register_file_handler("visit", VisitFileHandler, None)
 register_file_handler("aliquot", AliquotFileHandler, None)
 register_file_handler("transfer_out", TransferOutFileHandler, None)
 register_file_handler("transfer_in", TransferInFileHandler, None)
+register_file_handler("viral_load", ViralLoadFileHandler, None)
 
 register_file_handler("diagnostic_test", DiagnosticTestFileHandler, None)
 register_file_handler("test_history", TestHistoryFileHandler, None)
