@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
                     VisitRow, Laboratory, Specimen, SpecimenType, TransferInRow,
-                    Study, TransferOutRow, AliquotRow, ViralLoadRow)
+                    Study, TransferOutRow, AliquotRow, ViralLoadRow, TreatmentStatusUpdateRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
@@ -318,7 +318,8 @@ def upload_file(request):
             'transfer_in': 3,
             'aliquot': 4,
             'transfer_out': 5,
-            'viral_load': 6,
+            'viral_load': 2,
+            'treatment_status_update': 1,
         }
 
         if request.method == "POST":
@@ -505,7 +506,10 @@ def export_as_csv(request, file_id):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if model_dict['comment']:
+            comment = model_dict.get('comment')
+            if isinstance(comment, basestring):
+                model_dict['comment'] = comment
+            elif comment:
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)
@@ -580,7 +584,7 @@ def export_file_data(request, file_id=None, state=None):
         else:
             state = ['error']
 
-
+        print fileinfo.file_type
         if fileinfo.file_type == 'subject':
             rows = SubjectRow.objects.filter(fileinfo__id=file_id, state__in=state)
             headers = ['subject_label',
@@ -617,6 +621,19 @@ def export_file_data(request, file_id=None, state=None):
                        'aids_diagnosis_date_yyyy',
                        'aids_diagnosis_date_mm',
                        'aids_diagnosis_date_dd',
+                       'art_initiation_date_yyyy',
+                       'art_initiation_date_mm',
+                       'art_initiation_date_dd',
+                       'art_interruption_date_yyyy',
+                       'art_interruption_date_mm',
+                       'art_interruption_date_dd',
+                       'art_resumption_date_yyyy',
+                       'art_resumption_date_mm',
+                       'art_resumption_date_dd']
+        elif fileinfo.file_type == 'treatment_status_update':
+            rows = TreatmentStatusUpdateRow.objects.filter(fileinfo__id=file_id, state__in=state)
+            headers = ['subject_label',
+                       'source_study',
                        'art_initiation_date_yyyy',
                        'art_initiation_date_mm',
                        'art_initiation_date_dd',
@@ -708,9 +725,10 @@ def export_file_data(request, file_id=None, state=None):
         
         for row in rows:
             model_dict = model_to_dict(row)
-            if isinstance(row.comment, basestring):
+            comment = model_dict.get('comment', None)
+            if isinstance(comment, basestring):
                 model_dict['comment'] = row.comment
-            elif row.comment:
+            elif comment:
                 model_dict['comment'] = row.comment.comment
                 model_dict['resolve_action'] = row.comment.resolve_action
                 model_dict['resolve_date'] = timezone.get_current_timezone().normalize(row.comment.resolve_date)

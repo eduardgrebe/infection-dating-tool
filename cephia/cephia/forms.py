@@ -3,7 +3,7 @@ import os
 from cephia.models import (FileInfo, SubjectRow, Ethnicity,
                            VisitRow, Specimen, TransferInRow,
                            TransferOutRow, AliquotRow, ImportedRowComment, Assay,
-                           Laboratory, Panel, Assay, Visit, ViralLoadRow)
+                           Laboratory, Panel, Assay, Visit, ViralLoadRow, TreatmentStatusUpdateRow)
 from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodifiedResultRow,
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
@@ -293,6 +293,9 @@ class RowFilterForm(forms.Form):
         elif fileinfo.file_type == 'viral_load':
             rows = ViralLoadRow.objects.filter(fileinfo=fileinfo)
             template = 'cephia/viral_load_row_info.html'
+        elif fileinfo.file_type == 'treatment_status_update':
+            rows = TreatmentStatusUpdateRow.objects.filter(fileinfo=fileinfo)
+            template = 'cephia/treatment_status_update_row_info.html'
         elif fileinfo.file_type == 'test_history':
             rows = DiagnosticTestHistoryRow.objects.filter(fileinfo=fileinfo)
             template = 'diagnostics/test_history_row_info.html'

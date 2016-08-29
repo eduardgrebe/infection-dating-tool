@@ -34,6 +34,7 @@ FILE_TYPE_CHOICES = (
     ('transfer_out','Transfer Out'),
     ('visit','Visit'),
     ('viral_load','Viral Load'),
+    ('treatment_status_update','Treatment Status Update'),
 )
 
 def as_days(tdelta):
@@ -60,7 +61,7 @@ class CephiaUser(BaseUser):
         permissions = {
             'can_upload_panel_data': ['panel_membership', 'panel_shipment'],
             'can_upload_results': ['assay'],
-            'can_upload_clinical_data': ['subject', 'visit', 'viral_load'],
+            'can_upload_clinical_data': ['subject', 'visit', 'viral_load', 'treatment_status_update'],
             'can_upload_specimen_data': ['aliquot', 'transfer_in', 'transfer_out'],
             'can_upload_eddi_data': ['diagnostic_test', 'protocol_lookup', 'test_history',
                                      'test_property']
@@ -224,7 +225,7 @@ class FileInfo(models.Model):
     ]
 
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
-    file_type = models.CharField(max_length=20, null=False, blank=False, choices=FILE_TYPE_CHOICES)
+    file_type = models.CharField(max_length=50, null=False, blank=False, choices=FILE_TYPE_CHOICES)
     assay = ProtectedForeignKey(Assay, db_index=True, default=None, null=True)
     panel = ProtectedForeignKey(Panel, db_index=True, default=None, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -854,4 +855,27 @@ class ViralLoadRow(ImportedRow):
     value = models.CharField(null=True, max_length=255)
     comment = models.CharField(null=True, max_length=255)
     
-    visit = models.ForeignKey(Visit, null=True)
+    visit = ProtectedForeignKey(Visit, null=True)
+
+class TreatmentStatusUpdateRow(ImportedRow):
+
+    class Meta:
+        db_table = "cephia_treatmentstatusupdate_rows"
+
+    subject_label = models.CharField(max_length=255, null=False, blank=True)
+    source_study = models.CharField(max_length=255, null=False, blank=True)
+    
+    art_initiation_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    art_initiation_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    art_initiation_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    art_interruption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    art_interruption_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    art_interruption_date_dd = models.CharField(max_length=255, null=False, blank=True)
+    art_resumption_date_yyyy = models.CharField(max_length=255, null=False, blank=True)
+    art_resumption_date_mm = models.CharField(max_length=255, null=False, blank=True)
+    art_resumption_date_dd = models.CharField(max_length=255, null=False, blank=True)
+
+    subject = ProtectedForeignKey(Subject, null=True, blank=False)
+
+    def __unicode__(self):
+        return self.subject_label
