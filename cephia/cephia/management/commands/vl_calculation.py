@@ -28,7 +28,7 @@ class Command(BaseCommand):
                                     .exclude(pk__in=[ visit.id for visit in upper_limit ])\
                                     .exclude(pk__in=[ visit.id for visit in lower_limit ])
 
-        self.update_viral_loads(upper_limit, lower_limit, quantitative)
+        self.update_viral_loads(upper_limit, lower_limit, quantitative, 'vl_cephia')
         
     def update_source_study_viral_loads(self):
         upper_limit = Visit.objects.filter(vl_reported__isnull=False, vl_reported__startswith='<')
@@ -39,15 +39,15 @@ class Command(BaseCommand):
 
         self.update_viral_loads(upper_limit, lower_limit, quantitative)
 
-    def update_viral_loads(self, upper_limit, lower_limit, quantitative):
+    def update_viral_loads(self, upper_limit, lower_limit, quantitative, field='vl_reported'):
         with transaction.atomic():
             for visit in quantitative:
                 try:
-
-                    if visit.vl_reported.startswith('='):
-                        value = visit.vl_reported[1:]
+                    vl_reported = getattr(visit, field)
+                    if vl_reported.startswith('='):
+                        value = vl_reported[1:]
                     else:
-                        value = visit.vl_reported
+                        value = vl_reported
 
                     visit.viral_load = vl_as_int(value)
                     visit.vl_detectable = True
@@ -60,7 +60,8 @@ class Command(BaseCommand):
         with transaction.atomic():
             for visit in upper_limit:
                 try:
-                    visit.viral_load = vl_as_int(visit.vl_reported[1:])
+                    vl_reported = getattr(visit, field)
+                    visit.viral_load = vl_as_int(vl_reported[1:])
                     visit.vl_detectable = False
                     visit.vl_type = 'upper_limit'
                     visit.save()
@@ -72,7 +73,8 @@ class Command(BaseCommand):
         with transaction.atomic():
             for visit in lower_limit:
                 try:
-                    visit.viral_load = vl_as_int(visit.vl_reported[1:])
+                    vl_reported = getattr(visit, field)
+                    visit.viral_load = vl_as_int(vl_reported[1:])
                     visit.vl_detectable = True
                     visit.vl_type = 'lower_limit'
                     visit.save()
