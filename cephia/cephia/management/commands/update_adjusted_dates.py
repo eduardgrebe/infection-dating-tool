@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from diagnostics.models import DiagnosticTestHistory
+from diagnostics.models import DiagnosticTestHistory, TestPropertyEstimate
 import logging
 
 logger = logging.getLogger(__name__)

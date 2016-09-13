@@ -788,7 +788,7 @@ class BioPlexDukeResult(BaseAssayResult):
     class Meta:
         db_table = 'assay_duke'
 
-    result_detail_fields = ['classification']
+    result_detail_fields = ['classification', 'recent']
     
     classification = models.CharField(max_length=255, null=True)
     recent = models.NullBooleanField()
@@ -806,7 +806,8 @@ class ISGlobalResult(BaseAssayResult):
     class Meta:
         db_table = 'assay_isglobal'
 
-    result_detail_fields = ['classification_weighted_model', 'classification_unweighted_model']
+    result_detail_fields = ['classification_weighted_model', 'classification_unweighted_model',
+                            'recent_weighted_model', 'recent_unweighted_model']
 
     classification_weighted_model = models.CharField(max_length=255, null=True)
     classification_unweighted_model = models.CharField(max_length=255, null=True)

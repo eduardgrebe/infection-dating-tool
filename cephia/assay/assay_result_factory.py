@@ -114,6 +114,7 @@ class ResultDownload(object):
             "specimen.visit.subject.subject_eddi.eddi",
             "specimen.visit.subject.subject_eddi.ep_ddi",
             "specimen.visit.subject.subject_eddi.lp_ddi",
+            "specimen.visit.subject.subject_eddi.eddi_interval_size",
             "specimen.visit.visit_eddi.days_since_eddi",
             "specimen.visit.visit_eddi.days_since_ep_ddi",
             "specimen.visit.visit_eddi.days_since_lp_ddi",

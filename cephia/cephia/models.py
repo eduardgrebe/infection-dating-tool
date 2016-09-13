@@ -326,6 +326,10 @@ class SubjectEDDI(models.Model):
     recalculate = models.BooleanField(default=False)
     eddi_type = models.CharField(max_length=100, null=False, blank=False)
 
+    @property
+    def eddi_interval_size(self):
+        return self.interval_size
+
 
 class SubjectEDDIStatus(models.Model):
     class Meta:
