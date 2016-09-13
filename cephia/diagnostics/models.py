@@ -1,6 +1,7 @@
 from django.db import models
 from cephia.models import Subject, ImportedRow
 from django.db import transaction
+from simple_history.models import HistoricalRecords
 
 
 class DiagnosticTest(models.Model):
@@ -10,12 +11,14 @@ class DiagnosticTest(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100, null=False, blank=False)
     description = models.CharField(max_length=255, null=False, blank=False)
+    history = HistoricalRecords()
 
 
 class ProtocolLookup(models.Model):
     class Meta:
         db_table = "cephia_protocol_lookup"
 
+    history = HistoricalRecords()
     name = models.CharField(max_length=100, null=False, blank=False)
     protocol = models.CharField(max_length=100, null=False, blank=False)
     test = models.ForeignKey(DiagnosticTest, null=False, blank=False)
@@ -32,6 +35,7 @@ class TestPropertyEstimate(models.Model):
         ('placeholder','Placeholder'),
     )
     
+    history = HistoricalRecords()
     test = models.ForeignKey(DiagnosticTest, null=False, blank=True)
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
     estimate_type = models.CharField(max_length=255, null=False, blank=True)
@@ -59,6 +63,7 @@ class DiagnosticTestHistory(models.Model):
     class Meta:
         db_table = "cephia_diagnostic_test_history"
 
+    history = HistoricalRecords()
     subject = models.ForeignKey(Subject, null=True, blank=False, related_name='test_history')
     test = models.ForeignKey(DiagnosticTest, null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
