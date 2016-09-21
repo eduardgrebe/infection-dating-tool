@@ -211,7 +211,7 @@ class SubjectFileHandler(FileHandler):
         
     def process(self):
         from cephia.models import Ethnicity, Subtype, Country, Subject, SubjectRow, Study
-        
+
         rows_inserted = 0
         rows_failed = 0
 
@@ -224,7 +224,7 @@ class SubjectFileHandler(FileHandler):
                         ethnicity = Ethnicity.objects.get(name=subject_row.population_group)
                     except Ethnicity.DoesNotExist:
                         ethnicity = None
-                    
+
                     subject = Subject.objects.create(subject_label=subject_row.subject_label,
                                                      source_study=Study.objects.get(name=subject_row.source_study),
                                                      cohort_entry_date = self.registered_dates.get('cohort_entry_date', None),

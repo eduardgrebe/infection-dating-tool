@@ -19,12 +19,13 @@ class TestCase001(TestBase):
     def test_case_001(self):
         self.create_ethnicities()
         self.create_countries()
+        self.create_source_study()
+        self.create_specimen_type()
         
         self.subjects.get_handler().parse()
         self.assertEqual(1, SubjectRow.objects.filter(fileinfo=self.subjects, state='pending').count())
 
         self.subjects.get_handler().validate()
-        
         self.assertEqual(1, SubjectRow.objects.filter(fileinfo=self.subjects, state='validated').count())
 
         self.subjects.get_handler().process()

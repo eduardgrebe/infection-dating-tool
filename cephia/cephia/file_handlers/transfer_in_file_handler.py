@@ -89,7 +89,7 @@ class TransferInFileHandler(FileHandler):
         default_more_date = datetime.now().date() + relativedelta(years=75)
         rows_validated = 0
         rows_failed = 0
-        
+
         for transfer_in_row in TransferInRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
@@ -189,6 +189,7 @@ class TransferInFileHandler(FileHandler):
         rows_failed = 0
         validated_records = TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated', roll_up=False)
 
+        import pdb;pdb.set_trace()
         sql = """
         SELECT
         specimen_label,
@@ -235,6 +236,7 @@ class TransferInFileHandler(FileHandler):
                         subject = None
                         pass
 
+                    
                     specimen = Specimen.objects.create(specimen_label = transfer_in_row.specimen_label,
                                                        subject_label = transfer_in_row.subject_label,
                                                        reported_draw_date = self.registered_dates.get('drawdate', None),

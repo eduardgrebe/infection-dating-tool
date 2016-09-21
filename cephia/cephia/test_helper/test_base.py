@@ -305,7 +305,42 @@ class TestHelper(object):
         Country.objects.get_or_create(code="MK", name="Macedonia", region_id=1)
         Country.objects.get_or_create(code="KR", name="South", region_id=1)
         Country.objects.get_or_create(code="KP", name="North", region_id=1)
-    
+
+    def create_source_study(self):
+        Study.objects.get_or_create(name='IAVI', description='IAVI study - from core lab in London')
+        Study.objects.get_or_create(name='UCSD', description='UCSD study, San Diego, CA')
+        Study.objects.get_or_create(name='SCOPE', description='SCOPE study, San Francisco, CA')
+        Study.objects.get_or_create(name='AMPLIAR', description='AMPLIAR study, Brazil')
+        Study.objects.get_or_create(name='SFMHS', description='San Francisco Men’s Health Study')
+        Study.objects.get_or_create(name='CTS', description='Blood bank - Blood Systems Testing Lab (Description to be updated')
+        Study.objects.get_or_create(name='BRAZIL', description='Blood bank - Brazil')
+        Study.objects.get_or_create(name='SANBS', description='Blood bank - SANBS')
+        Study.objects.get_or_create(name='CAPRISA', description='CAPRISA study - South Africa')
+        Study.objects.get_or_create(name='FPSHSP', description='Fundação Pro-Sangue-Hemocentro de São Paulo, Brazil')
+        Study.objects.get_or_create(name='GAMA', description='CRESIB malaria cohort')
+        Study.objects.get_or_create(name='IMPACTA', description='Asociación Civil Impacta Saludy Educación')
+        Study.objects.get_or_create(name='ARC', description='Blood bank - American Red Cross')
+        Study.objects.get_or_create(name='OPTIONS', description='Options study')
+        Study.objects.get_or_create(name='SERACARE', description='')
+
+    def create_specimen_type(self):
+        SpecimenType.objects.get_or_create(name='Whole Blood', spec_type=1, spec_group=1)
+        SpecimenType.objects.get_or_create(name='DBS', spec_type=2, spec_group=2)
+        SpecimenType.objects.get_or_create(name='Serum', spec_type=3, spec_group=3)
+        SpecimenType.objects.get_or_create(name='Urine / Nothing', spec_type=4.1, spec_group=4)
+        SpecimenType.objects.get_or_create(name='Urine / Azide', spec_type=4.2, spec_group=4)
+        SpecimenType.objects.get_or_create(name='Stool / Nothing', spec_type=5.1, spec_group=5)
+        SpecimenType.objects.get_or_create(name='Stool / RNAlater', spec_type=5.2, spec_group=5)
+        SpecimenType.objects.get_or_create(name='Saliva', spec_type=6.1, spec_group=6)
+        SpecimenType.objects.get_or_create(name='PBMC', spec_type=7, spec_group=7)
+        SpecimenType.objects.get_or_create(name='Plasma', spec_type=8, spec_group=8)
+        SpecimenType.objects.get_or_create(name='Hair', spec_type=9, spec_group=9)
+        SpecimenType.objects.get_or_create(name='Buccal swab / Nothing', spec_type=10.1, spec_group=10)
+        SpecimenType.objects.get_or_create(name='Buccal swab / Buffer', spec_type=10.2, spec_group=10)
+        SpecimenType.objects.get_or_create(name='Saliva / Pellets', spec_type=6.2, spec_group=6)
+        SpecimenType.objects.get_or_create(name='Urine / Unknown', spec_type=4.9, spec_group=4)
+        SpecimenType.objects.get_or_create(name='Stool / Unknown', spec_type=5.9, spec_group=5)
+
 class TestBase(TestCase, TestHelper):
     """ All tests should extend from this class """
     pass
