@@ -1,0 +1,111 @@
+* downloading and installing r-studio
+I am following the instructions detailed on the following site
+https://www.rstudio.com/products/shiny/download-server/
+
+** Installing R
+To obtain the latest R packages, add an entry to /etc/apt/sources.list
+e.g. deb https://<my.favorite.cran.mirror>/bin/linux/ubuntu xenial/ (other options are listed here https://cran.rstudio.com/bin/linux/ubuntu/README.html)
+
+I added the following
+deb https://cloud.r-project.org/bin/linux/ubuntu xenial/
+
+sudo apt-get update
+sudo apt-get install r-base
+
+** Installing Shiny R package
+sudo su - \
+-c "R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
+
+** Install gdebi (which is used to install Shiny Server and all of its dependencies)
+sudo apt-get install gdebi-core
+wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.4.807-amd64.deb
+sudo gdebi shiny-server-1.4.4.807-amd64.deb
+
+** Start/stop/restart server
+sudo systemctl [option you wish] shiny-server
+e.g. sudo systemctl restart shiny-server
+
+** Shiny Server admin guide
+http://docs.rstudio.com/shiny-server/#server-management
+
+** Running Shiny Server once installed
+http://localhost:3838/
+This will load a page which helps you to check that everything is installed correctly.
+
+*** Installing an app
+The configuration file can be found at /etc/shiny-server/shiny-server.conf
+I got nowhere with this so I moved onto running the app. I have left this in case it proves to be usedful at some stage
+
+*** Running an app
+run the following command in the terminal replacing the directory with the one you wish to point to
+R -e "shiny::runApp('~/id/cephia/shiny_server/shiny_apps/**app_folder**')"
+e.g. run the following command in the terminal replacing the directory with the one you wish to point to
+R -e "shiny::runApp('~/id/cephia/shiny_server/shiny_apps/HIV_incidence_assays__one_surveys')"
+
+this will give you the ip address that the app is listening on which you then navigate to in your browser
+
+After running the three apps I have labeled their folders as follows:
+HIV_incidence_assays__one_surveys
+HIV_incidence_assays__two_surveys
+sample_size_calculator
+
+You may be missing some packages. I was missing the following and ran these commands. Just replace the package name with the missing package and it should hopefully install
+sudo R -e "install.packages('ggplot2', repos='http://cran.rstudio.com', type='source')"
+sudo R -e "install.packages('dplyr', repos='http://cran.rstudio.com', type='source')"
+
+** setting up staging server
+check your ubuntu version before adding the following line to sources.list. I have used the following for the staging server
+deb https://cloud.r-project.org/bin/linux/ubuntu trusty/
+
+if the following line does not have permission to run then run it as sudo
+wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.4.807-amd64.deb
+
+scp the rar files over to the server
+e.g. scp -C /home/andrew/id/cephia/shiny_server/9714d0f7e45c4bf0814126eff0480e9f.tar.gz   impd@r.cephia.impd.co.za:~/
+I have put them all in ~/cephia and extracted them into the same folder structure as mentioned above
+
+You can now run the command above to run the app but it is pointing to the servers IP address and cannot be accessed on another machine.
+Try for port 3100 because this has been opened already
+
+*** Start/Stop/Restart server
+getting sudo: systemctl: command not found when trying to restart the server
+Use this instead. The version of Ubuntu is older on the server and does not support systemctl.
+sudo service shiny-server restart/stop/start
+
+*** Shiny Server
+I am reading the guide on the following site for assistance in setting this up.
+https://github.com/rstudio/shiny-server/blob/master/README.md
+I have copied the apps to /srv/shiny-server
+This location and the port can be changed in etc/shiny-server/shiny-server.conf
+
+*** Accessing shiny server
+http://r.cephia.impd.co.za:3100/
+Use the app name to access the correct app. This is the folder name that you set
+e.g. http://r.cephia.impd.co.za:3100/HIV_incidence_assays__two_surveys/
+
+Folder names as I have them right now:
+HIV_incidence_assays__one_surveys
+HIV_incidence_assays__two_surveys
+sample_size_calculator
+
+When you go to this site then it loads but seems not fully. This is most likely because of the same packages that were missing on the local machine. I am going to run the same commands to install packages that I did on my local machine but it does not tell you
+what is missing when you are doing this on the server.
+
+sudo R -e "install.packages('ggplot2', repos='http://cran.rstudio.com', type='source')"
+sudo R -e "install.packages('dplyr', repos='http://cran.rstudio.com', type='source')"
+
+This has worked and the apps are all running.
+
+
+*** login information :crypt:
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2
+
+jA0EBwMCxj41xsA3XKfn0mABGPd/pvoRnYK2ntQQi7CrYWDG6xL5VtLUskQUmwyZ
+Wx4gx7/ZDvYEYMxEk+dup8vKiMJYl8ygtqnM4PoLsdcP3N2H/GgBdNLS3L7CPU+U
+jdZsmutqJSagUKTlUIHuhVo=
+=go5U
+-----END PGP MESSAGE-----
+** setting up ability for anyone to upload and deploy apps from the front end
+I am using the following link as a guide for this: https://support.rstudio.com/hc/en-us/articles/218541988-Shiny-Server-Quick-Start-Let-users-manage-their-own-applications
+
