@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.db import transaction
 from django.db.models import Q
 import logging
+from dateutil.relativedelta import relativedelta
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class Command(BaseCommand):
                 for subject in subjects:
                     self._handle_subject(subject.id)
         elif args[0] == 'all':
+            self.update_adjusted_dates()
             subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
             with transaction.atomic():
                 for subject_id in subject_ids:
@@ -27,6 +29,13 @@ class Command(BaseCommand):
 
         self._handle_subjects_without_test_history()
         self.cleanup_orphans()
+
+    def update_adjusted_dates(self):
+        with transaction.atomic():
+            for test_history in DiagnosticTestHistory.objects.all():
+                test_property = TestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
+                test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+                test_history.save()
 
     def _handle_subject(self, subject_id):
         edsc_days_diff = None

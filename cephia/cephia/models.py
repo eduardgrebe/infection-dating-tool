@@ -325,6 +325,11 @@ class SubjectEDDI(models.Model):
     eddi = models.DateField(null=True, blank=True)
     recalculate = models.BooleanField(default=False)
     eddi_type = models.CharField(max_length=100, null=False, blank=False)
+    history = HistoricalRecords()
+
+    @property
+    def eddi_interval_size(self):
+        return self.interval_size
 
 
 class SubjectEDDIStatus(models.Model):
@@ -461,6 +466,7 @@ class VisitEDDI(models.Model):
     class Meta:
         db_table = "cephia_visit_eddi"
 
+    history = HistoricalRecords()
     days_since_eddi = models.IntegerField(null=True)
     days_since_ep_ddi = models.IntegerField(null=True)
     days_since_lp_ddi = models.IntegerField(null=True)

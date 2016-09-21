@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-from diagnostics.models import DiagnosticTestHistory
+from diagnostics.models import DiagnosticTestHistory, TestPropertyEstimate
 import logging
+from dateutil.relativedelta import relativedelta
 
 logger = logging.getLogger(__name__)
 
