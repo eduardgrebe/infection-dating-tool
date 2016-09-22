@@ -86,6 +86,7 @@ INSTALLED_APPS = (
     'user_management',
     'diagnostics',
     'assay',
+    'outside_eddi',
     'djcelery'
 )
 

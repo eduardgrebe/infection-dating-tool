@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^reports/', include('reporting.urls', namespace='reporting')),
     url(r'^accounts/', include('user_management.urls', namespace='users')),
     url(r'^assay/', include('assay.urls', namespace='assay')),
+    url(r'^outside_eddi/', include('outside_eddi.urls', namespace='outside_eddi')),
     url(r'^diagnostics/', include('diagnostics.urls', namespace='diagnostics')),
     
     url(r'^countries/$', views.countries, name='countries'),

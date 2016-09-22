@@ -10,7 +10,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import resolve_url
-from forms import UserEditForm
+from forms import UserEditForm, UserCreationForm
 from user_management.models import AuthenticationToken
 from django.core.urlresolvers import reverse
 
@@ -39,6 +39,42 @@ def login(request, template='admin/cephia_login.html'):
             _check_for_login_hack_attempt(request, context)
 
     context['form'] = form
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
+@csrf_exempt
+def outside_eddi_user_registration(request, template='outside_eddi/user_registration.html'):
+    context = {}
+    
+    # form = AuthenticationForm(request, data=request.POST or None)
+
+    # if request.method == 'POST':
+    #     if form.is_valid():
+    #         user = form.get_user()
+
+    #         if user.is_locked_out():
+    #             msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
+    #             messages.add_message(request, messages.WARNING, msg)
+    #         else:
+    #             outside_eddi_user_registration(request, user)
+    #             user.login_ok()
+    #             token = AuthenticationToken.create_token(user)
+    #             return HttpResponseRedirect(reverse("outside_eddi/home"))
+    #     else:
+    #         messages.add_message(request, messages.WARNING, "Invalid credentials")
+    #         _check_for_login_hack_attempt(request, context)
+
+    form = UserCreationForm(request.POST or None)
+    
+    if request.method == 'POST':
+        if form.is_valid():
+            import pdb;pdb.set_trace()
+            user = form.save()
+        else:
+            messages.add_message(request, messages.WARNING, "Invalid credentials")
+            _check_for_login_hack_attempt(request, context)
+
+    context['form'] = form
+    
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 def _check_for_login_hack_attempt(request, context):
