@@ -44,31 +44,12 @@ def login(request, template='admin/cephia_login.html'):
 @csrf_exempt
 def outside_eddi_user_registration(request, template='outside_eddi/user_registration.html'):
     context = {}
-    
-    # form = AuthenticationForm(request, data=request.POST or None)
-
-    # if request.method == 'POST':
-    #     if form.is_valid():
-    #         user = form.get_user()
-
-    #         if user.is_locked_out():
-    #             msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
-    #             messages.add_message(request, messages.WARNING, msg)
-    #         else:
-    #             outside_eddi_user_registration(request, user)
-    #             user.login_ok()
-    #             token = AuthenticationToken.create_token(user)
-    #             return HttpResponseRedirect(reverse("outside_eddi/home"))
-    #     else:
-    #         messages.add_message(request, messages.WARNING, "Invalid credentials")
-    #         _check_for_login_hack_attempt(request, context)
-
     form = UserCreationForm(request.POST or None)
     
     if request.method == 'POST':
         if form.is_valid():
-            import pdb;pdb.set_trace()
             user = form.save()
+            import pdb;pdb.set_trace()
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)

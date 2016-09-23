@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.admin.widgets import FilteredSelectMultiple
-
+from user_management.models import OutsideEddiUser
 
 class PermissionChoiceField(ModelMultipleChoiceField):
     def label_from_instance(self, instance):
@@ -162,8 +162,10 @@ class UserCreationForm(ModelForm):
         return password2
 
     def save(self, commit=True):
-        user = super(UserCreationForm, self).save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
+
+        user = OutsideEddiUser(user_id = 1)
+        user.create_user(self.cleaned_data["username"], self.cleaned_data["email"])
+        user.password = self.cleaned_data["password1"]
         if commit:
             user.save()
         return user
