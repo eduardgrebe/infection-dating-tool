@@ -96,7 +96,6 @@ class OutsideEddiUser(AbstractBaseUser, models.Model):
     def create_user(self, username, email):
         if not username:
             raise ValueError('User must have a valid username')
-        import pdb;pdb.set_trace()
         self.username=username
         self.email=email
         self.created=datetime.now()

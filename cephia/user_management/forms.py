@@ -163,7 +163,7 @@ class UserCreationForm(ModelForm):
 
     def save(self, commit=True):
 
-        user = OutsideEddiUser(user_id = 1)
+        user = OutsideEddiUser(active=True)
         user.create_user(self.cleaned_data["username"], self.cleaned_data["email"])
         user.password = self.cleaned_data["password1"]
         if commit:
