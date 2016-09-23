@@ -4,7 +4,7 @@ from django.contrib.auth import load_backend, login
 from datetime import datetime, timedelta
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, UserManager, AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, UserManager, AbstractBaseUser, BaseUserManager, Group, Permission
 from lib.models import BaseModel
 import uuid
 from django.utils import timezone
@@ -81,24 +81,3 @@ class AuthenticationToken(models.Model):
             logger.warning("No authentication token found for %s" % token)
             return False
 
-class OutsideEddiUser(AbstractBaseUser, models.Model):
-    user_id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=32, unique=True)
-    email = models.CharField(max_length=50)
-    created = models.DateTimeField()
-    must_change_password = models.BooleanField(default=False)
-    deleted = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
-
-    USERNAME_FIELD = 'username'
-
-    def create_user(self, username, email):
-        if not username:
-            raise ValueError('User must have a valid username')
-        self.username=username
-        self.email=email
-        self.created=datetime.now()
-
-        self.save()
-        return self

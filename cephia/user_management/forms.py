@@ -1,9 +1,8 @@
 from django.forms import *
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from user_management.models import OutsideEddiUser
 
 class PermissionChoiceField(ModelMultipleChoiceField):
     def label_from_instance(self, instance):
@@ -141,31 +140,34 @@ class UserCreationForm(ModelForm):
     error_messages = {
         'password_mismatch': ("The two password fields didn't match."),
     }
-    password1 = CharField(label=("Password"),
+    password = CharField(label=("Password"),
                                 widget=PasswordInput(attrs={'placeholder': 'Password'}))
-    password2 = CharField(label=("Password confirmation"),
+    verify_password = CharField(label=("Password confirmation"),
                                 widget=PasswordInput(attrs={'placeholder': 'Confirm Password'}),
                                 help_text=("Enter the same password as above, for verification."))
 
     class Meta:
         model = get_user_model()
-        fields = ("email", )
+        fields = ["username", "email", "password", "verify_password", "is_active", 'user_permissions']
 
-    def clean_password2(self):
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
+    def clean_verify_password(self):
+        password = self.cleaned_data.get("password")
+        verify_password = self.cleaned_data.get("verify_password")
+        if password and verify_password and password != verify_password:
             raise forms.ValidationError(
                 self.error_messages['password_mismatch'],
                 code='password_mismatch',
             )
-        return password2
+        return verify_password
 
+class EddiUserCreationForm(UserCreationForm):
+    
     def save(self, commit=True):
-
-        user = OutsideEddiUser(active=True)
-        user.create_user(self.cleaned_data["username"], self.cleaned_data["email"])
-        user.password = self.cleaned_data["password1"]
-        if commit:
-            user.save()
+        
+        user = super(EddiUserCreationForm, self).save(True)
+        user.set_password(self.cleaned_data['password'])
+        user.is_active = True
+        user.save()
+        outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
+        outside_eddi_group.user_set.add(user)
         return user

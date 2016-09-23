@@ -6,7 +6,6 @@ urlpatterns = patterns(
     '',
     #url(r'^is_logged_in/$', views.is_logged_in, name='is_logged_in'),
     url(r'^login/$', views.login, name='auth_login'),
-    url(r'^outside_eddi/user_registration/$', views.outside_eddi_user_registration, name='outside_eddi_user_registration'),
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^password-change/$', 'django.contrib.auth.views.password_change', name='change_password'),
     #url(r'^check_activation_key/$', views.check_activation_key, name='check_activation_key'),

@@ -41,23 +41,6 @@ def login(request, template='admin/cephia_login.html'):
     context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-@csrf_exempt
-def outside_eddi_user_registration(request, template='outside_eddi/user_registration.html'):
-    context = {}
-    form = UserCreationForm(request.POST or None)
-    
-    if request.method == 'POST':
-        if form.is_valid():
-            user = form.save()
-            return HttpResponseRedirect(reverse("outside_eddi:outside_eddi/home"))
-        else:
-            messages.add_message(request, messages.WARNING, "Invalid credentials")
-            _check_for_login_hack_attempt(request, context)
-
-    context['form'] = form
-    
-    return render_to_response(template, context, context_instance=RequestContext(request))
-
 def _check_for_login_hack_attempt(request, context):
     if request.POST.get('username'):
         try:
