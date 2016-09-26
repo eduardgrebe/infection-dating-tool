@@ -13,6 +13,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from cephia.file_handlers.test_history_file_handler import TestHistoryFileHandler
+from models import TestHistoryFile
 
 @login_required(login_url='outside_eddi:login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
@@ -80,6 +81,11 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            form_fields = form.cleaned_data
+            form_file = form_fields['test_history_file']
+            import pdb;pdb.set_trace()
+            TestHistoryFileHandler(form).parse
+            context['uploaded'] = 'File succesfully uploaded'
     else:
         form = TestHistoryFileUploadForm()
 
