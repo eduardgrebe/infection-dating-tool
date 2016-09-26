@@ -1,11 +1,12 @@
-from django.shortcuts import render
+import sys; print "\n".join(sys.path)
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
 from forms import EddiUserCreationForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
-from django.core.urlresolvers import reverse, redirect
+from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
@@ -13,7 +14,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 
-@login_required(login_url='outside_eddi:outside_eddi/login')
+@login_required(login_url='outside_eddi:login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
@@ -38,7 +39,7 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
                     auth_login(request, user)
                     user.login_ok()
                     token = AuthenticationToken.create_token(user)
-                    return HttpResponseRedirect(reverse("outside_eddi:outside_eddi/home"))
+                    return redirect("outside_eddi:home")
                 else:
                     msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
                     messages.add_message(request, messages.WARNING, msg)
@@ -51,7 +52,7 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
 
 def outside_eddi_logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
-        login_url='outside_eddi:outside_eddi/login'
+        login_url='outside_eddi:login'
     return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
 
 @csrf_exempt

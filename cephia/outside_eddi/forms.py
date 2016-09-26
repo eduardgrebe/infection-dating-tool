@@ -1,4 +1,4 @@
-from user_management.form import UserCreationForm
+from user_management.forms import UserCreationForm
 from django.contrib.auth.models import Group
 
 class EddiUserCreationForm(UserCreationForm):
