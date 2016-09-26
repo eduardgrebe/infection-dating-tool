@@ -1,4 +1,7 @@
-{% extends "cephia/base.html" %}
-{% block page_content %}
-  {{ welcome_message }}
-{% endblock %}
+<div id="topmenu" class="navigation">
+  <ul>
+    {% if user.id %}
+      <li><a href="{% url 'outside_eddi:logout' %}">Logout</a></li>
+    {% endif %}
+  </ul>
+</div>
