@@ -69,11 +69,13 @@
           Login
         </button>
       </div><br>
-      <div>
-        <button class="button login_button" onclick="{% url 'outside_eddi:user_registration' %}">
-          Register
-        </button>
-      </div>
     </form>
+  </div>
+  <div>
+    <a href="{% url 'outside_eddi:registration' %}">
+      <button class="button login_button">
+        Register
+      </button>
+    </a>
   </div>
 {% endblock %}
