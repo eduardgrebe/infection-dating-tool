@@ -1,0 +1,9 @@
+<form action="{% url 'outside_eddi:diagnostic_tests' %}" method="post" enctype="multipart/form-data" class="login_form" id="login-form">{% csrf_token %}
+  {{form}}
+  
+  <button class="button login_button" onclick="$('.login_form').submit(); return false;">
+    Upload
+  </button>
+
+</form>
+

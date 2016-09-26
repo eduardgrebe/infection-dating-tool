@@ -1,8 +1,7 @@
-import sys; print "\n".join(sys.path)
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -13,12 +12,12 @@ from user_management.models import AuthenticationToken
 from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
+from cephia.file_handlers.test_history_file_handler import TestHistoryFileHandler
 
 @login_required(login_url='outside_eddi:login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
-    context['welcome_message'] = 'hello'
     context['outside_eddi'] = True
 
     return render(request, template, context)
@@ -73,3 +72,18 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     return render(request, template, context)
 
 
+@login_required(login_url='outside_eddi:login')
+def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_tests.html"):
+    context = {}
+
+    if request.method == 'POST':
+        form = TestHistoryFileUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+    else:
+        form = TestHistoryFileUploadForm()
+
+    context['outside_eddi'] = True
+    context['form'] = form
+
+    return render(request, template, context)

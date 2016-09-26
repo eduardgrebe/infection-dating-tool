@@ -1,6 +1,7 @@
 <div id="topmenu" class="navigation">
   <ul>
     {% if user.id %}
+      <li><a href="{% url 'outside_eddi:diagnostic_tests' %}">Diagnostic Tests</a></li>
       <li><a href="{% url 'outside_eddi:logout' %}">Logout</a></li>
     {% endif %}
   </ul>
