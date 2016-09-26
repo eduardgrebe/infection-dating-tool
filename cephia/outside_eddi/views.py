@@ -1,11 +1,11 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from user_management.forms import EddiUserCreationForm
+from forms import EddiUserCreationForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
@@ -20,7 +20,7 @@ def home(request, file_id=None, template="outside_eddi/home.html"):
     context['welcome_message'] = 'hello'
     context['outside_eddi'] = True
 
-    return render_to_response(template, context, context_instance=RequestContext(request))
+    return render(request, template, context)
 
 @csrf_exempt
 def outside_eddi_login(request, template='outside_eddi/login.html'):
@@ -47,8 +47,7 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
             _check_for_login_hack_attempt(request, context)
 
     context['form'] = form
-    
-    return render_to_response(template, context, context_instance=RequestContext(request))
+    return render(request, template, context)
 
 def outside_eddi_logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
@@ -63,22 +62,13 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
-            return HttpResponseRedirect(reverse("outside_eddi:outside_eddi/home"))
+            return redirect("outside_eddi:home")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
 
     context['form'] = form
-    
-    return render_to_response(template, context, context_instance=RequestContext(request))
 
-
-
-
-
-
-
-
-
+    return render(request, template, context)
 
 
