@@ -6,8 +6,7 @@ from django.db import migrations
 
 def add_outside_eddi_group(apps, schema):
     Group = apps.get_model('auth', 'Group')
-    group = Group.objects.create(name='Outside Eddi Users')
-    group.save()
+    group = Group.objects.get_or_create(name='Outside Eddi Users')
 
 
 class Migration(migrations.Migration):
