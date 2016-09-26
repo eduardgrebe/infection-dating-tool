@@ -68,6 +68,11 @@
         <button class="button login_button" onclick="$('.login_form').submit(); return false;">
           Login
         </button>
+      </div><br>
+      <div>
+        <button class="button login_button" onclick="{% url 'outside_eddi:outside_eddi/user_registration' %}">
+          Register
+        </button>
       </div>
     </form>
   </div>
