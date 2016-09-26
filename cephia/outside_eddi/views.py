@@ -10,13 +10,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
 from django.contrib.auth import login as auth_login, get_user_model
+from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 
-@login_required
+@login_required(login_url='outside_eddi:outside_eddi/login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
     context['welcome_message'] = 'hello'
+    context['outside_eddi'] = True
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 
@@ -39,7 +41,7 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
                     return HttpResponseRedirect(reverse("outside_eddi:outside_eddi/home"))
                 else:
                     msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
-                messages.add_message(request, messages.WARNING, msg)
+                    messages.add_message(request, messages.WARNING, msg)
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
@@ -47,6 +49,11 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
     context['form'] = form
     
     return render_to_response(template, context, context_instance=RequestContext(request))
+
+def outside_eddi_logout(request, login_url=None, current_app=None, extra_context=None):
+    if not login_url:
+        login_url='outside_eddi:outside_eddi/login'
+    return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
 
 @csrf_exempt
 def outside_eddi_user_registration(request, template='outside_eddi/user_registration.html'):

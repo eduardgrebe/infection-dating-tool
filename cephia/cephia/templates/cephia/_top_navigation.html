@@ -18,7 +18,7 @@
     <li><a href="{% url 'home' %}">Home</a></li>
     {% if user.is_staff %}<li><a href="{% url 'table_management' %}">TMS</a></li>{% endif %}
     {% if user.is_superuser %}<li><a href="{% url 'users:user_list' %}">Accounts</a></li>{% endif %}
-    <li><a href="{% url 'users:logout' %}">Logout</a></li>
+    <li><a href="{% if not outside_eddi %}{% url 'users:logout' %}{% else %}{% url 'outside_eddi:outside_eddi/logout' %}{% endif %}">Logout</a></li>
     {% endif %}
   </ul>
 </div>
