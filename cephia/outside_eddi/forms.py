@@ -4,7 +4,7 @@ from django.forms import ModelForm
 from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from models import TestHistoryFile
+from cephia.models import FileInfo
 
 class EddiUserCreationForm(UserCreationForm):
     
@@ -20,8 +20,8 @@ class EddiUserCreationForm(UserCreationForm):
 
 class TestHistoryFileUploadForm(ModelForm):
     class Meta:
-        model = TestHistoryFile
-        fields = ['test_history_file']
+        model = FileInfo
+        fields = ['data_file']
     
 # class TestHistoryForm(forms.Form):
 #     subject_id = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Subject ID'}), label=None)
