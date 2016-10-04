@@ -9,17 +9,19 @@
   <a href="#">Manage Assays</a>
   <a href="{% url 'outside_eddi:diagnostic_tests' %}">Diagnostic Tests</a>
   <a href="{% url 'outside_eddi:logout' %}">Logout</a>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>User Studies</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for study in studies %}
-        <tr><th>{{ study.name }}</th></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <container class="home_page_study_table">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>User Studies</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for study in studies %}
+          <tr><th>{{ study.name }}</th></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </container>
 {% endif %}
 {% endblock %}
