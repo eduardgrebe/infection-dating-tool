@@ -44,5 +44,5 @@ class UserStudies(models.Model):
     class Meta:
         db_table = "outside_eddi_user_studies"
 
-    name = models.CharField(max_length=50)
-    user = ProtectedForeignKey('cephia.CephiaUser', null=False, blank=False)
+    name = models.CharField(max_length=50, unique=True)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True)

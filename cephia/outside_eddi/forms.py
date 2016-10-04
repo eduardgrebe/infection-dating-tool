@@ -28,3 +28,10 @@ class UserStudiesForm(ModelForm):
     class Meta:
         model = UserStudies
         fields = ['name']
+
+    def save(self, user_id, commit=True):
+
+        study = super(UserStudiesForm, self).save(True)
+        study.user = user_id
+        study.save()
+        return study

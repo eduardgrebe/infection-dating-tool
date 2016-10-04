@@ -13,7 +13,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
-from cephia.models import FileInfo
+from cephia.models import FileInfo, CephiaUser
 from models import UserStudies
 
 @login_required(login_url='outside_eddi:login')
@@ -21,10 +21,9 @@ def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
     user = request.user.id
-    import pdb;pdb.set_trace()
-    # studies = UserStudies.objects.filter(request.user.id)
-    
-    context['sudies'] = studies
+    studies = UserStudies.objects.filter(user__id=request.user.id)
+
+    context['studies'] = studies
     context['outside_eddi'] = True
 
     return render(request, template, context)
@@ -106,4 +105,19 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
 def manage_studies(request, file_id=None, template="outside_eddi/manage_studies.html"):
     context = {}
 
+    if request.method == 'POST':
+        form = UserStudiesForm(request.POST)
+        if form.is_valid():
+            
+            user_id = request.user.id
+            user = CephiaUser.objects.filter(id=user_id).first()
+
+            form.save(user)
+            context['saved'] = 'Your study has been saved'
+    else:
+        form = UserStudiesForm()
+
+    context['outside_eddi'] = True
+    context['form'] = form
+    
     return render(request, template, context)
