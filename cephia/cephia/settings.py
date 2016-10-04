@@ -159,7 +159,6 @@ USE_TZ = True
 
 STATICFILES_DIRS = (                                                                 
   os.path.join(BASE_DIR, 'cephia/static/'),
-    '/home/andrew/id/cephia/cephia/outside_eddi/static/',
   BASE_DIR                                                                          
 ) 
 STATIC_URL = '/static/'+REVISION+'/'

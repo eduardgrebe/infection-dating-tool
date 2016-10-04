@@ -1,10 +1,15 @@
-<form action="{% url 'outside_eddi:manage_studies' %}" method="post" enctype="multipart/form-data" class="login_form" id="login-form">{% csrf_token %}
-  {{form}}
-  
-  <button class="button login_button" onclick="$('.login_form').submit(); return false;">
-    Save
-  </button>
+{% extends 'outside_eddi/base.html' %}
+{% load bootstrap3 %}
 
-</form>
+{% block content %}
+  <form action="{% url 'outside_eddi:manage_studies' %}" method="post" enctype="multipart/form-data" class="login_form" id="login-form">{% csrf_token %}
+    {% bootstrap_form form %}
+    
+    <button class="button login_button" onclick="$('.login_form').submit(); return false;">
+      Save
+    </button>
 
-{{saved}}
+  </form>
+
+  {{saved}}
+{% endblock %}
