@@ -1,8 +1,9 @@
-<div id="topmenu" class="navigation">
-  <ul>
-    {% if user.id %}
-      <li><a href="{% url 'outside_eddi:diagnostic_tests' %}">Diagnostic Tests</a></li>
-      <li><a href="{% url 'outside_eddi:logout' %}">Logout</a></li>
-    {% endif %}
-  </ul>
-</div>
+{% load bootstrap3 %}
+
+{% if user.id %}
+  <a href="{% url 'outside_eddi:manage_studies' %}">New Study</a>
+  <a href="#">Manage Assays</a>
+  <a href="{% url 'outside_eddi:diagnostic_tests' %}">Diagnostic Tests</a>
+  <a href="{% url 'outside_eddi:logout' %}">Logout</a>
+  {% bootstrap_form form %}
+{% endif %}

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, UserStudiesForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -14,11 +14,17 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo
+from models import UserStudies
 
 @login_required(login_url='outside_eddi:login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
+    user = request.user.id
+    import pdb;pdb.set_trace()
+    # studies = UserStudies.objects.filter(request.user.id)
+    
+    context['sudies'] = studies
     context['outside_eddi'] = True
 
     return render(request, template, context)
@@ -93,5 +99,11 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
 
     context['outside_eddi'] = True
     context['form'] = form
+
+    return render(request, template, context)
+
+@login_required(login_url='outside_eddi:login')
+def manage_studies(request, file_id=None, template="outside_eddi/manage_studies.html"):
+    context = {}
 
     return render(request, template, context)

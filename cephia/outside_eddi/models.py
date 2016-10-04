@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 import os
 from django.conf import settings
-from cephia.models import Subject
+from cephia.models import Subject, CephiaUser
 from simple_history.models import HistoricalRecords
 from diagnostics.models import DiagnosticTest
 from django.db import models
+from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
 
-# Create your models here.
 class TestHistoryFile(models.Model):
 
     STATE_CHOICES = (
@@ -39,3 +39,10 @@ class OutsideEddiDiagnosticTestHistory(models.Model):
 
     def __unicode__(self):
         return u'%s - %s' % (self.test_date, self.test_result)
+
+class UserStudies(models.Model):
+    class Meta:
+        db_table = "outside_eddi_user_studies"
+
+    name = models.CharField(max_length=50)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=False, blank=False)
