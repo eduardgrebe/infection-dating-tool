@@ -7,14 +7,14 @@
 
     <div class="row">
       <div class="col-md-6">
-        <a class="btn btn-primary" href="{% url 'outside_eddi:create_study' %}">Create new Study</a>
+        <a class="btn btn-primary" href="{% url 'outside_eddi:tests' %}">Tests</a>
       </div>
     </div>
-
+    
     <table class="table table-condensed table-striped">
       <thead>
         <tr>
-          <th>Your studies</th>
+          <th>Studies</th>
         </tr>
       </thead>
       <tbody>
@@ -23,10 +23,15 @@
             <td>
               <a href="{% url "outside_eddi:edit_study" study.pk %}">{{ study.name }}</a>
             </td>
-            
           </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <div class="row">
+      <div class="col-md-6">
+        <a class="btn btn-primary" href="{% url 'outside_eddi:create_study' %}">Create New Study</a>
+      </div>
+    </div>
   </div>
 {% endblock %}

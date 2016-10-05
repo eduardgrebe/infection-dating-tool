@@ -135,3 +135,15 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
     context['study'] = study
     
     return render(request, template, context)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def tests(request, file_id=None, template="outside_eddi/tests.html"):
+    context = {}
+
+    return render(request, template, context)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
+    context = {}
+
+    return render(request, template, context)
