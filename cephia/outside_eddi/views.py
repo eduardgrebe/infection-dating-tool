@@ -92,14 +92,19 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            latest_file = FileInfo.objects.all().last()
+            uploaded_file = form.save()
+            messages.info(request, u"Your file was uploaded successfully" )
+            latest_file = FileInfo.objects.filter(data_file=uploaded_file).last()
             
-            TestHistoryFileHandler(latest_file).parse()
-            TestHistoryFileHandler(latest_file).validate()
-            TestHistoryFileHandler(latest_file).process()
+            TestHistoryFileHandler(uploaded_file).parse()
+            messages.info(request, u"Your file was parsed successfully" )
+            TestHistoryFileHandler(uploaded_file).validate()
+            messages.info(request, u"Your file was validated successfully" )
+            TestHistoryFileHandler(uploaded_file).process()
+            messages.info(request, u"Your file was processed successfully" )
+            
+            return redirect("outside_eddi:diagnostic_tests")
 
-            context['uploaded'] = 'File succesfully uploaded'
     else:
         form = TestHistoryFileUploadForm()
 
