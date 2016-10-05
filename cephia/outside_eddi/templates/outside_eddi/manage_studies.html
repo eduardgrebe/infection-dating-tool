@@ -2,14 +2,20 @@
 {% load bootstrap3 %}
 
 {% block content %}
-  <form action="{% url 'outside_eddi:manage_studies' %}" method="post" enctype="multipart/form-data" class="login_form" id="login-form">{% csrf_token %}
-    {% bootstrap_form form %}
-    
-    <button class="button login_button" onclick="$('.login_form').submit(); return false;">
-      Save
-    </button>
+  <div class="container">
 
-  </form>
-
-  {{saved}}
+    {% if study %}
+      <h1>Edit study: {{ study.name }}</h1>
+    {% else %}
+      <h1>Create a new study</h1>
+    {% endif %}
+    <div class="row">
+      <div class="col-md-6">
+        <form method="post" enctype="multipart/form-data">{% csrf_token %}
+          {% bootstrap_form form %}
+          <button class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}

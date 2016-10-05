@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from cephia.models import FileInfo
-from models import UserStudies
+from models import Study
 
 class EddiUserCreationForm(UserCreationForm):
     
@@ -24,14 +24,29 @@ class TestHistoryFileUploadForm(ModelForm):
         model = FileInfo
         fields = ['data_file']
 
-class UserStudiesForm(ModelForm):
+class StudyForm(ModelForm):
     class Meta:
-        model = UserStudies
+        model = Study
         fields = ['name']
 
-    def save(self, user_id, commit=True):
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(StudyForm, self).__init__(*args, **kwargs)
 
-        study = super(UserStudiesForm, self).save(True)
-        study.user = user_id
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        studies = Study.objects.filter(user=self.user, name=name)
+
+        if self.instance and self.instance.pk:
+            studies = studies.exclude(pk=self.instance.pk)
+
+        if studies.exists():
+            raise forms.ValidationError(u"You already created a study with the name %s." % name)
+        return name
+        
+    def save(self, user, commit=True):
+
+        study = super(StudyForm, self).save(False)
+        study.user = user
         study.save()
         return study

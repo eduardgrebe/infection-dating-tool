@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^login/$', views.outside_eddi_login, name='login'),
     url(r'^logout/$', views.outside_eddi_logout, name='logout'),
     url(r'^diagnostic_tests/$', views.diagnostic_tests, name='diagnostic_tests'),
-    url(r'^manage_studies/$', views.manage_studies, name='manage_studies'),
+    url(r'^create_study/$', views.edit_study, name='create_study'),
+    url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
 ]
 urlpatterns += staticfiles_urlpatterns()

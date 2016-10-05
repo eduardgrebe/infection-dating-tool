@@ -16,7 +16,7 @@ class TestHistoryFile(models.Model):
         ('error','Error')
     )
     
-    data_file = models.FileField(upload_to=settings.MEDIA_ROOT + "/outside_eddi_uploads")
+    data_file = models.FileField(upload_to="uploads/outside_eddi_uploads")
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
 
     def filename(self):
@@ -40,9 +40,11 @@ class OutsideEddiDiagnosticTestHistory(models.Model):
     def __unicode__(self):
         return u'%s - %s' % (self.test_date, self.test_result)
 
-class UserStudies(models.Model):
+class Study(models.Model):
     class Meta:
-        db_table = "outside_eddi_user_studies"
+        unique_together = ("name", "user")
 
-    name = models.CharField(max_length=50, unique=True)
-    user = ProtectedForeignKey('cephia.CephiaUser', null=True)
+    name = models.CharField(max_length=50)
+    user = ProtectedForeignKey('cephia.CephiaUser')
+
+    

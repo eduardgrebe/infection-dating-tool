@@ -1,12 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, UserStudiesForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
 from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
 from django.contrib.auth import login as auth_login, get_user_model
@@ -14,14 +14,21 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo, CephiaUser
-from models import UserStudies
+from models import Study
 
-@login_required(login_url='outside_eddi:login')
+
+def outside_eddi_login_required(login_url=None):
+    return user_passes_test(
+        lambda u: u.is_authenticated and u.groups.filter(name='Outside Eddi Users').exists(),
+        login_url=login_url,
+    )
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
     user = request.user.id
-    studies = UserStudies.objects.filter(user__id=request.user.id)
+    studies = Study.objects.filter(user__id=request.user.id)
 
     context['studies'] = studies
     context['outside_eddi'] = True
@@ -78,7 +85,7 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     return render(request, template, context)
 
 
-@login_required(login_url='outside_eddi:login')
+@outside_eddi_login_required(login_url='outside_eddi:login')
 def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_tests.html"):
     context = {}
 
@@ -96,28 +103,30 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
     else:
         form = TestHistoryFileUploadForm()
 
-    context['outside_eddi'] = True
     context['form'] = form
 
     return render(request, template, context)
 
-@login_required(login_url='outside_eddi:login')
-def manage_studies(request, file_id=None, template="outside_eddi/manage_studies.html"):
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_study(request, study_id=None, template="outside_eddi/manage_studies.html"):
     context = {}
 
-    if request.method == 'POST':
-        form = UserStudiesForm(request.POST)
-        if form.is_valid():
-            
-            user_id = request.user.id
-            user = CephiaUser.objects.filter(id=user_id).first()
-
-            form.save(user)
-            context['saved'] = 'Your study has been saved'
+    if study_id is not None:
+        study = get_object_or_404(Study, pk=study_id)
+        form = StudyForm(request.user, request.POST or None, instance=study)
     else:
-        form = UserStudiesForm()
-
-    context['outside_eddi'] = True
+        study = None
+        form = StudyForm(request.user, request.POST or None)
+        
+    if request.method == 'POST' and form.is_valid():
+        study = form.save(request.user)
+        if study_id:
+            messages.info(request, u"Your study, %s was updated successfully" % study.name )
+        else:
+            messages.info(request, u"Your study, %s was created successfully" % study.name )
+        return redirect('outside_eddi:edit_study', study_id=study.pk)
+            
     context['form'] = form
+    context['study'] = study
     
     return render(request, template, context)
