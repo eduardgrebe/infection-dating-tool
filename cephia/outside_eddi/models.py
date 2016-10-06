@@ -6,6 +6,7 @@ from simple_history.models import HistoricalRecords
 from diagnostics.models import DiagnosticTest
 from django.db import models
 from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
+from django.db import transaction
 
 class TestHistoryFile(models.Model):
 
@@ -71,6 +72,8 @@ class OutsideEddiTestPropertyEstimate(models.Model):
         ('user_added','UserAdded'),
     )
 
+    name = models.CharField(max_length=10, null=True)
+    description = models.CharField(max_length=100, null=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
     active_property = models.BooleanField(blank=False, default=False)
     history = HistoricalRecords()
@@ -85,16 +88,8 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     comment = models.CharField(max_length=255, null=False, blank=True)
     reference = models.CharField(max_length=255, null=False, blank=True)
 
-    def save(self, *args, **kwargs):
-        with transaction.atomic():
-            result = super(OutsideEddiTestPropertyEstimate, self).save(*args, **kwargs)
-            if self.is_default:
-                exists = OutsideEddiTestPropertyEstimate.objects.filter(test=self.test, is_default=True).exclude(pk=self.pk).exists()
-                if exists:
-                    msg = "Default test already exists for %s" % (self.test.name)
-                    raise ValueError(msg)
-
-        return result
+    def __str__(self):
+        return '%s' % (self.id)
 
 class TestPropertyMapping(models.Model):
 
@@ -102,3 +97,4 @@ class TestPropertyMapping(models.Model):
     test = ProtectedForeignKey('OutsideEddiDiagnosticTest')
     test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate')
     
+

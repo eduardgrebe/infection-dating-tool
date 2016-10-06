@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm, TestPropertyForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -14,8 +14,8 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo, CephiaUser
-from models import Study, OutsideEddiDiagnosticTest
-from diagnostics.models import DiagnosticTest
+from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
+from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -75,6 +75,8 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
+
+            test_properties = copy_test_properties(user)
 
             return redirect("outside_eddi:home")
         else:
@@ -151,11 +153,18 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
 
     form = TestPropertyMappingForm(request.POST or None)
+    property_form = TestPropertyForm(request.POST or None)
 
     context['form'] = form
+    context['property_form'] = property_form
     
     return render(request, template, context)
 
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def test_properties(request, file_id=None, template="outside_eddi/test_properties.html"):
+    context = {}
+
+    return render(request, template, context)
 
 def copy_diagnostic_tests():
     
@@ -165,5 +174,28 @@ def copy_diagnostic_tests():
         outside_eddi_test = OutsideEddiDiagnosticTest.objects.create(id = test.id,
                                                                      name = test.name,
                                                                      description = test.description)
-        outside_eddi_test.history = test.history
-        outside_eddi_test.save()
+
+def copy_test_properties(user):
+
+    test_properties = TestPropertyEstimate.objects.all()
+
+    for prop in test_properties:
+        test_name = prop.test.name
+        test = OutsideEddiDiagnosticTest.objects.filter(name=test_name).first()
+
+        outside_eddi_test_property = OutsideEddiTestPropertyEstimate.objects.create(user=user,
+                                                                                    test = test,
+                                                                                    estimate_label=prop.estimate_label,
+                                                                                    estimate_type=prop.estimate_type,
+                                                                                    mean_diagnostic_delay_days=prop.mean_diagnostic_delay_days,
+                                                                                    diagnostic_delay_median=prop.diagnostic_delay_median,
+                                                                                    foursigma_diagnostic_delay_days=prop.foursigma_diagnostic_delay_days,
+                                                                                    time0_ref=prop.time0_ref,
+                                                                                    comment=prop.comment,
+                                                                                    reference=prop.reference)
+
+        if prop.is_default == True:
+            outside_eddi_test_property.is_default = True
+            outside_eddi_test_property.active_property = True
+
+        outside_eddi_test_property.save()

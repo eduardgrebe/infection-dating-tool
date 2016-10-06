@@ -87,7 +87,8 @@ INSTALLED_APPS = (
     'diagnostics',
     'assay',
     'outside_eddi',
-    'djcelery'
+    'djcelery',
+    'widget_tweaks'
 )
 
 MIDDLEWARE_CLASSES = (
