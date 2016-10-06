@@ -153,10 +153,9 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
 
     form = TestPropertyMappingForm(request.POST or None)
-    property_form = TestPropertyForm(request.POST or None)
+    
 
     context['form'] = form
-    context['property_form'] = property_form
     
     return render(request, template, context)
 
@@ -164,6 +163,10 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 def test_properties(request, file_id=None, template="outside_eddi/test_properties.html"):
     context = {}
 
+    form = TestPropertyForm(request.POST or None)
+
+    context['form'] = form
+    
     return render(request, template, context)
 
 def copy_diagnostic_tests():
