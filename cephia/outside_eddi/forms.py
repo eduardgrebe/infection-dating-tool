@@ -45,8 +45,9 @@ class StudyForm(ModelForm):
         return name
         
     def save(self, user, commit=True):
-
+        
         study = super(StudyForm, self).save(False)
         study.user = user
         study.save()
+        
         return study

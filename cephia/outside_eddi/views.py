@@ -14,8 +14,8 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo, CephiaUser
-from models import Study
-
+from models import Study, OutsideEddiDiagnosticTest
+from diagnostics.models import DiagnosticTest
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -75,6 +75,7 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
+
             return redirect("outside_eddi:home")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
@@ -140,6 +141,9 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
 def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context = {}
 
+    tests = OutsideEddiDiagnosticTest.objects.all()
+    context['tests'] = tests
+
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -147,3 +151,15 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
 
     return render(request, template, context)
+
+
+def copy_diagnostic_tests():
+    
+    tests = DiagnosticTest.objects.all()
+
+    for test in tests:
+        outside_eddi_test = OutsideEddiDiagnosticTest.objects.create(id = test.id,
+                                                                     name = test.name,
+                                                                     description = test.description)
+        outside_eddi_test.history = test.history
+        outside_eddi_test.save()

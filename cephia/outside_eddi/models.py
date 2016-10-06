@@ -47,4 +47,48 @@ class Study(models.Model):
     name = models.CharField(max_length=50)
     user = ProtectedForeignKey('cephia.CephiaUser')
 
-    
+class OutsideEddiDiagnosticTest(models.Model):
+    class Meta:
+        db_table = "outside_eddi_diagnostic_tests"
+
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    description = models.CharField(max_length=255, null=False, blank=False)
+    history = HistoricalRecords()
+
+class OutsideEddiTestPropertyEstimate(models.Model):
+    class Meta:
+        db_table = "outside_eddi_test_property_estimates"
+        
+    TYPE_CHOICES = (
+        ('published','Published'),
+        ('cephia','CEPHIA'),
+        ('analogue','Analogue'),
+        ('placeholder','Placeholder'),
+        ('user_added','UserAdded'),
+    )
+
+    user = ProtectedForeignKey('cephia.CephiaUser')
+    active_property = models.BooleanField(blank=False, default=False)
+    history = HistoricalRecords()
+    test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True)
+    estimate_label = models.CharField(max_length=255, null=False, blank=True)
+    estimate_type = models.CharField(max_length=255, null=False, blank=True)
+    mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
+    diagnostic_delay_median = models.IntegerField(null=True, blank=False)
+    foursigma_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
+    is_default = models.BooleanField(blank=False, default=False)
+    time0_ref = models.CharField(max_length=255, null=False, blank=True)
+    comment = models.CharField(max_length=255, null=False, blank=True)
+    reference = models.CharField(max_length=255, null=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            result = super(OutsideEddiTestPropertyEstimate, self).save(*args, **kwargs)
+            if self.is_default:
+                exists = OutsideEddiTestPropertyEstimate.objects.filter(test=self.test, is_default=True).exclude(pk=self.pk).exists()
+                if exists:
+                    msg = "Default test already exists for %s" % (self.test.name)
+                    raise ValueError(msg)
+
+        return result

@@ -13,17 +13,19 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>
-            Test01
-          </td>
-          <td>
-            This test is used for blah blah blah
-          </td>
-          <td>
-            <a class="btn btn-primary" data-toggle="modal"  data-target="#propertiesModal">Properties</a>
-          </td>
-        </tr>
+        {% for test in tests %}
+          <tr>
+            <td>
+              {{ test.name }}
+            </td>
+            <td>
+              {{ test.description }}
+            </td>
+            <td>
+              <a class="btn btn-primary" data-toggle="modal"  data-target="#propertiesModal">Properties</a>
+            </td>
+          </tr>
+        {% endfor %}
       </tbody>
     </table>
 
