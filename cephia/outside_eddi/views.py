@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -150,6 +150,10 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
     context = {}
 
+    form = TestPropertyMappingForm(request.POST or None)
+
+    context['form'] = form
+    
     return render(request, template, context)
 
 

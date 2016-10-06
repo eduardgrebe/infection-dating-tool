@@ -56,6 +56,9 @@ class OutsideEddiDiagnosticTest(models.Model):
     description = models.CharField(max_length=255, null=False, blank=False)
     history = HistoricalRecords()
 
+    def __str__(self):
+        return '%s' % (self.name)
+
 class OutsideEddiTestPropertyEstimate(models.Model):
     class Meta:
         db_table = "outside_eddi_test_property_estimates"
@@ -92,3 +95,10 @@ class OutsideEddiTestPropertyEstimate(models.Model):
                     raise ValueError(msg)
 
         return result
+
+class TestPropertyMapping(models.Model):
+
+    code = models.CharField(max_length=10)
+    test = ProtectedForeignKey('OutsideEddiDiagnosticTest')
+    test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate')
+    

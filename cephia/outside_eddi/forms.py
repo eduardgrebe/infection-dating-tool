@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from cephia.models import FileInfo
-from models import Study
+from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
 
 class EddiUserCreationForm(UserCreationForm):
     
@@ -51,3 +51,10 @@ class StudyForm(ModelForm):
         study.save()
         
         return study
+
+class TestPropertyMappingForm(ModelForm):
+    test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label="(select test)")
+    test_property = forms.ModelChoiceField(queryset=OutsideEddiTestPropertyEstimate.objects.all(), empty_label="(select property)")
+    class Meta:
+        model = TestPropertyMapping
+        fields = ['code', 'test', 'test_property']

@@ -4,6 +4,8 @@
 {% block content %}
   <div class="container">
 
+    
+
     <table class="table table-condensed table-striped">
       <thead>
         <tr>
@@ -13,6 +15,16 @@
         </tr>
       </thead>
       <tbody>
+        <tr>
+          <form method="post" enctype="multipart/form-data">{% csrf_token %}
+            
+            {% bootstrap_form form %}
+            {{ form.code }}
+            {{ form.test }}
+            {{ form.property }}
+            
+          </form>
+        </tr>
         <tr>
           <td>
             Test01
