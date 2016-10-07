@@ -19,45 +19,25 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>
-              Property01
-            </td>
-            <td>
-              This property is used for blah blah blah
-            </td>
-            <td>
-              blah1
-            </td>
-            <td>
-              blah2
-            </td>
-            <td>
-              blah3
-            </td>
-            <td>
-              <input type="radio" name="optradio">
-            </td>
-          </tr>
+
           <tr>
             <form method="post" enctype="multipart/form-data">{% csrf_token %}
-              <td>
-                <div class="col-md-3">
-                  {{ form.name }}
+              
+                <div class="col-md-6">
+
+                  {% for field in form.visible_fields %}
+                    <td>
+                      <fieldset class="form-group">
+                        <label for="exampleInputEmail1">
+                          {{ field.label_tag }}
+                        </label>
+
+                      {{ field|attr:"class:form-control" }}
+                    </fieldset>
+                    </td>
+                  {% endfor %}
                 </div>
-              </td>
-              <td>
-                {{ form.description }}
-              </td>
-              <td>
-                {{ form.mean_diagnostic_delay_days }}
-              </td>
-              <td>
-                {{ form.diagnostic_delay_median }}
-              </td>
-              <td>
-                blah4
-              </td>
+
               <td>
                 <input type="radio" name="optradio">
               </td>

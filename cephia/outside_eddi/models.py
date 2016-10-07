@@ -87,6 +87,7 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     time0_ref = models.CharField(max_length=255, null=False, blank=True)
     comment = models.CharField(max_length=255, null=False, blank=True)
     reference = models.CharField(max_length=255, null=False, blank=True)
+    variance = models.IntegerField(null=True, blank=False)
 
     def __str__(self):
         return '%s' % (self.id)

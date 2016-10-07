@@ -76,7 +76,7 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
         if form.is_valid():
             user = form.save()
 
-            test_properties = copy_test_properties(user)
+            test_properties = _copy_test_properties(user)
 
             return redirect("outside_eddi:home")
         else:
@@ -169,7 +169,7 @@ def test_properties(request, file_id=None, template="outside_eddi/test_propertie
     
     return render(request, template, context)
 
-def copy_diagnostic_tests():
+def _copy_diagnostic_tests():
     
     tests = DiagnosticTest.objects.all()
 
@@ -178,7 +178,7 @@ def copy_diagnostic_tests():
                                                                      name = test.name,
                                                                      description = test.description)
 
-def copy_test_properties(user):
+def _copy_test_properties(user):
 
     test_properties = TestPropertyEstimate.objects.all()
 
