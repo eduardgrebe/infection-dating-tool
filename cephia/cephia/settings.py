@@ -24,6 +24,7 @@ MAILQUEUE_CELERY = True
 CELERYBEAT_SCHEDULE_FILENAME = os.path.join(LOG_FOLDER, '.celery-beat-schedule')
 CELERY_TIMEZONE = 'UTC'
 BROKER_URL = 'amqp://cephia_celery:cephia_celery@localhost:5672/cephia_celery'
+PROCESS_TASKS_WITH_CELERY = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '%ikqh(&mt)5&$t^h19eb2o5g^^hbrx2i(_cby$(48xcd00_61v'

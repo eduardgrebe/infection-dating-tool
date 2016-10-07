@@ -19,6 +19,7 @@ from assay_result_factory import *
 from django.core.management import call_command
 from tasks import process_file_info
 from django.db import transaction
+from django.conf import settings
 
 
 logger = logging.getLogger(__name__)
@@ -113,9 +114,12 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         if file_info_form.is_valid():
             result_file = file_info_form.save()
 
-            # process_file_info(result_file.pk, request.POST['laboratory'])
-            x = lambda: process_file_info.delay(result_file.pk, request.POST['laboratory'])
-            transaction.on_commit(x)
+            
+            if settings.PROCESS_TASKS_WITH_CELERY:
+                x = lambda: process_file_info.delay(result_file.pk, request.POST['laboratory'])
+                transaction.on_commit(x)
+            else:
+                process_file_info(result_file.pk, request.POST['laboratory'])
             messages.add_message(request, messages.SUCCESS, 'Successfully uploaded file')
         else:
             messages.add_message(request, messages.ERROR, 'Failed to upload file')
