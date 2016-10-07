@@ -63,4 +63,4 @@ class TestPropertyForm(ModelForm):
 
     class Meta:
         model = OutsideEddiTestPropertyEstimate
-        fields = ['name', 'description', 'mean_diagnostic_delay_days', 'diagnostic_delay_median', 'variance']
+        fields = ['name', 'description', 'mean_diagnostic_delay_days', 'diagnostic_delay_median', 'variance', 'active_property']

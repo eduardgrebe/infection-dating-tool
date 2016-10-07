@@ -28,19 +28,20 @@
                   {% for field in form.visible_fields %}
                     <td>
                       <fieldset class="form-group">
-                        <label for="exampleInputEmail1">
-                          {{ field.label_tag }}
-                        </label>
-
+                        {% if field == form.name %}
+                          name
+                        {% endif %}
                       {{ field|attr:"class:form-control" }}
                     </fieldset>
                     </td>
                   {% endfor %}
                 </div>
 
-              <td>
+                {% comment %}
+                <td>
                 <input type="radio" name="optradio">
-              </td>
+                </td>
+                {% endcomment %}
             </form>
           </tr>
         </tbody>
