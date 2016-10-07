@@ -19,20 +19,21 @@
           </tr>
         </thead>
         <tbody>
-
-          <tr>
-            <form method="post" enctype="multipart/form-data">{% csrf_token %}
-              
+          
+          {% for p in properties %}
+            <tr>
+              <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                
                 <div class="col-md-6">
 
                   {% for field in form.visible_fields %}
                     <td>
                       <fieldset class="form-group">
                         {% if field == form.name %}
-                          name
+                          {{ p.id }}
                         {% endif %}
-                      {{ field|attr:"class:form-control" }}
-                    </fieldset>
+                        {{ field|attr:"class:form-control" }}
+                      </fieldset>
                     </td>
                   {% endfor %}
                 </div>
@@ -42,8 +43,10 @@
                 <input type="radio" name="optradio">
                 </td>
                 {% endcomment %}
-            </form>
-          </tr>
+              </form>
+            </tr>
+          {% endfor %}
+          
         </tbody>
       </table>
     </div>
@@ -53,4 +56,6 @@
       <button type="button" class="btn btn-primary">Save</button>
     </div>
   </div>
+
+  
 </div>

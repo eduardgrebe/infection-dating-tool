@@ -76,7 +76,12 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
         if form.is_valid():
             user = form.save()
 
-            test_properties = _copy_test_properties(user)
+            tests = OutsideEddiDiagnosticTest.objects.all()
+            if tests:
+                test_properties = _copy_test_properties(user)
+            else:
+                add_tests = _copy_diagnostic_tests()
+                test_properties = _copy_test_properties(user)
 
             return redirect("outside_eddi:home")
         else:
@@ -160,12 +165,15 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def test_properties(request, file_id=None, template="outside_eddi/test_properties.html"):
-    context = {}
+def test_properties(request, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
+    context = context or {}
+
+    properties = OutsideEddiTestPropertyEstimate.objects.filter(user__id=request.user.id, test__pk=test_id)
 
     form = TestPropertyForm(request.POST or None)
 
     context['form'] = form
+    context['properties'] = properties
     
     return render(request, template, context)
 
