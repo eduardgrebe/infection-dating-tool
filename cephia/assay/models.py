@@ -234,6 +234,7 @@ class BaseAssayResult(models.Model):
     exclusion = models.CharField(max_length=255, null=True, blank=False)
     warning_msg = models.CharField(max_length=255, null=True, blank=False)
     error_message = models.CharField(max_length=255, null=True, blank=False)
+    visit = ProtectedForeignKey(Visit, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         for field in self._meta.get_all_field_names():
@@ -250,6 +251,8 @@ class BaseAssayResult(models.Model):
                         except (TypeError, ValueError):
                             self.error_message = 'Could not convert field %s to float. Found value: %s' % (field, value)
                             setattr(self, field, None)
+        if self.specimen:
+            self.visit = self.specimen.visit
                         
         return super(BaseAssayResult, self).save(*args, **kwargs)
 
