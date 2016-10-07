@@ -159,7 +159,9 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     form = TestPropertyMappingForm(request.POST or None)
     
-
+    test = OutsideEddiDiagnosticTest.objects.all().first()
+    
+    context['test'] = test
     context['form'] = form
     
     return render(request, template, context)
@@ -169,11 +171,13 @@ def test_properties(request, test_id=None, file_id=None, template="outside_eddi/
     context = context or {}
 
     properties = OutsideEddiTestPropertyEstimate.objects.filter(user__id=request.user.id, test__pk=test_id)
+    test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
     form = TestPropertyForm(request.POST or None)
 
     context['form'] = form
     context['properties'] = properties
+    context['test'] = test
     
     return render(request, template, context)
 

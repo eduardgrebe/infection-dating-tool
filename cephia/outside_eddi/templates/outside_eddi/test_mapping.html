@@ -27,24 +27,24 @@
             </td>
             <td>
               {{ form.test_property }}
-              <a class="btn btn-primary" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' %}">Properties</a>
+              <a class="btn btn-primary js-show-properties" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
             </td>
           </form>
         </tr>
       </tbody>
     </table>
-    
+
     <div class="modal fade" id="modal"></div>
     <script>
-     $('#modal').on('show.bs.modal', function (event) {
-         var modal = $(this)
-         $.ajax({
-             url: "{% url 'outside_eddi:test_properties' %}",
-             context: document.body
-         }).done(function(response) {
-             modal.html(response);
+     $('.js-show-properties').click(function(event) {
+         event.preventDefault();
+         url = $(this).attr('href');
+
+         $.get(url).done(function(html) {
+             $('#modal').html(html);
+             $('#modal').modal();
          });
-     })
+     });
     </script>
 
   </div>

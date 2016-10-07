@@ -4,7 +4,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title" id="myModalLabel">Properties</h4>
+      <h4 class="modal-title" id="myModalLabel">{{ test.name }} Properties</h4>
     </div>
     <div class="modal-body">
       <table class="table table-condensed table-striped">
@@ -25,24 +25,20 @@
               <form method="post" enctype="multipart/form-data">{% csrf_token %}
                 
                 <div class="col-md-6">
-
                   {% for field in form.visible_fields %}
-                    <td>
-                      <fieldset class="form-group">
-                        {% if field == form.name %}
-                          {{ p.id }}
-                        {% endif %}
-                        {{ field|attr:"class:form-control" }}
-                      </fieldset>
-                    </td>
+                    {% if field != form.active_property %}
+                      <td>
+                        <fieldset class="form-group">
+                          {{ field|attr:"class:form-control" }}
+                        </fieldset>
+                      </td>
+                    {% endif %}
                   {% endfor %}
+                  <td>
+                    <input type="radio" name="optradio">
+                  </td>
                 </div>
 
-                {% comment %}
-                <td>
-                <input type="radio" name="optradio">
-                </td>
-                {% endcomment %}
               </form>
             </tr>
           {% endfor %}
