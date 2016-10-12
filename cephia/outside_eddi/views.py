@@ -160,8 +160,8 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     codes = ['b1A', 'C2d', '23D']
     
-    TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm, extra=len(codes))
-    formset = TestPropertyMappingFormSet(request.POST or None)
+    TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm)
+    formset = TestPropertyMappingFormSet(request.POST or None, initial=[{'code': x} for x in codes])
 
     test = OutsideEddiDiagnosticTest.objects.all().first()
     
