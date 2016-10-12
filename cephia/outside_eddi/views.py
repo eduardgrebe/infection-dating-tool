@@ -158,10 +158,13 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
 
     form = TestPropertyMappingForm(request.POST or None)
-    
+
     test = OutsideEddiDiagnosticTest.objects.all().first()
+
+    codes = ['b1A', 'C2d', '23D']
     
     context['test'] = test
+    context['codes'] = codes
     context['form'] = form
     
     return render(request, template, context)

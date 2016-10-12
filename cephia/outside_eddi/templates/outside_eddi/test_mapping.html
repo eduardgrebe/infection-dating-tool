@@ -17,20 +17,23 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <form name="tests" method="post" enctype="multipart/form-data">{% csrf_token %}
-            <td>
-              Test01{{ form.code }}
-            </td>
-            <td>
-              {{ form.test }}
-            </td>
-            <td>
-              {{ form.test_property }}
-              <a class="btn btn-primary js-show-properties" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
-            </td>
-          </form>
-        </tr>
+        {% comment %}{% for code in codes %}{% endcomment %}
+          <tr>
+            <form name="tests" method="post" enctype="multipart/form-data">{% csrf_token %}
+              <td>
+                {{ code }}
+                {{ form.code }}
+              </td>
+              <td>
+                {{ form.test }}
+              </td>
+              <td>
+                {{ form.test_property }}
+                <a class="btn btn-primary js-show-properties" id="btn" onclick="showElements(this.form);" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
+              </td>
+            </form>
+          </tr>
+          {% comment %}{% endfor %}{% endcomment %}
       </tbody>
     </table>
 
@@ -47,31 +50,14 @@
      });
     </script>
 
-    <form name="selectForm">
-      <p>
-        <label for="musicTypes">Choose some music types, then click the button below:</label>
-        <select id="musicTypes" name="musicTypes" multiple="multiple">
-          <option selected="selected">R&B</option>
-          <option>Jazz</option>
-          <option>Blues</option>
-          <option>New Age</option>
-          <option>Classical</option>
-          <option>Opera</option>
-        </select>
-      </p>
-      <p><input id="btn" type="button" value="How many are selected?" /></p>
-    </form>
-
     <script>
-     function howMany(selectObject) {
-
-         name = selectObject.value
-         return name;
-     }
-
-     var btn = document.getElementById("btn");
      btn.addEventListener("click", function(){
-         alert('Number of options selected: ' + howMany(document.tests.test))
+         var choice = $("#id_test").find('option:selected').attr("value");
+         if (!choice){
+             alert('Please select a test')
+             }
+         else {
+             alert('Test number ' + choice + ' selected')}
      });
     </script>
 
