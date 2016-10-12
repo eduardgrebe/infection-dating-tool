@@ -16,6 +16,7 @@ from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFile
 from cephia.models import FileInfo, CephiaUser
 from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
+from django.forms import formset_factory
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -157,15 +158,16 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
     context = {}
 
-    form = TestPropertyMappingForm(request.POST or None)
+    codes = ['b1A', 'C2d', '23D']
+    
+    TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm, extra=len(codes))
+    formset = TestPropertyMappingFormSet(request.POST or None)
 
     test = OutsideEddiDiagnosticTest.objects.all().first()
-
-    codes = ['b1A', 'C2d', '23D']
     
     context['test'] = test
     context['codes'] = codes
-    context['form'] = form
+    context['formset'] = formset
     
     return render(request, template, context)
 
@@ -177,6 +179,7 @@ def test_properties(request, test_id=None, file_id=None, template="outside_eddi/
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
     form = TestPropertyForm(request.POST or None)
+    
 
     context['form'] = form
     context['properties'] = properties

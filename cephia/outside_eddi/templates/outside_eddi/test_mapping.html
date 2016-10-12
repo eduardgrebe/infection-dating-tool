@@ -19,11 +19,10 @@
         </tr>
       </thead>
       <tbody>
-        {% for code in codes %}
+        {% for form in formset %}
           <tr>
             <form name="tests" method="post" enctype="multipart/form-data">{% csrf_token %}
               <td>
-                {{ code }}
                 {{ form.code }}
               </td>
               <td>
@@ -31,7 +30,7 @@
               </td>
               <td>
                 {{ form.test_property }}
-                <a class="btn btn-primary js-show-properties" id="btn" onclick="showElements(this.form);" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
+                <a class="btn btn-primary js-show-properties" id="btn" name="{{ form.test.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
               </td>
             </form>
           </tr>
@@ -44,7 +43,8 @@
      $('.js-show-properties').click(function(event) {
          event.preventDefault();
          url = $(this).attr('href');
-         var choice = $("#id_test").find('option:selected').attr("value");
+         id = $(this).attr('name');
+         var choice = $("#id_" + id).find('option:selected').attr("value");
 
          if (!choice){
              alert('Please select a test')

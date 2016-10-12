@@ -1,5 +1,6 @@
 from user_management.forms import UserCreationForm
 from django import forms
+from django.forms import formset_factory
 from django.forms import ModelForm
 from django.contrib.auth.models import Group
 from django.conf import settings
@@ -58,6 +59,8 @@ class TestPropertyMappingForm(ModelForm):
     class Meta:
         model = TestPropertyMapping
         fields = ['code', 'test', 'test_property']
+
+TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm)
 
 class TestPropertyForm(ModelForm):
 
