@@ -1,8 +1,10 @@
 {% extends 'outside_eddi/base.html' %}
 {% load bootstrap3 %}
+{% load js_reverse %}
 
-{% block extra_js%}
+{% block extrajs%}
   <script src="http://malsup.github.com/jquery.form.js"></script>
+  <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +19,7 @@
         </tr>
       </thead>
       <tbody>
-        {% comment %}{% for code in codes %}{% endcomment %}
+        {% for code in codes %}
           <tr>
             <form name="tests" method="post" enctype="multipart/form-data">{% csrf_token %}
               <td>
@@ -33,7 +35,7 @@
               </td>
             </form>
           </tr>
-          {% comment %}{% endfor %}{% endcomment %}
+          {% endfor %}
       </tbody>
     </table>
 
@@ -42,22 +44,20 @@
      $('.js-show-properties').click(function(event) {
          event.preventDefault();
          url = $(this).attr('href');
-
-         $.get(url).done(function(html) {
-             $('#modal').html(html);
-             $('#modal').modal();
-         });
-     });
-    </script>
-
-    <script>
-     btn.addEventListener("click", function(){
          var choice = $("#id_test").find('option:selected').attr("value");
+
          if (!choice){
              alert('Please select a test')
-             }
+             $(this).attr('data-toggle', '')
+         }
          else {
-             alert('Test number ' + choice + ' selected')}
+             url = Urls["outside_eddi:test_properties"](choice)
+
+             $.get(url).done(function(html) {
+                 $('#modal').html(html);
+                 $('#modal').modal();
+             });
+         }
      });
     </script>
 

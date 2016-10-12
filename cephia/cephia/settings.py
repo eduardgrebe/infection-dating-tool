@@ -68,6 +68,7 @@ XS_SHARING_ALLOWED_ORIGINS = '*'
 XS_SHARING_ALLOWED_METHODS = ['GET','OPTIONS']
 
 # Application definition
+JS_REVERSE_INCLUDE_ONLY_NAMESPACES = ['outside_eddi']
 
 INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
@@ -89,7 +90,8 @@ INSTALLED_APPS = (
     'assay',
     'outside_eddi',
     'djcelery',
-    'widget_tweaks'
+    'widget_tweaks',
+    'django_js_reverse',
 )
 
 MIDDLEWARE_CLASSES = (
