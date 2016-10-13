@@ -14,9 +14,9 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo, CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
+from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
-from django.forms import formset_factory
+from django.forms import modelformset_factory
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -158,15 +158,26 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
     context = {}
 
-    codes = ['b1A', 'C2d', '23D']
+    user = request.user
     
-    TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm)
-    formset = TestPropertyMappingFormSet(request.POST or None, initial=[{'code': x} for x in codes])
+    TestPropertyMappingFormSet = modelformset_factory(TestPropertyMapping, exclude=('user',))
+    formset = TestPropertyMappingFormSet(request.POST or None,
+                                         queryset=TestPropertyMapping.objects.filter(user=user))
 
     test = OutsideEddiDiagnosticTest.objects.all().first()
     
+    if request.method == 'POST':
+        if formset.is_valid():
+            for form in formset.forms:
+                f = form.save(commit=False)
+                f.user = user
+                f.save()
+
+            return redirect("outside_eddi:test_mapping")
+        else:
+            messages.add_message(request, messages.WARNING, "Invalid")
+    
     context['test'] = test
-    context['codes'] = codes
     context['formset'] = formset
     
     return render(request, template, context)

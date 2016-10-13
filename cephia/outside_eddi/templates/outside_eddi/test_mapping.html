@@ -19,10 +19,12 @@
         </tr>
       </thead>
       <tbody>
-        {% for form in formset %}
-          <tr>
-            <form name="tests" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <form name="tests" method="post" id="form"enctype="multipart/form-data">{% csrf_token %}
+          {{ formset.management_form }}
+          {% for form in formset %}
+            <tr>
               <td>
+                {{ form.id }}
                 {{ form.code }}
               </td>
               <td>
@@ -32,9 +34,12 @@
                 {{ form.test_property }}
                 <a class="btn btn-primary js-show-properties" id="btn" name="{{ form.test.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
               </td>
-            </form>
-          </tr>
+              <td>
+                <button class="btn btn-primary">Save</button>
+              </td>
+            </tr>
           {% endfor %}
+        </form>
       </tbody>
     </table>
 

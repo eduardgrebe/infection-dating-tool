@@ -17,6 +17,6 @@ urlpatterns = [
     url(r'^test_properties/(?P<test_id>\d+)/$', views.test_properties, name='test_properties'),
     url(r'^create_study/$', views.edit_study, name='create_study'),
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
-    url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse'),
+
 ]
 urlpatterns += staticfiles_urlpatterns()

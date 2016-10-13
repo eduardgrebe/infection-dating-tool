@@ -97,5 +97,5 @@ class TestPropertyMapping(models.Model):
     code = models.CharField(max_length=10)
     test = ProtectedForeignKey('OutsideEddiDiagnosticTest')
     test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate')
-    
+    user = ProtectedForeignKey('cephia.CephiaUser')
 
