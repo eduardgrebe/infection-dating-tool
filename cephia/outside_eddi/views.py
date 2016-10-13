@@ -186,13 +186,21 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 def test_properties(request, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
     context = context or {}
 
+    user = request.user
+
     properties = OutsideEddiTestPropertyEstimate.objects.filter(user__id=request.user.id, test__pk=test_id)
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
     form = TestPropertyForm(request.POST or None)
+
+    TestPropertyEstimateFormSet = modelformset_factory(OutsideEddiTestPropertyEstimate,
+                                                       fields=('name', 'description', 'mean_diagnostic_delay_days', 'diagnostic_delay_median', 'variance', 'active_property'))
+    formset = TestPropertyEstimateFormSet(request.POST or None,
+                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(user=user, test__pk=test_id))
     
 
     context['form'] = form
+    context['formset'] = formset
     context['properties'] = properties
     context['test'] = test
     

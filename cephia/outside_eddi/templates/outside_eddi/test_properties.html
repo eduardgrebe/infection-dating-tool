@@ -1,57 +1,74 @@
 {% load i18n widget_tweaks %}
 
 <div class="modal-dialog modal-lg" role="document">
-  <div class="modal-content">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title" id="myModalLabel">{{ test.name }} Properties</h4>
-    </div>
-    <div class="modal-body">
-      <table class="table table-condensed table-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Mean</th>
-            <th>Medium</th>
-            <th>Variance</th>
-            <th>Active</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-          {% for p in properties %}
+  <form name="properties" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">{{ test.name }} Properties</h4>
+      </div>
+      <div class="modal-body">
+        <table class="table table-condensed table-striped">
+          <thead>
             <tr>
-              <form method="post" enctype="multipart/form-data">{% csrf_token %}
-                
-                <div class="col-md-6">
-                  {% for field in form.visible_fields %}
-                    {% if field != form.active_property %}
-                      <td>
-                        <fieldset class="form-group">
-                          {{ field|attr:"class:form-control" }}
-                        </fieldset>
-                      </td>
-                    {% endif %}
-                  {% endfor %}
-                  <td>
-                    <input type="radio" name="optradio">
-                  </td>
-                </div>
-
-              </form>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Mean</th>
+              <th>Medium</th>
+              <th>Variance</th>
+              <th>Active</th>
             </tr>
-          {% endfor %}
-          
-        </tbody>
-      </table>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      <button type="button" class="btn btn-primary">Add</button>
-      <button type="button" class="btn btn-primary">Save</button>
-    </div>
-  </div>
+          </thead>
+          <tbody>
+            
+            {{ formset.management_form }}
+            {% for form in formset %}
+              <div class="col-md-6">
+                <tr>
+                  {% for field in form.visible_fields %}
+                    <td>
+                      <fieldset class="form-group">
+                        {{ field|attr:"class:form-control" }}
+                      </fieldset>
+                    </td>
+                  {% endfor %}
+                </tr>
+            {% endfor %}
 
+            {% comment %}
+            {% for p in properties %}
+            <tr>
+            <form method="post" enctype="multipart/form-data">{% csrf_token %}
+            
+            <div class="col-md-6">
+            {% for field in form.visible_fields %}
+            {% if field != form.active_property %}
+            <td>
+            <fieldset class="form-group">
+            {{ field|attr:"class:form-control" }}
+            </fieldset>
+            </td>
+            {% endif %}
+            {% endfor %}
+            <td>
+            <input type="radio" name="optradio">
+            </td>
+            </div>
+
+            </form>
+            </tr>
+            {% endfor %}
+            {% endcomment %}
+            
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Add</button>
+        <button type="button" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </form>
   
 </div>
