@@ -210,8 +210,9 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                         active = f
 
             set_code_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
-            set_code_property.test_property=active
-            set_code_property.save()
+            if set_code_property:
+                set_code_property.test_property=active
+                set_code_property.save()
             return redirect("outside_eddi:test_mapping")
         else:
             messages.add_message(request, messages.WARNING, "Invalid properties")

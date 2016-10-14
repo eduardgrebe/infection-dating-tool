@@ -53,12 +53,12 @@
          var choice = $("#id_" + test_id).find('option:selected').attr("value");
          var code = $("#id_" + code_id).attr("value")
 
-         if (!choice){
-             alert('Please select a test')
+         if (!code){
+             alert('Please insert a code')
              $(this).attr('data-toggle', '')
          }
-         else if (!code){
-             alert('Please insert a code')
+         else if (!choice){
+             alert('Please select a test')
              $(this).attr('data-toggle', '')
          }
          else {
