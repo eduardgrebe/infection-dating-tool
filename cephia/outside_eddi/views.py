@@ -164,12 +164,17 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     formset = TestPropertyMappingFormSet(request.POST or None,
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
+
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
                 if form.cleaned_data:
                     f = form.save(commit=False)
                     f.user = user
+                    code = f.code
+                    set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
+                    if set_property:
+                        f.test_property = set_property.test_property
                     f.save()
 
             return redirect("outside_eddi:test_mapping")
@@ -206,7 +211,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
 
             set_code_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
             set_code_property.test_property=active
-            import pdb;pdb.set_trace()
+            set_code_property.save()
             return redirect("outside_eddi:test_mapping")
         else:
             messages.add_message(request, messages.WARNING, "Invalid properties")
