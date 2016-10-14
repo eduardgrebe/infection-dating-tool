@@ -19,7 +19,7 @@
         </tr>
       </thead>
       <tbody>
-        <form name="tests" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+        <form name="tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
           {{ formset.management_form }}
           {% for form in formset %}
             <tr>

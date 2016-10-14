@@ -72,8 +72,8 @@ class OutsideEddiTestPropertyEstimate(models.Model):
         ('user_added','UserAdded'),
     )
 
-    name = models.CharField(max_length=10, null=True)
-    description = models.CharField(max_length=100, null=True)
+    name = models.CharField(max_length=10, null=True, blank=True)
+    description = models.CharField(max_length=100, null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
     active_property = models.BooleanField(blank=False, default=False)
     history = HistoricalRecords()
@@ -81,13 +81,13 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
     estimate_type = models.CharField(max_length=255, null=False, blank=True)
     mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
-    diagnostic_delay_median = models.IntegerField(null=True, blank=False)
+    diagnostic_delay_median = models.IntegerField(null=True, blank=True)
     foursigma_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
     is_default = models.BooleanField(blank=False, default=False)
     time0_ref = models.CharField(max_length=255, null=False, blank=True)
     comment = models.CharField(max_length=255, null=False, blank=True)
     reference = models.CharField(max_length=255, null=False, blank=True)
-    variance = models.IntegerField(null=True, blank=False)
+    variance = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return '%s' % (self.id)

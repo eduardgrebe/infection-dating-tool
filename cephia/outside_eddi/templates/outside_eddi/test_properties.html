@@ -1,7 +1,7 @@
 {% load i18n widget_tweaks %}
 
 <div class="modal-dialog modal-lg" role="document">
-  <form name="properties" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+  <form name="properties" action="{% url 'outside_eddi:test_properties' test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -23,8 +23,8 @@
             
             {{ formset.management_form }}
             {% for form in formset %}
-              <div class="col-md-6">
-                <tr>
+              <tr>
+                <div class="col-md-6">
                   {% for field in form.visible_fields %}
                     <td>
                       <fieldset class="form-group">
@@ -32,43 +32,29 @@
                       </fieldset>
                     </td>
                   {% endfor %}
-                </tr>
+                  {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                  {% endfor %} 
+                </div>
+              </tr>
             {% endfor %}
-
-            {% comment %}
-            {% for p in properties %}
-            <tr>
-            <form method="post" enctype="multipart/form-data">{% csrf_token %}
-            
-            <div class="col-md-6">
-            {% for field in form.visible_fields %}
-            {% if field != form.active_property %}
-            <td>
-            <fieldset class="form-group">
-            {{ field|attr:"class:form-control" }}
-            </fieldset>
-            </td>
-            {% endif %}
-            {% endfor %}
-            <td>
-            <input type="radio" name="optradio">
-            </td>
-            </div>
-
-            </form>
-            </tr>
-            {% endfor %}
-            {% endcomment %}
             
           </tbody>
         </table>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <input type="submit" name="save" class="btn btn-primary" value="Save" />
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Add</button>
-        <button type="button" class="btn btn-primary">Save</button>
-      </div>
+      
+      <script>
+       $('input[type=checkbox]').change(function() {
+           $('input[type=checkbox]').prop('checked', false);
+           $(this).prop('checked', true);
+       });
+      </script>
+
     </div>
   </form>
-  
 </div>

@@ -169,13 +169,14 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
-                f = form.save(commit=False)
-                f.user = user
-                f.save()
+                if form.cleaned_data:
+                    f = form.save(commit=False)
+                    f.user = user
+                    f.save()
 
             return redirect("outside_eddi:test_mapping")
         else:
-            messages.add_message(request, messages.WARNING, "Invalid")
+            messages.add_message(request, messages.WARNING, "Invalid mapping")
     
     context['test'] = test
     context['formset'] = formset
@@ -187,21 +188,29 @@ def test_properties(request, test_id=None, file_id=None, template="outside_eddi/
     context = context or {}
 
     user = request.user
-
-    properties = OutsideEddiTestPropertyEstimate.objects.filter(user__id=request.user.id, test__pk=test_id)
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
-    form = TestPropertyForm(request.POST or None)
-
     TestPropertyEstimateFormSet = modelformset_factory(OutsideEddiTestPropertyEstimate,
-                                                       fields=('name', 'description', 'mean_diagnostic_delay_days', 'diagnostic_delay_median', 'variance', 'active_property'))
+                                                       fields=('name', 'description', 'mean_diagnostic_delay_days', 'diagnostic_delay_median', 'variance', 'active_property'),
+                                                       exclude=('user', 'history', 'test', 'estimate_label', 'estimate_type', 'foursigma_diagnostic_delay_days', 'time0_ref', 'comment', 'reference', 'is_default'))
     formset = TestPropertyEstimateFormSet(request.POST or None,
                                          queryset=OutsideEddiTestPropertyEstimate.objects.filter(user=user, test__pk=test_id))
-    
 
-    context['form'] = form
+    if request.method == 'POST':
+        if formset.is_valid():
+            for form in formset.forms:
+                if form.cleaned_data:
+                    f = form.save(commit=False)
+                    f.user = user
+                    f.test = test
+                    f.save()
+
+            return redirect("outside_eddi:test_mapping")
+        else:
+            messages.add_message(request, messages.WARNING, "Invalid properties")
+            return redirect("outside_eddi:test_mapping")
+
     context['formset'] = formset
-    context['properties'] = properties
     context['test'] = test
     
     return render(request, template, context)
