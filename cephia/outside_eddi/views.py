@@ -164,8 +164,6 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     formset = TestPropertyMappingFormSet(request.POST or None,
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
-    test = OutsideEddiDiagnosticTest.objects.all().first()
-    
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
@@ -178,13 +176,12 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
     
-    context['test'] = test
     context['formset'] = formset
     
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def test_properties(request, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
+def test_properties(request, code=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
     context = context or {}
 
     user = request.user
@@ -204,7 +201,12 @@ def test_properties(request, test_id=None, file_id=None, template="outside_eddi/
                     f.user = user
                     f.test = test
                     f.save()
+                    if f.active_property==True:
+                        active = f
 
+            set_code_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
+            set_code_property.test_property=active
+            import pdb;pdb.set_trace()
             return redirect("outside_eddi:test_mapping")
         else:
             messages.add_message(request, messages.WARNING, "Invalid properties")
@@ -212,6 +214,7 @@ def test_properties(request, test_id=None, file_id=None, template="outside_eddi/
 
     context['formset'] = formset
     context['test'] = test
+    context['code'] = code
     
     return render(request, template, context)
 

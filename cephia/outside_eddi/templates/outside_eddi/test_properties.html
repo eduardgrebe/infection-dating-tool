@@ -1,11 +1,11 @@
 {% load i18n widget_tweaks %}
 
 <div class="modal-dialog modal-lg" role="document">
-  <form name="properties" action="{% url 'outside_eddi:test_properties' test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+  <form name="properties" action="{% url 'outside_eddi:test_properties' code test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">{{ test.name }} Properties</h4>
+        <h4 class="modal-title" id="myModalLabel">Properties for test: {{ test.name }}{% if code != 'blank' %} code: {{ code }}{% endif %}</h4>
       </div>
       <div class="modal-body">
         <table class="table table-condensed table-striped">

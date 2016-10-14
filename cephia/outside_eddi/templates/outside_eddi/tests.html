@@ -26,7 +26,7 @@
               {{ test.description }}
             </td>
             <td>
-              <a class="btn btn-primary js-show-properties" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' test.id %}">Properties</a>
+              <a class="btn btn-primary js-show-properties" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' test.id %}">Properties</a>
             </td>
           </tr>
         {% endfor %}
