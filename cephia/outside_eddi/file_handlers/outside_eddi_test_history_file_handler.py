@@ -16,11 +16,11 @@ class TestHistoryFileHandler(FileHandler):
                                    'TestCode',
                                    'TestDate',
                                    'TestResult',
-                                   'TestSource',
-                                   'Protocol']
+                                   'TestSource', # remove?
+                                   'Protocol'] # remove?
 
     def parse(self):
-        from diagnostics.models import DiagnosticTestHistoryRow
+        from outside_eddi.models import OutsideEddiDiagnosticTestHistoryRow
 
         rows_inserted = 0
         rows_failed = 0
@@ -30,7 +30,7 @@ class TestHistoryFileHandler(FileHandler):
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
                     
-                    test_history_row = DiagnosticTestHistoryRow.objects.create(subject=row_dict['SubjectId'],
+                    test_history_row = OutsideEddiDiagnosticTestHistoryRow.objects.create(subject=row_dict['SubjectId'],
                                                                                test_date=row_dict['TestDate'],
                                                                                test_code=row_dict['TestCode'],
                                                                                test_result=row_dict['TestResult'],
@@ -50,13 +50,13 @@ class TestHistoryFileHandler(FileHandler):
     
     def validate(self):
         from cephia.models import Subject
-        from diagnostics.models import (DiagnosticTestHistoryRow, ProtocolLookup,
-                                        TestPropertyEstimate, DiagnosticTestHistory)
+        from outside_eddi.models import (OutsideEddiDiagnosticTestHistoryRow, OutsideEddiProtocolLookup,
+                                        OutsideEddiTestPropertyEstimate, OutsideEddiDiagnosticTestHistory)
 
         rows_validated = 0
         rows_failed = 0
         
-        for test_history_row in DiagnosticTestHistoryRow.objects.filter(fileinfo=self.upload_file, state='pending'):
+        for test_history_row in OutsideEddiDiagnosticTestHistoryRow.objects.filter(fileinfo=self.upload_file, state='pending'):
             try:
                 error_msg = ''
                 protocol = None
@@ -67,8 +67,8 @@ class TestHistoryFileHandler(FileHandler):
                     error_msg += "Subject not recognised.\n"
 
                 try:
-                    protocol = ProtocolLookup.objects.get(name=test_history_row.test_code, protocol=test_history_row.protocol)
-                except ProtocolLookup.DoesNotExist:
+                    protocol = OutsideEddiProtocolLookup.objects.get(name=test_history_row.test_code, protocol=test_history_row.protocol)
+                except OutsideEddiProtocolLookup.DoesNotExist:
                     error_msg += "Protocol not recognised.\n"
 
                 if not datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date() < datetime.now().date():
@@ -79,12 +79,12 @@ class TestHistoryFileHandler(FileHandler):
 
                 try:
                     if protocol:
-                        TestPropertyEstimate.objects.get(test__id=protocol.test.pk, is_default=True)
-                except TestPropertyEstimate.DoesNotExist:
+                        OutsideEddiTestPropertyEstimate.objects.get(test__id=protocol.test.pk, is_default=True)
+                except OutsideEddiTestPropertyEstimate.DoesNotExist:
                     error_msg += "Property Estimate not recognised.\n"
 
 
-                if DiagnosticTestHistory.objects.filter(subject__subject_label=test_history_row.subject, ignore=True).exists():
+                if OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=test_history_row.subject, ignore=True).exists():
                     error_msg += "Cannot overwrite test history data that has already been edited.\n"
                     
                 if error_msg:
@@ -106,15 +106,14 @@ class TestHistoryFileHandler(FileHandler):
 
     def process(self):
         from cephia.models import Subject, SubjectEDDI
-        from diagnostics.models import DiagnosticTestHistoryRow, ProtocolLookup, TestPropertyEstimate
-        from outside_eddi.models import OutsideEddiDiagnosticTestHistory
+        from outside_eddi.models import OutsideEddiDiagnosticTestHistoryRow, OutsideEddiProtocolLookup, OutsideEddiTestPropertyEstimate
         
         rows_inserted = 0
         rows_failed = 0
 
         try:
             with transaction.atomic():
-                excluded_subjects = DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='error').distinct()
+                excluded_subjects = OutsideEddiDiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='error').distinct()
                 
                 for subject_label in excluded_subjects:
                     if not OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=subject_label, ignore=True).exists():
@@ -122,18 +121,18 @@ class TestHistoryFileHandler(FileHandler):
                     else:
                         continue
                     
-                for subject_row_error in DiagnosticTestHistoryRow.objects.filter(subject__in=excluded_subjects, state='validated', fileinfo=self.upload_file):
+                for subject_row_error in OutsideEddiDiagnosticTestHistoryRow.objects.filter(subject__in=excluded_subjects, state='validated', fileinfo=self.upload_file):
                     subject_row_error.state = 'error'
                     subject_row_error.error_message = "One or more records for this subject have errors"
                     subject_row_error.save()
         except Exception, e:
             pass
 
-        for subject_label in DiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
+        for subject_label in OutsideEddiDiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
             with transaction.atomic():
                 OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
                 try:
-                    for test_history_row in DiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
+                    for test_history_row in OutsideEddiDiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
                         test_history = OutsideEddiDiagnosticTestHistory.objects.create(subject=Subject.objects.get(subject_label=test_history_row.subject),
                                                                             test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
                                                                             test_result=test_history_row.test_result,
@@ -151,7 +150,7 @@ class TestHistoryFileHandler(FileHandler):
 
                         test_history.subject.subject_eddi.recalculate = True
                         test_history.subject.subject_eddi.save()
-                        test_property = TestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
+                        test_property = OutsideEddiTestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
                         test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
                         test_history.save()
 

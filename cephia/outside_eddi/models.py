@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import os
 from django.conf import settings
-from cephia.models import Subject, CephiaUser
+from cephia.models import Subject, CephiaUser, ImportedRow
 from simple_history.models import HistoricalRecords
 from diagnostics.models import DiagnosticTest
 from django.db import models
@@ -60,6 +60,15 @@ class OutsideEddiDiagnosticTest(models.Model):
     def __str__(self):
         return '%s' % (self.name)
 
+class OutsideEddiProtocolLookup(models.Model):
+    class Meta:
+        db_table = "outside_eddi_cephia_protocol_lookup"
+
+    history = HistoricalRecords()
+    name = models.CharField(max_length=100, null=False, blank=False)
+    protocol = models.CharField(max_length=100, null=False, blank=False)
+    test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=False)
+
 class OutsideEddiTestPropertyEstimate(models.Model):
     class Meta:
         db_table = "outside_eddi_test_property_estimates"
@@ -91,6 +100,18 @@ class OutsideEddiTestPropertyEstimate(models.Model):
 
     def __str__(self):
         return '%s' % (self.id)
+
+class OutsideEddiDiagnosticTestHistoryRow(ImportedRow):
+    class Meta:
+        db_table = "outside_eddi_cephia_diagnostic_test_history_row"
+
+    subject = models.CharField(max_length=255, null=False, blank=True)
+    test_date = models.CharField(max_length=255, null=False, blank=True)
+    test_code = models.CharField(max_length=255, null=False, blank=True)
+    test_result = models.CharField(max_length=255, null=False, blank=True)
+    source = models.CharField(max_length=255, null=False, blank=True)
+    protocol = models.CharField(max_length=255, null=False, blank=True)
+    test_history = models.ForeignKey(OutsideEddiDiagnosticTestHistory, null=True, blank=False)
 
 class TestPropertyMapping(models.Model):
 
