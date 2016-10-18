@@ -13,11 +13,9 @@ class TestHistoryFileHandler(FileHandler):
         super(TestHistoryFileHandler, self).__init__(upload_file)
 
         self.registered_columns = ['SubjectId',
-                                   'TestCode',
-                                   'TestDate',
-                                   'TestResult',
-                                   'TestSource', # remove?
-                                   'Protocol'] # remove?
+                                   'Test',
+                                   'Date',
+                                   'Result']
 
     def parse(self):
         from outside_eddi.models import OutsideEddiDiagnosticTestHistoryRow
@@ -81,7 +79,7 @@ class TestHistoryFileHandler(FileHandler):
                     if protocol:
                         OutsideEddiTestPropertyEstimate.objects.get(test__id=protocol.test.pk, is_default=True)
                 except OutsideEddiTestPropertyEstimate.DoesNotExist:
-                    error_msg += "Property Estimate not recognised.\n"
+                    error_msg += "Property Estimate not recognised.\n" # looks like the mapping needs to be inserted here
 
 
                 if OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=test_history_row.subject, ignore=True).exists():

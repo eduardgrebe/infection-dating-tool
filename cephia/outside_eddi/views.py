@@ -193,8 +193,8 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
     TestPropertyEstimateFormSet = modelformset_factory(OutsideEddiTestPropertyEstimate,
-                                                       fields=('name', 'description', 'mean_diagnostic_delay_days', 'diagnostic_delay_median', 'variance', 'active_property'),
-                                                       exclude=('user', 'history', 'test', 'estimate_label', 'estimate_type', 'foursigma_diagnostic_delay_days', 'time0_ref', 'comment', 'reference', 'is_default'))
+                                                       fields=('active_property', 'estimate_label', 'mean_diagnostic_delay_days', 'foursigma_diagnostic_delay_days', 'diagnostic_delay_median', 'comment', 'reference'),
+                                                       exclude=('user', 'history', 'test', 'name', 'estimate_type', 'variance', 'time0_ref', 'description', 'is_default'))
     formset = TestPropertyEstimateFormSet(request.POST or None,
                                          queryset=OutsideEddiTestPropertyEstimate.objects.filter(user=user, test__pk=test_id))
 
