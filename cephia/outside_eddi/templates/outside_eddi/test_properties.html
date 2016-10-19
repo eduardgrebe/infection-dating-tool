@@ -28,7 +28,7 @@
                 <div class="col-md-6">
                   {% for field in form.visible_fields %}
                     <td>
-                      <fieldset class="form-group">
+                      <fieldset class="form-group" {% if field == form.estimate_label or field == form.comment or field == form.reference %}title="{{ field.value }}"{% endif %}>
                         {{ field|attr:"class:form-control" }}
                       </fieldset>
                     </td>

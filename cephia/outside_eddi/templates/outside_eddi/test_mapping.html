@@ -1,6 +1,7 @@
 {% extends 'outside_eddi/base.html' %}
 {% load bootstrap3 %}
 {% load js_reverse %}
+{% load test_details %}
 
 {% block extrajs%}
   <script src="http://malsup.github.com/jquery.form.js"></script>
@@ -28,7 +29,7 @@
                 {{ form.id }}
                 {{ form.code }}
               </td>
-              <td>
+              <td class="js-show-test-details" name="{{ form.test.html_name }}" title="">
                 {{ form.test }}
               </td>
               <td>
@@ -70,6 +71,18 @@
              });
          }
      });
+
+     $('.js-show-test-details').find('select').hover(function(event) {
+         event.preventDefault();
+         test_id = $(this).attr('name');
+         var choice = $("#id_" + test_id).find('option:selected').attr("value");
+         var tooltips_for_tests = {{tooltips_for_tests|safe}};
+         var tooltip = tooltips_for_tests[choice];
+
+
+         $(this).attr('title', tooltip)
+     });
+
     </script>
 
   </div>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm, TestPropertyForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -17,6 +17,9 @@ from cephia.models import FileInfo, CephiaUser
 from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
+import json
+from json import dumps
+from django.db.models import Q
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -78,11 +81,9 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
             user = form.save()
 
             tests = OutsideEddiDiagnosticTest.objects.all()
-            if tests:
-                test_properties = _copy_test_properties(user)
-            else:
-                add_tests = _copy_diagnostic_tests()
-                test_properties = _copy_test_properties(user)
+
+            add_tests = _copy_diagnostic_tests()
+            test_properties = _copy_test_properties()
 
             return redirect("outside_eddi:home")
         else:
@@ -165,6 +166,13 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
 
+    tooltips_for_tests = {}
+    tests = OutsideEddiDiagnosticTest.objects.all()
+    for test in tests:
+        tooltips_for_tests[str(test.pk)] = test.description
+
+    tips = json.dumps(tooltips_for_tests)
+    
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
@@ -182,6 +190,8 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
             messages.add_message(request, messages.WARNING, "Invalid mapping")
     
     context['formset'] = formset
+    context['tooltips_for_tests'] = tips
+    context['hi'] = 'hello'
     
     return render(request, template, context)
 
@@ -194,14 +204,15 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
 
     TestPropertyEstimateFormSet = modelformset_factory(OutsideEddiTestPropertyEstimate,
                                                        fields=('active_property', 'estimate_label', 'mean_diagnostic_delay_days', 'foursigma_diagnostic_delay_days', 'diagnostic_delay_median', 'comment', 'reference'),
-                                                       exclude=('user', 'history', 'test', 'name', 'estimate_type', 'variance', 'time0_ref', 'description', 'is_default'))
+                                                       exclude=('user', 'history', 'test', 'estimate_type',  'time0_ref',  'is_default'))
     formset = TestPropertyEstimateFormSet(request.POST or None,
-                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(user=user, test__pk=test_id))
+                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
 
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
                 if form.cleaned_data:
+                    import pdb;pdb.set_trace()
                     f = form.save(commit=False)
                     f.user = user
                     f.test = test
@@ -233,7 +244,7 @@ def _copy_diagnostic_tests():
                                                                      name = test.name,
                                                                      description = test.description)
 
-def _copy_test_properties(user):
+def _copy_test_properties():
 
     test_properties = TestPropertyEstimate.objects.all()
 
@@ -241,8 +252,7 @@ def _copy_test_properties(user):
         test_name = prop.test.name
         test = OutsideEddiDiagnosticTest.objects.filter(name=test_name).first()
 
-        outside_eddi_test_property = OutsideEddiTestPropertyEstimate.objects.create(user=user,
-                                                                                    test = test,
+        outside_eddi_test_property = OutsideEddiTestPropertyEstimate.objects.create(test = test,
                                                                                     estimate_label=prop.estimate_label,
                                                                                     estimate_type=prop.estimate_type,
                                                                                     mean_diagnostic_delay_days=prop.mean_diagnostic_delay_days,
