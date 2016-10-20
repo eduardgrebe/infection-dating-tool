@@ -151,8 +151,23 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
 def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context = {}
 
+    user = request.user
+
+    TestFormSet = modelformset_factory(OutsideEddiDiagnosticTest, exclude=('id', 'user', 'histoy'))
+    formset = TestFormSet(request.POST or None, queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)))
+
+    test_ids_by_name = {}
+    all_tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
+    for test in all_tests:
+        test_ids_by_name[str(test.name)] = test.id
+
+    names = json.dumps(test_ids_by_name)
+    
     tests = OutsideEddiDiagnosticTest.objects.all()
+    
+    context['formset'] = formset
     context['tests'] = tests
+    context['test_ids_by_name'] = names
 
     return render(request, template, context)
 
@@ -192,7 +207,6 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     
     context['formset'] = formset
     context['tooltips_for_tests'] = tips
-    context['hi'] = 'hello'
     
     return render(request, template, context)
 
@@ -241,14 +255,18 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                         if f.active_property==True:
                             active = f
                     else:
-                        continue
-                        
+                        f = form.save()
+                        if f.active_property==True:
+                            active = f
 
-            set_code_property = TestPropertyMapping.objects.filter(code=code, test__user=user).first()
-            if set_code_property:
-                set_code_property.test_property=active
-                set_code_property.save()
-            return redirect("outside_eddi:test_mapping")
+            if code != 'None':
+                user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
+                if user_map:
+                    user_map.test_property = active
+                    user_map.save()
+                return redirect("outside_eddi:test_mapping")
+            else:
+                return redirect("outside_eddi:tests")
         else:
             messages.add_message(request, messages.WARNING, "Invalid properties")
             return redirect("outside_eddi:test_mapping")

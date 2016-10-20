@@ -1,58 +1,70 @@
 {% extends 'outside_eddi/base.html' %}
 {% load bootstrap3 %}
+{% load js_reverse %}
+{% load test_id %}
 
 {% block extra_js%}
   <script src="http://malsup.github.com/jquery.form.js"></script>
+  <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
   <div class="container">
 
-    <table class="table table-condensed table-striped">
-      <thead>
-        <tr>
-          <th>Tests</th>
-          <th>Details</th>
-          <th>Properties</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for test in tests %}
+    <form name="tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+      <table class="table table-condensed table-striped">
+        <thead>
           <tr>
-            <td>
-              {{ test.name }}
-            </td>
-            <td>
-              {{ test.description }}
-            </td>
-            <td>
-              <a class="btn btn-primary js-show-properties" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' test.id %}">Properties</a>
-            </td>
+            <th>Tests</th>
+            <th>Details</th>
+            <th>Properties</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+
+          {{ formset.management_form }}
+          {% for form in formset %}
+            <tr>
+              <td>
+                {{ form.id }}
+                {{ form.name }}
+              </td>
+              <td>
+                {{ form.description }}
+              </td>
+              <td>
+                <a class="btn btn-primary js-show-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</a>
+                {{ form.test_property.value }}
+              </td>
+            </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+      <button class="btn btn-primary pull-right">Save</button>
+    </form>
 
     <div class="modal fade" id="modal"></div>
     <script>
      $('.js-show-properties').click(function(event) {
          event.preventDefault();
          url = $(this).attr('href');
-
+         alert(url)
+         test_field = $(this).attr('name');
+         var test_name = $("#id_" + test_field).attr("value");
+         var tests_by_name = {{ test_ids_by_name|safe }}
+         var test = tests_by_name[test_name]
+         var code = 'None'.toString()
+         var choice = test
+         alert(code + " " + choice)
+         
+         url = Urls["outside_eddi:test_properties"](code, choice)
+         alert(url)
          $.get(url).done(function(html) {
              $('#modal').html(html);
              $('#modal').modal();
          });
      });
-     /* $('#modal').on('show.bs.modal', function (event) {
-      *     var modal = $(this)
-      *     $.ajax({
-      *         url: 
-      *         context: document.body
-      *     }).done(function(response) {
-      *         modal.html(response);
-      *     });
-      * })*/
     </script>
     
   </div>
