@@ -54,6 +54,7 @@ class OutsideEddiDiagnosticTest(models.Model):
 
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100, null=False, blank=False)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     description = models.CharField(max_length=255, null=False, blank=False)
     history = HistoricalRecords()
 
@@ -80,11 +81,11 @@ class OutsideEddiTestPropertyEstimate(models.Model):
         ('placeholder','Placeholder'),
         ('user_added','UserAdded'),
     )
-
-    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
+    
     active_property = models.BooleanField(blank=False, default=False)
     history = HistoricalRecords()
     test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
     estimate_type = models.CharField(max_length=255, null=False, blank=True)
     mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)

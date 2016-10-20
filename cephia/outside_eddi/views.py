@@ -82,8 +82,9 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
 
             tests = OutsideEddiDiagnosticTest.objects.all()
 
-            add_tests = _copy_diagnostic_tests()
-            test_properties = _copy_test_properties()
+            if not tests:
+                add_tests = _copy_diagnostic_tests()
+                test_properties = _copy_test_properties()
 
             return redirect("outside_eddi:home")
         else:
@@ -204,23 +205,46 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
 
     TestPropertyEstimateFormSet = modelformset_factory(OutsideEddiTestPropertyEstimate,
                                                        fields=('active_property', 'estimate_label', 'mean_diagnostic_delay_days', 'foursigma_diagnostic_delay_days', 'diagnostic_delay_median', 'comment', 'reference'),
-                                                       exclude=('user', 'history', 'test', 'estimate_type',  'time0_ref',  'is_default'))
+                                                       exclude=('history', 'estimate_type',  'time0_ref',  'is_default', 'test', 'user'))
     formset = TestPropertyEstimateFormSet(request.POST or None,
-                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
+                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(test__user=user) | Q(test__user=None), test__pk=test_id))
+
+    for form in formset:
+        
+        i = str(form.instance)
+        if i != 'None':
+            if form.instance.user == None:
+                form.fields['estimate_label'].widget.attrs['readonly'] = True
+                form.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
+                form.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
+                form.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
+                form.fields['comment'].widget.attrs['readonly'] = True
+                form.fields['reference'].widget.attrs['readonly'] = True
 
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
                 if form.cleaned_data:
-                    import pdb;pdb.set_trace()
-                    f = form.save(commit=False)
-                    f.user = user
-                    f.test = test
-                    f.save()
-                    if f.active_property==True:
-                        active = f
+                    i = str(form.instance)
+                    if i == 'None':
+                        f = form.save(commit=False)
+                        f.test = test
+                        f.user = user
+                        f.save()
+                        if f.active_property==True:
+                            active = f
+                    elif form.instance.user == user:
+                        f = form.save(commit=False)
+                        f.test = test
+                        f.user = user
+                        f.save()
+                        if f.active_property==True:
+                            active = f
+                    else:
+                        continue
+                        
 
-            set_code_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
+            set_code_property = TestPropertyMapping.objects.filter(code=code, test__user=user).first()
             if set_code_property:
                 set_code_property.test_property=active
                 set_code_property.save()
