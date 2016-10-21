@@ -257,10 +257,19 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
     formset = TestPropertyEstimateFormSet(request.POST or None,
                                          queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
 
+    active_property = None
+    if code != 'None':
+        mapping = TestPropertyMapping.objects.get(code=code, test=test, user=user)
+        active_property = mapping.test_property
+
     for form in formset:
         i = str(form.instance)
         if i != 'None':
             if form.instance.user == None:
+                if form.instance.active_property == True:
+                    form.instance.active_property = False
+                if form.instance.id == active_property:
+                    form.instance.active_property = True
                 form.fields['estimate_label'].widget.attrs['readonly'] = True
                 form.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
                 form.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
@@ -273,7 +282,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
             active_exists = False
             for form in formset.forms:
                 if form.cleaned_data:
-                    if form.cleaned_data['active_property'] == True and form.cleaned_data:
+                    if form.cleaned_data['active_property'] == True:
                         active_exists = True
             for form in formset.forms:
                 if form.cleaned_data:
@@ -348,3 +357,24 @@ def _copy_test_properties():
             outside_eddi_test_property.active_property = True
 
         outside_eddi_test_property.save()
+
+
+def create_post(request):
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        test = request.POST.get('test')
+        import pdb;pdb.set_trace()
+        response_data = {}
+
+        post = TestPropertyMapping.update_or_create(code=code, test=test)
+        post.save()
+        
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({"nothing to see": "this isn't happening"}),
+            content_type="application/json"
+        )

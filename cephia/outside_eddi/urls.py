@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^test_properties/(?P<code>\w+)/(?P<test_id>\d+)/$', views.test_properties, name='test_properties'),
     url(r'^create_study/$', views.edit_study, name='create_study'),
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
+    url(r'^test_mapping/create_post/$', views.create_post, name='create_post'),
 
 ]
 urlpatterns += staticfiles_urlpatterns()

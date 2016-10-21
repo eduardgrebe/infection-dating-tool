@@ -1,5 +1,5 @@
 import logging
-from cephia.test_helper.test_base import TestBase
+from cephia.tests.test_base import TestBase
 from cephia.models import *
 from django.core.management import call_command
 

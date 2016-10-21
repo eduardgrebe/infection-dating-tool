@@ -33,7 +33,7 @@
                 {{ form.test }}
               </td>
               <td>
-                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</a>
+                <button type="input" form="{{ form.id.html_name }}"class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</button>
                 {{ form.test_property.value }}
               </td>
             </tr>
@@ -51,8 +51,27 @@
          url = $(this).attr('href');
          test_id = $(this).attr('name');
          code_id = $(this).attr('id');
+         form = $(this).attr('form');
+
          var choice = $("#id_" + test_id).find('option:selected').attr("value");
          var code = $("#id_" + code_id).attr("value")
+         var code_for_form = $("#id_" + code_id).val();
+
+         function create_post() {
+             /* console.log("create post is working!")
+              * console.log(choice)
+              * console.log(code)*/
+             $.ajax({
+                 url : "create_post/",
+                 type : "POST",
+                 data : { code : code_for_form, test : choice, 'csrfmiddlewaretoken': '{{csrf_token}}' },
+
+                 success : function(json) {
+                     console.log(json);
+                     console.log("success");
+                 },
+             });
+         };
 
          if (!code){
              alert('Please insert a code')
@@ -63,6 +82,9 @@
              $(this).attr('data-toggle', '')
          }
          else {
+             create_post()
+             $(this).attr('data-toggle', '')
+
              url = Urls["outside_eddi:test_properties"](code, choice)
 
              $.get(url).done(function(html) {
