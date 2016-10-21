@@ -270,6 +270,11 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
 
     if request.method == 'POST':
         if formset.is_valid():
+            active_exists = False
+            for form in formset.forms:
+                if form.cleaned_data:
+                    if form.cleaned_data['active_property'] == True and form.cleaned_data:
+                        active_exists = True
             for form in formset.forms:
                 if form.cleaned_data:
                     i = str(form.instance)
@@ -277,6 +282,8 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                         f = form.save(commit=False)
                         f.test = test
                         f.user = user
+                        if active_exists == False:
+                            f.active_property=True
                         f.save()
                         if f.active_property==True:
                             active = f
