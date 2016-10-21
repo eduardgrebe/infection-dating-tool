@@ -3,7 +3,7 @@
 {% load js_reverse %}
 {% load test_id %}
 
-{% block extra_js%}
+{% block extrajs%}
   <script src="http://malsup.github.com/jquery.form.js"></script>
   <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 {% endblock %}
@@ -49,17 +49,16 @@
      $('.js-show-properties').click(function(event) {
          event.preventDefault();
          url = $(this).attr('href');
-         alert(url)
+
          test_field = $(this).attr('name');
          var test_name = $("#id_" + test_field).attr("value");
          var tests_by_name = {{ test_ids_by_name|safe }}
          var test = tests_by_name[test_name]
-         var code = 'None'.toString()
+         var code = 'None'
          var choice = test
-         alert(code + " " + choice)
          
          url = Urls["outside_eddi:test_properties"](code, choice)
-         alert(url)
+
          $.get(url).done(function(html) {
              $('#modal').html(html);
              $('#modal').modal();

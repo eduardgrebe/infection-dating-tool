@@ -156,14 +156,46 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     TestFormSet = modelformset_factory(OutsideEddiDiagnosticTest, exclude=('id', 'user', 'histoy'))
     formset = TestFormSet(request.POST or None, queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)))
 
+    for form in formset:
+        i = str(form.instance)
+        if i != '':
+            if form.instance.user == None:
+                form.fields['name'].widget.attrs['readonly'] = True
+                form.fields['description'].widget.attrs['readonly'] = True
+
     test_ids_by_name = {}
     all_tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
     for test in all_tests:
         test_ids_by_name[str(test.name)] = test.id
 
+    test_names = []
+    for test in all_tests:
+        test_names.append(test.name)
+
     names = json.dumps(test_ids_by_name)
     
     tests = OutsideEddiDiagnosticTest.objects.all()
+
+    if request.method == 'POST':
+        if formset.is_valid():
+            for form in formset.forms:
+                if form.cleaned_data:
+                    i = str(form.instance)
+                    if i not in test_names:
+                        f = form.save(commit=False)
+                        f.user = user
+                        f.save()
+                    elif form.instance.user == user:
+                        f = form.save(commit=False)
+                        f.user = user
+                        f.save()
+                    else:
+                        continue
+
+            return redirect("outside_eddi:tests")
+        else:
+            messages.add_message(request, messages.WARNING, "Invalid test details")
+            return redirect("outside_eddi:tests")
     
     context['formset'] = formset
     context['tests'] = tests
@@ -181,6 +213,8 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     formset = TestPropertyMappingFormSet(request.POST or None,
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
+    for form in formset:
+        form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
 
     tooltips_for_tests = {}
     tests = OutsideEddiDiagnosticTest.objects.all()
@@ -224,7 +258,6 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                                          queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(test__user=user) | Q(test__user=None), test__pk=test_id))
 
     for form in formset:
-        
         i = str(form.instance)
         if i != 'None':
             if form.instance.user == None:
@@ -282,8 +315,7 @@ def _copy_diagnostic_tests():
     tests = DiagnosticTest.objects.all()
 
     for test in tests:
-        outside_eddi_test = OutsideEddiDiagnosticTest.objects.create(id = test.id,
-                                                                     name = test.name,
+        outside_eddi_test = OutsideEddiDiagnosticTest.objects.create(name = test.name,
                                                                      description = test.description)
 
 def _copy_test_properties():

@@ -52,7 +52,6 @@ class OutsideEddiDiagnosticTest(models.Model):
     class Meta:
         db_table = "outside_eddi_diagnostic_tests"
 
-    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100, null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     description = models.CharField(max_length=255, null=False, blank=False)
