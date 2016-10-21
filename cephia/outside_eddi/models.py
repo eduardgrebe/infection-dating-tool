@@ -117,3 +117,9 @@ class TestPropertyMapping(models.Model):
     test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate', null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
 
+class EDDITable(models.Model):
+    user = ProtectedForeignKey('cephia.CephiaUser')
+    test_file = ProtectedForeignKey('TestHistoryFile')
+    subject = models.CharField(max_length=255, null=False, blank=False)
+    dates = models.DateField(null=True, blank=False)
+    results = models.CharField(max_length=15, null=True, blank=False)

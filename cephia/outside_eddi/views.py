@@ -255,7 +255,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                                                        fields=('active_property', 'estimate_label', 'mean_diagnostic_delay_days', 'foursigma_diagnostic_delay_days', 'diagnostic_delay_median', 'comment', 'reference'),
                                                        exclude=('history', 'estimate_type',  'time0_ref',  'is_default', 'test', 'user'))
     formset = TestPropertyEstimateFormSet(request.POST or None,
-                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(test__user=user) | Q(test__user=None), test__pk=test_id))
+                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
 
     for form in formset:
         i = str(form.instance)
