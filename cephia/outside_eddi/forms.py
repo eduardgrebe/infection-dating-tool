@@ -95,7 +95,23 @@ class OutsideEddiTestPropertyEstimateForm(ModelForm):
         self.fields['comment'].widget.attrs['placeholder'] = ''
         self.fields['reference'].widget.attrs['placeholder'] = ''
         
-        
+class GlobalTestForm(ModelForm):
+
+    class Meta:
+        model = OutsideEddiDiagnosticTest
+        fields = ['name', 'description']
+
+    def __init__(self, *args, **kwargs):
+        super(GlobalTestForm, self).__init__(*args, **kwargs)
+        if self.instance.pk and not self.instance.user:
+            self.fields['name'].widget.attrs['readonly'] = True
+            self.fields['description'].widget.attrs['readonly'] = True
+
+class UserTestForm(ModelForm):
+    
+    class Meta:
+        model = OutsideEddiDiagnosticTest
+        fields = ['name', 'description']
 
 TestPropertyMappingFormSet = modelformset_factory(
     TestPropertyMapping,
@@ -107,3 +123,13 @@ TestPropertyEstimateFormSet = modelformset_factory(
     form=OutsideEddiTestPropertyEstimateForm
 )
     
+GlobalTestFormSet = modelformset_factory(
+    OutsideEddiDiagnosticTest,
+    form=GlobalTestForm,
+    extra=0
+)
+
+UserTestFormSet = modelformset_factory(
+    OutsideEddiDiagnosticTest,
+    form=UserTestForm
+)

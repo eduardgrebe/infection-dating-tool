@@ -49,13 +49,14 @@ class Study(models.Model):
     user = ProtectedForeignKey('cephia.CephiaUser')
 
 class OutsideEddiDiagnosticTest(models.Model):
-    class Meta:
-        db_table = "outside_eddi_diagnostic_tests"
-
     name = models.CharField(max_length=100, null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     description = models.CharField(max_length=255, null=False, blank=False)
     history = HistoricalRecords()
+
+    class Meta:
+        db_table = "outside_eddi_diagnostic_tests"
+        unique_together = ('name', 'user')
 
     def __str__(self):
         return '%s' % (self.name)

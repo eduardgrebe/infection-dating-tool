@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, TestPropertyEstimateFormSet
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, TestPropertyEstimateFormSet, GlobalTestFormSet, UserTestFormSet
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -153,15 +153,17 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
 
     user = request.user
 
-    TestFormSet = modelformset_factory(OutsideEddiDiagnosticTest, exclude=('id', 'user', 'histoy'))
-    formset = TestFormSet(request.POST or None, queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)))
-
-    for form in formset:
-        i = str(form.instance)
-        if i != '':
-            if form.instance.user == None:
-                form.fields['name'].widget.attrs['readonly'] = True
-                form.fields['description'].widget.attrs['readonly'] = True
+    
+    global_formset = GlobalTestFormSet(
+        request.POST or None,
+        queryset=OutsideEddiDiagnosticTest.objects.filter(user=None),
+        prefix='global'
+    )
+    user_formset = UserTestFormSet(
+        request.POST or None,
+        queryset=OutsideEddiDiagnosticTest.objects.filter(user=user),
+        prefix='user'
+    )
 
     test_ids_by_name = {}
     all_tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
@@ -177,27 +179,30 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     tests = OutsideEddiDiagnosticTest.objects.all()
 
     if request.method == 'POST':
-        if formset.is_valid():
-            for form in formset.forms:
+        if user_formset.is_valid():
+            for form in user_formset.forms:
                 if form.cleaned_data:
-                    i = str(form.instance)
-                    if i not in test_names:
-                        f = form.save(commit=False)
-                        f.user = user
-                        f.save()
-                    elif form.instance.user == user:
+                    if form.instance.pk:
                         f = form.save(commit=False)
                         f.user = user
                         f.save()
                     else:
-                        continue
+                        if OutsideEddiDiagnosticTest.objects.filter(name=form.cleaned_data['name'],
+                                                              user=user).exists():
+                            messages.add_message(request, messages.WARNING, "You already have a test with the name: " + form.cleaned_data['name'])
+                        else:
+                            f = form.save(commit=False)
+                            f.user = user
+                            f.save()
 
             return redirect("outside_eddi:tests")
+
         else:
             messages.add_message(request, messages.WARNING, "Invalid test details")
             return redirect("outside_eddi:tests")
     
-    context['formset'] = formset
+    context['user_formset'] = user_formset
+    context['global_formset'] = global_formset
     context['tests'] = tests
     context['test_ids_by_name'] = names
 
@@ -321,7 +326,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                         if f.active_property==True:
                             active = f
 
-            if code != 'None':
+            if code != 'None' or code != 'user' or code != 'global':
                 user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
                 if user_map:
                     user_map.test_property = active
@@ -338,10 +343,13 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 if request.is_ajax():
                     return JsonResponse({"success": True})
                 else:
-                    return redirect("outside_eddi:tests")
+                    return redirect("outside_eddi:test_mapping")
                 
             else:
-                return redirect("outside_eddi:tests")
+                if request.is_ajax():
+                    return JsonResponse({"success": True})
+                else:
+                    return redirect("outside_eddi:tests")
         else:
             
             if request.is_ajax():

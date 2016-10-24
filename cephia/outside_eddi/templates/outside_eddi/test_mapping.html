@@ -26,14 +26,13 @@
           {% for form in formset %}
             <tr>
               <td>
-                {{ form.id }}
-                {{ form.code }}
+                {% bootstrap_field form.code show_label=False %} {{ form.id }}
               </td>
               <td class="js-show-test-details" name="{{ form.test.html_name }}" title="">
-                {{ form.test }}
+                {% bootstrap_field form.test show_label=False %}
               </td>
               <td>
-                <button type="input" form="{{ form.id.html_name }}" class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</button>
+                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -50,12 +49,9 @@
          url = $(this).attr('href');
          test_id = $(this).attr('name');
          code_id = $(this).attr('id');
-         /* form = $(this).attr('form');*/
 
-         /* var choice = $("#id_" + test_id).find('option:selected').val();*/
          var choice = $("#id_" + test_id).find('option:selected').attr("value");
          var code = $("#id_" + code_id).val();
-         /* var code = $("#id_" + code_id).attr("value")*/
 
          if (!code){
              alert('Please insert a code')
@@ -88,7 +84,6 @@
                  $('#modal').html(resp);
              }
          });
-         
      });
 
      $('.js-show-test-details').find('select').hover(function(event) {
