@@ -82,11 +82,14 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     )
     
     active_property = models.BooleanField(blank=False, default=False)
+    estimate_label = models.CharField(max_length=255, null=False, blank=True)
+    estimate_type = models.CharField(max_length=255, null=False, blank=True)
+    
     history = HistoricalRecords()
     test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
-    estimate_label = models.CharField(max_length=255, null=False, blank=True)
-    estimate_type = models.CharField(max_length=255, null=False, blank=True)
+    
+    
     mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
     diagnostic_delay_median = models.IntegerField(null=True, blank=True)
     foursigma_diagnostic_delay_days = models.IntegerField(null=True, blank=True)
@@ -116,6 +119,9 @@ class TestPropertyMapping(models.Model):
     test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=True)
     test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate', null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
+
+    class Meta:
+        unique_together = ('code', 'user')
 
 class EDDITable(models.Model):
     user = ProtectedForeignKey('cephia.CephiaUser')

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm, TestPropertyEstimateFormSet
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, TestPropertyEstimateFormSet
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -209,7 +209,6 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     user = request.user
     
-    TestPropertyMappingFormSet = modelformset_factory(TestPropertyMapping, exclude=('user',))
     formset = TestPropertyMappingFormSet(request.POST or None,
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
@@ -227,15 +226,28 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         if formset.is_valid():
             for form in formset.forms:
                 if form.cleaned_data:
-                    f = form.save(commit=False)
-                    f.user = user
-                    code = f.code
-                    set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
-                    if set_property:
-                        f.test_property = set_property.test_property
-                    f.save()
-
+                    if form.instance.pk:
+                        f = form.save(commit=False)
+                        f.user = user
+                        code = f.code
+                        set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
+                        if set_property:
+                            f.test_property = set_property.test_property
+                        f.save()
+                    else:
+                        if TestPropertyMapping.objects.filter(code=form.cleaned_data['code'],
+                                                              user=user).exists():
+                            messages.add_message(request, messages.WARNING, "You already have a mapping with code: " + form.cleaned_data['code'])
+                        else:
+                            f = form.save(commit=False)
+                            f.user = user
+                            code = f.code
+                            set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
+                            if set_property:
+                                f.test_property = set_property.test_property
+                                f.save()
             return redirect("outside_eddi:test_mapping")
+                    
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
     
@@ -250,31 +262,31 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
 
     user = request.user
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
-
     
     formset = TestPropertyEstimateFormSet(
         request.POST or None,
         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
 
-    active_property = None
-    if code != 'None':
-        mapping = TestPropertyMapping.objects.get(code=code, test=test, user=user)
-        active_property = mapping.test_property
+    # active_property = None
+    # if code != 'None':
+    #     mapping = TestPropertyMapping.objects.filter(code=code, test=test, user=user).first()
+    #     if mapping:
+    #         active_property = mapping.test_property
 
-    for form in formset:
-        i = str(form.instance)
-        if i != 'None':
-            if form.instance.user == None:
-                if form.instance.active_property == True:
-                    form.instance.active_property = False
-                if form.instance.id == active_property:
-                    form.instance.active_property = True
-                form.fields['estimate_label'].widget.attrs['readonly'] = True
-                form.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
-                form.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
-                form.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
-                form.fields['comment'].widget.attrs['readonly'] = True
-                form.fields['reference'].widget.attrs['readonly'] = True
+    # for form in formset:
+    #     i = str(form.instance)
+    #     if i != 'None':
+    #         if form.instance.user == None:
+    #             if form.instance.active_property == True:
+    #                 form.instance.active_property = False
+    #             if form.instance.id == active_property:
+    #                 form.instance.active_property = True
+    #             form.fields['estimate_label'].widget.attrs['readonly'] = True
+    #             form.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
+    #             form.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
+    #             form.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
+    #             form.fields['comment'].widget.attrs['readonly'] = True
+    #             form.fields['reference'].widget.attrs['readonly'] = True
 
     if request.method == 'POST':
         if formset.is_valid():
@@ -314,6 +326,14 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 if user_map:
                     user_map.test_property = active
                     user_map.save()
+                else:
+                    user_map_code_only = TestPropertyMapping.objects.filter(code=code, user=user).first()
+                    if user_map_code_only:
+                        user_map_code_only.test = test
+                        user_map_code_only.test_property = active
+                        user_map_code_only.save()
+                    else:
+                        new_map = TestPropertyMapping.objects.create(code=code, user=user, test=test, test_property=active)
 
                 if request.is_ajax():
                     return JsonResponse({"success": True})
@@ -370,24 +390,3 @@ def _copy_test_properties():
             outside_eddi_test_property.active_property = True
 
         outside_eddi_test_property.save()
-
-
-def create_post(request):
-    if request.method == 'POST':
-        code = request.POST.get('code')
-        test = request.POST.get('test')
-        import pdb;pdb.set_trace()
-        response_data = {}
-
-        post = TestPropertyMapping.update_or_create(code=code, test=test)
-        post.save()
-        
-        return HttpResponse(
-            json.dumps(response_data),
-            content_type="application/json"
-        )
-    else:
-        return HttpResponse(
-            json.dumps({"nothing to see": "this isn't happening"}),
-            content_type="application/json"
-        )

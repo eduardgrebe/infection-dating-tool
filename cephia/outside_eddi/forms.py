@@ -56,12 +56,16 @@ class StudyForm(ModelForm):
 
 class TestPropertyMappingForm(ModelForm):
     test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label="(select test)")
-    test_property = forms.ModelChoiceField(queryset=OutsideEddiTestPropertyEstimate.objects.all(), empty_label="(select property)")
-    
+    # test_property = forms.ModelChoiceField(queryset=OutsideEddiTestPropertyEstimate.objects.all(), empty_label="(select property)")
     
     class Meta:
         model = TestPropertyMapping
-        fields = ['code', 'test', 'test_property']
+        fields = ['code', 'test']
+
+    def __init__(self, *args, **kwargs):
+        super(TestPropertyMappingForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['code'].widget.attrs['readonly'] = True
 
 class OutsideEddiTestPropertyEstimateForm(ModelForm):
     active_property = forms.BooleanField(label="", required=False)
@@ -93,7 +97,10 @@ class OutsideEddiTestPropertyEstimateForm(ModelForm):
         
         
 
-TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm)
+TestPropertyMappingFormSet = modelformset_factory(
+    TestPropertyMapping,
+    form=TestPropertyMappingForm
+)
 
 TestPropertyEstimateFormSet = modelformset_factory(
     OutsideEddiTestPropertyEstimate,

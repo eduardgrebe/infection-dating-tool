@@ -51,11 +51,12 @@
          url = $(this).attr('href');
          test_id = $(this).attr('name');
          code_id = $(this).attr('id');
-         form = $(this).attr('form');
+         /* form = $(this).attr('form');*/
 
+         /* var choice = $("#id_" + test_id).find('option:selected').val();*/
          var choice = $("#id_" + test_id).find('option:selected').attr("value");
-         var code = $("#id_" + code_id).attr("value")
-         var code_for_form = $("#id_" + code_id).val();
+         var code = $("#id_" + code_id).val();
+         /* var code = $("#id_" + code_id).attr("value")*/
 
          if (!code){
              alert('Please insert a code')
@@ -66,9 +67,6 @@
              $(this).attr('data-toggle', '')
          }
          else {
-             /* create_post()*/
-             $(this).attr('data-toggle', '')
-
              url = Urls["outside_eddi:test_properties"](code, choice)
 
              $.get(url).done(function(html) {
