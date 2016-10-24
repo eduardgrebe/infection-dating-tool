@@ -133,3 +133,40 @@ UserTestFormSet = modelformset_factory(
     OutsideEddiDiagnosticTest,
     form=UserTestForm
 )
+
+class GroupedModelChoiceField(forms.ModelChoiceField):
+
+    def optgroup_from_instance(self, obj):
+        return ""
+
+    def __choice_from_instance__(self, obj):
+	return (obj.id, self.label_from_instance(obj))
+
+    def _get_choices(self):
+        if not self.queryset:
+            return []
+
+        all_choices = []
+	if self.empty_label:
+            current_optgroup = ""
+            current_optgroup_choices = [("", self.empty_label)]
+        else:
+            current_optgroup = self.optgroup_from_instance(self.queryset[0])
+            current_optgroup_choices = []
+
+        for item in self.queryset:
+            optgroup_from_instance = self.optgroup_from_instance(item)
+            if current_optgroup != optgroup_from_instance:
+                all_choices.append((current_optgroup, current_optgroup_choices))
+                current_optgroup_choices = []
+                current_optgroup = optgroup_from_instance
+            current_optgroup_choices.append(self.__choice_from_instance__(item))
+
+	    all_choices.append((current_optgroup, current_optgroup_choices))
+	    return all_choices
+
+    choices = property(_get_choices, forms.ChoiceField._set_choices)
+    
+class ExampleChoiceField(GroupedModelChoiceField):
+    def optgroup_from_instance(self, obj):
+    	return obj.group.name

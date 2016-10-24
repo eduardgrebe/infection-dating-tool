@@ -218,7 +218,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
     for form in formset:
-        form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
+        form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)).order_by('-user')
 
     tooltips_for_tests = {}
     tests = OutsideEddiDiagnosticTest.objects.all()
