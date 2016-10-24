@@ -34,7 +34,6 @@
               </td>
               <td>
                 <button type="input" form="{{ form.id.html_name }}" class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</button>
-                {{ form.test_property.value }}
               </td>
             </tr>
           {% endfor %}
@@ -84,6 +83,7 @@
          $.post(form.attr('action'), post_data).done(function(resp) {
              if (resp.success) {
                  $('#modal').modal('hide');
+                 location.reload();
              } else {
                  $('#modal').html(resp);
              }

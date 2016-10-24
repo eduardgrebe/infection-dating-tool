@@ -245,7 +245,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                             set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
                             if set_property:
                                 f.test_property = set_property.test_property
-                                f.save()
+                            f.save()
             return redirect("outside_eddi:test_mapping")
                     
         else:
@@ -338,7 +338,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 if request.is_ajax():
                     return JsonResponse({"success": True})
                 else:
-                    return redirect("outside_eddi:test_mapping")
+                    return redirect("outside_eddi:tests")
                 
             else:
                 return redirect("outside_eddi:tests")
