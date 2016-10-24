@@ -6,6 +6,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from cephia.models import FileInfo
+from django.forms import modelformset_factory
 from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
 
 class EddiUserCreationForm(UserCreationForm):
@@ -56,9 +57,46 @@ class StudyForm(ModelForm):
 class TestPropertyMappingForm(ModelForm):
     test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label="(select test)")
     test_property = forms.ModelChoiceField(queryset=OutsideEddiTestPropertyEstimate.objects.all(), empty_label="(select property)")
+    
+    
     class Meta:
         model = TestPropertyMapping
         fields = ['code', 'test', 'test_property']
 
+class OutsideEddiTestPropertyEstimateForm(ModelForm):
+    active_property = forms.BooleanField(label="", required=False)
+    class Meta:
+        fields = (
+            'active_property', 'estimate_label',
+            'mean_diagnostic_delay_days',
+            'foursigma_diagnostic_delay_days', 'diagnostic_delay_median',
+            'comment', 'reference'
+        )
+        model = OutsideEddiTestPropertyEstimate
+
+    def __init__(self, *args, **kwargs):
+        super(OutsideEddiTestPropertyEstimateForm, self).__init__(*args, **kwargs)
+        if self.instance.pk and not self.instance.user:
+            self.fields['estimate_label'].widget.attrs['readonly'] = True
+            self.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
+            self.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
+            self.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
+            self.fields['comment'].widget.attrs['readonly'] = True
+            self.fields['reference'].widget.attrs['readonly'] = True
+
+        self.fields['estimate_label'].widget.attrs['placeholder'] = ''
+        self.fields['mean_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
+        self.fields['foursigma_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
+        self.fields['diagnostic_delay_median'].widget.attrs['placeholder'] = ''
+        self.fields['comment'].widget.attrs['placeholder'] = ''
+        self.fields['reference'].widget.attrs['placeholder'] = ''
+        
+        
+
 TestPropertyMappingFormSet = formset_factory(TestPropertyMappingForm)
 
+TestPropertyEstimateFormSet = modelformset_factory(
+    OutsideEddiTestPropertyEstimate,
+    form=OutsideEddiTestPropertyEstimateForm
+)
+    

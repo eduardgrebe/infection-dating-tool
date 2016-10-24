@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingForm, TestPropertyEstimateFormSet
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -251,11 +251,10 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
     user = request.user
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
-    TestPropertyEstimateFormSet = modelformset_factory(OutsideEddiTestPropertyEstimate,
-                                                       fields=('active_property', 'estimate_label', 'mean_diagnostic_delay_days', 'foursigma_diagnostic_delay_days', 'diagnostic_delay_median', 'comment', 'reference'),
-                                                       exclude=('history', 'estimate_type',  'time0_ref',  'is_default', 'test', 'user'))
-    formset = TestPropertyEstimateFormSet(request.POST or None,
-                                         queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
+    
+    formset = TestPropertyEstimateFormSet(
+        request.POST or None,
+        queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
 
     active_property = None
     if code != 'None':
@@ -284,6 +283,8 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 if form.cleaned_data:
                     if form.cleaned_data['active_property'] == True:
                         active_exists = True
+
+                        
             for form in formset.forms:
                 if form.cleaned_data:
                     i = str(form.instance)
@@ -313,12 +314,24 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 if user_map:
                     user_map.test_property = active
                     user_map.save()
-                return redirect("outside_eddi:test_mapping")
+
+                if request.is_ajax():
+                    return JsonResponse({"success": True})
+                else:
+                    return redirect("outside_eddi:test_mapping")
+                
             else:
                 return redirect("outside_eddi:tests")
         else:
-            messages.add_message(request, messages.WARNING, "Invalid properties")
-            return redirect("outside_eddi:test_mapping")
+            
+            if request.is_ajax():
+                context['formset'] = formset
+                context['test'] = test
+                context['code'] = code
+                return render(request, 'outside_eddi/test_properties.html', context)
+            else:
+                messages.add_message(request, messages.WARNING, "Invalid properties")
+                return redirect("outside_eddi:test_mapping")
 
     context['formset'] = formset
     context['test'] = test

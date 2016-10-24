@@ -33,7 +33,7 @@
                 {{ form.test }}
               </td>
               <td>
-                <button type="input" form="{{ form.id.html_name }}"class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</button>
+                <button type="input" form="{{ form.id.html_name }}" class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</button>
                 {{ form.test_property.value }}
               </td>
             </tr>
@@ -57,22 +57,6 @@
          var code = $("#id_" + code_id).attr("value")
          var code_for_form = $("#id_" + code_id).val();
 
-         function create_post() {
-             /* console.log("create post is working!")
-              * console.log(choice)
-              * console.log(code)*/
-             $.ajax({
-                 url : "create_post/",
-                 type : "POST",
-                 data : { code : code_for_form, test : choice, 'csrfmiddlewaretoken': '{{csrf_token}}' },
-
-                 success : function(json) {
-                     console.log(json);
-                     console.log("success");
-                 },
-             });
-         };
-
          if (!code){
              alert('Please insert a code')
              $(this).attr('data-toggle', '')
@@ -82,7 +66,7 @@
              $(this).attr('data-toggle', '')
          }
          else {
-             create_post()
+             /* create_post()*/
              $(this).attr('data-toggle', '')
 
              url = Urls["outside_eddi:test_properties"](code, choice)
@@ -92,6 +76,21 @@
                  $('#modal').modal();
              });
          }
+     });
+
+     $('#modal').on("click", '.js-submit-properties', function(event) {
+         event.preventDefault();
+
+         var form = $(this).parents('form');
+         post_data = form.serialize();
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.success) {
+                 $('#modal').modal('hide');
+             } else {
+                 $('#modal').html(resp);
+             }
+         });
+         
      });
 
      $('.js-show-test-details').find('select').hover(function(event) {

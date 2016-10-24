@@ -1,4 +1,5 @@
 {% load i18n widget_tweaks %}
+{% load bootstrap3 %}
 
 <div class="modal-dialog modal-lg" role="document">
   <form name="properties" action="{% url 'outside_eddi:test_properties' code test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
@@ -7,7 +8,9 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="myModalLabel">Properties for test: {{ test.name }}{% if code != 'None' %} code: {{ code }}{% endif %}</h4>
       </div>
+
       <div class="modal-body">
+        {% bootstrap_formset_errors formset %}
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
@@ -25,18 +28,14 @@
             {{ formset.management_form }}
             {% for form in formset %}
               <tr>
-                <div class="col-md-6">
-                  {% for field in form.visible_fields %}
-                    <td>
-                      <fieldset class="form-group" {% if field == form.estimate_label or field == form.comment or field == form.reference %}title="{{ field.value }}"{% endif %}>
-                        {{ field|attr:"class:form-control" }}
-                      </fieldset>
-                    </td>
-                  {% endfor %}
-                  {% for hidden in form.hidden_fields %}
-                    {{ hidden }}
-                  {% endfor %} 
-                </div>
+                <td>{% bootstrap_field form.active_property show_label=False %} {{ form.id }}</td>
+                <td>{% bootstrap_field form.estimate_label show_label=False %}</td>
+                <td>{% bootstrap_field form.mean_diagnostic_delay_days show_label=False %}</td>
+                <td>{% bootstrap_field form.foursigma_diagnostic_delay_days show_label=False %}</td>
+                <td>{% bootstrap_field form.diagnostic_delay_median show_label=False %}</td>
+                <td>{% bootstrap_field form.comment show_label=False %}</td>
+                <td>{% bootstrap_field form.reference show_label=False %}</td>
+
               </tr>
             {% endfor %}
             
@@ -45,7 +44,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <input type="submit" name="save" class="btn btn-primary" value="Save"/>
+          <input type="submit" name="save" class="btn btn-primary js-submit-properties" value="Save"/>
         </div>
       </div>
       
