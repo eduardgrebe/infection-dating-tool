@@ -2,11 +2,14 @@
 {% load bootstrap3 %}
 
 <div class="modal-dialog modal-lg" role="document">
-  <form name="properties" action="{% url 'outside_eddi:test_properties' code test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+  <form name="properties" action="{% url 'outside_eddi:test_properties' code details test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Properties for test: {{ test.name }}{% if code != 'None' %} code: {{ code }}{% endif %}</h4>
+        <h4 class="modal-title" id="myModalLabel">Properties for test: {{ test.name }}{% if code != 'global' and code != 'user' %} code: {{ code }}{% endif %}</h4>
+        {% if code == 'global' %}
+          <h5>The system defaults are being displayed, you can add additional properties but in order to set them as active you will have to map it along with a test and code from the mapping screen</h5>
+        {% endif %}
       </div>
 
       <div class="modal-body">
@@ -14,7 +17,11 @@
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
-              <th>Active</th>
+              {% if code == 'global' or code == 'user' %}
+                <th>Default</th>
+              {% else %}
+                <th>Active</th>
+              {% endif %}
               <th>Name</th>
               <th>Mean</th>
               <th>Variability</th>
@@ -43,7 +50,7 @@
         </table>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default js-close-properties" data-dismiss="modal">Close</button>
           <input type="submit" name="save" class="btn btn-primary js-submit-properties" value="Save"/>
         </div>
       </div>

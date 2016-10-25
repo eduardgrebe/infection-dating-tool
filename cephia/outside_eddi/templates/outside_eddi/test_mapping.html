@@ -32,7 +32,7 @@
                 {% bootstrap_field form.test show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 1 %}">Properties</a>
+                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 'None' 1 %}">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -50,19 +50,20 @@
          test_id = $(this).attr('name');
          code_id = $(this).attr('id');
 
-         var choice = $("#id_" + test_id).find('option:selected').attr("value");
+         var test = $("#id_" + test_id).find('option:selected').attr("value");
          var code = $("#id_" + code_id).val();
+         var details = 'None';
 
          if (!code){
              alert('Please insert a code')
              $(this).attr('data-toggle', '')
          }
-         else if (!choice){
+         else if (!test){
              alert('Please select a test')
              $(this).attr('data-toggle', '')
          }
          else {
-             url = Urls["outside_eddi:test_properties"](code, choice)
+             url = Urls["outside_eddi:test_properties"](code, details, test)
 
              $.get(url).done(function(html) {
                  $('#modal').html(html);
@@ -86,12 +87,18 @@
          });
      });
 
+     $('#modal').on("click", '.js-close-properties', function(event) {
+         event.preventDefault();
+         $('#modal').modal('hide');
+         location.reload();
+     });
+
      $('.js-show-test-details').find('select').hover(function(event) {
          event.preventDefault();
          test_id = $(this).attr('name');
-         var choice = $("#id_" + test_id).find('option:selected').attr("value");
+         var test = $("#id_" + test_id).find('option:selected').attr("value");
          var tooltips_for_tests = {{tooltips_for_tests|safe}};
-         var tooltip = tooltips_for_tests[choice];
+         var tooltip = tooltips_for_tests[test];
 
 
          $(this).attr('title', tooltip)

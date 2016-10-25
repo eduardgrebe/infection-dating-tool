@@ -262,36 +262,66 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def test_properties(request, code=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
+def test_properties(request, code=None, details=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
     context = context or {}
 
     user = request.user
-    test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
     
+    if code == 'new_user_test':
+        test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
+        if details != 'no_user_details':
+            test.description = details
+            test.save()
+        test_id = test.pk
+        code = 'user'
+    else:
+        test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        if code == 'user' and test.description != details and details != 'no_user_details':
+            test.description = details
+            test.save()
+
+    if code != 'None' and code != 'user' and code != 'global':
+        if TestPropertyMapping.objects.filter(code=code, user=user, test=test).exists():
+            user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
+        else:
+            if TestPropertyMapping.objects.filter(code=code, user=user).exists():
+                user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
+                user_map.test = test
+                user_map.save()
+
+        if user_map.test_property:
+            active_property = user_map.test_property
+        else:
+            test_properties = user_map.test.properties.all()
+            for prop in test_properties:
+                if prop.is_default == True:
+                    active_property = prop
+
+        properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
+
+        for prop in properties:
+            prop.active_property = False
+            prop.save()
+
+        active_property.active_property = True
+        active_property.save()
+        
+    else:
+        properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
+        for prop in properties:
+            prop.active_property = False
+            if prop.is_default == True:
+                prop.active_property = True
+            prop.save()
+
     formset = TestPropertyEstimateFormSet(
         request.POST or None,
-        queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None), test__pk=test_id))
+        queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None),
+        test__pk=test_id))
 
-    # active_property = None
-    # if code != 'None':
-    #     mapping = TestPropertyMapping.objects.filter(code=code, test=test, user=user).first()
-    #     if mapping:
-    #         active_property = mapping.test_property
-
-    # for form in formset:
-    #     i = str(form.instance)
-    #     if i != 'None':
-    #         if form.instance.user == None:
-    #             if form.instance.active_property == True:
-    #                 form.instance.active_property = False
-    #             if form.instance.id == active_property:
-    #                 form.instance.active_property = True
-    #             form.fields['estimate_label'].widget.attrs['readonly'] = True
-    #             form.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
-    #             form.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
-    #             form.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
-    #             form.fields['comment'].widget.attrs['readonly'] = True
-    #             form.fields['reference'].widget.attrs['readonly'] = True
+    if code == 'global':
+        for form in formset:
+            form.fields['active_property'].widget.attrs['disabled'] = True
 
     if request.method == 'POST':
         if formset.is_valid():
@@ -300,7 +330,6 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 if form.cleaned_data:
                     if form.cleaned_data['active_property'] == True:
                         active_exists = True
-
                         
             for form in formset.forms:
                 if form.cleaned_data:
@@ -356,6 +385,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
                 context['formset'] = formset
                 context['test'] = test
                 context['code'] = code
+                context['details'] = details
                 return render(request, 'outside_eddi/test_properties.html', context)
             else:
                 messages.add_message(request, messages.WARNING, "Invalid properties")
@@ -364,6 +394,7 @@ def test_properties(request, code=None, test_id=None, file_id=None, template="ou
     context['formset'] = formset
     context['test'] = test
     context['code'] = code
+    context['details'] = details
     
     return render(request, template, context)
 

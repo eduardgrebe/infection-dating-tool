@@ -87,9 +87,8 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     estimate_type = models.CharField(max_length=255, null=False, blank=True)
     
     history = HistoricalRecords()
-    test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True)
+    test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True, related_name='properties')
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
-    
     
     mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
     diagnostic_delay_median = models.IntegerField(null=True, blank=True)
