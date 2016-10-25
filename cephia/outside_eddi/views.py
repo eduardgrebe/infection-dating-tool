@@ -14,12 +14,13 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo, CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
+from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, TestHistoryFile
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
 from json import dumps
 from django.db.models import Q
+import datetime
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -100,6 +101,10 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
 def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_tests.html"):
     context = {}
 
+    # today = datetime.datetime.now()
+    # import pdb;pdb.set_trace()
+    # files = FileInfo.objects.filter(created__month=today__month)
+
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -113,13 +118,14 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
             messages.info(request, u"Your file was validated successfully" )
             TestHistoryFileHandler(uploaded_file).process()
             messages.info(request, u"Your file was processed successfully" )
-            
+
             return redirect("outside_eddi:diagnostic_tests")
 
     else:
         form = TestHistoryFileUploadForm()
 
     context['form'] = form
+    # context['files'] = files
 
     return render(request, template, context)
 
@@ -133,7 +139,7 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
     else:
         study = None
         form = StudyForm(request.user, request.POST or None)
-        
+
     if request.method == 'POST' and form.is_valid():
         study = form.save(request.user)
         if study_id:
@@ -141,10 +147,10 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
         else:
             messages.info(request, u"Your study, %s was created successfully" % study.name )
         return redirect('outside_eddi:edit_study', study_id=study.pk)
-            
+
     context['form'] = form
     context['study'] = study
-    
+
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -153,7 +159,7 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
 
     user = request.user
 
-    
+
     global_formset = GlobalTestFormSet(
         request.POST or None,
         queryset=OutsideEddiDiagnosticTest.objects.filter(user=None),
@@ -175,7 +181,7 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
         test_names.append(test.name)
 
     names = json.dumps(test_ids_by_name)
-    
+
     tests = OutsideEddiDiagnosticTest.objects.all()
 
     if request.method == 'POST':
@@ -200,7 +206,7 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
         else:
             messages.add_message(request, messages.WARNING, "Invalid test details")
             return redirect("outside_eddi:tests")
-    
+
     context['user_formset'] = user_formset
     context['global_formset'] = global_formset
     context['tests'] = tests
@@ -213,7 +219,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
 
     user = request.user
-    
+
     formset = TestPropertyMappingFormSet(request.POST or None,
                                          queryset=TestPropertyMapping.objects.filter(user=user))
 
@@ -226,7 +232,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         tooltips_for_tests[str(test.pk)] = test.description
 
     tips = json.dumps(tooltips_for_tests)
-    
+
     if request.method == 'POST':
         if formset.is_valid():
             for form in formset.forms:
@@ -252,13 +258,13 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                                 f.test_property = set_property.test_property
                             f.save()
             return redirect("outside_eddi:test_mapping")
-                    
+
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
-    
+
     context['formset'] = formset
     context['tooltips_for_tests'] = tips
-    
+
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -266,7 +272,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context = context or {}
 
     user = request.user
-    
+
     if code == 'new_user_test':
         test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
         if details != 'no_user_details':
@@ -280,6 +286,8 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
             test.description = details
             test.save()
 
+    active_property = None
+
     if code != 'None' and code != 'user' and code != 'global':
         if TestPropertyMapping.objects.filter(code=code, user=user, test=test).exists():
             user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
@@ -287,6 +295,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
             if TestPropertyMapping.objects.filter(code=code, user=user).exists():
                 user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
                 user_map.test = test
+                user_map.test_property = None
                 user_map.save()
 
         if user_map.test_property:
@@ -303,9 +312,10 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
             prop.active_property = False
             prop.save()
 
-        active_property.active_property = True
-        active_property.save()
-        
+        if active_property != None:
+            active_property.active_property = True
+            active_property.save()
+
     else:
         properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
         for prop in properties:
@@ -330,7 +340,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                 if form.cleaned_data:
                     if form.cleaned_data['active_property'] == True:
                         active_exists = True
-                        
+
             for form in formset.forms:
                 if form.cleaned_data:
                     i = str(form.instance)
@@ -340,6 +350,8 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                         f.user = user
                         if active_exists == False:
                             f.active_property=True
+                            if code == 'user':
+                                f.is_default = True
                         f.save()
                         if f.active_property==True:
                             active = f
@@ -350,6 +362,8 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                         f.save()
                         if f.active_property==True:
                             active = f
+                            if code == 'user':
+                                f.is_default = True
                     else:
                         f = form.save()
                         if f.active_property==True:
@@ -373,14 +387,14 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                     return JsonResponse({"success": True})
                 else:
                     return redirect("outside_eddi:test_mapping")
-                
+
             else:
                 if request.is_ajax():
                     return JsonResponse({"success": True})
                 else:
                     return redirect("outside_eddi:tests")
         else:
-            
+
             if request.is_ajax():
                 context['formset'] = formset
                 context['test'] = test
@@ -395,11 +409,11 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context['test'] = test
     context['code'] = code
     context['details'] = details
-    
+
     return render(request, template, context)
 
 def _copy_diagnostic_tests():
-    
+
     tests = DiagnosticTest.objects.all()
 
     for test in tests:
