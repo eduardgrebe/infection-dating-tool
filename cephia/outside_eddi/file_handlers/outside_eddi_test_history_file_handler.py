@@ -7,6 +7,7 @@ from django.core.management import call_command
 
 logger = logging.getLogger(__name__)
 
+valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
 
 class OutsideEddiFileHandler(FileHandler):
 
@@ -24,7 +25,6 @@ class OutsideEddiFileHandler(FileHandler):
 
     def save_data(self):
         from outside_eddi.models import OutsideEddiSubject
-
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -41,7 +41,13 @@ class OutsideEddiFileHandler(FileHandler):
                         self.upload_file.save()
 
                     subject_row.test_code = row_dict['TestCode']
-                    subject_row.test_result = row_dict['TestResult']
+
+                    if row_dict['TestResult'].lower() in valid_results:
+                        subject_row.test_result = row_dict['TestResult']
+                    else:
+                        self.upload_file.message = "row " + str(row_num) + ": Incorrect result format used"
+                        self.upload_file.save()
+                        
                     subject_row.test_source = row_dict['TestSource']
                     subject_row.protocol = row_dict['Protocol']
                     subject_row.save()
