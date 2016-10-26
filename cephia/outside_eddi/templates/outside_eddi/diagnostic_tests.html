@@ -20,6 +20,7 @@
           <th>Name</th>
           <th>Date Uploaded</th>
           <th>State</th>
+          <th>Message</th>
           <th></th>
           <th></th>
           <th></th>
@@ -32,6 +33,7 @@
 	          <td>{{obj.data_file}}</td>
 	          <td>{{obj.created}}</td>
             <td>{{obj.state}}</td>
+            <td>{{obj.message}}</td>
             <td><a href="{% url 'outside_eddi:process_diagnostic_test_file' obj.id %}" >Process</a></td>
             <td><a href="#">View Results</td>
             <td class="list_buttons">
