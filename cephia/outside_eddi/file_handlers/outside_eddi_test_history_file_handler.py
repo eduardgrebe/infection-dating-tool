@@ -2,6 +2,7 @@ from cephia.file_handlers.file_handler import FileHandler
 from cephia.file_handlers.handler_imports import *
 import logging
 from datetime import datetime
+import datetime
 from django.core.management import call_command
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class OutsideEddiFileHandler(FileHandler):
 
     def save_data(self):
         from outside_eddi.models import OutsideEddiSubject
-        
+
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -33,13 +34,14 @@ class OutsideEddiFileHandler(FileHandler):
 
                     subject_row = OutsideEddiSubject.objects.create(subject_label=row_dict['SubjectId'])
 
-                    subject_row.test_date = row_dict['TestDate']
+                    if validate(row_dict['TestDate']):
+                        subject_row.test_date = row_dict['TestDate']
                     subject_row.test_code = row_dict['TestCode']
                     subject_row.test_result = row_dict['TestResult']
                     subject_row.test_source = row_dict['TestSource']
                     subject_row.protocol = row_dict['Protocol']
                     subject_row.save()
-                    
+
             except Exception, e:
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
@@ -168,3 +170,11 @@ class OutsideEddiFileHandler(FileHandler):
     #             continue
     #     call_command('treatment_status_update')
     #     return rows_inserted, rows_failed
+
+def validate(date_text):
+    try:
+        datetime.datetime.strptime(date_text, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+        # raise ValueError("Incorrect data format, should be YYYY-MM-DD")
