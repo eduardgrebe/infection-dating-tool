@@ -137,13 +137,6 @@ def process_diagnostic_test_file(request, file_id, context=None):
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
     OutsideEddiFileHandler(f).save_data()
-
-    # TestHistoryFileHandler(uploaded_file).parse()
-    # messages.info(request, u"Your file was parsed successfully" )
-    # TestHistoryFileHandler(uploaded_file).validate()
-    # messages.info(request, u"Your file was validated successfully" )
-    # TestHistoryFileHandler(uploaded_file).process()
-    # messages.info(request, u"Your file was processed successfully" )
     
     messages.info(request, 'Diagnostic Test file processed')
     return redirect(reverse('outside_eddi:diagnostic_tests'))
