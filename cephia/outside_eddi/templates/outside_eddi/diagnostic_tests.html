@@ -1,14 +1,36 @@
 {% extends 'outside_eddi/base.html' %}
 {% load bootstrap3 %}
 
+{% block extrajs%}
+  <script src="http://malsup.github.com/jquery.form.js"></script>
+{% endblock %}
+
 {% block content %}
   <div class="container">
     <form method="post" enctype="multipart/form-data">{% csrf_token %}
       {{ form }}
       <button class="btn btn-primary">Upload</button>
     </form>
+    
+
+    <table class="table table-condensed table-striped">
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date Uploaded</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for obj in file_info_data %}
+          <tr>
+	          <td><a href="{{ obj.data_file.url }}">{{obj.data_file}}</a></td>
+	          <td>{{obj.created}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
   </div>
-  {% for file in files %}
-    {{ file.created.month }}
-  {% endfor %}
 {% endblock %}

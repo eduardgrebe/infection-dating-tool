@@ -1,173 +1,151 @@
-from cephia.file_handlers.file_handler import FileHandler
-from cephia.file_handlers.handler_imports import *
-import logging
-from datetime import datetime
-from django.core.management import call_command
+# from file_handler import FileHandler
+# from handler_imports import *
+# from datetime import datetime, date
+# import logging
+# from django.core.management import call_command
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
-class TestHistoryFileHandler(FileHandler):
+# class TreatmentStatusUpdateFileHandler(FileHandler):
 
-    def __init__(self, upload_file):
-        super(TestHistoryFileHandler, self).__init__(upload_file)
+#     def __init__(self, upload_file, *args, **kwargs):
+#         super(TreatmentStatusUpdateFileHandler, self).__init__(upload_file)
 
-        self.registered_columns = ['SubjectId',
-                                   'Test',
-                                   'Date',
-                                   'Result']
+#         self.registered_columns = [
+#             'subject_label',
+#             'source_study',
+#             'art_initiation_date_yyyy',
+#             'art_initiation_date_mm',
+#             'art_initiation_date_dd',
+#             'art_interruption_date_yyyy',
+#             'art_interruption_date_mm',
+#             'art_interruption_date_dd',
+#             'art_resumption_date_yyyy',
+#             'art_resumption_date_mm',
+#             'art_resumption_date_dd'
+#         ]
 
-    def parse(self):
-        from outside_eddi.models import OutsideEddiDiagnosticTestHistoryRow
 
-        rows_inserted = 0
-        rows_failed = 0
-
-        for row_num in range(self.num_rows):
-            try:
-                if row_num >= 1:
-                    row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
-                    test_history_row = OutsideEddiDiagnosticTestHistoryRow.objects.create(subject=row_dict['SubjectId'],
-                                                                               test_date=row_dict['TestDate'],
-                                                                               test_code=row_dict['TestCode'],
-                                                                               test_result=row_dict['TestResult'],
-                                                                               source=row_dict['TestSource'],
-                                                                               protocol=row_dict['Protocol'],
-                                                                               state='pending',
-                                                                               fileinfo=self.upload_file)
-
-                    rows_inserted += 1
-            except Exception, e:
-                logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
-                self.upload_file.save()
-                return 0, 1
-
-        return rows_inserted, rows_failed
-    
-    def validate(self):
-        from cephia.models import Subject
-        from outside_eddi.models import (OutsideEddiDiagnosticTestHistoryRow, OutsideEddiProtocolLookup,
-                                        OutsideEddiTestPropertyEstimate, OutsideEddiDiagnosticTestHistory)
-
-        rows_validated = 0
-        rows_failed = 0
+#     def parse(self):
+#         from cephia.models import TreatmentStatusUpdateRow
         
-        for test_history_row in OutsideEddiDiagnosticTestHistoryRow.objects.filter(fileinfo=self.upload_file, state='pending'):
-            try:
-                error_msg = ''
-                protocol = None
-
-                try:
-                    subject = Subject.objects.get(subject_label=test_history_row.subject)
-                except Subject.DoesNotExist:
-                    error_msg += "Subject not recognised.\n"
-
-                try:
-                    protocol = OutsideEddiProtocolLookup.objects.get(name=test_history_row.test_code, protocol=test_history_row.protocol)
-                except OutsideEddiProtocolLookup.DoesNotExist:
-                    error_msg += "Protocol not recognised.\n"
-
-                if not datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date() < datetime.now().date():
-                    error_msg += 'test_date must be before today.\n'
-
-                if not datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date() > datetime.strptime('1980-01-01', "%Y-%m-%d").date():
-                    error_msg += 'test_date must be after 1 Jan 1980.\n'
-
-                try:
-                    if protocol:
-                        OutsideEddiTestPropertyEstimate.objects.get(test__id=protocol.test.pk, is_default=True)
-                except OutsideEddiTestPropertyEstimate.DoesNotExist:
-                    error_msg += "Property Estimate not recognised.\n" # looks like the mapping needs to be inserted here
-
-
-                if OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=test_history_row.subject, ignore=True).exists():
-                    error_msg += "Cannot overwrite test history data that has already been edited.\n"
-                    
-                if error_msg:
-                    raise Exception(error_msg)
-
-                test_history_row.state = 'validated'
-                test_history_row.error_message = ''
-                rows_validated += 1
-                test_history_row.save()
-            except Exception, e:
-                logger.exception(e)
-                test_history_row.state = 'error'
-                test_history_row.error_message = e.message
-                rows_failed += 1
-                test_history_row.save()
-                continue
-
-        return rows_validated, rows_failed
-
-    def process(self):
-        from cephia.models import Subject, SubjectEDDI
-        from outside_eddi.models import OutsideEddiDiagnosticTestHistoryRow, OutsideEddiProtocolLookup, OutsideEddiTestPropertyEstimate
+#         rows_inserted = 0
+#         rows_failed = 0
         
-        rows_inserted = 0
-        rows_failed = 0
+#         for row_num in range(self.num_rows):
+#             try:
+#                 if row_num >= 1:
+#                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
+#                     if not row_dict:
+#                         continue
+                    
+#                     treatment_status_update_row = TreatmentStatusUpdateRow.objects.create(subject_label=row_dict['subject_label'], fileinfo=self.upload_file)
+                        
+#                     treatment_status_update_row.subject_label = row_dict['subject_label']
+#                     treatment_status_update_row.source_study = row_dict['source_study']
+#                     treatment_status_update_row.art_initiation_date_yyyy = row_dict['art_initiation_date_yyyy']
+#                     treatment_status_update_row.art_initiation_date_mm = row_dict['art_initiation_date_mm']
+#                     treatment_status_update_row.art_initiation_date_dd = row_dict['art_initiation_date_dd']
+#                     treatment_status_update_row.art_interruption_date_yyyy = row_dict['art_interruption_date_yyyy']
+#                     treatment_status_update_row.art_interruption_date_mm = row_dict['art_interruption_date_mm']
+#                     treatment_status_update_row.art_interruption_date_dd = row_dict['art_interruption_date_dd']
+#                     treatment_status_update_row.art_resumption_date_yyyy = row_dict['art_resumption_date_yyyy']
+#                     treatment_status_update_row.art_resumption_date_mm = row_dict['art_resumption_date_mm']
+#                     treatment_status_update_row.art_resumption_date_dd = row_dict['art_resumption_date_dd']
+#                     treatment_status_update_row.fileinfo=self.upload_file
+#                     treatment_status_update_row.state = 'pending'
+#                     treatment_status_update_row.error_message = ''
+#                     treatment_status_update_row.save()
 
-        try:
-            with transaction.atomic():
-                excluded_subjects = OutsideEddiDiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='error').distinct()
+#                     rows_inserted += 1
+#             except Exception, e:
+#                 logger.exception(e)
+#                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
+#                 self.upload_file.save()
+#                 return 0, 1
+
+#         return rows_inserted, rows_failed
+
+#     def validate(self):
+#         from cephia.models import Ethnicity, Subtype, Country, Subject, TreatmentStatusUpdateRow
+
+#         rows_validated = 0
+#         rows_failed = 0
+#         default_less_date = datetime.now().date() - relativedelta(years=75)
+#         default_more_date = datetime.now().date() + relativedelta(years=75)
+#         pending_rows = TreatmentStatusUpdateRow.objects.filter(fileinfo=self.upload_file, state='pending')
+
+#         for treatment_status_update_row in pending_rows:
+#             try:
+#                 error_msg = ''
+#                 self.register_dates(treatment_status_update_row.model_to_dict())
+
+#                 if not Subject.objects.filter(subject_label=treatment_status_update_row.subject_label).exists():
+#                     error_msg += 'could not find subject for label %s.\n' % treatment_status_update_row.subject_label
+
+#                 if not self.registered_dates.get('art_interruption_date', default_more_date) > self.registered_dates.get('art_initiation_date', default_less_date):
+#                     error_msg += 'art_interruption_date must be after art_initiation_date.\n'
+        
+#                 if not self.registered_dates.get('art_resumption_date', default_more_date) > self.registered_dates.get('art_interruption_date', default_less_date):
+#                     error_msg += 'art_resumption_date must be after art_interruption_date.\n'
+
+
+#                 if error_msg:
+#                     raise Exception(error_msg)
                 
-                for subject_label in excluded_subjects:
-                    if not OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=subject_label, ignore=True).exists():
-                        OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
-                    else:
-                        continue
+#                 treatment_status_update_row.state = 'validated'
+#                 treatment_status_update_row.error_message = ''
+#                 rows_validated += 1
+#                 treatment_status_update_row.save()
+#             except Exception, e:
+#                 logger.exception(e)
+#                 treatment_status_update_row.state = 'error'
+#                 treatment_status_update_row.error_message = e.message
+#                 treatment_status_update_row.save()
+#                 rows_failed += 1
+#                 continue
+            
+#         return rows_validated, rows_failed
+        
+#     def process(self):
+#         from cephia.models import Ethnicity, Subtype, Country, Subject, TreatmentStatusUpdateRow, Study
+        
+#         rows_inserted = 0
+#         rows_failed = 0
+
+#         for treatment_status_update_row in TreatmentStatusUpdateRow.objects.filter(fileinfo=self.upload_file, state='validated'):
+#             try:
+#                 with transaction.atomic():
+#                     self.register_dates(treatment_status_update_row.model_to_dict())
                     
-                for subject_row_error in OutsideEddiDiagnosticTestHistoryRow.objects.filter(subject__in=excluded_subjects, state='validated', fileinfo=self.upload_file):
-                    subject_row_error.state = 'error'
-                    subject_row_error.error_message = "One or more records for this subject have errors"
-                    subject_row_error.save()
-        except Exception, e:
-            pass
+#                     subject = Subject.objects.get(
+#                         subject_label=treatment_status_update_row.subject_label
+#                     )
 
-        for subject_label in OutsideEddiDiagnosticTestHistoryRow.objects.values_list('subject', flat=True).filter(fileinfo=self.upload_file, state='validated').distinct():
-            with transaction.atomic():
-                OutsideEddiDiagnosticTestHistory.objects.filter(subject__subject_label=subject_label).delete()
-                try:
-                    for test_history_row in OutsideEddiDiagnosticTestHistoryRow.objects.filter(subject=subject_label, fileinfo=self.upload_file, state='validated'):
-                        test_history = OutsideEddiDiagnosticTestHistory.objects.create(subject=Subject.objects.get(subject_label=test_history_row.subject),
-                                                                            test_date=datetime.strptime(test_history_row.test_date, "%Y-%m-%d").date(),
-                                                                            test_result=test_history_row.test_result,
-                                                                            test=ProtocolLookup.objects.get(name=test_history_row.test_code,
-                                                                                                            protocol=test_history_row.protocol).test)
+#                     subject_data = dict(
+#                         source_study=Study.objects.get(name=treatment_status_update_row.source_study),
+#                         art_initiation_date = self.registered_dates.get('art_initiation_date', None),
+#                         art_interruption_date = self.registered_dates.get('art_interruption_date', None),
+#                         art_resumption_date = self.registered_dates.get('art_resumption_date', None)
+#                     )
 
-                        if not test_history.subject.subject_eddi:
-                            test_history.subject.subject_eddi = SubjectEDDI.objects.create()
-                            test_history.subject.save()
-                        else:
-                            test_history.subject.subject_eddi.ep_ddi = None
-                            test_history.subject.subject_eddi.lp_ddi = None
-                            test_history.subject.subject_eddi.interval_size = None
-                            test_history.subject.subject_eddi.eddi = None
+#                     [setattr(subject, k,v) for k,v in subject_data.iteritems()]
+                    
+#                     subject.save()
 
-                        test_history.subject.subject_eddi.recalculate = True
-                        test_history.subject.subject_eddi.save()
-                        test_property = OutsideEddiTestPropertyEstimate.objects.get(test__id=test_history.test.pk, is_default=True)
-                        test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
-                        test_history.save()
-
-                        test_history_row.state = 'processed'
-                        test_history_row.error_message = ''
-                        test_history_row.date_processed = timezone.now()
-                        test_history_row.test_history = test_history
-                        test_history_row.save()
-
-                        rows_inserted += 1
-                except Exception, e:
-                    logger.exception(e)
-                    test_history_row.state = 'error'
-                    test_history_row.error_message = e.message
-                    test_history_row.save()
-                    rows_failed += 1
-                    continue
-
-        call_command('eddi_update', 'flagged')
-        self.upload_file.state = 'processed'
-        self.upload_file.save()
-        return rows_inserted, rows_failed
+#                     treatment_status_update_row.state = 'processed'
+#                     treatment_status_update_row.error_message = ''
+#                     treatment_status_update_row.date_processed = timezone.now()
+#                     treatment_status_update_row.subject = subject
+#                     rows_inserted += 1
+#                     treatment_status_update_row.save()
+#             except Exception, e:
+#                 logger.exception(e)
+#                 treatment_status_update_row.state = 'error'
+#                 treatment_status_update_row.error_message = e.message
+#                 treatment_status_update_row.save()
+#                 rows_failed += 1
+#                 continue
+#         call_command('treatment_status_update')
+#         return rows_inserted, rows_failed

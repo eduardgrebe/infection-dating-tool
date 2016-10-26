@@ -12,9 +12,9 @@ from user_management.models import AuthenticationToken
 from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
-from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
+# from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
 from cephia.models import FileInfo, CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, TestHistoryFile
+from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
@@ -101,10 +101,6 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
 def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_tests.html"):
     context = {}
 
-    # today = datetime.datetime.now()
-    # import pdb;pdb.set_trace()
-    # files = FileInfo.objects.filter(created__month=today__month)
-
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -112,12 +108,12 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
             messages.info(request, u"Your file was uploaded successfully" )
             latest_file = FileInfo.objects.filter(data_file=uploaded_file).last()
             
-            TestHistoryFileHandler(uploaded_file).parse()
-            messages.info(request, u"Your file was parsed successfully" )
-            TestHistoryFileHandler(uploaded_file).validate()
-            messages.info(request, u"Your file was validated successfully" )
-            TestHistoryFileHandler(uploaded_file).process()
-            messages.info(request, u"Your file was processed successfully" )
+            # TestHistoryFileHandler(uploaded_file).parse()
+            # messages.info(request, u"Your file was parsed successfully" )
+            # TestHistoryFileHandler(uploaded_file).validate()
+            # messages.info(request, u"Your file was validated successfully" )
+            # TestHistoryFileHandler(uploaded_file).process()
+            # messages.info(request, u"Your file was processed successfully" )
 
             return redirect("outside_eddi:diagnostic_tests")
 
@@ -125,7 +121,7 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
         form = TestHistoryFileUploadForm()
 
     context['form'] = form
-    # context['files'] = files
+    context['file_info_data'] = FileInfo.objects.order_by("-created")
 
     return render(request, template, context)
 
@@ -291,12 +287,13 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     if code != 'None' and code != 'user' and code != 'global':
         if TestPropertyMapping.objects.filter(code=code, user=user, test=test).exists():
             user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
+        elif TestPropertyMapping.objects.filter(code=code, user=user).exists():
+            user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
+            user_map.test = test
+            user_map.test_property = None
+            user_map.save()
         else:
-            if TestPropertyMapping.objects.filter(code=code, user=user).exists():
-                user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
-                user_map.test = test
-                user_map.test_property = None
-                user_map.save()
+            user_map = TestPropertyMapping.objects.create(code=code, user=user, test=test)
 
         if user_map.test_property:
             active_property = user_map.test_property
