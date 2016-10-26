@@ -128,7 +128,7 @@ class OutsideEddiFileInfo(models.Model):
         ('error','Error')
     )
 
-    data_file = models.FileField(upload_to=settings.MEDIA_ROOT, null=False, blank=False)
+    data_file = models.FileField(upload_to="outside_eddi_uploads", null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     message = models.TextField(blank=True)

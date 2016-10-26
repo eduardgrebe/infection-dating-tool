@@ -13,8 +13,8 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 # from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
-from cephia.models import FileInfo, CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
+from cephia.models import CephiaUser
+from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiFileInfo
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
@@ -106,7 +106,7 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
         if form.is_valid():
             uploaded_file = form.save()
             messages.info(request, u"Your file was uploaded successfully" )
-            latest_file = FileInfo.objects.filter(data_file=uploaded_file).last()
+            latest_file = OutsideEddiFileInfo.objects.filter(data_file=uploaded_file).last()
             
             # TestHistoryFileHandler(uploaded_file).parse()
             # messages.info(request, u"Your file was parsed successfully" )
@@ -121,9 +121,18 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
         form = TestHistoryFileUploadForm()
 
     context['form'] = form
-    context['file_info_data'] = FileInfo.objects.order_by("-created")
+    context['file_info_data'] = OutsideEddiFileInfo.objects.order_by("-created")
 
     return render(request, template, context)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def delete_diagnostic_test_file(request, file_id, context=None):
+    context = context or {}
+
+    f = OutsideEddiFileInfo.objects.get(pk=file_id)
+    f.delete()
+    messages.info(request, 'Diagnostic Test file deleted')
+    return redirect(reverse('outside_eddi:diagnostic_tests'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_study(request, study_id=None, template="outside_eddi/manage_studies.html"):

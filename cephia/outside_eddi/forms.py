@@ -5,9 +5,8 @@ from django.forms import ModelForm
 from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from cephia.models import FileInfo
 from django.forms import modelformset_factory
-from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
+from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, OutsideEddiFileInfo
 
 class EddiUserCreationForm(UserCreationForm):
     
@@ -23,7 +22,7 @@ class EddiUserCreationForm(UserCreationForm):
 
 class TestHistoryFileUploadForm(ModelForm):
     class Meta:
-        model = FileInfo
+        model = OutsideEddiFileInfo
         fields = ['data_file']
 
 class StudyForm(ModelForm):

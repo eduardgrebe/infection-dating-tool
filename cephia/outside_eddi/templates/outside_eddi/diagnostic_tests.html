@@ -19,6 +19,7 @@
         <tr>
           <th>Name</th>
           <th>Date Uploaded</th>
+          <th></th>
         </tr>
       </thead>
 
@@ -27,6 +28,9 @@
           <tr>
 	          <td><a href="{{ obj.data_file.url }}">{{obj.data_file}}</a></td>
 	          <td>{{obj.created}}</td>
+            <td class="list_buttons">
+		          <a href="{% url 'outside_eddi:delete_diagnostic_test_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file?') ) { return false }"><span class="glyphicon glyphicon-remove"></span></a>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
