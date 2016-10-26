@@ -12,7 +12,7 @@ from user_management.models import AuthenticationToken
 from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
-# from file_handlers.outside_eddi_test_history_file_handler import TestHistoryFileHandler
+from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
 from cephia.models import CephiaUser
 from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiFileInfo
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
@@ -109,16 +109,8 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
             uploaded_file = form.save()
             uploaded_file.user = user
             uploaded_file.save()
-            import pdb;pdb.set_trace()
+
             messages.info(request, u"Your file was uploaded successfully" )
-            latest_file = OutsideEddiFileInfo.objects.filter(data_file=uploaded_file).last()
-            
-            # TestHistoryFileHandler(uploaded_file).parse()
-            # messages.info(request, u"Your file was parsed successfully" )
-            # TestHistoryFileHandler(uploaded_file).validate()
-            # messages.info(request, u"Your file was validated successfully" )
-            # TestHistoryFileHandler(uploaded_file).process()
-            # messages.info(request, u"Your file was processed successfully" )
 
             return redirect("outside_eddi:diagnostic_tests")
 
@@ -138,6 +130,24 @@ def delete_diagnostic_test_file(request, file_id, context=None):
     f.delete()
     messages.info(request, 'Diagnostic Test file deleted')
     return redirect(reverse('outside_eddi:diagnostic_tests'))
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def process_diagnostic_test_file(request, file_id, context=None):
+    context = context or {}
+
+    f = OutsideEddiFileInfo.objects.get(pk=file_id)
+    OutsideEddiFileHandler(f).save_data()
+
+    # TestHistoryFileHandler(uploaded_file).parse()
+    # messages.info(request, u"Your file was parsed successfully" )
+    # TestHistoryFileHandler(uploaded_file).validate()
+    # messages.info(request, u"Your file was validated successfully" )
+    # TestHistoryFileHandler(uploaded_file).process()
+    # messages.info(request, u"Your file was processed successfully" )
+    
+    messages.info(request, 'Diagnostic Test file processed')
+    return redirect(reverse('outside_eddi:diagnostic_tests'))
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_study(request, study_id=None, template="outside_eddi/manage_studies.html"):

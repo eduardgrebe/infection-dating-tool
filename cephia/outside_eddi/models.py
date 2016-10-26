@@ -129,7 +129,7 @@ class OutsideEddiFileInfo(models.Model):
     )
 
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
-    data_file = models.FileField(upload_to="outside_eddi_uploads", null=False, blank=False)
+    data_file = models.FileField(upload_to=settings.MEDIA_ROOT+"/outside_eddi_uploads", null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')
     message = models.TextField(blank=True)
@@ -142,11 +142,20 @@ class OutsideEddiFileInfo(models.Model):
     def filename(self):
         return os.path.basename(self.data_file.name)
 
+    def get_extension(self):
+        return self.filename().split('.')[-1]
+
 
 class OutsideEddiSubject(models.Model):
     
     subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
+    test_date = models.DateField(null=True, blank=True)
+    test_code = models.CharField(max_length=25, null=True, blank=True)
+    test_result = models.CharField(max_length=8, null=True, blank=True)
+    test_source = models.CharField(max_length=25, null=True, blank=True)
+    protocol = models.CharField(max_length=25, null=True, blank=True)
+    
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
     interval_size = models.IntegerField(null=True, blank=True)
