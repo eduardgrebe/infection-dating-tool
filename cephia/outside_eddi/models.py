@@ -128,6 +128,7 @@ class OutsideEddiFileInfo(models.Model):
         ('error','Error')
     )
 
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     data_file = models.FileField(upload_to="outside_eddi_uploads", null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=10, null=False, blank=False, default='pending')

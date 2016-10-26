@@ -101,10 +101,15 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
 def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_tests.html"):
     context = {}
 
+    user = request.user
+    
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = form.save()
+            uploaded_file.user = user
+            uploaded_file.save()
+            import pdb;pdb.set_trace()
             messages.info(request, u"Your file was uploaded successfully" )
             latest_file = OutsideEddiFileInfo.objects.filter(data_file=uploaded_file).last()
             
@@ -121,7 +126,7 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
         form = TestHistoryFileUploadForm()
 
     context['form'] = form
-    context['file_info_data'] = OutsideEddiFileInfo.objects.order_by("-created")
+    context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user).order_by("-created")
 
     return render(request, template, context)
 
