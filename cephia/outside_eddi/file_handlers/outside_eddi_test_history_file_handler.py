@@ -37,16 +37,14 @@ class OutsideEddiFileHandler(FileHandler):
                     if validate(row_dict['TestDate']):
                         subject_row.test_date = row_dict['TestDate']
                     else:
-                        self.upload_file.message = "row " + str(row_num) + ": Incorrect date format, should be YYYY-MM-DD"
-                        self.upload_file.save()
+                        raise ValueError("row " + str(row_num) + ": Incorrect date format, should be YYYY-MM-DD")
 
                     subject_row.test_code = row_dict['TestCode']
 
                     if row_dict['TestResult'].lower() in valid_results:
                         subject_row.test_result = row_dict['TestResult']
                     else:
-                        self.upload_file.message = "row " + str(row_num) + ": Incorrect result format used"
-                        self.upload_file.save()
+                        raise ValueError("row " + str(row_num) + ": Incorrect result format used")
                         
                     subject_row.test_source = row_dict['TestSource']
                     subject_row.protocol = row_dict['Protocol']
