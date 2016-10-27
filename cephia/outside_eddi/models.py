@@ -125,6 +125,7 @@ class OutsideEddiFileInfo(models.Model):
         ('pending','Pending'),
         ('imported','Imported'),
         ('validated','Validated'),
+        ('needs_mapping','Needs Mapping'),
         ('error','Error')
     )
 

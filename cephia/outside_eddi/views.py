@@ -138,7 +138,14 @@ def process_diagnostic_test_file(request, file_id, context=None):
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
     OutsideEddiFileHandler(f).save_data()
     
-    messages.info(request, 'Diagnostic Test file processed')
+    if f.message:
+        messages.info(request, f.message)
+        f.state = 'error'
+        f.save()
+    else:
+        messages.info(request, 'Diagnostic Test file processed')
+        f.state = 'imported'
+        f.save()
     return redirect(reverse('outside_eddi:diagnostic_tests'))
 
 

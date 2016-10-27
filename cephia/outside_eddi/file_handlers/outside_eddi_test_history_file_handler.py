@@ -32,7 +32,10 @@ class OutsideEddiFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    subject_row = OutsideEddiSubject.objects.create(subject_label=row_dict['SubjectId'])
+                    if not OutsideEddiSubject.objects.filter(subject_label=row_dict['SubjectId']).exists():
+                        subject_row = OutsideEddiSubject.objects.create(subject_label=row_dict['SubjectId'])
+                    else:
+                        raise ValueError("row " + str(row_num) + ": Subject ID already exists")
 
                     if validate(row_dict['TestDate']):
                         subject_row.test_date = row_dict['TestDate']
