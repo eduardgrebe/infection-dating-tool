@@ -34,10 +34,10 @@
 	          <td>{{obj.created}}</td>
             <td>{{obj.state}}</td>
             <td>{{obj.message}}</td>
-            <td><a href="{% url 'outside_eddi:process_diagnostic_test_file' obj.id %}" >Process</a></td>
+            <td><a href="{% url 'outside_eddi:process_data_file' obj.id %}" >Process</a></td>
             <td><a href="#">View Results</td>
             <td class="list_buttons">
-		          <a href="{% url 'outside_eddi:delete_diagnostic_test_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file?') ) { return false }"><span class="glyphicon glyphicon-remove"></span></a>
+		          <a href="{% url 'outside_eddi:delete_data_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file?') ) { return false }"><span class="glyphicon glyphicon-remove"></span></a>
             </td>
           </tr>
         {% endfor %}

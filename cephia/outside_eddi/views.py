@@ -98,7 +98,7 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_tests.html"):
+def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
     context = {}
 
     user = request.user
@@ -112,7 +112,7 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
 
             messages.info(request, u"Your file was uploaded successfully" )
 
-            return redirect("outside_eddi:diagnostic_tests")
+            return redirect("outside_eddi:data_files")
 
     else:
         form = TestHistoryFileUploadForm()
@@ -123,16 +123,16 @@ def diagnostic_tests(request, file_id=None, template="outside_eddi/diagnostic_te
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def delete_diagnostic_test_file(request, file_id, context=None):
+def delete_data_file(request, file_id, context=None):
     context = context or {}
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
     f.delete()
     messages.info(request, 'Diagnostic Test file deleted')
-    return redirect(reverse('outside_eddi:diagnostic_tests'))
+    return redirect(reverse('outside_eddi:data_files'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def process_diagnostic_test_file(request, file_id, context=None):
+def process_data_file(request, file_id, context=None):
     context = context or {}
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
@@ -146,7 +146,7 @@ def process_diagnostic_test_file(request, file_id, context=None):
         messages.info(request, 'Diagnostic Test file processed')
         f.state = 'imported'
         f.save()
-    return redirect(reverse('outside_eddi:diagnostic_tests'))
+    return redirect(reverse('outside_eddi:data_files'))
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')

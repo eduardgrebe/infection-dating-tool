@@ -11,15 +11,15 @@ urlpatterns = [
     url(r'^register/$', views.outside_eddi_user_registration, name='registration'),
     url(r'^login/$', views.outside_eddi_login, name='login'),
     url(r'^logout/$', views.outside_eddi_logout, name='logout'),
-    url(r'^diagnostic_tests/$', views.diagnostic_tests, name='diagnostic_tests'),
+    url(r'^data_files/$', views.data_files, name='data_files'),
     url(r'^tests/$', views.tests, name='tests'),
     url(r'^test_mapping/$', views.test_mapping, name='test_mapping'),
     url(r'^test_properties/(?P<code>\w+)/(?P<details>\w+)/(?P<test_id>\w+)/$', views.test_properties, name='test_properties'),
     url(r'^create_study/$', views.edit_study, name='create_study'),
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
     
-    url('^diagnostic_tests/(?P<file_id>\d+)/delete', views.delete_diagnostic_test_file, name='delete_diagnostic_test_file'),
-    url('^diagnostic_tests/(?P<file_id>\d+)/process', views.process_diagnostic_test_file, name='process_diagnostic_test_file'),
+    url('^data_files/(?P<file_id>\d+)/delete', views.delete_data_file, name='delete_data_file'),
+    url('^data_files/(?P<file_id>\d+)/process', views.process_data_file, name='process_data_file'),
 
 ]
 urlpatterns += staticfiles_urlpatterns()
