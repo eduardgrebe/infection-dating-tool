@@ -17,7 +17,7 @@ class Command(BaseCommand):
             treatment_naive = all_visits.filter(
                 Q(subject__isnull=False,
                   subject__art_initiation_date__isnull=False,
-                  visit_date__lt=F('subject__art_initiation_date')) |
+                  visit_date__lte=F('subject__art_initiation_date')) |
                 Q(subject__art_initiation_date__isnull=True))
 
             treatment_naive.update(treatment_naive=True, on_treatment=False)
