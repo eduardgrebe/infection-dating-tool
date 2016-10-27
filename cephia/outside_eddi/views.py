@@ -102,15 +102,22 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
     context = {}
 
     user = request.user
-    
+
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = form.save()
-            uploaded_file.user = user
-            uploaded_file.save()
-
-            messages.info(request, u"Your file was uploaded successfully" )
+            errors = []
+            errors = OutsideEddiFileHandler(uploaded_file).validate()
+            if not errors:
+                uploaded_file.user = user
+                uploaded_file.save()
+                messages.info(request, u"Your file was uploaded successfully" )
+            else:
+                uploaded_file.delete()
+                import pdb;pdb.set_trace()
+                for error in errors:
+                    messages.info(request, error)
 
             return redirect("outside_eddi:data_files")
 
@@ -128,7 +135,7 @@ def delete_data_file(request, file_id, context=None):
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
     f.delete()
-    messages.info(request, 'Diagnostic Test file deleted')
+    messages.info(request, 'File deleted')
     return redirect(reverse('outside_eddi:data_files'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -136,14 +143,14 @@ def process_data_file(request, file_id, context=None):
     context = context or {}
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    OutsideEddiFileHandler(f).save_data()
-    
+    # OutsideEddiFileHandler(f).validate()
+
     if f.message:
         messages.info(request, f.message)
         f.state = 'error'
         f.save()
     else:
-        messages.info(request, 'Diagnostic Test file processed')
+        messages.info(request, 'File processed')
         f.state = 'imported'
         f.save()
     return redirect(reverse('outside_eddi:data_files'))

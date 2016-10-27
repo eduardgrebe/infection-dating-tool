@@ -8,6 +8,7 @@ from django.core.management import call_command
 logger = logging.getLogger(__name__)
 
 valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
+headers = [u'', u'SubjectId', u'TestDate', u'TestCode', u'TestResult']
 
 class OutsideEddiFileHandler(FileHandler):
 
@@ -23,41 +24,32 @@ class OutsideEddiFileHandler(FileHandler):
             'protocol'
         ]
 
-    def save_data(self):
+    def validate(self):
+        errors = []
         from outside_eddi.models import OutsideEddiSubject
+        if self.header != headers:
+            errors.append("Incorrect headers used. It should be SubjectId, TestDate, TestCode, TestResult")
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
+                    
                     if not row_dict:
                         continue
 
-                    if not OutsideEddiSubject.objects.filter(subject_label=row_dict['SubjectId']).exists():
-                        subject_row = OutsideEddiSubject.objects.create(subject_label=row_dict['SubjectId'])
-                    else:
-                        raise ValueError("row " + str(row_num) + ": Subject ID already exists")
+                    if not validate(row_dict['TestDate']):
+                        errors.append("row " + str(row_num) + ": Incorrect date format, should be YYYY-MM-DD")
 
-                    if validate(row_dict['TestDate']):
-                        subject_row.test_date = row_dict['TestDate']
-                    else:
-                        raise ValueError("row " + str(row_num) + ": Incorrect date format, should be YYYY-MM-DD")
-
-                    subject_row.test_code = row_dict['TestCode']
-
-                    if row_dict['TestResult'].lower() in valid_results:
-                        subject_row.test_result = row_dict['TestResult']
-                    else:
-                        raise ValueError("row " + str(row_num) + ": Incorrect result format used")
-                        
-                    subject_row.test_source = row_dict['TestSource']
-                    subject_row.protocol = row_dict['Protocol']
-                    subject_row.save()
+                    if not row_dict['TestResult'].lower() in valid_results:
+                        errors.append("row " + str(row_num) + ": Incorrect result format used")
 
             except Exception, e:
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
                 return 0, 1
+
+        return errors
 
     # def parse(self):
     #     from cephia.models import TreatmentStatusUpdateRow
