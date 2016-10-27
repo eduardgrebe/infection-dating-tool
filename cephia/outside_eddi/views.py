@@ -111,11 +111,11 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
                 uploaded_file.user = user
+                uploaded_file.state = 'validated'
                 uploaded_file.save()
                 messages.info(request, u"Your file was uploaded successfully" )
             else:
                 uploaded_file.delete()
-                import pdb;pdb.set_trace()
                 for error in errors:
                     messages.info(request, error)
 
@@ -142,8 +142,10 @@ def delete_data_file(request, file_id, context=None):
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
+    user = request.user
+    
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    # OutsideEddiFileHandler(f).validate()
+    OutsideEddiFileHandler(f).save_data(user)
 
     if f.message:
         messages.info(request, f.message)
