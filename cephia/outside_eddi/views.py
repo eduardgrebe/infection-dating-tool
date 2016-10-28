@@ -134,6 +134,9 @@ def delete_data_file(request, file_id, context=None):
     context = context or {}
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
+    subjects = f.subjects.all().delete()
+    import pdb;pdb.set_trace()
+    
     f.delete()
     messages.info(request, 'File deleted')
     return redirect(reverse('outside_eddi:data_files'))
