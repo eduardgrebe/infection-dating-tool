@@ -159,7 +159,7 @@ class OutsideEddiSubject(models.Model):
     test_code = models.CharField(max_length=25, null=True, blank=True)
     test_result = models.CharField(max_length=8, null=True, blank=True)
 
-    data_file = ProtectedForeignKey('OutsideEddiFileInfo', null=False, blank=False)
+    data_file = ProtectedForeignKey('OutsideEddiFileInfo', null=False, blank=False, related_name='subjects')
     
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)

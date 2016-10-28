@@ -259,8 +259,15 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     user = request.user
 
-    formset = TestPropertyMappingFormSet(request.POST or None,
-                                         queryset=TestPropertyMapping.objects.filter(user=user))
+    data_file = None
+    if file_id != 'None':
+        data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+        codes = [x.test_code for x in data_file.subjects.all()]
+        formset = TestPropertyMappingFormSet(request.POST or None,
+                                             queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user))
+    else:
+        formset = TestPropertyMappingFormSet(request.POST or None,
+                                             queryset=TestPropertyMapping.objects.filter(user=user))
 
     for form in formset:
         form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)).order_by('-user')
@@ -303,6 +310,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     context['formset'] = formset
     context['tooltips_for_tests'] = tips
+    context['file'] = data_file
 
     return render(request, template, context)
 
