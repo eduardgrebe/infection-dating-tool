@@ -158,7 +158,7 @@ def save_data_file(request, file_id, context=None):
             messages.info(request, mapping)
     else:
         messages.info(request, 'Data Saved')
-        f.state = 'imported'
+        f.state = 'mapped'
         f.save()
     return redirect(reverse('outside_eddi:data_files'))
 
