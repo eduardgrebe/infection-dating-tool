@@ -14,7 +14,7 @@ urlpatterns = [
     url(r'^data_files/$', views.data_files, name='data_files'),
     url(r'^tests/$', views.tests, name='tests'),
     url(r'^test_mapping/(?P<file_id>\w+)/$', views.test_mapping, name='test_mapping'),
-    url(r'^test_properties/(?P<code>\w+)/(?P<details>\w+)/(?P<test_id>\w+)/$', views.test_properties, name='test_properties'),
+    url(r'^test_properties/(?P<code>\w+)/(?P<details>\w+)/(?P<test_id>\w+)/(?P<file_id>\w+)/$', views.test_properties, name='test_properties'),
     url(r'^create_study/$', views.edit_study, name='create_study'),
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
     

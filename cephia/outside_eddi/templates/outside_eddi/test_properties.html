@@ -2,7 +2,7 @@
 {% load bootstrap3 %}
 
 <div class="modal-dialog modal-lg" role="document">
-  <form name="properties" action="{% url 'outside_eddi:test_properties' code details test.id %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+  <form name="properties" action="{% url 'outside_eddi:test_properties' code details test.id file %}" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>

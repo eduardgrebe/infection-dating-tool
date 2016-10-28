@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, TestPropertyEstimateFormSet, GlobalTestFormSet, UserTestFormSet
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet, GlobalTestFormSet, UserTestFormSet
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -263,7 +263,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     if file_id != 'None':
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         codes = [x.test_code for x in data_file.subjects.all()]
-        formset = TestPropertyMappingFormSet(request.POST or None,
+        formset = DataFileTestPropertyMappingFormSet(request.POST or None,
                                              queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user))
     else:
         formset = TestPropertyMappingFormSet(request.POST or None,
@@ -303,7 +303,10 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                             if set_property:
                                 f.test_property = set_property.test_property
                             f.save()
-            return redirect("outside_eddi:test_mapping")
+            if file_id == 'None':
+                return redirect("outside_eddi:test_mapping", file_id)
+            else:
+                return redirect("outside_eddi:data_files")
 
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
@@ -434,7 +437,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                 if request.is_ajax():
                     return JsonResponse({"success": True})
                 else:
-                    return redirect("outside_eddi:test_mapping")
+                    return redirect("outside_eddi:test_mapping", file_id)
 
             else:
                 if request.is_ajax():
@@ -448,6 +451,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                 context['test'] = test
                 context['code'] = code
                 context['details'] = details
+                context['file'] = file_id
                 return render(request, 'outside_eddi/test_properties.html', context)
             else:
                 messages.add_message(request, messages.WARNING, "Invalid properties")
@@ -457,6 +461,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context['test'] = test
     context['code'] = code
     context['details'] = details
+    context['file'] = file_id
 
     return render(request, template, context)
 

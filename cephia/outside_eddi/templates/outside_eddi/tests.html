@@ -33,7 +33,7 @@
                 {% bootstrap_field form.description show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-user-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'user' 'None' 1 %}">Properties</a>
+                <a class="btn btn-primary js-show-user-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'user' 'None' 1 'None' %}">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -65,7 +65,7 @@
                 {% bootstrap_field form.description show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-global-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'global' 'None' 1 %}">Properties</a>
+                <a class="btn btn-primary js-show-global-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'global' 'None' 1 'None' %}">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -85,6 +85,7 @@
          /* var test_name = $("#id_" + test_field).attr("value");*/
          var test_name = $("#id_" + test_field).val();
          var details = $("#id_" + details_field).val();
+         var file_id = 'None';
          if (!test_name){
              alert('Please insert a test name')
              $(this).attr('data-toggle', '')
@@ -101,7 +102,7 @@
                  var details = 'no_user_details';
              }
 
-             url = Urls["outside_eddi:test_properties"](code, details, test)
+             url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
 
              $.get(url).done(function(html) {
                  $('#modal').html(html);
@@ -121,8 +122,9 @@
          var test = tests_by_name[test_name]
          var code = 'global'
          var details = 'None';
+         var file_id = 'None';
 
-         url = Urls["outside_eddi:test_properties"](code, details, test)
+         url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
 
          $.get(url).done(function(html) {
              $('#modal').html(html);

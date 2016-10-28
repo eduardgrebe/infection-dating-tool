@@ -36,7 +36,7 @@
                 {% bootstrap_field form.test show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 'None' 1 %}">Properties</a>
+                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 'None' 1 'None' %}">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -58,6 +58,15 @@
          /* var test = $("#id_" + test_id).find('option:selected').attr("value");*/
          var code = $("#id_" + code_id).val();
          var details = 'None';
+         /* var file_id = 'None';*/
+         /* if (file != 'None'){
+          *     
+          * }*/
+         var file_id = {{ file.pk }}
+         alert(typeof file_id)
+         if (typeof file_id === 'undefined'){
+             var file_id = 'None';
+             }
 
          if (!code){
              alert('Please insert a code')
@@ -68,8 +77,7 @@
              $(this).attr('data-toggle', '')
          }
          else {
-             url = Urls["outside_eddi:test_properties"](code, details, test)
-             alert(url)
+             url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
 
              $.get(url).done(function(html) {
                  $('#modal').html(html);

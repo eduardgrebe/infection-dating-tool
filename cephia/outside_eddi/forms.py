@@ -55,7 +55,6 @@ class StudyForm(ModelForm):
 
 class TestPropertyMappingForm(ModelForm):
     test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label="(select test)")
-    # test_property = forms.ModelChoiceField(queryset=OutsideEddiTestPropertyEstimate.objects.all(), empty_label="(select property)")
     
     class Meta:
         model = TestPropertyMapping
@@ -115,6 +114,12 @@ class UserTestForm(ModelForm):
 TestPropertyMappingFormSet = modelformset_factory(
     TestPropertyMapping,
     form=TestPropertyMappingForm
+)
+
+DataFileTestPropertyMappingFormSet = modelformset_factory(
+    TestPropertyMapping,
+    form=TestPropertyMappingForm,
+    extra=0
 )
 
 TestPropertyEstimateFormSet = modelformset_factory(
