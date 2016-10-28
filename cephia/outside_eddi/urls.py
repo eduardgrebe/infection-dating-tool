@@ -19,7 +19,8 @@ urlpatterns = [
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
     
     url('^data_files/(?P<file_id>\d+)/delete', views.delete_data_file, name='delete_data_file'),
-    url('^data_files/(?P<file_id>\d+)/process', views.process_data_file, name='process_data_file'),
+    url('^data_files/(?P<file_id>\d+)/save_data', views.save_data_file, name='save_data_file'),
+    url('^data_files/(?P<file_id>\d+)/process_data', views.process_data_file, name='process_data_file'),
 
 ]
 urlpatterns += staticfiles_urlpatterns()

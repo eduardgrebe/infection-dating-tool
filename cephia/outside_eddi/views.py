@@ -139,24 +139,34 @@ def delete_data_file(request, file_id, context=None):
     return redirect(reverse('outside_eddi:data_files'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def process_data_file(request, file_id, context=None):
+def save_data_file(request, file_id, context=None):
     context = context or {}
 
     user = request.user
     
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    OutsideEddiFileHandler(f).save_data(user)
+    mapping_needed = OutsideEddiFileHandler(f).save_data(user)
 
     if f.message:
         messages.info(request, f.message)
         f.state = 'error'
         f.save()
+    elif mapping_needed:
+        f.state = 'needs_mapping'
+        f.save()
+        for mapping in mapping_needed:
+            messages.info(request, mapping)
     else:
         messages.info(request, 'Data Saved')
         f.state = 'imported'
         f.save()
     return redirect(reverse('outside_eddi:data_files'))
 
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def process_data_file(request, file_id, context=None):
+    context = context or {}
+
+    return redirect(reverse('outside_eddi:data_files'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_study(request, study_id=None, template="outside_eddi/manage_studies.html"):

@@ -34,7 +34,15 @@
 	          <td>{{obj.created}}</td>
             <td>{{obj.state}}</td>
             <td>{{obj.message}}</td>
-            <td><a href="{% url 'outside_eddi:process_data_file' obj.id %}" >Process</a></td>
+            {% if obj.state == 'validated' %}
+              <td><a href="{% url 'outside_eddi:save_data_file' obj.id %}" >Save Data</a></td>
+            {% elif obj.state == 'needs_mapping' %}
+              <td><a href="{% url 'outside_eddi:test_mapping' %}" >Provide Mapping</a></td>
+            {% elif obj.state == 'imported' %}
+              <td><a href="{% url 'outside_eddi:process_data_file' obj.id %}" >Process</a></td>
+            {% else %}
+              <td></td>
+            {% endif %}
             <td><a href="#">View Results</td>
             <td class="list_buttons">
 		          <a href="{% url 'outside_eddi:delete_data_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file?') ) { return false }"><span class="glyphicon glyphicon-remove"></span></a>

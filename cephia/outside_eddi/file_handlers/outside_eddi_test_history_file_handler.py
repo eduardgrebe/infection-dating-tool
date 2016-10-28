@@ -57,6 +57,7 @@ class OutsideEddiFileHandler(FileHandler):
     def save_data(self, user):
         tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=self.upload_file.user) | Q(user=None))
         test_names = [x.name for x in tests]
+        mapping_needed = []
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -71,7 +72,9 @@ class OutsideEddiFileHandler(FileHandler):
                     subject.test_date = row_dict['TestDate']
                     subject.test_code = row_dict['TestCode']
 
-                    mapping = get_or_create_map(subject.test_code, test_names, user)
+                    mapping = check_mapping(subject.test_code, test_names, user)
+                    if mapping == False:
+                        mapping_needed.append("row " + str(row_num) + ": Mapping needed for test code: " + subject.test_code)
                     
                     subject.test_result = row_dict['TestResult']
                     subject.save()
@@ -82,6 +85,8 @@ class OutsideEddiFileHandler(FileHandler):
                 self.upload_file.save()
                 return 0, 1
 
+        return mapping_needed
+
 def validate_date(date_text):
     try:
         datetime.datetime.strptime(date_text, '%Y-%m-%d')
@@ -89,7 +94,7 @@ def validate_date(date_text):
     except ValueError:
         return False
 
-def get_or_create_map(test_code, tests, user):
+def check_mapping(test_code, tests, user):
     if test_code in tests:
         if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
             mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
@@ -110,4 +115,7 @@ def get_or_create_map(test_code, tests, user):
                 code=test_code,
                 user=user
             )
-    return mapping
+    if not mapping.test or not mapping.test_property:
+        return False
+    else:
+        return True
