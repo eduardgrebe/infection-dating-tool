@@ -152,7 +152,7 @@ def process_data_file(request, file_id, context=None):
         f.state = 'error'
         f.save()
     else:
-        messages.info(request, 'File processed')
+        messages.info(request, 'Data Saved')
         f.state = 'imported'
         f.save()
     return redirect(reverse('outside_eddi:data_files'))

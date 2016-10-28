@@ -6,10 +6,10 @@ from datetime import datetime
 import datetime
 from django.core.management import call_command
 
+from outside_eddi.models import OutsideEddiSubject, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
+from django.db.models import Q
+        
 logger = logging.getLogger(__name__)
-
-valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
-headers = [u'', u'SubjectId', u'TestDate', u'TestCode', u'TestResult']
 
 class OutsideEddiFileHandler(FileHandler):
 
@@ -26,6 +26,8 @@ class OutsideEddiFileHandler(FileHandler):
         ]
 
     def validate(self):
+        valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
+        headers = [u'', u'SubjectId', u'TestDate', u'TestCode', u'TestResult']
         errors = []
         from outside_eddi.models import OutsideEddiSubject
         if self.header != headers:
@@ -38,7 +40,7 @@ class OutsideEddiFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    if not validate(row_dict['TestDate']):
+                    if not validate_date(row_dict['TestDate']):
                         errors.append("row " + str(row_num) + ": Incorrect date format, should be YYYY-MM-DD")
 
                     if not row_dict['TestResult'].lower() in valid_results:
@@ -53,7 +55,8 @@ class OutsideEddiFileHandler(FileHandler):
         return errors
 
     def save_data(self, user):
-        from outside_eddi.models import OutsideEddiSubject
+        tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=self.upload_file.user) | Q(user=None))
+        test_names = [x.name for x in tests]
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -61,11 +64,17 @@ class OutsideEddiFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    subject_row = OutsideEddiSubject.objects.create(subject_label=row_dict['SubjectId'])
-                    subject_row.test_date = row_dict['TestDate']
-                    subject_row.test_code = row_dict['TestCode']
-                    subject_row.test_result = row_dict['TestResult']
-                    subject_row.save()
+                    subject = OutsideEddiSubject.objects.create(
+                        subject_label=row_dict['SubjectId'],
+                        data_file=self.upload_file
+                    )
+                    subject.test_date = row_dict['TestDate']
+                    subject.test_code = row_dict['TestCode']
+
+                    mapping = get_or_create_map(subject.test_code, test_names, user)
+                    
+                    subject.test_result = row_dict['TestResult']
+                    subject.save()
 
             except Exception, e:
                 logger.exception(e)
@@ -73,10 +82,32 @@ class OutsideEddiFileHandler(FileHandler):
                 self.upload_file.save()
                 return 0, 1
 
-def validate(date_text):
+def validate_date(date_text):
     try:
         datetime.datetime.strptime(date_text, '%Y-%m-%d')
         return True
     except ValueError:
         return False
-        # raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+
+def get_or_create_map(test_code, tests, user):
+    if test_code in tests:
+        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+        else:
+            test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
+            test_property = test.get_default_property()
+            mapping = TestPropertyMapping.objects.create(
+                code=test_code,
+                test=test,
+                test_property=test_property,
+                user=user
+            )
+    else:
+        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+        else:
+            mapping = TestPropertyMapping.objects.create(
+                code=test_code,
+                user=user
+            )
+    return mapping
