@@ -38,7 +38,7 @@
               <td><a href="{% url 'outside_eddi:save_data_file' obj.id %}" >Save Data</a></td>
             {% elif obj.state == 'needs_mapping' %}
               <td><a href="{% url 'outside_eddi:test_mapping' obj.id %}" >Provide Mapping</a></td>
-            {% elif obj.state == 'imported' %}
+            {% elif obj.state == 'mapped' %}
               <td><a href="{% url 'outside_eddi:process_data_file' obj.id %}" >Process</a></td>
             {% else %}
               <td></td>

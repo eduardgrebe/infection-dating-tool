@@ -306,7 +306,20 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
             if file_id == 'None':
                 return redirect("outside_eddi:test_mapping", file_id)
             else:
-                return redirect("outside_eddi:data_files")
+                mappings = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+                redirect_page = True
+                for mapping in mappings:
+                    if mapping.test_property:
+                        continue
+                    else:
+                        redirect_page = False
+                        messages.add_message(request, messages.WARNING, "Please provide a property for " + mapping.code)
+                if redirect_page == True:
+                    data_file.state = 'mapped'
+                    data_file.save()
+                    return redirect("outside_eddi:data_files")
+                else:
+                    return redirect("outside_eddi:test_mapping", file_id)    
 
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
