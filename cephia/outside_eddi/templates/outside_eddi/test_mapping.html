@@ -76,7 +76,7 @@
              $(this).attr('data-toggle', '')
          }
          else {
-             code = code.replace(' ', '___');
+             code = code.split(' ').join('___');
              url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
 
              $.get(url).done(function(html) {

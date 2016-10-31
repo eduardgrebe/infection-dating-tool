@@ -341,9 +341,11 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context = context or {}
 
     code = code.replace('___', ' ')
+    details = details.replace('___', ' ')
     user = request.user
 
     if code == 'new_user_test':
+        test_id = test_id.replace('___', ' ')
         test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
         if details != 'no_user_details':
             test.description = details
@@ -471,7 +473,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                 context['test'] = test
                 context['code'] = code
                 context['code_without_spaces'] = code.replace(' ', '___')
-                context['details'] = details
+                context['details'] = details.replace(' ', '___')
                 context['file'] = file_id
                 return render(request, 'outside_eddi/test_properties.html', context)
             else:
@@ -482,7 +484,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context['test'] = test
     context['code'] = code
     context['code_without_spaces'] = code.replace(' ', '___')
-    context['details'] = details
+    context['details'] = details.replace(' ', '___')
     context['file'] = file_id
 
     return render(request, template, context)

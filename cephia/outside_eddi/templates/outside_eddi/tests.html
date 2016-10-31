@@ -95,13 +95,14 @@
              var test = tests_by_name[test_name]
              var code = 'user'
              if (!test){
-                 var test = test_name;
+                 var test = test_name.split(' ').join('___');
                  var code = 'new_user_test';
              }
              if (!details){
                  var details = 'no_user_details';
              }
 
+             details = details.split(' ').join('___');
              url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
 
              $.get(url).done(function(html) {
