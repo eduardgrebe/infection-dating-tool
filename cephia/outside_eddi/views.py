@@ -125,7 +125,7 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
         form = TestHistoryFileUploadForm()
 
     context['form'] = form
-    context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user).order_by("-created")
+    context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user, deleted=False).order_by("-created")
 
     return render(request, template, context)
 
@@ -134,10 +134,9 @@ def delete_data_file(request, file_id, context=None):
     context = context or {}
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    subjects = f.subjects.all().delete()
-    import pdb;pdb.set_trace()
+    f.deleted = True
+    f.save()
     
-    f.delete()
     messages.info(request, 'File deleted')
     return redirect(reverse('outside_eddi:data_files'))
 

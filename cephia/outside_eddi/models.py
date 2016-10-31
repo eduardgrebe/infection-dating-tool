@@ -123,7 +123,6 @@ class TestPropertyMapping(models.Model):
     class Meta:
         unique_together = ('code', 'user')
 
-
 class OutsideEddiFileInfo(models.Model):
 
     STATE_CHOICES = (
@@ -142,6 +141,7 @@ class OutsideEddiFileInfo(models.Model):
     message = models.TextField(blank=True)
     history = HistoricalRecords()
     task_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    deleted = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.data_file.name
