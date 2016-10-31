@@ -102,7 +102,7 @@ def check_mapping(test_code, tests, user):
             test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
             test_property = test.get_default_property()
             mapping = TestPropertyMapping.objects.create(
-                code=test_code,
+                code=str(test_code),
                 test=test,
                 test_property=test_property,
                 user=user
