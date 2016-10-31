@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet, GlobalTestFormSet, UserTestFormSet
+from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet, GlobalTestFormSet, UserTestFormSet, GroupedModelChoiceField, GroupedModelMultiChoiceField
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -271,8 +271,12 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         formset = TestPropertyMappingFormSet(request.POST or None,
                                              queryset=TestPropertyMapping.objects.filter(user=user))
 
+
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+
     for form in formset:
-        form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)).order_by('-user')
+        form.fields['test'] = choices
+        # form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)).order_by('-user')
 
     tooltips_for_tests = {}
     tests = OutsideEddiDiagnosticTest.objects.all()
@@ -336,6 +340,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 def test_properties(request, code=None, details=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
     context = context or {}
 
+    code = code.replace('___', ' ')
     user = request.user
 
     if code == 'new_user_test':
@@ -465,6 +470,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
                 context['formset'] = formset
                 context['test'] = test
                 context['code'] = code
+                context['code_without_spaces'] = code.replace(' ', '___')
                 context['details'] = details
                 context['file'] = file_id
                 return render(request, 'outside_eddi/test_properties.html', context)
@@ -475,6 +481,7 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context['formset'] = formset
     context['test'] = test
     context['code'] = code
+    context['code_without_spaces'] = code.replace(' ', '___')
     context['details'] = details
     context['file'] = file_id
 

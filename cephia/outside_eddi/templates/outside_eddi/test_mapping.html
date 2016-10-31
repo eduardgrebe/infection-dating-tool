@@ -12,7 +12,7 @@
   <div class="container">
 
     {% if file %}
-      <h5>Mapping for {{ file.data_file }}</h5>
+      <h5>Mapping for {{ file.filename }}</h5>
     {% endif %}
 
     <form name="tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
@@ -55,17 +55,17 @@
          code_id = $(this).attr('id');
 
          var test = $("#id_" + test_id).val();
-         /* var test = $("#id_" + test_id).find('option:selected').attr("value");*/
          var code = $("#id_" + code_id).val();
          var details = 'None';
-         /* var file_id = 'None';*/
-         /* if (file != 'None'){
-          *     
-          * }*/
-         var file_id = {{ file.pk }}
-         if (typeof file_id === 'undefined'){
+
+         var file_id = '{{ file|safe }}';
+         
+         if (file_id === 'None'){
              var file_id = 'None';
-             }
+         }
+         else {
+             var file_id = '{{ file.pk|safe }}';
+         }
 
          if (!code){
              alert('Please insert a code')
@@ -76,6 +76,7 @@
              $(this).attr('data-toggle', '')
          }
          else {
+             code = code.replace(' ', '___');
              url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
 
              $.get(url).done(function(html) {

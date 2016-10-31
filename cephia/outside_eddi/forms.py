@@ -8,6 +8,9 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory
 from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, OutsideEddiFileInfo
 
+from itertools import groupby
+from django.forms.models import ModelChoiceIterator, ModelChoiceField, ModelMultipleChoiceField
+
 class EddiUserCreationForm(UserCreationForm):
     
     def save(self, commit=True):
@@ -138,39 +141,51 @@ UserTestFormSet = modelformset_factory(
     form=UserTestForm
 )
 
-class GroupedModelChoiceField(forms.ModelChoiceField):
-
-    def optgroup_from_instance(self, obj):
-        return ""
-
-    def __choice_from_instance__(self, obj):
-	return (obj.id, self.label_from_instance(obj))
-
-    def _get_choices(self):
-        if not self.queryset:
-            return []
-
-        all_choices = []
-	if self.empty_label:
-            current_optgroup = ""
-            current_optgroup_choices = [("", self.empty_label)]
+class Grouped(object):
+    def __init__(self, queryset, group_by_field,
+                 group_label=None, *args, **kwargs):
+        """ 
+        ``group_by_field`` is the name of a field on the model to use as
+                           an optgroup.
+        ``group_label`` is a function to return a label for each optgroup.
+        """
+        super(Grouped, self).__init__(queryset, *args, **kwargs)
+        self.group_by_field = group_by_field
+        if group_label is None:
+            self.group_label = lambda group: group
         else:
-            current_optgroup = self.optgroup_from_instance(self.queryset[0])
-            current_optgroup_choices = []
+            
+            self.group_label = group_label
+   
+    def _get_choices(self):
+        if hasattr(self, '_choices'):
+            return self._choices
+        return GroupedModelChoiceIterator(self)
 
-        for item in self.queryset:
-            optgroup_from_instance = self.optgroup_from_instance(item)
-            if current_optgroup != optgroup_from_instance:
-                all_choices.append((current_optgroup, current_optgroup_choices))
-                current_optgroup_choices = []
-                current_optgroup = optgroup_from_instance
-            current_optgroup_choices.append(self.__choice_from_instance__(item))
 
-	    all_choices.append((current_optgroup, current_optgroup_choices))
-	    return all_choices
+class GroupedModelChoiceIterator(ModelChoiceIterator):
+    def __iter__(self):
+        if self.field.empty_label is not None:
+            yield ("", self.field.empty_label)
+        queryset = self.queryset.all()
+        if not queryset._prefetch_related_lookups:
+            queryset = queryset.iterator()
+        for group, choices in groupby(self.queryset.all().order_by('-user'),
+                    key=lambda row: getattr(row, self.field.group_by_field)):
+            if not group:
+                group = 'Global Tests'
+            else:
+                group = 'Your Tests'
+            if self.field.group_label(group):
+                yield (
+                    self.field.group_label(group),
+                    [self.choice(ch) for ch in choices]
+                )
 
-    choices = property(_get_choices, forms.ChoiceField._set_choices)
-    
-class ExampleChoiceField(GroupedModelChoiceField):
-    def optgroup_from_instance(self, obj):
-    	return obj.group.name
+
+class GroupedModelChoiceField(Grouped, ModelChoiceField):
+    choices = property(Grouped._get_choices, ModelChoiceField._set_choices)
+
+
+class GroupedModelMultiChoiceField(Grouped, ModelMultipleChoiceField):
+    choices = property(Grouped._get_choices, ModelMultipleChoiceField._set_choices)

@@ -82,6 +82,7 @@ class OutsideEddiFileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                import pdb;pdb.set_trace()
                 self.upload_file.save()
                 return 0, 1
 
@@ -101,6 +102,7 @@ def check_mapping(test_code, tests, user):
         else:
             test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
             test_property = test.get_default_property()
+            
             mapping = TestPropertyMapping.objects.create(
                 code=str(test_code),
                 test=test,
