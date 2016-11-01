@@ -1,0 +1,29 @@
+{% extends "outside_eddi/base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block content %}
+  <div class="container">
+    <h5>These are your results for: {{ file.filename }}</h5>
+
+    <table class="table table-condensed table-striped">
+
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Subject EDDI</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for sub in subjects %}
+          <tr>
+            <td>{{ sub.subject_label }}</td>
+            <td>{{ sub.subject_eddi }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+{% endblock %}

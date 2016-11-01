@@ -14,7 +14,7 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
 from cephia.models import CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiFileInfo
+from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
@@ -265,6 +265,23 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context['global_formset'] = global_formset
     context['tests'] = tests
     context['test_ids_by_name'] = names
+
+    return render(request, template, context)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def results(request, file_id=None, template="outside_eddi/results.html"):
+    context = {}
+
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+
+    subjects = []
+    for test in test_history:
+        if test.subject not in subjects:
+            subjects.append(test.subject)
+
+    context['file'] = data_file
+    context['subjects'] = subjects
 
     return render(request, template, context)
 
