@@ -12,25 +12,7 @@ import collections
 from world_regions import models as wr_models
 from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
-
-FILE_TYPE_CHOICES = (
-    ('','---------'),
-    ('aliquot','Aliquot'),
-    ('assay','Assay'),
-    ('diagnostic_test','Diagnostic Test'),
-    ('panel_shipment','Panel Shipment'),
-    ('panel_membership','Panel Membership'),
-    ('protocol_lookup','Protocol Lookup'),
-    ('subject','Subject'),
-    ('test_history','Diagnostic Test History'),
-    ('test_property','Diagnostic Test Properties'),
-    ('transfer_in','Transfer In'),
-    ('transfer_out','Transfer Out'),
-    ('visit','Visit'),
-    ('viral_load','Viral Load'),
-    ('treatment_status_update','Treatment Status Update'),
-)
-
+from datetime import timedelta
 
 class OutsideEddiDiagnosticTestHistory(models.Model):
     class Meta:
@@ -154,11 +136,10 @@ class OutsideEddiFileInfo(models.Model):
     def get_extension(self):
         return self.filename().split('.')[-1]
 
+class OutsideEddiSubjectEDDI(models.Model):
+    class Meta:
+        db_table = "outside_eddi_subject_eddi"
 
-class OutsideEddiSubject(models.Model):
-    
-    subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
     interval_size = models.IntegerField(null=True, blank=True)
@@ -167,6 +148,19 @@ class OutsideEddiSubject(models.Model):
     recalculate = models.BooleanField(default=False)
     eddi_type = models.CharField(max_length=100, null=False, blank=False)
     history = HistoricalRecords()
+
+    @property
+    def eddi_interval_size(self):
+        return self.interval_size
+
+    
+class OutsideEddiSubject(models.Model):
+    
+    subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
+    subject_eddi = ProtectedForeignKey(OutsideEddiSubjectEDDI, null=True, blank=True)
+    history = HistoricalRecords()
+    edsc_reported  = models.DateField(null=True, blank=True, default=None)
 
     def __unicode__(self):
         return self.subject_label
@@ -177,13 +171,13 @@ class OutsideEddiSubject(models.Model):
     def calculate_eddi(self):
         edsc_days_diff = None
         try:
-            lp_ddi = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
-        except DiagnosticTestHistory.DoesNotExist:
+            lp_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(subject=self, test_result='Positive', ignore=False).earliest('test_date').test_date
+        except OutsideEddiDiagnosticTestHistory.DoesNotExist:
             lp_ddi = None
 
         try:
-            ep_ddi = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
-        except DiagnosticTestHistory.DoesNotExist:
+            ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(subject=self, test_result='Negative', ignore=False).latest('test_date').test_date
+        except OutsideEddiDiagnosticTestHistory.DoesNotExist:
             ep_ddi = None
 
         if ep_ddi is None or lp_ddi is None:
@@ -193,19 +187,17 @@ class OutsideEddiSubject(models.Model):
             eddi = ep_ddi + timedelta(days=((lp_ddi - ep_ddi).days / 2))
             interval_size = abs((lp_ddi - ep_ddi).days)
 
-        subject = Subject.objects.get(pk=subject_id)
-        if subject.edsc_reported and eddi:
-            edsc_days_diff = timedelta(days=(eddi - subject.edsc_reported).days).days
+        if self.edsc_reported and eddi:
+            edsc_days_diff = timedelta(days=(eddi - self.edsc_reported).days).days
 
-        subject_to_update = Subject.objects.get(pk=subject_id)
-        new_eddi = SubjectEDDI.objects.create(ep_ddi=ep_ddi,
+        new_eddi = OutsideEddiSubjectEDDI.objects.create(ep_ddi=ep_ddi,
                                               lp_ddi=lp_ddi,
                                               interval_size=interval_size,
                                               edsc_days_difference=edsc_days_diff,
                                               eddi=eddi,
                                               eddi_type='test_history')
 
-        subject_to_update.subject_eddi = new_eddi
-        subject_to_update.save()
-        if lp_ddi or ep_ddi or eddi:
-            self._handle_visits(subject_to_update)
+        self.eddi = new_eddi
+        self.save()
+        # if lp_ddi or ep_ddi or eddi:
+        #     self._handle_visits(subject_to_update)

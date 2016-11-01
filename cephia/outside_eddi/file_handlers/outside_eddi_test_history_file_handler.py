@@ -58,6 +58,8 @@ class OutsideEddiFileHandler(FileHandler):
         tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=self.upload_file.user) | Q(user=None))
         test_names = [x.name for x in tests]
         mapping_needed = []
+        pos_results = ('positive', 'pos', '+')
+        neg_results = ('negative', 'neg', '-')
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -83,8 +85,11 @@ class OutsideEddiFileHandler(FileHandler):
                     mapping = check_mapping(test_history_row.test_code, test_names, user)
                     if mapping == False:
                         mapping_needed.append("row " + str(row_num) + ": Mapping needed for test code: " + test_history_row.test_code)
-                    
-                    test_history_row.test_result = row_dict['TestResult']
+
+                    if row_dict['TestResult'].lower() in pos_results:
+                        test_history_row.test_result = 'Positive'
+                    elif row_dict['TestResult'].lower() in neg_results:
+                        test_history_row.test_result = 'Negative'
                     test_history_row.save()
 
             except Exception, e:

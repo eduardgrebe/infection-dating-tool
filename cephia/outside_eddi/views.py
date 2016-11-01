@@ -168,6 +168,19 @@ def save_data_file(request, file_id, context=None):
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
+    f = OutsideEddiFileInfo.objects.get(pk=file_id)
+    test_history = f.test_history.all()
+    subjects = []
+    for test in test_history:
+        if test.subject not in subjects:
+            subjects.append(test.subject)
+    for subject in subjects:
+        subject.calculate_eddi()
+
+    f.state = 'processed'
+    f.save()
+    messages.info(request, 'Data Processed')
+
     return redirect(reverse('outside_eddi:data_files'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
