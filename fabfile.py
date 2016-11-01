@@ -12,6 +12,9 @@ staging       : > fab host_impd deploy:<branch>
 cephia test   : > fab host_cephia_test deploy:<branch>
 cephia prod   : > fab host_cephia_prod deploy:<branch>
 
+shiny         : > fab host_shiny_prod deploy_shiny:<branch>
+shiny server  : > fab host_shiny_prod restart_shiny_server
+
 """
 
 def help():
@@ -101,4 +104,29 @@ def crontab_update(content, marker):
     """ Adds or updates a line in crontab. """
     crontab_remove(marker)
     crontab_add(content, marker)
+
+# ===== shiny app commands ======
+
+def host_shiny_prod():
+    env.user = 'cephia'
+    env.hosts = ['cephiadb.incidence-estimation.org']
+    env.code_dir = "/shiny_server"
+
+def restart_shiny_server():
+    print("   Restarting Shiny Server   ")
+    with cd(env.code_dir):
+        local("sudo service shiny-server restart")
+    print("   Restarted Shiny Server   ")
+
+def deploy_shiny(branch_name="master"):
+    print("   Deploying: ** %s **" % branch_name)
+    with cd(env.code_dir):
+        run("git reset --hard HEAD")
+        run("git fetch origin")
+        run("git checkout origin/%s" % branch_name)
+        run("git pull origin %s" % branch_name)
+        run("./scripts/deploy_server.sh")
+
+    restart_shiny_server()
     
+    print("Deployed to: %s" % env.hosts[0])

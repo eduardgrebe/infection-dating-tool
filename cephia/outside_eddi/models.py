@@ -38,7 +38,9 @@ class OutsideEddiDiagnosticTestHistory(models.Model):
 
     history = HistoricalRecords()
     subject = ProtectedForeignKey('OutsideEddiSubject', null=True, blank=False, related_name='outside_eddi_test_history')
-    test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=False)
+    data_file = ProtectedForeignKey('OutsideEddiFileInfo', null=False, blank=False, related_name='test_history')
+    test_code = models.CharField(max_length=25, null=True, blank=True)
+    # test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
     test_result = models.CharField(max_length=15, null=True, blank=False)
@@ -156,12 +158,7 @@ class OutsideEddiFileInfo(models.Model):
 class OutsideEddiSubject(models.Model):
     
     subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    test_date = models.DateField(null=True, blank=True)
-    test_code = models.CharField(max_length=25, null=True, blank=True)
-    test_result = models.CharField(max_length=8, null=True, blank=True)
-
-    data_file = ProtectedForeignKey('OutsideEddiFileInfo', null=False, blank=False, related_name='subjects')
-    
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
     interval_size = models.IntegerField(null=True, blank=True)
@@ -173,3 +170,42 @@ class OutsideEddiSubject(models.Model):
 
     def __unicode__(self):
         return self.subject_label
+
+    class Meta:
+        unique_together = ("subject_label", "user")
+
+    def calculate_eddi(self):
+        edsc_days_diff = None
+        try:
+            lp_ddi = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
+        except DiagnosticTestHistory.DoesNotExist:
+            lp_ddi = None
+
+        try:
+            ep_ddi = DiagnosticTestHistory.objects.filter(subject__id=subject_id, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
+        except DiagnosticTestHistory.DoesNotExist:
+            ep_ddi = None
+
+        if ep_ddi is None or lp_ddi is None:
+            eddi = None
+            interval_size = None
+        else:
+            eddi = ep_ddi + timedelta(days=((lp_ddi - ep_ddi).days / 2))
+            interval_size = abs((lp_ddi - ep_ddi).days)
+
+        subject = Subject.objects.get(pk=subject_id)
+        if subject.edsc_reported and eddi:
+            edsc_days_diff = timedelta(days=(eddi - subject.edsc_reported).days).days
+
+        subject_to_update = Subject.objects.get(pk=subject_id)
+        new_eddi = SubjectEDDI.objects.create(ep_ddi=ep_ddi,
+                                              lp_ddi=lp_ddi,
+                                              interval_size=interval_size,
+                                              edsc_days_difference=edsc_days_diff,
+                                              eddi=eddi,
+                                              eddi_type='test_history')
+
+        subject_to_update.subject_eddi = new_eddi
+        subject_to_update.save()
+        if lp_ddi or ep_ddi or eddi:
+            self._handle_visits(subject_to_update)

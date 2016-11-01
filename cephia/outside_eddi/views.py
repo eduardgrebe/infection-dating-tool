@@ -264,7 +264,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     data_file = None
     if file_id != 'None':
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-        codes = [x.test_code for x in data_file.subjects.all()]
+        codes = [x.test_code for x in data_file.test_history.all()]
         formset = DataFileTestPropertyMappingFormSet(request.POST or None,
                                              queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user))
     else:

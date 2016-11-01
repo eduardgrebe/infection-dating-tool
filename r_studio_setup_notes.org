@@ -88,8 +88,8 @@ HIV_incidence_assays__one_surveys
 HIV_incidence_assays__two_surveys
 sample_size_calculator
 
-When you go to this site then it loads but seems not fully. This is most likely because of the same packages that were missing on the local machine. I am going to run the same commands to install packages that I did on my local machine but it does not tell you
-what is missing when you are doing this on the server.
+When you go to this site then it loads but seems not fully. This is most likely because of the same packages that were missing on the local machine. I am going to run the same commands to install packages that I did on my local machine
+but it does not tell you what is missing when you are doing this on the server.
 
 sudo R -e "install.packages('ggplot2', repos='http://cran.rstudio.com', type='source')"
 sudo R -e "install.packages('dplyr', repos='http://cran.rstudio.com', type='source')"
@@ -109,3 +109,12 @@ jdZsmutqJSagUKTlUIHuhVo=
 ** setting up ability for anyone to upload and deploy apps from the front end
 I am using the following link as a guide for this: https://support.rstudio.com/hc/en-us/articles/218541988-Shiny-Server-Quick-Start-Let-users-manage-their-own-applications
 
+** setting up live server
+I have put the three apps in the following directory: /home/cephia/shiny_server/apps
+I have changed the file location in the shiny-server.conf file located at /etc/shiny-server
+
+you can access the apps in the browser with the following links. The first is a page which has links to each app loaded in the app folder
+https://cephiadb.incidence-estimation.org/shinystuff/
+https://cephiadb.incidence-estimation.org/shinystuff/sample_size_calculator/
+https://cephiadb.incidence-estimation.org/shinystuff/HIV_incidence_assays__one_surveys/
+https://cephiadb.incidence-estimation.org/shinystuff/HIV_incidence_assays__two_surveys/

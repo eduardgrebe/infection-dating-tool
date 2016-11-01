@@ -6,7 +6,7 @@ from datetime import datetime
 import datetime
 from django.core.management import call_command
 
-from outside_eddi.models import OutsideEddiSubject, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping
+from outside_eddi.models import OutsideEddiSubject, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiDiagnosticTestHistory
 from django.db.models import Q
         
 logger = logging.getLogger(__name__)
@@ -65,19 +65,27 @@ class OutsideEddiFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    subject = OutsideEddiSubject.objects.create(
-                        subject_label=row_dict['SubjectId'],
-                        data_file=self.upload_file
-                    )
-                    subject.test_date = row_dict['TestDate']
-                    subject.test_code = row_dict['TestCode']
-
-                    mapping = check_mapping(subject.test_code, test_names, user)
-                    if mapping == False:
-                        mapping_needed.append("row " + str(row_num) + ": Mapping needed for test code: " + subject.test_code)
+                    if OutsideEddiSubject.objects.filter(subject_label=row_dict['SubjectId'], user=user).exists():
+                        subject = OutsideEddiSubject.objects.get(
+                            subject_label=row_dict['SubjectId'],
+                            user=user
+                        )
+                    else:
+                        subject = OutsideEddiSubject.objects.create(
+                            subject_label=row_dict['SubjectId'],
+                            user=user
+                        )
                     
-                    subject.test_result = row_dict['TestResult']
-                    subject.save()
+                    test_history_row = OutsideEddiDiagnosticTestHistory.objects.create(subject=subject, data_file=self.upload_file)
+                    test_history_row.test_date = row_dict['TestDate']
+                    test_history_row.test_code = row_dict['TestCode']
+
+                    mapping = check_mapping(test_history_row.test_code, test_names, user)
+                    if mapping == False:
+                        mapping_needed.append("row " + str(row_num) + ": Mapping needed for test code: " + test_history_row.test_code)
+                    
+                    test_history_row.test_result = row_dict['TestResult']
+                    test_history_row.save()
 
             except Exception, e:
                 logger.exception(e)

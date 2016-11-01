@@ -170,7 +170,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
         queryset = self.queryset.all()
         if not queryset._prefetch_related_lookups:
             queryset = queryset.iterator()
-        for group, choices in groupby(self.queryset.all().order_by('-user'),
+        for group, choices in groupby(self.queryset.all().order_by('-user', 'name'),
                     key=lambda row: getattr(row, self.field.group_by_field)):
             if not group:
                 group = 'Global Tests'
