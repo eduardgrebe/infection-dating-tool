@@ -12,10 +12,43 @@
   <div class="container">
 
     {% if file %}
-      <h5>Mapping for {{ file.filename }}</h5>
+      <h3>Mapping for {{ file.filename }}</h3>
+
+      <form name="file_mapping"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Test</th>
+              <th>Property</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            {{ data_file_formset.management_form }}
+            {% for form in data_file_formset %}
+              <tr>
+                <td>
+                  {% bootstrap_field form.code show_label=False %} {{ form.id }}
+                </td>
+                <td class="js-show-test-details" name="{{ form.test.html_name }}" title="">
+                  {% bootstrap_field form.test show_label=False %}
+                </td>
+                <td>
+                  <a class="btn btn-primary js-show-file-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 'None' 1 'None' %}">Properties</a>
+                </td>
+              </tr>
+            {% endfor %}
+            
+          </tbody>
+        </table>
+        <button class="btn btn-primary pull-right">Save</button>
+      </form>
+
+      <h3>All Your Mapping</h3>
     {% endif %}
 
-    <form name="tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+    <form name="mapping"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
       <table class="table table-condensed table-striped">
         <thead>
           <tr>
@@ -48,6 +81,44 @@
 
     <div class="modal fade" id="modal"></div>
     <script>
+     $('.js-show-file-properties').click(function(event) {
+         event.preventDefault();
+         url = $(this).attr('href');
+         test_id = $(this).attr('name');
+         code_id = $(this).attr('id');
+
+         var test = $("#id_" + test_id).val();
+         var code = $("#id_" + code_id).val();
+         var details = 'None';
+
+         var file_id = '{{ file|safe }}';
+         
+         if (file_id === 'None'){
+             var file_id = 'None';
+         }
+         else {
+             var file_id = '{{ file.pk|safe }}';
+         }
+
+         if (!code){
+             alert('Please insert a code')
+             $(this).attr('data-toggle', '')
+         }
+         else if (!test){
+             alert('Please select a test')
+             $(this).attr('data-toggle', '')
+         }
+         else {
+             code = code.split(' ').join('___');
+             url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
+
+             $.get(url).done(function(html) {
+                 $('#modal').html(html);
+                 $('#modal').modal();
+             });
+         }
+     });
+     
      $('.js-show-properties').click(function(event) {
          event.preventDefault();
          url = $(this).attr('href');

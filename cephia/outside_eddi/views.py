@@ -291,15 +291,22 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     user = request.user
 
+    data_file_formset = None
     data_file = None
     if file_id != 'None':
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         codes = [x.test_code for x in data_file.test_history.all()]
-        formset = DataFileTestPropertyMappingFormSet(request.POST or None,
-                                             queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user))
-    else:
-        formset = TestPropertyMappingFormSet(request.POST or None,
-                                             queryset=TestPropertyMapping.objects.filter(user=user))
+        data_file_formset = DataFileTestPropertyMappingFormSet(
+            request.POST or None,
+            queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user),
+            prefix='data_file'
+        )
+        
+    formset = TestPropertyMappingFormSet(
+        request.POST or None,
+        queryset=TestPropertyMapping.objects.filter(user=user),
+        prefix='all_maps'
+    )
 
 
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
@@ -316,6 +323,9 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     tips = json.dumps(tooltips_for_tests)
 
     if request.method == 'POST':
+        if data_file_formset:
+            if data_file_formset.is_valid():
+                import pdb;pdb.set_trace()
         if formset.is_valid():
             for form in formset.forms:
                 if form.cleaned_data:
@@ -361,6 +371,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
             messages.add_message(request, messages.WARNING, "Invalid mapping")
 
     context['formset'] = formset
+    context['data_file_formset'] = data_file_formset
     context['tooltips_for_tests'] = tips
     context['file'] = data_file
 

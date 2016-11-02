@@ -1,4 +1,3 @@
-{% load i18n widget_tweaks %}
 {% load bootstrap3 %}
 
 <div class="modal-dialog modal-lg" role="document">
@@ -6,7 +5,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Properties for test: {{ test.name }}{% if code != 'global' and code != 'user' %} code: {{ code }}{% endif %}</h4>
+        <h4 class="modal-title" id="myModalLabel">Properties for {% if code != 'global' and code != 'user' %}code: {{ code }}, {% endif %}test: {{ test.name }}</h4>
         {% if code == 'global' %}
           <h5>The system defaults are being displayed, you can add additional properties but in order to set them as active you will have to map it along with a test and code from the mapping screen</h5>
         {% endif %}

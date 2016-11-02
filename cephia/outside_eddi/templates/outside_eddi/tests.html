@@ -11,8 +11,8 @@
 {% block content %}
   <div class="container">
 
-    <h4>Your tests</h4>
-    <form name="tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+    <h3>Your tests</h3>
+    <form name="user_tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
       <table class="table table-condensed table-striped">
         <thead>
           <tr>
@@ -43,8 +43,8 @@
       <button class="btn btn-primary pull-right">Save</button>
     </form>
 
-    <h4>Global tests</h4>
-    <form name="tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+    <h3>Global tests</h3>
+    <form name="global_tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
       <table class="table table-condensed table-striped">
         <thead>
           <tr>
