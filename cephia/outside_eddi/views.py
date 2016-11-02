@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
-from forms import EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet, DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet, GlobalTestFormSet, UserTestFormSet, GroupedModelChoiceField, GroupedModelMultiChoiceField
+from forms import (
+    EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet,
+    DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
+    GlobalTestFormSet, UserTestFormSet, GroupedModelChoiceField, GroupedModelMultiChoiceField
+    )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
@@ -376,6 +380,13 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context['file'] = data_file
 
     return render(request, template, context)
+
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_test_properties(request, code=None, details=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
+    # create stuff
+    pass
+    
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def test_properties(request, code=None, details=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):

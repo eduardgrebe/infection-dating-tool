@@ -90,7 +90,6 @@ INSTALLED_APPS = (
     'assay',
     'outside_eddi',
     'djcelery',
-    'widget_tweaks',
     'django_js_reverse',
 )
 

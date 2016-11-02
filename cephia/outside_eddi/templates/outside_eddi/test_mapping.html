@@ -35,7 +35,7 @@
                   {% bootstrap_field form.test show_label=False %}
                 </td>
                 <td>
-                  <a class="btn btn-primary js-show-file-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 'None' 1 'None' %}">Properties</a>
+                  <a class="btn btn-primary js-show-file-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
                 </td>
               </tr>
             {% endfor %}
@@ -69,7 +69,7 @@
                 {% bootstrap_field form.test show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'blank' 'None' 1 'None' %}">Properties</a>
+                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.test.pk }}" data-code-id="{{ form.instance.code }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -83,23 +83,12 @@
     <script>
      $('.js-show-file-properties').click(function(event) {
          event.preventDefault();
-         url = $(this).attr('href');
-         test_id = $(this).attr('name');
-         code_id = $(this).attr('id');
-
-         var test = $("#id_" + test_id).val();
-         var code = $("#id_" + code_id).val();
-         var details = 'None';
-
-         var file_id = '{{ file|safe }}';
+         var url;
+         //  look up data attributes html
+         var test_id = $(this).data('test-id');
+         var code_id = $(this).data('code-id');
+         var file_id = "{{ file.pk }}" || undefined;
          
-         if (file_id === 'None'){
-             var file_id = 'None';
-         }
-         else {
-             var file_id = '{{ file.pk|safe }}';
-         }
-
          if (!code){
              alert('Please insert a code')
              $(this).attr('data-toggle', '')
@@ -109,8 +98,11 @@
              $(this).attr('data-toggle', '')
          }
          else {
-             code = code.split(' ').join('___');
-             url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
+             if (file_id) {
+                 url = Urls["outside_eddi:test_properties"](code_id, details, test_id, file_id)
+             } else {
+                 url = Urls["outside_eddi:test_properties"](code_id, details, test_id)
+             }
 
              $.get(url).done(function(html) {
                  $('#modal').html(html);
