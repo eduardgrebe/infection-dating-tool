@@ -4,7 +4,8 @@ from django.template import RequestContext
 from forms import (
     EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
-    GlobalTestFormSet, UserTestFormSet, GroupedModelChoiceField, GroupedModelMultiChoiceField
+    GlobalTestFormSet, UserTestFormSet, GroupedModelChoiceField, GroupedModelMultiChoiceField,
+    TestPropertyMappingForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -297,7 +298,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     data_file_formset = None
     data_file = None
-    if file_id != 'None':
+    if file_id:
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         codes = [x.test_code for x in data_file.test_history.all()]
         data_file_formset = DataFileTestPropertyMappingFormSet(
@@ -308,7 +309,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         
     formset = TestPropertyMappingFormSet(
         request.POST or None,
-        queryset=TestPropertyMapping.objects.filter(user=user),
+        queryset=TestPropertyMapping.objects.filter(user=user).order_by('-pk'),
         prefix='all_maps'
     )
 
@@ -317,7 +318,6 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     for form in formset:
         form.fields['test'] = choices
-        # form.fields['test'].queryset = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)).order_by('-user')
 
     tooltips_for_tests = {}
     tests = OutsideEddiDiagnosticTest.objects.all()
@@ -327,53 +327,46 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     tips = json.dumps(tooltips_for_tests)
 
     if request.method == 'POST':
-        if data_file_formset:
-            if data_file_formset.is_valid():
-                import pdb;pdb.set_trace()
         if formset.is_valid():
             for form in formset.forms:
-                if form.cleaned_data:
-                    if form.instance.pk:
-                        f = form.save(commit=False)
-                        f.user = user
-                        code = f.code
-                        set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
-                        if set_property:
-                            f.test_property = set_property.test_property
-                        f.save()
-                    else:
-                        if TestPropertyMapping.objects.filter(code=form.cleaned_data['code'],
-                                                              user=user).exists():
-                            messages.add_message(request, messages.WARNING, "You already have a mapping with code: " + form.cleaned_data['code'])
-                        else:
-                            f = form.save(commit=False)
-                            f.user = user
-                            code = f.code
-                            set_property = TestPropertyMapping.objects.filter(code=code, user=user).first()
-                            if set_property:
-                                f.test_property = set_property.test_property
-                            f.save()
-            if file_id == 'None':
-                return redirect("outside_eddi:test_mapping", file_id)
-            else:
-                mappings = TestPropertyMapping.objects.filter(code__in=codes, user=user)
-                redirect_page = True
-                for mapping in mappings:
-                    if mapping.test_property:
-                        continue
-                    else:
-                        redirect_page = False
-                        messages.add_message(request, messages.WARNING, "Please provide a property for " + mapping.code)
-                if redirect_page == True:
-                    data_file.state = 'mapped'
-                    data_file.save()
-                    return redirect("outside_eddi:data_files")
+                save_form = True
+                if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).exists():
+                    if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).first().pk != form.instance.pk:
+                        save_form = False
+                        return JsonResponse({"error": "You already have a mapping with code: " + form.cleaned_data['code']})
+
+                if save_form:
+                    instance = form.save(commit=False)
+                    instance.user = request.user
+                    instance.save()
+ 
+                if request.is_ajax() and save_form:
+                    return JsonResponse({"success": True})
                 else:
-                    return redirect("outside_eddi:test_mapping", file_id)    
+                    return redirect("outside_eddi:test_mapping")
+
+            # else:
+            #     mappings = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+            #     redirect_page = True
+            #     for mapping in mappings:
+            #         if mapping.test_property:
+            #             continue
+            #         else:
+            #             redirect_page = False
+            #             messages.add_message(request, messages.WARNING, "Please provide a property for " + mapping.code)
+            #     if redirect_page == True:
+            #         data_file.state = 'mapped'
+            #         data_file.save()
+            #         return redirect("outside_eddi:data_files")
+            #     else:
+            #         return redirect("outside_eddi:test_mapping", file_id)
+                
 
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
 
+    context['add_mapping_form'] = TestPropertyMappingForm()
+         
     context['formset'] = formset
     context['data_file_formset'] = data_file_formset
     context['tooltips_for_tests'] = tips
@@ -383,30 +376,45 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_properties(request, code=None, details=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
-    # create stuff
-    pass
+def create_test_mapping(request, context=None, template='outside_eddi/create_mapping_form.html'):
+
+    form = TestPropertyMappingForm(request.POST)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.user = request.user
+        instance.save()
+        messages.info(request, 'Mapping added successfully')
+        return JsonResponse({
+            'redirect_url': reverse('outside_eddi:test_mapping')
+        })
+    else:
+        context = {}
+        context['add_mapping_form'] = form
+        return render(request, template, context)
+    
     
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def test_properties(request, code=None, details=None, test_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
+def test_properties(request, test_id=None, map_id=None,  file_id=None, template="outside_eddi/test_properties.html", context=None):
     context = context or {}
+    import pdb;pdb.set_trace()
+    
 
-    code = code.replace('___', ' ')
-    details = details.replace('___', ' ')
-    user = request.user
-
-    if code == 'new_user_test':
+    try:
+        test_id = int(test_id)
+        print 'success'
+    except ValueError:
         test_id = test_id.replace('___', ' ')
         test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
-        if details != 'no_user_details':
+        if not details:
             test.description = details
             test.save()
         test_id = test.pk
         code = 'user'
     else:
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
-        if code == 'user' and test.description != details and details != 'no_user_details':
+        code = 'user'
+        if info == 'user' and test.description != details and details != 'no_user_details':
             test.description = details
             test.save()
 
@@ -535,8 +543,8 @@ def test_properties(request, code=None, details=None, test_id=None, file_id=None
     context['formset'] = formset
     context['test'] = test
     context['code'] = code
-    context['code_without_spaces'] = code.replace(' ', '___')
-    context['details'] = details.replace(' ', '___')
+    # context['code_without_spaces'] = code.replace(' ', '___')
+    # context['details'] = details.replace(' ', '___')
     context['file'] = file_id
 
     return render(request, template, context)

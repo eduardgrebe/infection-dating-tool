@@ -63,11 +63,6 @@ class TestPropertyMappingForm(ModelForm):
         model = TestPropertyMapping
         fields = ['code', 'test']
 
-    def __init__(self, *args, **kwargs):
-        super(TestPropertyMappingForm, self).__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields['code'].widget.attrs['readonly'] = True
-
 class OutsideEddiTestPropertyEstimateForm(ModelForm):
     active_property = forms.BooleanField(label="", required=False)
     class Meta:
@@ -116,7 +111,8 @@ class UserTestForm(ModelForm):
 
 TestPropertyMappingFormSet = modelformset_factory(
     TestPropertyMapping,
-    form=TestPropertyMappingForm
+    form=TestPropertyMappingForm,
+    extra=0
 )
 
 DataFileTestPropertyMappingFormSet = modelformset_factory(

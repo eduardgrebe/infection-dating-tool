@@ -33,7 +33,7 @@
                 {% bootstrap_field form.description show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-user-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'user' 'None' 1 'None' %}">Properties</a>
+                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.pk }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -65,7 +65,7 @@
                 {% bootstrap_field form.description show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-global-properties" name="{{ form.name.html_name }}" id="{{ form.description.html_name }}" data-toggle="modal" data-target="#modal" href="{% url 'outside_eddi:test_properties' 'global' 'None' 1 'None' %}">Properties</a>
+                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.pk }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
               </td>
             </tr>
           {% endfor %}
@@ -76,61 +76,24 @@
 
     <div class="modal fade" id="modal"></div>
     <script>
-     $('.js-show-user-properties').click(function(event) {
+     $('.js-show-properties').click(function(event) {
          event.preventDefault();
-         url = $(this).attr('href');
-
-         test_field = $(this).attr('name');
-         details_field = $(this).attr('id');
-         /* var test_name = $("#id_" + test_field).attr("value");*/
-         var test_name = $("#id_" + test_field).val();
-         var details = $("#id_" + details_field).val();
-         var file_id = 'None';
-         if (!test_name){
+         var url;
+         var test_id = $(this).data('test-id');
+         
+         if (!test_id){
              alert('Please insert a test name')
              $(this).attr('data-toggle', '')
          }
          else {
-             var tests_by_name = {{ test_ids_by_name|safe }}
-             var test = tests_by_name[test_name]
-             var code = 'user'
-             if (!test){
-                 var test = test_name.split(' ').join('___');
-                 var code = 'new_user_test';
-             }
-             if (!details){
-                 var details = 'no_user_details';
-             }
-
-             details = details.split(' ').join('___');
-             url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
+             url = Urls["outside_eddi:test_properties"](test_id)
+             alert(url)
 
              $.get(url).done(function(html) {
                  $('#modal').html(html);
                  $('#modal').modal();
              });
          }
-     });
-
-     $('.js-show-global-properties').click(function(event) {
-         event.preventDefault();
-         url = $(this).attr('href');
-
-         test_field = $(this).attr('name');
-         /* var test_name = $("#id_" + test_field).attr("value");*/
-         var test_name = $("#id_" + test_field).val();
-         var tests_by_name = {{ test_ids_by_name|safe }}
-         var test = tests_by_name[test_name]
-         var code = 'global'
-         var details = 'None';
-         var file_id = 'None';
-
-         url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
-
-         $.get(url).done(function(html) {
-             $('#modal').html(html);
-             $('#modal').modal();
-         });
      });
 
      $('#modal').on("click", '.js-submit-properties', function(event) {

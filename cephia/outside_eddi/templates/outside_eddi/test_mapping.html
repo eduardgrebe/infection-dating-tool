@@ -35,19 +35,20 @@
                   {% bootstrap_field form.test show_label=False %}
                 </td>
                 <td>
-                  <a class="btn btn-primary js-show-file-properties" name="{{ form.test.html_name }}" id="{{ form.code.html_name }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
+                  <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.test.pk }}" data-map-id="{{ form.instance.pk }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
                 </td>
               </tr>
             {% endfor %}
             
           </tbody>
         </table>
-        <button class="btn btn-primary pull-right">Save</button>
       </form>
 
       <h3>All Your Mapping</h3>
     {% endif %}
 
+    <button class="js-add-mapping btn btn-default">Add a new mapping</button>
+    
     <form name="mapping"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
       <table class="table table-condensed table-striped">
         <thead>
@@ -69,84 +70,84 @@
                 {% bootstrap_field form.test show_label=False %}
               </td>
               <td>
-                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.test.pk }}" data-code-id="{{ form.instance.code }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
+                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.test.pk }}" data-map-id="{{ form.instance.pk }}" data-toggle="modal" data-target="" href="#">Properties</a>
               </td>
             </tr>
           {% endfor %}
           
         </tbody>
       </table>
-      <button class="btn btn-primary pull-right">Save</button>
     </form>
 
-    <div class="modal fade" id="modal"></div>
-    <script>
-     $('.js-show-file-properties').click(function(event) {
-         event.preventDefault();
-         var url;
-         //  look up data attributes html
-         var test_id = $(this).data('test-id');
-         var code_id = $(this).data('code-id');
-         var file_id = "{{ file.pk }}" || undefined;
-         
-         if (!code){
-             alert('Please insert a code')
-             $(this).attr('data-toggle', '')
-         }
-         else if (!test){
-             alert('Please select a test')
-             $(this).attr('data-toggle', '')
-         }
-         else {
-             if (file_id) {
-                 url = Urls["outside_eddi:test_properties"](code_id, details, test_id, file_id)
-             } else {
-                 url = Urls["outside_eddi:test_properties"](code_id, details, test_id)
-             }
+    
 
-             $.get(url).done(function(html) {
-                 $('#modal').html(html);
-                 $('#modal').modal();
-             });
-         }
-     });
+    <div class="modal fade" id="modal-add-mapping">
+      {% include 'outside_eddi/create_mapping_form.html' %}
+    </div>
+
+    <div class="modal fade" id="modal"></div>
+    
+    <script>
+     $('.js-add-mapping').click(function() {
+         $('#modal-add-mapping').modal()
+     })
+
+     $('#modal-add-mapping').on('click', '.js-confirm-add-mapping', function(event) {
+         event.preventDefault();
+         var form = $('#modal-add-mapping').find('form');
+         post_data = form.serialize();
+         var that = this;
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.redirect_url) {
+                 location.href = resp.redirect_url
+             } else {
+                 $('#modal-add-mapping').html(resp)
+             }
+         })
+     })
      
      $('.js-show-properties').click(function(event) {
          event.preventDefault();
-         url = $(this).attr('href');
-         test_id = $(this).attr('name');
-         code_id = $(this).attr('id');
 
-         var test = $("#id_" + test_id).val();
-         var code = $("#id_" + code_id).val();
-         var details = 'None';
+         // submit form
+         var form = $(this).parents('form');
+         post_data = form.serialize();
+         var that = this;
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.success) {
 
-         var file_id = '{{ file|safe }}';
-         
-         if (file_id === 'None'){
-             var file_id = 'None';
-         }
-         else {
-             var file_id = '{{ file.pk|safe }}';
-         }
+                 var url;
+                 //  look up data attributes html
+                 var test_id = $(that).data('test-id');
+                 var map_id = $(that).data('map-id');
+                 var file_id = "{{ file.pk }}" || undefined;
 
-         if (!code){
-             alert('Please insert a code')
-             $(this).attr('data-toggle', '')
-         }
-         else if (!test){
-             alert('Please select a test')
-             $(this).attr('data-toggle', '')
-         }
-         else {
-             code = code.split(' ').join('___');
-             url = Urls["outside_eddi:test_properties"](code, details, test, file_id)
+                 if (!map_id){
+                     alert('Please insert a code')
+                     $(this).attr('data-toggle', '')
+                 }
+                 else if (!test_id){
+                     alert('Please select a test')
+                     $(this).attr('data-toggle', '')
+                 }
+                 
+                 if (file_id) {
+                     url = Urls["outside_eddi:test_properties"](map_id, file_id)
+                 } else {
+                     url = Urls["outside_eddi:test_properties"](map_id)
+                     alert(url)
+                 }
 
-             $.get(url).done(function(html) {
-                 $('#modal').html(html);
-                 $('#modal').modal();
-             });
-         }
+                 $.get(url).done(function(html) {
+                     $('#modal').html(html);
+                     $('#modal').modal();
+                 });
+
+             } else {
+                 $(this).attr('data-toggle', '')
+                 alert(resp.error)
+             }
+         });
      });
 
      $('#modal').on("click", '.js-submit-properties', function(event) {
