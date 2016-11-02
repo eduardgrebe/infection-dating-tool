@@ -197,7 +197,7 @@ class OutsideEddiSubject(models.Model):
                                               eddi=eddi,
                                               eddi_type='test_history')
 
-        self.eddi = new_eddi
+        self.subject_eddi = new_eddi
         self.save()
         # if lp_ddi or ep_ddi or eddi:
         #     self._handle_visits(subject_to_update)

@@ -11,7 +11,9 @@
       <thead>
         <tr>
           <th>Subject</th>
-          <th>Subject EDDI</th>
+          <th>EDDI</th>
+          <th>ep_ddi</th>
+          <th>lp_ddi</th>
         </tr>
       </thead>
 
@@ -19,7 +21,9 @@
         {% for sub in subjects %}
           <tr>
             <td>{{ sub.subject_label }}</td>
-            <td>{{ sub.subject_eddi }}</td>
+            <td>{{ sub.subject_eddi.eddi }}</td>
+            <td>{{ sub.subject_eddi.ep_ddi }}</td>
+            <td>{{ sub.subject_eddi.lp_ddi }}</td>
           </tr>
         {% endfor %}
       </tbody>
