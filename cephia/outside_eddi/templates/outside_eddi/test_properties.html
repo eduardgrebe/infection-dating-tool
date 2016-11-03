@@ -41,7 +41,6 @@
                 <td>{% bootstrap_field form.diagnostic_delay_median show_label=False %}</td>
                 <td>{% bootstrap_field form.comment show_label=False %}</td>
                 <td>{% bootstrap_field form.reference show_label=False %}</td>
-
               </tr>
             {% endfor %}
             
@@ -49,8 +48,8 @@
         </table>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-default js-close-properties" data-dismiss="modal">Close</button>
-          <input type="submit" name="save" class="btn btn-primary js-submit-properties" value="Save"/>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <input type="submit" name="save" class="btn btn-primary" value="Save"/>
         </div>
       </div>
       

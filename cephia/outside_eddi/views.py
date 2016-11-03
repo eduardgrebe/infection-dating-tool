@@ -296,27 +296,29 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
     user = request.user
 
-    data_file_formset = None
+    file_mapping_formset = None
     data_file = None
+
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+    
     if file_id:
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         codes = [x.test_code for x in data_file.test_history.all()]
-        data_file_formset = DataFileTestPropertyMappingFormSet(
+        file_mapping_formset = DataFileTestPropertyMappingFormSet(
             request.POST or None,
             queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user),
-            prefix='data_file'
+            prefix='file_mapping'
         )
+        for form in file_mapping_formset:
+            form.fields['test'] = choices
         
-    formset = TestPropertyMappingFormSet(
+    mapping_formset = TestPropertyMappingFormSet(
         request.POST or None,
         queryset=TestPropertyMapping.objects.filter(user=user).order_by('-pk'),
-        prefix='all_maps'
+        prefix='mapping'
     )
 
-
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
-
-    for form in formset:
+    for form in mapping_formset:
         form.fields['test'] = choices
 
     tooltips_for_tests = {}
@@ -327,8 +329,8 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     tips = json.dumps(tooltips_for_tests)
 
     if request.method == 'POST':
-        if formset.is_valid():
-            for form in formset.forms:
+        if mapping_formset.is_valid():
+            for form in mapping_formset.forms:
                 save_form = True
                 if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).exists():
                     if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).first().pk != form.instance.pk:
@@ -365,10 +367,12 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         else:
             messages.add_message(request, messages.WARNING, "Invalid mapping")
 
-    context['add_mapping_form'] = TestPropertyMappingForm()
+    add_mapping_form = TestPropertyMappingForm(request.POST)
+    add_mapping_form.fields['test'] = choices
+    context['add_mapping_form'] = add_mapping_form
          
-    context['formset'] = formset
-    context['data_file_formset'] = data_file_formset
+    context['mapping_formset'] = mapping_formset
+    context['file_mapping_formset'] = file_mapping_formset
     context['tooltips_for_tests'] = tips
     context['file'] = data_file
 
@@ -379,6 +383,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 def create_test_mapping(request, context=None, template='outside_eddi/create_mapping_form.html'):
 
     form = TestPropertyMappingForm(request.POST)
+    
     if form.is_valid():
         instance = form.save(commit=False)
         instance.user = request.user
@@ -392,81 +397,92 @@ def create_test_mapping(request, context=None, template='outside_eddi/create_map
         context['add_mapping_form'] = form
         return render(request, template, context)
     
-    
-
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def test_properties(request, test_id=None, map_id=None,  file_id=None, template="outside_eddi/test_properties.html", context=None):
+def test_properties(request, test_id=None, map_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
     context = context or {}
-    import pdb;pdb.set_trace()
+
+    user = request.user
+    code = None
+
+    if map_id:
+        code = TestPropertyMapping.objects.get(pk=map_id).code
+        test = TestPropertyMapping.objects.get(pk=map_id).test
+        set_active_property(test)
+        formset = test_properties_mapping(request, test)
+
+    elif test_id:
+        import pdb;pdb.set_trace()
+
     
 
-    try:
-        test_id = int(test_id)
-        print 'success'
-    except ValueError:
-        test_id = test_id.replace('___', ' ')
-        test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
-        if not details:
-            test.description = details
-            test.save()
-        test_id = test.pk
-        code = 'user'
-    else:
-        test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
-        code = 'user'
-        if info == 'user' and test.description != details and details != 'no_user_details':
-            test.description = details
-            test.save()
+    # try:
+    #     test_id = int(test_id)
+    #     print 'success'
+    # except ValueError:
+    #     test_id = test_id.replace('___', ' ')
+    #     test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
+    #     if not details:
+    #         test.description = details
+    #         test.save()
+    #     test_id = test.pk
+    #     code = 'user'
+    # else:
+    #     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+    #     code = 'user'
+    #     if info == 'user' and test.description != details and details != 'no_user_details':
+    #         test.description = details
+    #         test.save()
 
-    active_property = None
+    # active_property = None
 
-    if code != 'None' and code != 'user' and code != 'global':
-        if TestPropertyMapping.objects.filter(code=code, user=user, test=test).exists():
-            user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
-        elif TestPropertyMapping.objects.filter(code=code, user=user).exists():
-            user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
-            user_map.test = test
-            user_map.test_property = None
-            user_map.save()
-        else:
-            user_map = TestPropertyMapping.objects.create(code=code, user=user, test=test)
+    # if code != 'None' and code != 'user' and code != 'global':
+    #     if TestPropertyMapping.objects.filter(code=code, user=user, test=test).exists():
+    #         user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
+    #     elif TestPropertyMapping.objects.filter(code=code, user=user).exists():
+    #         user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
+    #         user_map.test = test
+    #         user_map.test_property = None
+    #         user_map.save()
+    #     else:
+    #         user_map = TestPropertyMapping.objects.create(code=code, user=user, test=test)
 
-        if user_map.test_property:
-            active_property = user_map.test_property
-        else:
-            test_properties = user_map.test.properties.all()
-            for prop in test_properties:
-                if prop.is_default == True:
-                    active_property = prop
+    #     if user_map.test_property:
+    #         active_property = user_map.test_property
+    #     else:
+    #         test_properties = user_map.test.properties.all()
+    #         for prop in test_properties:
+    #             if prop.is_default == True:
+    #                 active_property = prop
 
-        properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
+    #     properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
 
-        for prop in properties:
-            prop.active_property = False
-            prop.save()
+    #     for prop in properties:
+    #         prop.active_property = False
+    #         prop.save()
 
-        if active_property != None:
-            active_property.active_property = True
-            active_property.save()
+    #     if active_property != None:
+    #         active_property.active_property = True
+    #         active_property.save()
 
-    else:
-        properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
-        for prop in properties:
-            prop.active_property = False
-            if prop.is_default == True:
-                prop.active_property = True
-            prop.save()
+    # else:
+    #     properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
+    #     for prop in properties:
+    #         prop.active_property = False
+    #         if prop.is_default == True:
+    #             prop.active_property = True
+    #         prop.save()
 
-    formset = TestPropertyEstimateFormSet(
-        request.POST or None,
-        queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None),
-        test__pk=test_id))
+    # formset = TestPropertyEstimateFormSet(
+    #     request.POST or None,
+    #     queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None),
+    #     test__pk=test_id))
 
-    if code == 'global':
-        for form in formset:
-            form.fields['active_property'].widget.attrs['disabled'] = True
+    # if code == 'global':
+    #     for form in formset:
+    #         form.fields['active_property'].widget.attrs['disabled'] = True
 
     if request.method == 'POST':
+        import pdb;pdb.set_trace()
         if formset.is_valid():
             active_exists = False
             for form in formset.forms:
@@ -476,45 +492,32 @@ def test_properties(request, test_id=None, map_id=None,  file_id=None, template=
 
             for form in formset.forms:
                 if form.cleaned_data:
-                    i = str(form.instance)
-                    if i == 'None':
+                    if not form.instance.pk:
                         f = form.save(commit=False)
                         f.test = test
                         f.user = user
                         if active_exists == False:
                             f.active_property=True
-                            if code == 'user':
+                            if test.user == user:
                                 f.is_default = True
                         f.save()
-                        if f.active_property==True:
-                            active = f
+                        
                     elif form.instance.user == user:
                         f = form.save(commit=False)
                         f.test = test
                         f.user = user
                         f.save()
-                        if f.active_property==True:
-                            active = f
-                            if code == 'user':
-                                f.is_default = True
+
                     else:
                         f = form.save()
-                        if f.active_property==True:
-                            active = f
 
-            if code != 'None' or code != 'user' or code != 'global':
-                user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
-                if user_map:
-                    user_map.test_property = active
-                    user_map.save()
-                else:
-                    user_map_code_only = TestPropertyMapping.objects.filter(code=code, user=user).first()
-                    if user_map_code_only:
-                        user_map_code_only.test = test
-                        user_map_code_only.test_property = active
-                        user_map_code_only.save()
-                    else:
-                        new_map = TestPropertyMapping.objects.create(code=code, user=user, test=test, test_property=active)
+                    if f.active_property==True:
+                        active = f
+
+            if map_id:
+                user_map = TestPropertyMapping.objects.get(pk=map_id)
+                user_map.test_property = active
+                user_map.save()
 
                 if request.is_ajax():
                     return JsonResponse({"success": True})
@@ -532,8 +535,8 @@ def test_properties(request, test_id=None, map_id=None,  file_id=None, template=
                 context['formset'] = formset
                 context['test'] = test
                 context['code'] = code
-                context['code_without_spaces'] = code.replace(' ', '___')
-                context['details'] = details.replace(' ', '___')
+                # context['code_without_spaces'] = code.replace(' ', '___')
+                # context['details'] = details.replace(' ', '___')
                 context['file'] = file_id
                 return render(request, 'outside_eddi/test_properties.html', context)
             else:
@@ -580,3 +583,26 @@ def _copy_test_properties():
             outside_eddi_test_property.active_property = True
 
         outside_eddi_test_property.save()
+
+
+def test_properties_mapping(request, test):
+    user = request.user
+
+    formset = TestPropertyEstimateFormSet(
+        request.POST or None,
+        queryset=OutsideEddiTestPropertyEstimate.objects.filter(
+            Q(user=user) | Q(user=None),
+            test__pk=test.pk
+        ),
+        prefix='properties'
+    )
+
+    return formset
+
+def set_active_property(test):
+    properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
+    for prop in properties:
+        prop.active_property = False
+        if prop.is_default == True:
+            prop.active_property = True
+        prop.save()

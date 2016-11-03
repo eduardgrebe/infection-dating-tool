@@ -18,9 +18,9 @@ urlpatterns = [
     url(r'^test_mapping/create/$', views.create_test_mapping, name='create_test_mapping'),
     url(r'^test_mapping/(?P<file_id>\d+)/$', views.test_mapping, name='test_mapping'),
 
-    url(r'^test_properties/(?P<test_id>\d+)/$', views.test_properties, name='test_properties'),
-    url(r'^test_properties/(?P<map_id>\d+)/(?P<file_id>\d+)/$', views.test_properties, name='test_properties'),
-    url(r'^test_properties/(?P<map_id>\d+)/$', views.test_properties, name='test_properties'),
+    url(r'^test_properties/(?P<test_id>\d+)/test/$', views.test_properties, name='test_properties_test'),
+    url(r'^test_properties/(?P<map_id>\d+)/(?P<file_id>\d+)/mapping/$', views.test_properties, name='test_properties_mapping'),
+    url(r'^test_properties/(?P<map_id>\d+)/mapping/$', views.test_properties, name='test_properties_mapping'),
     
     url(r'^create_study/$', views.edit_study, name='create_study'),
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),

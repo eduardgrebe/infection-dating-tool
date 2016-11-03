@@ -13,12 +13,11 @@
       <form method="POST" action="{% url 'outside_eddi:create_test_mapping' %}">
         {% csrf_token %}
         {% bootstrap_form add_mapping_form %}
-        <input type="submit" class="btn btn-primary js-confirm-add-mapping" value="Add mapping" />
       </form>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      <button type="button" class="btn btn-primary">Save changes</button>
+      <input type="submit" class="btn btn-primary js-confirm-add-mapping" value="Add mapping" />
     </div>
   </div>
 </div>

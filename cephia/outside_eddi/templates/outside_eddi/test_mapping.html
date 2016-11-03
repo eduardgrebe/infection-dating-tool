@@ -25,8 +25,8 @@
           </thead>
           <tbody>
             
-            {{ data_file_formset.management_form }}
-            {% for form in data_file_formset %}
+            {{ file_mapping_formset.management_form }}
+            {% for form in file_mapping_formset %}
               <tr>
                 <td>
                   {% bootstrap_field form.code show_label=False %} {{ form.id }}
@@ -60,8 +60,8 @@
         </thead>
         <tbody>
           
-          {{ formset.management_form }}
-          {% for form in formset %}
+          {{ mapping_formset.management_form }}
+          {% for form in mapping_formset %}
             <tr>
               <td>
                 {% bootstrap_field form.code show_label=False %} {{ form.id }}
@@ -132,10 +132,9 @@
                  }
                  
                  if (file_id) {
-                     url = Urls["outside_eddi:test_properties"](map_id, file_id)
+                     url = Urls["outside_eddi:test_properties_mapping"](map_id, file_id)
                  } else {
-                     url = Urls["outside_eddi:test_properties"](map_id)
-                     alert(url)
+                     url = Urls["outside_eddi:test_properties_mapping"](map_id)
                  }
 
                  $.get(url).done(function(html) {
@@ -150,26 +149,19 @@
          });
      });
 
-     $('#modal').on("click", '.js-submit-properties', function(event) {
-         event.preventDefault();
+     /* $('#modal').on("click", '.js-submit-properties', function(event) {
+      *     event.preventDefault();
 
-         var form = $(this).parents('form');
-         post_data = form.serialize();
-         $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.success) {
-                 $('#modal').modal('hide');
-                 location.reload();
-             } else {
-                 $('#modal').html(resp);
-             }
-         });
-     });
-
-     $('#modal').on("click", '.js-close-properties', function(event) {
-         event.preventDefault();
-         $('#modal').modal('hide');
-         location.reload();
-     });
+      *     var form = $(this).parents('form');
+      *     post_data = form.serialize();
+      *     $.post(form.attr('action'), post_data).done(function(resp) {
+      *         if (resp.success) {
+      *             $('#modal').modal('hide');
+      *         } else {
+      *             $('#modal').html(resp);
+      *         }
+      *     });
+      * });*/
 
      $('.js-show-test-details').find('select').hover(function(event) {
          event.preventDefault();
@@ -177,7 +169,6 @@
          var test = $("#id_" + test_id).find('option:selected').attr("value");
          var tooltips_for_tests = {{tooltips_for_tests|safe}};
          var tooltip = tooltips_for_tests[test];
-
 
          $(this).attr('title', tooltip)
      });
