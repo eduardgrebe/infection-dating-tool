@@ -31,8 +31,8 @@
           </thead>
           <tbody>
             
-            {{ formset.management_form }}
-            {% for form in formset %}
+            {{ properties_formset.management_form }}
+            {% for form in properties_formset %}
               <tr>
                 <td>{% bootstrap_field form.active_property show_label=False %} {{ form.id }}</td>
                 <td>{% bootstrap_field form.estimate_label show_label=False %}</td>

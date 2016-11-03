@@ -11,6 +11,40 @@
 {% block content %}
   <div class="container">
 
+    <table class="table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Test</th>
+          <th>Property</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        {% for map in mapping %}
+          <tr>
+            <td>
+              {{ map.code }}
+            </td>
+            <td>
+              {{ map.test }}
+            </td>
+            <td>
+              <a class="btn btn-primary js-edit-mapping" href="#">Edit</a>
+            </td>
+          </tr>
+        {% endfor %}
+        
+      </tbody>
+    </table>
+
+    <div class="modal fade" id="modal-edit-mapping">
+      {% include 'outside_eddi/edit_mapping_form.html' %}
+    </div>
+
+
+    
+    {% comment %}
     {% if file %}
       <h3>Mapping for {{ file.filename }}</h3>
 
@@ -86,6 +120,8 @@
     </div>
 
     <div class="modal fade" id="modal"></div>
+
+    {% endcomment %}
     
     <script>
      $('.js-add-mapping').click(function() {
@@ -105,6 +141,25 @@
              }
          })
      })
+
+     $('.js-edit-mapping').click(function() {
+         $('#modal-edit-mapping').modal()
+     })
+
+     $('#modal-edit-mapping').on('click', '.js-confirm-edit-mapping', function(event) {
+         event.preventDefault();
+         var form = $('#modal-edit-mapping').find('form');
+         post_data = form.serialize();
+         var that = this;
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.redirect_url) {
+                 location.href = resp.redirect_url
+             } else {
+                 $('#modal-edit-mapping').html(resp)
+             }
+         })
+     })
+     
      
      $('.js-show-properties').click(function(event) {
          event.preventDefault();

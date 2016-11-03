@@ -342,10 +342,10 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                     instance.user = request.user
                     instance.save()
  
-                if request.is_ajax() and save_form:
-                    return JsonResponse({"success": True})
-                else:
-                    return redirect("outside_eddi:test_mapping")
+            if request.is_ajax():
+                return JsonResponse({"success": True})
+            else:
+                return redirect("outside_eddi:test_mapping")
 
             # else:
             #     mappings = TestPropertyMapping.objects.filter(code__in=codes, user=user)
@@ -365,12 +365,23 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
                 
 
         else:
-            messages.add_message(request, messages.WARNING, "Invalid mapping")
+            if request.is_ajax():
+                return JsonResponse({"error": "Invalid mapping"})
+            else:
+                messages.add_message(request, messages.WARNING, "Invalid mapping")
 
+    properties = OutsideEddiDiagnosticTest.objects.all().first().properties
+    context['properties'] = properties
+    mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
+    context['mapping'] = mapping
     add_mapping_form = TestPropertyMappingForm(request.POST)
     add_mapping_form.fields['test'] = choices
     context['add_mapping_form'] = add_mapping_form
-         
+
+    edit_mapping_form = TestPropertyMappingForm(request.POST)
+    edit_mapping_form.fields['test'] = choices
+    context['edit_mapping_form'] = edit_mapping_form
+    
     context['mapping_formset'] = mapping_formset
     context['file_mapping_formset'] = file_mapping_formset
     context['tooltips_for_tests'] = tips
@@ -383,6 +394,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 def create_test_mapping(request, context=None, template='outside_eddi/create_mapping_form.html'):
 
     form = TestPropertyMappingForm(request.POST)
+    properties = OutsideEddiDiagnosticTest.objects.all().first().properties
     
     if form.is_valid():
         instance = form.save(commit=False)
@@ -395,6 +407,24 @@ def create_test_mapping(request, context=None, template='outside_eddi/create_map
     else:
         context = {}
         context['add_mapping_form'] = form
+        return render(request, template, context)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_test_mapping(request, context=None, template='outside_eddi/edit_mapping_form.html'):
+
+    form = TestPropertyMappingForm(request.POST)
+    
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.user = request.user
+        instance.save()
+        messages.info(request, 'Mapping edited successfully')
+        return JsonResponse({
+            'redirect_url': reverse('outside_eddi:test_mapping')
+        })
+    else:
+        context = {}
+        context['edit_mapping_form'] = form
         return render(request, template, context)
     
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -532,7 +562,7 @@ def test_properties(request, test_id=None, map_id=None, file_id=None, template="
         else:
 
             if request.is_ajax():
-                context['formset'] = formset
+                context['properties_formset'] = formset
                 context['test'] = test
                 context['code'] = code
                 # context['code_without_spaces'] = code.replace(' ', '___')
@@ -543,7 +573,7 @@ def test_properties(request, test_id=None, map_id=None, file_id=None, template="
                 messages.add_message(request, messages.WARNING, "Invalid properties")
                 return redirect("outside_eddi:test_mapping")
 
-    context['formset'] = formset
+    context['properties_formset'] = formset
     context['test'] = test
     context['code'] = code
     # context['code_without_spaces'] = code.replace(' ', '___')

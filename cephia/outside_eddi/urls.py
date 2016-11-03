@@ -16,6 +16,7 @@ urlpatterns = [
     
     url(r'^test_mapping/$', views.test_mapping, name='test_mapping'),
     url(r'^test_mapping/create/$', views.create_test_mapping, name='create_test_mapping'),
+    url(r'^test_mapping/edit/$', views.edit_test_mapping, name='edit_test_mapping'),
     url(r'^test_mapping/(?P<file_id>\d+)/$', views.test_mapping, name='test_mapping'),
 
     url(r'^test_properties/(?P<test_id>\d+)/test/$', views.test_properties, name='test_properties_test'),
