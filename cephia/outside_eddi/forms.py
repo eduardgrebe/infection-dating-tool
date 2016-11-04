@@ -11,6 +11,18 @@ from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, Outsid
 from itertools import groupby
 from django.forms.models import ModelChoiceIterator, ModelChoiceField, ModelMultipleChoiceField
 
+class BaseModelForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ModelForm, self).__init__(*args, **kwargs)
+        self.context = {}
+    
+    def set_context_data(self, context):
+        self.context = context
+        return context
+
+    def get_context_data(self, context):
+        return self.context
+
 class EddiUserCreationForm(UserCreationForm):
     
     def save(self, commit=True):
@@ -23,12 +35,14 @@ class EddiUserCreationForm(UserCreationForm):
         outside_eddi_group.user_set.add(user)
         return user
 
-class TestHistoryFileUploadForm(ModelForm):
+class TestHistoryFileUploadForm(BaseModelForm):
     class Meta:
         model = OutsideEddiFileInfo
         fields = ['data_file']
 
-class StudyForm(ModelForm):
+        
+
+class StudyForm(BaseModelForm):
     class Meta:
         model = Study
         fields = ['name']
@@ -56,14 +70,35 @@ class StudyForm(ModelForm):
         
         return study
 
-class TestPropertyMappingForm(ModelForm):
+class TestPropertyMappingForm(BaseModelForm):
     test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label="(select test)")
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+
+        user = self.context.get('user')
+
+        mappings = TestPropertyMapping.objects.filter(user=user, code=code)
+
+        if self.instance and self.instance.pk:
+            mappings = mappings.exclude(pk=self.instance.pk)
+
+        if mappings.exists():
+            raise forms.ValidationError('You already have a mapping with the code %s' % code)
+        
+        return code
     
     class Meta:
         model = TestPropertyMapping
         fields = ['code', 'test']
 
-class OutsideEddiTestPropertyEstimateForm(ModelForm):
+    def save(self, commit=True):
+        self.instance.user = self.context['user']
+        return super(TestPropertyMappingForm, self).save(commit)
+        
+        
+
+class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
     active_property = forms.BooleanField(label="", required=False)
     class Meta:
         fields = (
@@ -91,7 +126,7 @@ class OutsideEddiTestPropertyEstimateForm(ModelForm):
         self.fields['comment'].widget.attrs['placeholder'] = ''
         self.fields['reference'].widget.attrs['placeholder'] = ''
         
-class GlobalTestForm(ModelForm):
+class GlobalTestForm(BaseModelForm):
 
     class Meta:
         model = OutsideEddiDiagnosticTest
@@ -103,7 +138,7 @@ class GlobalTestForm(ModelForm):
             self.fields['name'].widget.attrs['readonly'] = True
             self.fields['description'].widget.attrs['readonly'] = True
 
-class UserTestForm(ModelForm):
+class UserTestForm(BaseModelForm):
     
     class Meta:
         model = OutsideEddiDiagnosticTest

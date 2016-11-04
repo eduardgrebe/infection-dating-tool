@@ -329,27 +329,24 @@ def edit_test_mapping(request, map_id, template='outside_eddi/edit_mapping_form.
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     properties = mapping.test.properties.all()
 
-    form = TestPropertyMappingForm(request.POST or None, initial={'code': mapping.code, 'test': mapping.test})
+    
+    form = TestPropertyMappingForm(request.POST or None, instance=mapping)
+    form.set_context_data({'user': request.user})
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices
-    
+
     if request.method == 'POST' and form.is_valid():
-        save_form = True
-        instance = form.save(commit=False)
-        if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).exists():
-            if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).first().pk != mapping.pk:
-                messages.info(request, "You already have a mapping with code: " + form.cleaned_data['code'])
-                save_form = False
-        if save_form:
-            mapping.code = instance.code
-            mapping.test = instance.test
-            mapping.save()
-            messages.info(request, 'Mapping edited successfully')
-        return redirect("outside_eddi:test_mapping")
+        form.save()
+        messages.info(request, 'Mapping edited successfully')
+        if request.is_ajax():
+            return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:test_mapping")})
+        else:
+            return redirect("outside_eddi:test_mapping")
 
     context['form'] = form
     context['properties'] = properties
     context['map'] = mapping
+    
     return render(request, template, context)
     
 @outside_eddi_login_required(login_url='outside_eddi:login')
