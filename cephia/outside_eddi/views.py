@@ -322,8 +322,8 @@ def create_test_mapping(request, context=None, template='outside_eddi/create_map
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_mapping_properties(request, map_id, test_id=None, template='outside_eddi/edit_mapping_properties_form.html', context=None):
-    return edit_test_mapping(request, map_id, template)
+def edit_test_mapping_properties(request, map_id, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
+    return edit_test_mapping(request, map_id, test_id, template)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
@@ -332,14 +332,18 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     if test_id:
-        properties = OutsideEddiDiagnosticTest.objects.get(test_id=test_id).properties.filter(Q(user=user) | Q(user=None))
+        form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id})
+        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.filter(Q(user=user) | Q(user=None))
+
+        context['test'] = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
     else:
+        form = TestPropertyMappingForm(request.POST or None, instance=mapping)
         if mapping.test:
             properties = mapping.test.properties.all().exclude(user__isnull=False)
         else:
             properties = OutsideEddiTestPropertyEstimate.objects.none()
 
-    form = TestPropertyMappingForm(request.POST or None, instance=mapping)
+    
     form.set_context_data({'user': request.user})
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices

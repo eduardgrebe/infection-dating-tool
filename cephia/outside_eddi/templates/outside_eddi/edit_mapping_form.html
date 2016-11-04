@@ -1,7 +1,8 @@
 {% load bootstrap3 %}
 
 <div class="modal-dialog" role="document" >
-  <form method="post" action="{% url 'outside_eddi:edit_test_mapping' map.pk %}">{% csrf_token %}
+  <form method="post" action="{% url 'outside_eddi:edit_test_mapping' map.pk %}"
+        data-map="{{ map.pk }}">{% csrf_token %}
     {{ user_estimates_formset.management_form }}
     <div class="modal-content">
       <div class="modal-header">
@@ -14,12 +15,15 @@
         </p>
         
         {% bootstrap_form form %}
-        
-        Properties for: {{ map.test.name }}
+        {% if test %}
+          Properties for: {{ test.name }}
+        {% else %}
+          Properties for: {{ map.test.name }}
+        {% endif %}
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
-              <th>Active {{ form.instance.test_property }} sthsnth</th>
+              <th>Active</th>
               <th>Name</th>
               <th>Mean</th>
               <th>Variability</th>
@@ -67,9 +71,3 @@
     </div>
   </form>
 </div>
-
-<script>
- $(document).ready(function() {
-     
- });
-</script>

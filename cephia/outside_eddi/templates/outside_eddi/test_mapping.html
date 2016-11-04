@@ -34,7 +34,7 @@
             </td>
             <td>
               <a data-toggle="modal" data-target="#modal-edit-mapping" class="btn btn-primary js-edit-mapping"
-                 data-edit-url="{% url 'outside_eddi:edit_test_mapping' map.pk %}" >Edit</a>
+                 data-edit-url="{% url 'outside_eddi:edit_test_mapping' map.pk %}">Edit</a>
             </td>
           </tr>
         {% endfor %}
@@ -69,6 +69,16 @@
              } else {
                  modal.html(html)
              }
+         });
+     });
+
+     $('#modal-edit-mapping').on('change', '#id_test', function(event) {
+         var test_id = $(this).val()
+         var map_id = $(this).parents('form').data('map')
+         url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
+         $.get(url).done(function(html) {
+             $('#modal-edit-mapping').html(html);
+             $('#modal-edit-mapping').modal();
          });
      });
     </script>
