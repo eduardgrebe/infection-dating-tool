@@ -10,10 +10,6 @@
         <h4 class="modal-title">Edit mapping</h4>
       </div>
       <div class="modal-body">
-        <p class="text-danger">
-          Please note that any changes not saved to your existing tests will be discarded.
-        </p>
-        
         {% bootstrap_form form %}
         {% if test %}
           Properties for: {{ test.name }}

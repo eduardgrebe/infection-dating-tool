@@ -12,109 +12,99 @@
   <div class="container">
 
     <h3>Your tests</h3>
-    <form name="user_tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
-      <table class="table table-condensed table-striped">
-        <thead>
+    <table class="table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>Tests</th>
+          <th>Details</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        {% for test in user_tests %}
           <tr>
-            <th>Tests</th>
-            <th>Details</th>
-            <th>Properties</th>
+            <td>
+              {{ test.name }}
+            </td>
+            <td>
+              {{ test.description }}
+            </td>
+            <td>
+              <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
+                 data-edit-url="{% url 'outside_eddi:edit_test' test.pk %}">Edit</a>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-
-          {{ user_formset.management_form }}
-          {% for form in user_formset %}
-            <tr>
-              <td>
-                {% bootstrap_field form.name show_label=False %} {{ form.id }}
-              </td>
-              <td>
-                {% bootstrap_field form.description show_label=False %}
-              </td>
-              <td>
-                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.pk }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
-              </td>
-            </tr>
-          {% endfor %}
-
-        </tbody>
-      </table>
-      <button class="btn btn-primary pull-right">Save</button>
-    </form>
+        {% endfor %}
+        
+      </tbody>
+    </table>
 
     <h3>Global tests</h3>
-    <form name="global_tests"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
-      <table class="table table-condensed table-striped">
-        <thead>
+    <table class="table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>Tests</th>
+          <th>Details</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        {% for test in global_tests %}
           <tr>
-            <th>Tests</th>
-            <th>Details</th>
-            <th>Properties</th>
+            <td>
+              {{ test.name }}
+            </td>
+            <td>
+              {{ test.description }}
+            </td>
+            <td>
+              <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
+                 data-edit-url="{% url 'outside_eddi:edit_test' test.pk %}">Edit</a>
+            </td>
           </tr>
-        </thead>
-        <tbody>
+        {% endfor %}
+        
+      </tbody>
+    </table>
 
-          {{ global_formset.management_form }}
-          {% for form in global_formset %}
-            <tr>
-              <td>
-                {% bootstrap_field form.name show_label=False %} {{ form.id }}
-              </td>
-              <td>
-                {% bootstrap_field form.description show_label=False %}
-              </td>
-              <td>
-                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.pk }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
-              </td>
-            </tr>
-          {% endfor %}
+    <div class="modal fade" id="modal-edit-test"></div>
 
-        </tbody>
-      </table>
-    </form>
-
-    <div class="modal fade" id="modal"></div>
     <script>
-     $('.js-show-properties').click(function(event) {
+     $('.js-edit-test').click(function(event) {
          event.preventDefault();
-         var url;
-         var test_id = $(this).data('test-id');
-         
-         if (!test_id){
-             alert('Please insert a test name')
-             $(this).attr('data-toggle', '')
-         }
-         else {
-             url = Urls["outside_eddi:test_properties"](test_id)
-             alert(url)
+         var url = $(this).data('edit-url')
+         $.get(url).done(function(html) {
+             $('#modal-edit-mapping').html(html);
+             $('#modal-edit-mapping').modal();
+         });
+     })
 
-             $.get(url).done(function(html) {
-                 $('#modal').html(html);
-                 $('#modal').modal();
-             });
-         }
-     });
-
-     $('#modal').on("click", '.js-submit-properties', function(event) {
+     $('#modal-edit-mapping').on('click', '.js-save-mapping', function(event) {
          event.preventDefault();
 
          var form = $(this).parents('form');
-         post_data = form.serialize();
-         $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.success) {
-                 $('#modal').modal('hide');
-                 location.reload();
+         var post_data = form.serialize()
+         var modal = $(this).parents('.modal-dialog').parent()
+
+         $.post(form.attr('action'), post_data).done(function(html) {
+             if (html.success) {
+                 location.href = html.redirect_url
              } else {
-                 $('#modal').html(resp);
+                 modal.html(html)
              }
          });
      });
 
-     $('#modal').on("click", '.js-close-properties', function(event) {
-         event.preventDefault();
-         $('#modal').modal('hide');
-         location.reload();
+     $('#modal-edit-mapping').on('change', '#id_test', function(event) {
+         var test_id = $(this).val()
+         var map_id = $(this).parents('form').data('map')
+         url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
+         $.get(url).done(function(html) {
+             $('#modal-edit-mapping').html(html);
+             $('#modal-edit-mapping').modal();
+         });
      });
     </script>
     

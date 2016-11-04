@@ -215,62 +215,20 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context = {}
-
     user = request.user
 
+    user_tests = OutsideEddiDiagnosticTest.objects.filter(user=user)
+    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True)
 
-    global_formset = GlobalTestFormSet(
-        request.POST or None,
-        queryset=OutsideEddiDiagnosticTest.objects.filter(user=None),
-        prefix='global'
-    )
-    user_formset = UserTestFormSet(
-        request.POST or None,
-        queryset=OutsideEddiDiagnosticTest.objects.filter(user=user),
-        prefix='user'
-    )
+    context['user_tests'] = user_tests
+    context['global_tests'] = global_tests
 
-    test_ids_by_name = {}
-    all_tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
-    for test in all_tests:
-        test_ids_by_name[str(test.name)] = test.id
+    return render(request, template, context)
 
-    test_names = []
-    for test in all_tests:
-        test_names.append(test.name)
-
-    names = json.dumps(test_ids_by_name)
-
-    tests = OutsideEddiDiagnosticTest.objects.all()
-
-    if request.method == 'POST':
-        if user_formset.is_valid():
-            for form in user_formset.forms:
-                if form.cleaned_data:
-                    if form.instance.pk:
-                        f = form.save(commit=False)
-                        f.user = user
-                        f.save()
-                    else:
-                        if OutsideEddiDiagnosticTest.objects.filter(name=form.cleaned_data['name'],
-                                                              user=user).exists():
-                            messages.add_message(request, messages.WARNING, "You already have a test with the name: " + form.cleaned_data['name'])
-                        else:
-                            f = form.save(commit=False)
-                            f.user = user
-                            f.save()
-
-            return redirect("outside_eddi:tests")
-
-        else:
-            messages.add_message(request, messages.WARNING, "Invalid test details")
-            return redirect("outside_eddi:tests")
-
-    context['user_formset'] = user_formset
-    context['global_formset'] = global_formset
-    context['tests'] = tests
-    context['test_ids_by_name'] = names
-
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', context=None):
+    context = context or {}
+    
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -293,7 +251,6 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
     context = {}
-
     user = request.user
 
     mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
@@ -717,5 +674,69 @@ def set_active_property(test):
 #     # context['file_mapping_formset'] = file_mapping_formset
 #     # context['tooltips_for_tests'] = tips
 #     # context['file'] = data_file
+
+#     return render(request, template, context)
+
+
+
+
+# @outside_eddi_login_required(login_url='outside_eddi:login')
+# def tests(request, file_id=None, template="outside_eddi/tests.html"):
+#     context = {}
+
+#     user = request.user
+
+
+#     global_formset = GlobalTestFormSet(
+#         request.POST or None,
+#         queryset=OutsideEddiDiagnosticTest.objects.filter(user=None),
+#         prefix='global'
+#     )
+#     user_formset = UserTestFormSet(
+#         request.POST or None,
+#         queryset=OutsideEddiDiagnosticTest.objects.filter(user=user),
+#         prefix='user'
+#     )
+
+#     test_ids_by_name = {}
+#     all_tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
+#     for test in all_tests:
+#         test_ids_by_name[str(test.name)] = test.id
+
+#     test_names = []
+#     for test in all_tests:
+#         test_names.append(test.name)
+
+#     names = json.dumps(test_ids_by_name)
+
+#     tests = OutsideEddiDiagnosticTest.objects.all()
+
+#     if request.method == 'POST':
+#         if user_formset.is_valid():
+#             for form in user_formset.forms:
+#                 if form.cleaned_data:
+#                     if form.instance.pk:
+#                         f = form.save(commit=False)
+#                         f.user = user
+#                         f.save()
+#                     else:
+#                         if OutsideEddiDiagnosticTest.objects.filter(name=form.cleaned_data['name'],
+#                                                               user=user).exists():
+#                             messages.add_message(request, messages.WARNING, "You already have a test with the name: " + form.cleaned_data['name'])
+#                         else:
+#                             f = form.save(commit=False)
+#                             f.user = user
+#                             f.save()
+
+#             return redirect("outside_eddi:tests")
+
+#         else:
+#             messages.add_message(request, messages.WARNING, "Invalid test details")
+#             return redirect("outside_eddi:tests")
+
+#     context['user_formset'] = user_formset
+#     context['global_formset'] = global_formset
+#     context['tests'] = tests
+#     context['test_ids_by_name'] = names
 
 #     return render(request, template, context)
