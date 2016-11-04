@@ -1,0 +1,50 @@
+* notes from meeting 03/11
+** new output reports
+Eduard will give us a list of the new reports
+
+** tests
+eddi system should have tests
+
+** generic assay
+# Eduard might send an example
+# will be named (not generic)
+# create new table with name field
+copy duke table (not everything)
+
+
+
+** tasts to be completed
+Eduard will provide a list of most essential issues
+*** complete this list properly with status of each task
+    outside eddi
+    assay runs
+    volume calculation
+    shipments
+    tests
+
+** get outside_eddi ready for Tuesday
+
+generic results produces one row per specimen
+other exports full results (looks in specific assay results table)
+make available both result queries
+
+** runs - important
+assay runs: change tab name to assay results
+change filter to allow the user to filter by visit or upload list of visits or list of specimens or say show all visits with data on the selected assays
+add run id to export
+export generic or full
+user visits form
+kill delete run button - change permissions for different users / add confirm button
+when permission is added - not available by default to new user (Eduard must add permission to users)
+
+** file upload/download page
+if admin you can upload or download or delete files
+other users can view files
+
+
+** eddi calculation
+save map for a file and set of results so that the user can review the map used for a result output (save and export file map for later use)
+
+** eddi results
+Subject	EP DDI	LP DDI	Interval Size	EDDI
+provide export csv

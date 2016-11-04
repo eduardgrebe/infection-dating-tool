@@ -1,23 +1,54 @@
 {% load bootstrap3 %}
 
 <div class="modal-dialog" role="document">
-  <div class="modal-content">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title">Edit mapping</h4>
+  <form method="post" action="{% url 'outside_eddi:edit_test_mapping' map.pk %}">{% csrf_token %}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Edit mapping</h4>
+      </div>
+      <div class="modal-body">
+        <p class="text-danger">
+          Please note that any changes not saved to your existing tests will be discarded.
+        </p>
+        
+        {% bootstrap_form form %}
+        
+        Properties for: {{ map.test.name }}
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              <th>Active</th>
+              <th>Name</th>
+              <th>Mean</th>
+              <th>Variability</th>
+              <th>Median</th>
+              <th>Description</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          
+          <tbody>
+            {% for property in properties %}
+              <tr>
+                <td>{{ property.active_property }}</td>
+                <td>{{ property.estimate_label }}</td>
+                <td>{{ property.mean_diagnostic_delay_days }}</td>
+                <td>{{ property.foursigma_diagnostic_delay_days }}</td>
+                <td>{{ property.diagnostic_delay_median }}</td>
+                <td>{{ property.comment }}</td>
+                <td>{{ property.reference }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary" value="Save mapping" />
+      </div>
     </div>
-    <div class="modal-body">
-      <p class="text-danger">
-        Please note that any changes not saved to your existing tests will be discarded.
-      </p>
-      <form method="POST" action="{% url 'outside_eddi:edit_test_mapping' %}">
-        {% csrf_token %}
-        {% bootstrap_form edit_mapping_form %}
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      <input type="submit" class="btn btn-primary js-confirm-edit-mapping" value="Edit mapping" />
-    </div>
-  </div>
+  </form>
 </div>
+

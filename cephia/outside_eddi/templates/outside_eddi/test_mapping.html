@@ -1,7 +1,6 @@
 {% extends 'outside_eddi/base.html' %}
 {% load bootstrap3 %}
 {% load js_reverse %}
-{% load test_details %}
 
 {% block extrajs%}
   <script src="http://malsup.github.com/jquery.form.js"></script>
@@ -17,6 +16,7 @@
           <th>Code</th>
           <th>Test</th>
           <th>Property</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -30,7 +30,12 @@
               {{ map.test }}
             </td>
             <td>
-              <a class="btn btn-primary js-edit-mapping" href="#">Edit</a>
+              {{ map.test_property.estimate_label }}
+            </td>
+            <td>
+              <a data-toggle="modal" data-target="#modal-edit-mapping" class="btn btn-primary js-edit-mapping"
+                 data-edit-url="{% url 'outside_eddi:edit_test_mapping' map.pk %}" >Edit</a>
+            </div>
             </td>
           </tr>
         {% endfor %}
@@ -38,196 +43,17 @@
       </tbody>
     </table>
 
-    <div class="modal fade" id="modal-edit-mapping">
-      {% include 'outside_eddi/edit_mapping_form.html' %}
-    </div>
+    <div class="modal fade" id="modal-edit-mapping"></div>
 
-
-    
-    {% comment %}
-    {% if file %}
-      <h3>Mapping for {{ file.filename }}</h3>
-
-      <form name="file_mapping"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
-        <table class="table table-condensed table-striped">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Test</th>
-              <th>Property</th>
-            </tr>
-          </thead>
-          <tbody>
-            
-            {{ file_mapping_formset.management_form }}
-            {% for form in file_mapping_formset %}
-              <tr>
-                <td>
-                  {% bootstrap_field form.code show_label=False %} {{ form.id }}
-                </td>
-                <td class="js-show-test-details" name="{{ form.test.html_name }}" title="">
-                  {% bootstrap_field form.test show_label=False %}
-                </td>
-                <td>
-                  <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.test.pk }}" data-map-id="{{ form.instance.pk }}" data-toggle="modal" data-target="#modal" href="#">Properties</a>
-                </td>
-              </tr>
-            {% endfor %}
-            
-          </tbody>
-        </table>
-      </form>
-
-      <h3>All Your Mapping</h3>
-    {% endif %}
-
-    <button class="js-add-mapping btn btn-default">Add a new mapping</button>
-    
-    <form name="mapping"  method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
-      <table class="table table-condensed table-striped">
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Test</th>
-            <th>Property</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-          {{ mapping_formset.management_form }}
-          {% for form in mapping_formset %}
-            <tr>
-              <td>
-                {% bootstrap_field form.code show_label=False %} {{ form.id }}
-              </td>
-              <td class="js-show-test-details" name="{{ form.test.html_name }}" title="">
-                {% bootstrap_field form.test show_label=False %}
-              </td>
-              <td>
-                <a class="btn btn-primary js-show-properties" data-test-id="{{ form.instance.test.pk }}" data-map-id="{{ form.instance.pk }}" data-toggle="modal" data-target="" href="#">Properties</a>
-              </td>
-            </tr>
-          {% endfor %}
-          
-        </tbody>
-      </table>
-    </form>
-
-    
-
-    <div class="modal fade" id="modal-add-mapping">
-      {% include 'outside_eddi/create_mapping_form.html' %}
-    </div>
-
-    <div class="modal fade" id="modal"></div>
-
-    {% endcomment %}
-    
     <script>
-     $('.js-add-mapping').click(function() {
-         $('#modal-add-mapping').modal()
-     })
-
-     $('#modal-add-mapping').on('click', '.js-confirm-add-mapping', function(event) {
+     $('.js-edit-mapping').click(function(event) {
          event.preventDefault();
-         var form = $('#modal-add-mapping').find('form');
-         post_data = form.serialize();
-         var that = this;
-         $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.redirect_url) {
-                 location.href = resp.redirect_url
-             } else {
-                 $('#modal-add-mapping').html(resp)
-             }
-         })
-     })
-
-     $('.js-edit-mapping').click(function() {
-         $('#modal-edit-mapping').modal()
-     })
-
-     $('#modal-edit-mapping').on('click', '.js-confirm-edit-mapping', function(event) {
-         event.preventDefault();
-         var form = $('#modal-edit-mapping').find('form');
-         post_data = form.serialize();
-         var that = this;
-         $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.redirect_url) {
-                 location.href = resp.redirect_url
-             } else {
-                 $('#modal-edit-mapping').html(resp)
-             }
-         })
-     })
-     
-     
-     $('.js-show-properties').click(function(event) {
-         event.preventDefault();
-
-         // submit form
-         var form = $(this).parents('form');
-         post_data = form.serialize();
-         var that = this;
-         $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.success) {
-
-                 var url;
-                 //  look up data attributes html
-                 var test_id = $(that).data('test-id');
-                 var map_id = $(that).data('map-id');
-                 var file_id = "{{ file.pk }}" || undefined;
-
-                 if (!map_id){
-                     alert('Please insert a code')
-                     $(this).attr('data-toggle', '')
-                 }
-                 else if (!test_id){
-                     alert('Please select a test')
-                     $(this).attr('data-toggle', '')
-                 }
-                 
-                 if (file_id) {
-                     url = Urls["outside_eddi:test_properties_mapping"](map_id, file_id)
-                 } else {
-                     url = Urls["outside_eddi:test_properties_mapping"](map_id)
-                 }
-
-                 $.get(url).done(function(html) {
-                     $('#modal').html(html);
-                     $('#modal').modal();
-                 });
-
-             } else {
-                 $(this).attr('data-toggle', '')
-                 alert(resp.error)
-             }
+         var url = $(this).data('edit-url')
+         $.get(url).done(function(html) {
+             $('#modal-edit-mapping').html(html);
+             $('#modal-edit-mapping').modal();
          });
-     });
-
-     /* $('#modal').on("click", '.js-submit-properties', function(event) {
-      *     event.preventDefault();
-
-      *     var form = $(this).parents('form');
-      *     post_data = form.serialize();
-      *     $.post(form.attr('action'), post_data).done(function(resp) {
-      *         if (resp.success) {
-      *             $('#modal').modal('hide');
-      *         } else {
-      *             $('#modal').html(resp);
-      *         }
-      *     });
-      * });*/
-
-     $('.js-show-test-details').find('select').hover(function(event) {
-         event.preventDefault();
-         test_id = $(this).attr('name');
-         var test = $("#id_" + test_id).find('option:selected').attr("value");
-         var tooltips_for_tests = {{tooltips_for_tests|safe}};
-         var tooltip = tooltips_for_tests[test];
-
-         $(this).attr('title', tooltip)
-     });
-
+     })
     </script>
 
   </div>
