@@ -322,16 +322,22 @@ def create_test_mapping(request, context=None, template='outside_eddi/create_map
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_mapping_properties(request, map_id, template='outside_eddi/edit_mapping_properties_form.html', context=None):
+def edit_test_mapping_properties(request, map_id, test_id=None, template='outside_eddi/edit_mapping_properties_form.html', context=None):
     return edit_test_mapping(request, map_id, template)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_mapping(request, map_id, template='outside_eddi/edit_mapping_form.html', context=None):
+def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
     context = context or {}
 
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
-    properties = mapping.test.properties.all().exclude(user__isnull=False)
+    if test_id:
+        properties = OutsideEddiDiagnosticTest.objects.get(test_id=test_id).properties.filter(Q(user=user) | Q(user=None))
+    else:
+        if mapping.test:
+            properties = mapping.test.properties.all().exclude(user__isnull=False)
+        else:
+            properties = OutsideEddiTestPropertyEstimate.objects.none()
 
     form = TestPropertyMappingForm(request.POST or None, instance=mapping)
     form.set_context_data({'user': request.user})
@@ -340,7 +346,7 @@ def edit_test_mapping(request, map_id, template='outside_eddi/edit_mapping_form.
 
     user_estimates_formset = TestPropertyEstimateFormSet(
         request.POST or None,
-        queryset=mapping.test.properties.filter(user=request.user)
+        queryset=properties.filter(user=request.user)
     )
     context['user_estimates_formset'] = user_estimates_formset
     
