@@ -19,7 +19,7 @@
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
-              <th>Active</th>
+              <th>Active {{ form.instance.test_property }} sthsnth</th>
               <th>Name</th>
               <th>Mean</th>
               <th>Variability</th>
@@ -32,7 +32,7 @@
           <tbody>
             {% for property in properties %}
               <tr>
-                <td>{{ property.active_property }}</td>
+                <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                 <td>{{ property.estimate_label }}</td>
                 <td>{{ property.mean_diagnostic_delay_days }}</td>
                 <td>{{ property.foursigma_diagnostic_delay_days }}</td>
@@ -42,16 +42,17 @@
               </tr>
             {% endfor %}
 
-            {% for form in user_estimates_formset %}
-              {% with property=form.instance %}
+            {% for formset_form in user_estimates_formset %}
+              {% with property=formset_form.instance %}
                 <tr>
-                  <td>{{ property.active_property }} {{ form.id }}</td>
-                  <td>{% bootstrap_field form.estimate_label show_label=False %}</td>
-                  <td>{% bootstrap_field form.mean_diagnostic_delay_days show_label=False %}</td>
-                  <td>{% bootstrap_field form.foursigma_diagnostic_delay_days show_label=False %}</td>
-                  <td>{% bootstrap_field form.diagnostic_delay_median show_label=False %}</td>
-                  <td>{% bootstrap_field form.comment show_label=False %}</td>
-                  <td>{% bootstrap_field form.reference show_label=False %}</td>
+                  {{ formset_form.id }}
+                  <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
+                  <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.foursigma_diagnostic_delay_days show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.diagnostic_delay_median show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.reference show_label=False %}</td>
                 </tr>
               {% endwith %}
             {% endfor %}

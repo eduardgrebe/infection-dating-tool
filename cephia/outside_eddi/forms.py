@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory
 from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, OutsideEddiFileInfo
+from django.db.models import Q
 
 from itertools import groupby
 from django.forms.models import ModelChoiceIterator, ModelChoiceField, ModelMultipleChoiceField
@@ -71,8 +72,8 @@ class StudyForm(BaseModelForm):
         return study
 
 class TestPropertyMappingForm(BaseModelForm):
-    test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label="(select test)")
-
+    test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label=("select test)"))
+    
     def clean_code(self):
         code = self.cleaned_data.get('code')
 
@@ -87,10 +88,24 @@ class TestPropertyMappingForm(BaseModelForm):
             raise forms.ValidationError('You already have a mapping with the code %s' % code)
         
         return code
+
+    def clean_test_property(self):
+        existing = self.cleaned_data['test_property']
+        user = self.context['user']
+
+        instance = OutsideEddiTestPropertyEstimate.objects.filter(Q(user__isnull=True) | Q(user=user))
+
+        if existing:
+            return instance.filter(pk=existing.pk).first()
+        else:
+            return None
     
     class Meta:
         model = TestPropertyMapping
-        fields = ['code', 'test']
+        fields = ['code', 'test', 'test_property']
+        widgets = {
+            'test_property': forms.HiddenInput()
+        }
 
     def save(self, commit=True):
         self.instance.user = self.context['user']

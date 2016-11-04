@@ -322,6 +322,10 @@ def create_test_mapping(request, context=None, template='outside_eddi/create_map
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_test_mapping_properties(request, map_id, template='outside_eddi/edit_mapping_properties_form.html', context=None):
+    return edit_test_mapping(request, map_id, template)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test_mapping(request, map_id, template='outside_eddi/edit_mapping_form.html', context=None):
     context = context or {}
 
@@ -342,20 +346,25 @@ def edit_test_mapping(request, map_id, template='outside_eddi/edit_mapping_form.
     
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         mapping_instance = form.save()
-        
-        for form in user_estimates_formset:
-            instance = form.save(commit=False)
+
+        selected_property = None
+        for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
             instance.test = mapping_instance.test
-            print instance
+            if instance.pk is None and mapping_instance.test_property is None:
+                selected_property = instance
             instance.save()
+
+        if mapping_instance.test_property is None:
+            mapping_instance.test_property = selected_property
+            mapping_instance.save()
+        
+                
         messages.info(request, 'Mapping edited successfully')
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:test_mapping")})
         else:
             return redirect("outside_eddi:test_mapping")
-
-    
 
     context['form'] = form
     context['properties'] = properties
