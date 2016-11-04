@@ -2,6 +2,7 @@
 
 <div class="modal-dialog" role="document" >
   <form method="post" action="{% url 'outside_eddi:edit_test_mapping' map.pk %}">{% csrf_token %}
+    {{ user_estimates_formset.management_form }}
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -40,6 +41,20 @@
                 <td>{{ property.reference }}</td>
               </tr>
             {% endfor %}
+
+            {% for form in user_estimates_formset %}
+              {% with property=form.instance %}
+                <tr>
+                  <td>{{ property.active_property }} {{ form.id }}</td>
+                  <td>{% bootstrap_field form.estimate_label show_label=False %}</td>
+                  <td>{% bootstrap_field form.mean_diagnostic_delay_days show_label=False %}</td>
+                  <td>{% bootstrap_field form.foursigma_diagnostic_delay_days show_label=False %}</td>
+                  <td>{% bootstrap_field form.diagnostic_delay_median show_label=False %}</td>
+                  <td>{% bootstrap_field form.comment show_label=False %}</td>
+                  <td>{% bootstrap_field form.reference show_label=False %}</td>
+                </tr>
+              {% endwith %}
+            {% endfor %}
           </tbody>
         </table>
         
@@ -54,21 +69,6 @@
 
 <script>
  $(document).ready(function() {
-     $('.modal-dialog').find('.js-save-mapping').click(function(event) {
-         
-         event.preventDefault();
-
-         var form = $(this).parents('form');
-         var post_data = form.serialize()
-         var modal = $(this).parent('.modal-dialog').parent()
-
-         $.post(form.attr('action'), post_data).done(function(html) {
-             if (html.success) {
-                 location.herf = html.redirect_url
-             } else {
-                 modal.html(html)
-             }
-         });
-     });
+     
  });
 </script>

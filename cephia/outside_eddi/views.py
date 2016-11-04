@@ -327,21 +327,35 @@ def edit_test_mapping(request, map_id, template='outside_eddi/edit_mapping_form.
 
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
-    properties = mapping.test.properties.all()
+    properties = mapping.test.properties.all().exclude(user__isnull=False)
 
-    
     form = TestPropertyMappingForm(request.POST or None, instance=mapping)
     form.set_context_data({'user': request.user})
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices
 
-    if request.method == 'POST' and form.is_valid():
-        form.save()
+    user_estimates_formset = TestPropertyEstimateFormSet(
+        request.POST or None,
+        queryset=mapping.test.properties.filter(user=request.user)
+    )
+    context['user_estimates_formset'] = user_estimates_formset
+    
+    if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
+        mapping_instance = form.save()
+        
+        for form in user_estimates_formset:
+            instance = form.save(commit=False)
+            instance.user = request.user
+            instance.test = mapping_instance.test
+            print instance
+            instance.save()
         messages.info(request, 'Mapping edited successfully')
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:test_mapping")})
         else:
             return redirect("outside_eddi:test_mapping")
+
+    
 
     context['form'] = form
     context['properties'] = properties
