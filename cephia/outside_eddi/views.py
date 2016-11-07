@@ -4,7 +4,7 @@ from django.template import RequestContext
 from forms import (
     EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
-    GlobalTestFormSet, UserTestFormSet, GroupedModelChoiceField, GroupedModelMultiChoiceField,
+    GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm
     )
 from django.views.decorators.csrf import csrf_exempt
@@ -228,6 +228,39 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', context=None):
     context = context or {}
+
+    user = request.user
+    test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+    
+    if test.user:
+        form = UserTestForm(request.POST or None, instance=test)
+    else:
+        form = GlobalTestForm(request.POST or None, instance=test)
+        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        context['properties'] = properties
+
+    user_estimates_formset = TestPropertyEstimateFormSet(
+        request.POST or None,
+        queryset=test.properties.filter(user=request.user)
+    )
+
+    if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
+        test_instance = form.save()
+
+        for instance in user_estimates_formset.save(commit=False):
+            instance.user = request.user
+            instance.test = test
+            instance.save()
+
+        messages.info(request, 'Test edited successfully')
+        if request.is_ajax():
+            return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:tests")})
+        else:
+            return redirect("outside_eddi:tests")
+
+    context['test'] = test
+    context['form'] = form
+    context['user_estimates_formset'] = user_estimates_formset
     
     return render(request, template, context)
 
@@ -290,13 +323,12 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     if test_id:
         form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id})
-        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.filter(Q(user=user) | Q(user=None))
-
+        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['test'] = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
     else:
         form = TestPropertyMappingForm(request.POST or None, instance=mapping)
         if mapping.test:
-            properties = mapping.test.properties.all().exclude(user__isnull=False)
+            properties = mapping.test.properties.for_user(user=None)
         else:
             properties = OutsideEddiTestPropertyEstimate.objects.none()
 
@@ -307,7 +339,7 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
 
     user_estimates_formset = TestPropertyEstimateFormSet(
         request.POST or None,
-        queryset=properties.filter(user=request.user)
+        queryset=mapping.test.properties.filter(user=request.user)
     )
     context['user_estimates_formset'] = user_estimates_formset
     

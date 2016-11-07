@@ -12,9 +12,11 @@
       <div class="modal-body">
         {% bootstrap_form form %}
         {% if test %}
-          Properties for: {{ test.name }}
+          <p>Properties for: {{ test.name }}</p>
+          <p>Test Description: {{ test.description }}</p>
         {% else %}
-          Properties for: {{ map.test.name }}
+          <p>Properties for: {{ map.test.name }}</p>
+          <p>Test Description: {{ map.test.description }}</p>
         {% endif %}
         <table class="table table-condensed table-striped">
           <thead>

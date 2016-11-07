@@ -30,7 +30,7 @@
             <td>
               {{ test.description }}
             </td>
-            <td>
+            <td align="right">
               <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
                  data-edit-url="{% url 'outside_eddi:edit_test' test.pk %}">Edit</a>
             </td>
@@ -59,7 +59,7 @@
             <td>
               {{ test.description }}
             </td>
-            <td>
+            <td align="right">
               <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
                  data-edit-url="{% url 'outside_eddi:edit_test' test.pk %}">Edit</a>
             </td>
@@ -76,12 +76,12 @@
          event.preventDefault();
          var url = $(this).data('edit-url')
          $.get(url).done(function(html) {
-             $('#modal-edit-mapping').html(html);
-             $('#modal-edit-mapping').modal();
+             $('#modal-edit-test').html(html);
+             $('#modal-edit-test').modal();
          });
      })
 
-     $('#modal-edit-mapping').on('click', '.js-save-mapping', function(event) {
+     $('#modal-edit-test').on('click', '.js-save-test', function(event) {
          event.preventDefault();
 
          var form = $(this).parents('form');
@@ -94,16 +94,6 @@
              } else {
                  modal.html(html)
              }
-         });
-     });
-
-     $('#modal-edit-mapping').on('change', '#id_test', function(event) {
-         var test_id = $(this).val()
-         var map_id = $(this).parents('form').data('map')
-         url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
-         $.get(url).done(function(html) {
-             $('#modal-edit-mapping').html(html);
-             $('#modal-edit-mapping').modal();
          });
      });
     </script>

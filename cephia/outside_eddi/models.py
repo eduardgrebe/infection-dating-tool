@@ -65,6 +65,11 @@ class OutsideEddiProtocolLookup(models.Model):
     protocol = models.CharField(max_length=100, null=False, blank=False)
     test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=False)
 
+
+class OutsideEddiTestPropertyEstimateQuerySet(QuerySet):
+    def for_user(self, user):
+        return self.filter(models.Q(user=user) | models.Q(user=None))
+
 class OutsideEddiTestPropertyEstimate(models.Model):
     class Meta:
         db_table = "outside_eddi_test_property_estimates"
@@ -76,6 +81,7 @@ class OutsideEddiTestPropertyEstimate(models.Model):
         ('placeholder','Placeholder'),
         ('user_added','UserAdded'),
     )
+    objects = OutsideEddiTestPropertyEstimateQuerySet.as_manager()
     
     active_property = models.BooleanField(blank=False, default=False)
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
