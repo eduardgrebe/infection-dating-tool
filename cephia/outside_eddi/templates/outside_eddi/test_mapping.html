@@ -10,6 +10,13 @@
 {% block content %}
   <div class="container">
 
+    {% if data_file %}
+      <h3>Mapping for {{ data_file.filename }}</h3>
+      Please complete any maps without all three values
+    {% else %}
+      <button class="js-add-mapping btn btn-default" data-add-url="{% url 'outside_eddi:create_test_mapping' %}">Add a new mapping</button>
+    {% endif %}
+
     <table class="table table-condensed table-striped">
       <thead>
         <tr>
@@ -27,7 +34,9 @@
               {{ map.code }}
             </td>
             <td>
-              {{ map.test }}
+              {% if map.test %}
+                {{ map.test }}
+              {% endif %}
             </td>
             <td>
               {{ map.test_property.estimate_label }}
@@ -42,6 +51,11 @@
       </tbody>
     </table>
 
+    {% if completed_mapping %}
+      <h3>Mapping completed</h3>
+      <a class="btn btn-primary" href="{% url 'outside_eddi:data_files' %}">Return to data files</a>
+    {% endif %}
+    <div class="modal fade" id="modal-add-mapping"></div>
     <div class="modal fade" id="modal-edit-mapping"></div>
 
     <script>
@@ -63,7 +77,8 @@
 
          $.post(form.attr('action'), post_data).done(function(html) {
              if (html.success) {
-                 location.href = html.redirect_url
+                 location.reload();
+                 /* location.href = html.redirect_url*/
              } else {
                  modal.html(html)
              }
@@ -77,6 +92,44 @@
          $.get(url).done(function(html) {
              $('#modal-edit-mapping').html(html);
              $('#modal-edit-mapping').modal();
+         });
+     });
+
+     $('.js-add-mapping').click(function() {
+         event.preventDefault();
+         var url = $(this).data('add-url')
+         $.get(url).done(function(html) {
+             $('#modal-add-mapping').html(html);
+             $('#modal-add-mapping').modal()
+         });
+     })
+
+     $('#modal-add-mapping').on('click', '.js-confirm-add-mapping', function(event) {
+         event.preventDefault();
+         var form = $('#modal-add-mapping').find('form');
+         post_data = form.serialize();
+         var that = this;
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.redirect_url) {
+                 location.href = resp.redirect_url
+             } else {
+                 $('#modal-add-mapping').html(resp)
+             }
+         })
+     })
+
+     $('#modal-add-mapping').on('change', '#id_test', function(event) {
+         var test_id = $(this).val()
+         var map_code = $("#id_code").val();
+         if (!map_code){
+             url = Urls["outside_eddi:create_test_mapping_properties"](test_id)
+         }
+         else {
+             url = Urls["outside_eddi:create_test_mapping_properties"](map_code, test_id)
+         }
+         $.get(url).done(function(html) {
+             $('#modal-add-mapping').html(html);
+             $('#modal-add-mapping').modal();
          });
      });
     </script>

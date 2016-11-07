@@ -12,6 +12,7 @@
   <div class="container">
 
     <h3>Your tests</h3>
+    <button class="js-add-test btn btn-default" data-add-url="{% url 'outside_eddi:create_test' %}">Add a new test</button>
     <table class="table table-condensed table-striped">
       <thead>
         <tr>
@@ -69,6 +70,7 @@
       </tbody>
     </table>
 
+    <div class="modal fade" id="modal-add-test"></div>
     <div class="modal fade" id="modal-edit-test"></div>
 
     <script>
@@ -96,6 +98,29 @@
              }
          });
      });
+
+     $('.js-add-test').click(function() {
+         event.preventDefault();
+         var url = $(this).data('add-url')
+         $.get(url).done(function(html) {
+             $('#modal-add-test').html(html);
+             $('#modal-add-test').modal()
+         });
+     })
+
+     $('#modal-add-test').on('click', '.js-confirm-add-test', function(event) {
+         event.preventDefault();
+         var form = $('#modal-add-test').find('form');
+         post_data = form.serialize();
+         var that = this;
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.redirect_url) {
+                 location.href = resp.redirect_url
+             } else {
+                 $('#modal-add-test').html(resp)
+             }
+         })
+     })
     </script>
     
   </div>

@@ -217,12 +217,43 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context = {}
     user = request.user
 
-    user_tests = OutsideEddiDiagnosticTest.objects.filter(user=user)
-    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True)
+    user_tests = OutsideEddiDiagnosticTest.objects.filter(user=user).order_by('name')
+    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True).order_by('name')
 
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests
 
+    return render(request, template, context)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def create_test(request, template='outside_eddi/create_test_form.html', context=None):
+    context = {}
+    user = request.user
+
+    form = GlobalTestForm(request.POST or None)
+    form.set_context_data({'user': request.user})
+
+    user_estimates_formset = TestPropertyEstimateFormSet(
+        request.POST or None,
+        queryset=None
+    )
+
+    if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
+        test_instance = form.save()
+
+        for instance in user_estimates_formset.save(commit=False):
+            instance.user = request.user
+            instance.test = test
+            instance.save()
+
+        messages.info(request, 'Test added successfully')
+        if request.is_ajax():
+            return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:tests")})
+        else:
+            return redirect("outside_eddi:tests")
+    
+    context['form'] = form
+    context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -286,33 +317,89 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
     user = request.user
 
-    mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
+    if file_id:
+        data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+        context['data_file'] = data_file
+        codes = [x.test_code for x in data_file.test_history.all()]
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+        completed_mapping = True
+        for m in mapping:
+            if not m.code or not  m.test or not m.test_property:
+                completed_mapping = False
+            elif m.code and m.test and m.test_property:
+                properties = m.test.properties.all()
+                if m.test_property not in properties:
+                    completed_mapping = False
+        context['completed_mapping'] = completed_mapping
+        if completed_mapping == True:
+            data_file.state = 'mapped'
+            data_file.save()
+    else:
+        mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
+        
     context['mapping'] = mapping
     
     return render(request, template, context)
 
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def create_test_mapping_properties(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
+    return create_test_mapping(request, map_code, test_id, template)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def create_test_mapping(request, context=None, template='outside_eddi/create_mapping_form.html'):
-
-    # form = TestPropertyMappingForm(request.POST)
-    # properties = OutsideEddiDiagnosticTest.objects.all().first().properties
+def create_test_mapping(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
+    context = {}
+    user = request.user
     
-    # if form.is_valid():
-    #     instance = form.save(commit=False)
-    #     instance.user = request.user
-    #     instance.save()
-    #     messages.info(request, 'Mapping added successfully')
-    #     return JsonResponse({
-    #         'redirect_url': reverse('outside_eddi:test_mapping')
-    #     })
-    # else:
-    #     context = {}
-    #     context['add_mapping_form'] = form
+    if test_id:
+        form = TestPropertyMappingForm(request.POST or None, initial={'test': test_id, 'code': map_code})
+        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+
+        user_estimates_formset = TestPropertyEstimateFormSet(
+            request.POST or None,
+            queryset=test.properties.filter(user=request.user)
+        )
+        context['test'] = test
+        context['properties'] = properties
+        context['map_code'] = map_code
+    
+    else:
+        form = TestPropertyMappingForm(request.POST or None)
+        user_estimates_formset = TestPropertyEstimateFormSet(
+            request.POST or None
+        )
+
+    form.set_context_data({'user': request.user})
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+    form.fields['test'] = choices
+
+    if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
+        mapping_instance = form.save()
+
+        selected_property = None
+        for instance in user_estimates_formset.save(commit=False):
+            instance.user = request.user
+            instance.test = mapping_instance.test
+            if instance.pk is None and mapping_instance.test_property is None:
+                selected_property = instance
+            instance.save()
+
+        if mapping_instance.test_property is None:
+            mapping_instance.test_property = selected_property
+            mapping_instance.save()
+
+        messages.info(request, 'Mapping added successfully')
+        if request.is_ajax():
+            return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:test_mapping")})
+        else:
+            return redirect("outside_eddi:test_mapping")
+    
+    context['form'] = form
+    context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_mapping_properties(request, map_id, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
+def edit_test_mapping_properties(request, map_id=None, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, template)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -324,12 +411,27 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
     if test_id:
         form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id})
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
-        context['test'] = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        context['test'] = test
+
+        user_estimates_formset = TestPropertyEstimateFormSet(
+            request.POST or None,
+            queryset=test.properties.filter(user=request.user)
+        )
+        context['user_estimates_formset'] = user_estimates_formset
     else:
         form = TestPropertyMappingForm(request.POST or None, instance=mapping)
         if mapping.test:
             properties = mapping.test.properties.for_user(user=None)
+            user_estimates_formset = TestPropertyEstimateFormSet(
+                request.POST or None,
+                queryset=mapping.test.properties.filter(user=request.user)
+            )
+            context['user_estimates_formset'] = user_estimates_formset
         else:
+            user_estimates_formset = TestPropertyEstimateFormSet(
+                request.POST or None
+            )
             properties = OutsideEddiTestPropertyEstimate.objects.none()
 
     
@@ -337,11 +439,7 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices
 
-    user_estimates_formset = TestPropertyEstimateFormSet(
-        request.POST or None,
-        queryset=mapping.test.properties.filter(user=request.user)
-    )
-    context['user_estimates_formset'] = user_estimates_formset
+    
     
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         mapping_instance = form.save()
@@ -363,167 +461,12 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:test_mapping")})
         else:
-            return redirect("outside_eddi:test_mapping")
+            return redirect("outside_eddi:test_mapping", test_id=test_id)
 
     context['form'] = form
     context['properties'] = properties
     context['map'] = mapping
     
-    return render(request, template, context)
-    
-@outside_eddi_login_required(login_url='outside_eddi:login')
-def test_properties(request, test_id=None, map_id=None, file_id=None, template="outside_eddi/test_properties.html", context=None):
-    context = context or {}
-
-    user = request.user
-    code = None
-
-    if map_id:
-        code = TestPropertyMapping.objects.get(pk=map_id).code
-        test = TestPropertyMapping.objects.get(pk=map_id).test
-        set_active_property(test)
-        formset = test_properties_mapping(request, test)
-
-    elif test_id:
-        import pdb;pdb.set_trace()
-
-    
-
-    # try:
-    #     test_id = int(test_id)
-    #     print 'success'
-    # except ValueError:
-    #     test_id = test_id.replace('___', ' ')
-    #     test = OutsideEddiDiagnosticTest.objects.create(name=test_id, user=user)
-    #     if not details:
-    #         test.description = details
-    #         test.save()
-    #     test_id = test.pk
-    #     code = 'user'
-    # else:
-    #     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
-    #     code = 'user'
-    #     if info == 'user' and test.description != details and details != 'no_user_details':
-    #         test.description = details
-    #         test.save()
-
-    # active_property = None
-
-    # if code != 'None' and code != 'user' and code != 'global':
-    #     if TestPropertyMapping.objects.filter(code=code, user=user, test=test).exists():
-    #         user_map = TestPropertyMapping.objects.filter(code=code, user=user, test=test).first()
-    #     elif TestPropertyMapping.objects.filter(code=code, user=user).exists():
-    #         user_map = TestPropertyMapping.objects.filter(code=code, user=user).first()
-    #         user_map.test = test
-    #         user_map.test_property = None
-    #         user_map.save()
-    #     else:
-    #         user_map = TestPropertyMapping.objects.create(code=code, user=user, test=test)
-
-    #     if user_map.test_property:
-    #         active_property = user_map.test_property
-    #     else:
-    #         test_properties = user_map.test.properties.all()
-    #         for prop in test_properties:
-    #             if prop.is_default == True:
-    #                 active_property = prop
-
-    #     properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
-
-    #     for prop in properties:
-    #         prop.active_property = False
-    #         prop.save()
-
-    #     if active_property != None:
-    #         active_property.active_property = True
-    #         active_property.save()
-
-    # else:
-    #     properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
-    #     for prop in properties:
-    #         prop.active_property = False
-    #         if prop.is_default == True:
-    #             prop.active_property = True
-    #         prop.save()
-
-    # formset = TestPropertyEstimateFormSet(
-    #     request.POST or None,
-    #     queryset=OutsideEddiTestPropertyEstimate.objects.filter(Q(user=user) | Q(user=None),
-    #     test__pk=test_id))
-
-    # if code == 'global':
-    #     for form in formset:
-    #         form.fields['active_property'].widget.attrs['disabled'] = True
-
-    if request.method == 'POST':
-        import pdb;pdb.set_trace()
-        if formset.is_valid():
-            active_exists = False
-            for form in formset.forms:
-                if form.cleaned_data:
-                    if form.cleaned_data['active_property'] == True:
-                        active_exists = True
-
-            for form in formset.forms:
-                if form.cleaned_data:
-                    if not form.instance.pk:
-                        f = form.save(commit=False)
-                        f.test = test
-                        f.user = user
-                        if active_exists == False:
-                            f.active_property=True
-                            if test.user == user:
-                                f.is_default = True
-                        f.save()
-                        
-                    elif form.instance.user == user:
-                        f = form.save(commit=False)
-                        f.test = test
-                        f.user = user
-                        f.save()
-
-                    else:
-                        f = form.save()
-
-                    if f.active_property==True:
-                        active = f
-
-            if map_id:
-                user_map = TestPropertyMapping.objects.get(pk=map_id)
-                user_map.test_property = active
-                user_map.save()
-
-                if request.is_ajax():
-                    return JsonResponse({"success": True})
-                else:
-                    return redirect("outside_eddi:test_mapping", file_id)
-
-            else:
-                if request.is_ajax():
-                    return JsonResponse({"success": True})
-                else:
-                    return redirect("outside_eddi:tests")
-        else:
-
-            if request.is_ajax():
-                context['properties_formset'] = formset
-                context['test'] = test
-                context['code'] = code
-                # context['code_without_spaces'] = code.replace(' ', '___')
-                # context['details'] = details.replace(' ', '___')
-                context['file'] = file_id
-                return render(request, 'outside_eddi/test_properties.html', context)
-            else:
-                messages.add_message(request, messages.WARNING, "Invalid properties")
-                return redirect("outside_eddi:test_mapping")
-
-    context['properties_formset'] = formset
-    context['test'] = test
-    context['code'] = code
-    # context['code_without_spaces'] = code.replace(' ', '___')
-    # context['details'] = details.replace(' ', '___')
-    context['file'] = file_id
-
     return render(request, template, context)
 
 def _copy_diagnostic_tests():
@@ -580,195 +523,3 @@ def set_active_property(test):
         if prop.is_default == True:
             prop.active_property = True
         prop.save()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# @outside_eddi_login_required(login_url='outside_eddi:login')
-# def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
-#     context = {}
-
-#     user = request.user
-
-#     # file_mapping_formset = None
-#     # data_file = None
-
-#     # choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
-    
-#     # if file_id:
-#     #     data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-#     #     codes = [x.test_code for x in data_file.test_history.all()]
-#     #     file_mapping_formset = DataFileTestPropertyMappingFormSet(
-#     #         request.POST or None,
-#     #         queryset=TestPropertyMapping.objects.filter(code__in=codes, user=user),
-#     #         prefix='file_mapping'
-#     #     )
-#     #     for form in file_mapping_formset:
-#     #         form.fields['test'] = choices
-        
-#     # mapping_formset = TestPropertyMappingFormSet(
-#     #     request.POST or None,
-#     #     queryset=TestPropertyMapping.objects.filter(user=user).order_by('-pk'),
-#     #     prefix='mapping'
-#     # )
-
-#     # for form in mapping_formset:
-#     #     form.fields['test'] = choices
-
-#     # tooltips_for_tests = {}
-#     # tests = OutsideEddiDiagnosticTest.objects.all()
-#     # for test in tests:
-#     #     tooltips_for_tests[str(test.pk)] = test.description
-
-#     # tips = json.dumps(tooltips_for_tests)
-
-#     # if request.method == 'POST':
-#     #     if mapping_formset.is_valid():
-#     #         for form in mapping_formset.forms:
-#     #             save_form = True
-#     #             if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).exists():
-#     #                 if TestPropertyMapping.objects.filter(code=form.instance.code, user=user).first().pk != form.instance.pk:
-#     #                     save_form = False
-#     #                     return JsonResponse({"error": "You already have a mapping with code: " + form.cleaned_data['code']})
-
-#     #             if save_form:
-#     #                 instance = form.save(commit=False)
-#     #                 instance.user = request.user
-#     #                 instance.save()
- 
-#     #         if request.is_ajax():
-#     #             return JsonResponse({"success": True})
-#     #         else:
-#     #             return redirect("outside_eddi:test_mapping")
-
-#     #         # else:
-#     #         #     mappings = TestPropertyMapping.objects.filter(code__in=codes, user=user)
-#     #         #     redirect_page = True
-#     #         #     for mapping in mappings:
-#     #         #         if mapping.test_property:
-#     #         #             continue
-#     #         #         else:
-#     #         #             redirect_page = False
-#     #         #             messages.add_message(request, messages.WARNING, "Please provide a property for " + mapping.code)
-#     #         #     if redirect_page == True:
-#     #         #         data_file.state = 'mapped'
-#     #         #         data_file.save()
-#     #         #         return redirect("outside_eddi:data_files")
-#     #         #     else:
-#     #         #         return redirect("outside_eddi:test_mapping", file_id)
-                
-
-#     #     else:
-#     #         if request.is_ajax():
-#     #             return JsonResponse({"error": "Invalid mapping"})
-#     #         else:
-#     #             messages.add_message(request, messages.WARNING, "Invalid mapping")
-
-    
-#     mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
-#     context['mapping'] = mapping
-#     # add_mapping_form = TestPropertyMappingForm(request.POST)
-#     # add_mapping_form.fields['test'] = choices
-#     # context['add_mapping_form'] = add_mapping_form
-
-#     # context['mapping_formset'] = mapping_formset
-#     # context['file_mapping_formset'] = file_mapping_formset
-#     # context['tooltips_for_tests'] = tips
-#     # context['file'] = data_file
-
-#     return render(request, template, context)
-
-
-
-
-# @outside_eddi_login_required(login_url='outside_eddi:login')
-# def tests(request, file_id=None, template="outside_eddi/tests.html"):
-#     context = {}
-
-#     user = request.user
-
-
-#     global_formset = GlobalTestFormSet(
-#         request.POST or None,
-#         queryset=OutsideEddiDiagnosticTest.objects.filter(user=None),
-#         prefix='global'
-#     )
-#     user_formset = UserTestFormSet(
-#         request.POST or None,
-#         queryset=OutsideEddiDiagnosticTest.objects.filter(user=user),
-#         prefix='user'
-#     )
-
-#     test_ids_by_name = {}
-#     all_tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
-#     for test in all_tests:
-#         test_ids_by_name[str(test.name)] = test.id
-
-#     test_names = []
-#     for test in all_tests:
-#         test_names.append(test.name)
-
-#     names = json.dumps(test_ids_by_name)
-
-#     tests = OutsideEddiDiagnosticTest.objects.all()
-
-#     if request.method == 'POST':
-#         if user_formset.is_valid():
-#             for form in user_formset.forms:
-#                 if form.cleaned_data:
-#                     if form.instance.pk:
-#                         f = form.save(commit=False)
-#                         f.user = user
-#                         f.save()
-#                     else:
-#                         if OutsideEddiDiagnosticTest.objects.filter(name=form.cleaned_data['name'],
-#                                                               user=user).exists():
-#                             messages.add_message(request, messages.WARNING, "You already have a test with the name: " + form.cleaned_data['name'])
-#                         else:
-#                             f = form.save(commit=False)
-#                             f.user = user
-#                             f.save()
-
-#             return redirect("outside_eddi:tests")
-
-#         else:
-#             messages.add_message(request, messages.WARNING, "Invalid test details")
-#             return redirect("outside_eddi:tests")
-
-#     context['user_formset'] = user_formset
-#     context['global_formset'] = global_formset
-#     context['tests'] = tests
-#     context['test_ids_by_name'] = names
-
-#     return render(request, template, context)
