@@ -170,6 +170,19 @@ def save_data_file(request, file_id, context=None):
     return redirect(reverse('outside_eddi:data_files'))
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
+def review_mapping_data_file(request, file_id, context=None):
+    context = context or {}
+    
+    user = request.user
+    tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
+    test_names = [x.name for x in tests]
+    test_history_rows = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=file_id)
+    for test in test_history_rows:
+        check_mapping(test.test_code, test_names, user)
+
+    return test_mapping(request, file_id, template="outside_eddi/test_mapping.html")
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
@@ -529,3 +542,31 @@ def set_active_property(test):
         if prop.is_default == True:
             prop.active_property = True
         prop.save()
+
+
+def check_mapping(test_code, tests, user):
+    if test_code in tests:
+        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+        else:
+            test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
+            test_property = test.get_default_property()
+
+            mapping = TestPropertyMapping.objects.create(
+                code=str(test_code),
+                test=test,
+                test_property=test_property,
+                user=user
+            )
+    else:
+        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+        else:
+            mapping = TestPropertyMapping.objects.create(
+                code=test_code,
+                user=user
+            )
+    if not mapping.test or not mapping.test_property:
+        return False
+    else:
+        return True
