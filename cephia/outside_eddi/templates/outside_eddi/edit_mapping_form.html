@@ -1,13 +1,14 @@
 {% load bootstrap3 %}
 
 <div class="modal-dialog" role="document" >
-  <form method="post" action="{% url 'outside_eddi:edit_test_mapping' map.pk %}"
+  <form method="post" action="{% if is_file %}{% url 'outside_eddi:edit_test_mapping_file' map.pk %}{% else %}{% url 'outside_eddi:edit_test_mapping_file' map.pk %}{% endif %}"
         data-map="{{ map.pk }}">{% csrf_token %}
     {{ user_estimates_formset.management_form }}
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title">Edit mapping</h4>
+        {% if is_file %}You are editing a map specific to a file so you are unable to edit the code{% endif %}
       </div>
       <div class="modal-body">
         {% bootstrap_form form %}

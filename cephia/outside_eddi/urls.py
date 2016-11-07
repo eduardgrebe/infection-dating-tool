@@ -22,9 +22,16 @@ urlpatterns = [
     url(r'^test_mapping/create/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping'),
     url(r'^test_mapping/create/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping_properties'),
     url(r'^test_mapping/create/(?P<map_code>\w+)/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping_properties'),
-    url(r'^test_mapping/(?P<map_id>\d+)/edit/$', views.edit_test_mapping, name='edit_test_mapping'),
-    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/$', views.edit_test_mapping, name='edit_test_mapping'),
-    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/properties/$', views.edit_test_mapping_properties, name='edit_test_mapping_properties'),
+    
+    url(r'^test_mapping/(?P<map_id>\d+)/edit/$', views.edit_test_mapping, {'is_file': False}, name='edit_test_mapping'),
+    url(r'^test_mapping/(?P<map_id>\d+)/edit/file/$', views.edit_test_mapping, {'is_file': True}, name='edit_test_mapping_file'),
+    
+    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/$', views.edit_test_mapping, {'is_file': False}, name='edit_test_mapping'),
+    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/file/$', views.edit_test_mapping, {'is_file': True}, name='edit_test_mapping_file'),
+    
+    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/file/properties/$', views.edit_test_mapping_properties, {'is_file': False}, name='edit_test_mapping_properties'),
+    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/properties/$', views.edit_test_mapping_properties, {'is_file': True}, name='edit_test_mapping_file_properties'),
+    
     
     url(r'^test_mapping/(?P<file_id>\d+)/$', views.test_mapping, name='test_mapping'),
     

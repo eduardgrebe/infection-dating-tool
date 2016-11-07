@@ -43,7 +43,7 @@
             </td>
             <td align="right">
               <a data-toggle="modal" data-target="#modal-edit-mapping" class="btn btn-primary js-edit-mapping"
-                 data-edit-url="{% url 'outside_eddi:edit_test_mapping' map.pk %}">Edit</a>
+                 data-edit-url="{% if is_file %}{% url 'outside_eddi:edit_test_mapping_file' map.pk %}{% else %}{% url 'outside_eddi:edit_test_mapping' map.pk %}{% endif %}">Edit</a>
             </td>
           </tr>
         {% endfor %}

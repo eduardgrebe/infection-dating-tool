@@ -235,11 +235,13 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
 
     user_estimates_formset = TestPropertyEstimateFormSet(
         request.POST or None,
-        queryset=None
+        queryset=TestPropertyEstimate.objects.none()
     )
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         test_instance = form.save()
+        test_instance.user = user
+        test_instance.save()
 
         for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
@@ -316,9 +318,11 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
     context = {}
     user = request.user
+    is_file = False
 
     if file_id:
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+        is_file = True
         context['data_file'] = data_file
         codes = [x.test_code for x in data_file.test_history.all()]
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
@@ -338,6 +342,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
         
     context['mapping'] = mapping
+    context['is_file'] = is_file
     
     return render(request, template, context)
 
@@ -399,11 +404,11 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     return render(request, template, context)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_mapping_properties(request, map_id=None, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
+def edit_test_mapping_properties(request, map_id=None, test_id=None, is_file=False, template='outside_eddi/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, template)
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit_mapping_form.html', context=None):
+def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='outside_eddi/edit_mapping_form.html', context=None):
     context = context or {}
 
     user = request.user
@@ -438,8 +443,8 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
     form.set_context_data({'user': request.user})
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices
-
-    
+    if is_file:
+        form.fields['code'].widget.attrs['readonly'] = True
     
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         mapping_instance = form.save()
@@ -461,11 +466,12 @@ def edit_test_mapping(request, map_id, test_id=None, template='outside_eddi/edit
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:test_mapping")})
         else:
-            return redirect("outside_eddi:test_mapping", test_id=test_id)
+            return redirect("outside_eddi:test_mapping")
 
     context['form'] = form
     context['properties'] = properties
     context['map'] = mapping
+    context['is_file'] = is_file
     
     return render(request, template, context)
 
