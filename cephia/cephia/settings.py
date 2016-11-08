@@ -68,6 +68,7 @@ XS_SHARING_ALLOWED_ORIGINS = '*'
 XS_SHARING_ALLOWED_METHODS = ['GET','OPTIONS']
 
 # Application definition
+JS_REVERSE_INCLUDE_ONLY_NAMESPACES = ['outside_eddi']
 
 INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
@@ -87,7 +88,9 @@ INSTALLED_APPS = (
     'user_management',
     'diagnostics',
     'assay',
-    'djcelery'
+    'outside_eddi',
+    'djcelery',
+    'django_js_reverse',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -158,7 +161,7 @@ USE_TZ = True
 
 
 STATICFILES_DIRS = (                                                                 
-  os.path.join(BASE_DIR, 'cephia/static/'),                                                
+  os.path.join(BASE_DIR, 'cephia/static/'),
   BASE_DIR                                                                          
 ) 
 STATIC_URL = '/static/'+REVISION+'/'
@@ -242,7 +245,7 @@ if 'test' in sys.argv:
         }
     }
     PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
-    TEST_FILES_ROOT = os.path.join(PROJECT_HOME, "test_helper/test_files/")
+    TEST_FILES_ROOT = os.path.join(PROJECT_HOME, "tests/test_files/")
         
 #check that required settings are set
 if DATABASES['default']['ENGINE'] == 'django.db.backends.':

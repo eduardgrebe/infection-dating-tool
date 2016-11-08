@@ -1,0 +1,48 @@
+{% load bootstrap3 %}
+
+<div class="modal-dialog" role="document">
+  <form method="POST" action="{% url 'outside_eddi:create_test' %}">{% csrf_token %}
+    {{ user_estimates_formset.management_form }}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Add a new test</h4>
+      </div>
+      <div class="modal-body">
+        {% bootstrap_form form %}
+
+        Properties:
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Mean</th>
+              <th>Variability</th>
+              <th>Median</th>
+              <th>Description</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for formset_form in user_estimates_formset %}
+              <tr>
+                {{ formset_form.id }}
+                <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
+                <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
+                <td>{% bootstrap_field formset_form.foursigma_diagnostic_delay_days show_label=False %}</td>
+                <td>{% bootstrap_field formset_form.diagnostic_delay_median show_label=False %}</td>
+                <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
+                <td>{% bootstrap_field formset_form.reference show_label=False %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary js-confirm-add-test" value="Add test" />
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,75 @@
+{% load bootstrap3 %}
+
+<div class="modal-dialog" role="document" >
+  <form method="post" action="{% if is_file %}{% url 'outside_eddi:edit_test_mapping_file' map.pk %}{% else %}{% url 'outside_eddi:edit_test_mapping_file' map.pk %}{% endif %}"
+        data-map="{{ map.pk }}">{% csrf_token %}
+    {{ user_estimates_formset.management_form }}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Edit mapping</h4>
+        {% if is_file %}You are editing a map specific to a file so you are unable to edit the code{% endif %}
+      </div>
+      <div class="modal-body">
+        {% bootstrap_form form %}
+        {% if test %}
+          <p>Properties for: {{ test.name }}</p>
+          <p>Test Description: {{ test.description }}</p>
+        {% elif map.test %}
+          <p>Properties for: {{ map.test.name }}</p>
+          <p>Test Description: {{ map.test.description }}</p>
+        {% endif %}
+        
+        {% if test or map.test %}
+          <table class="table table-condensed table-striped">
+            <thead>
+              <tr>
+                <th>Active</th>
+                <th>Name</th>
+                <th>Mean</th>
+                <th>Variability</th>
+                <th>Median</th>
+                <th>Description</th>
+                <th>Reference</th>
+              </tr>
+            </thead>
+            
+            <tbody>
+              {% for property in properties %}
+                <tr>
+                  <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
+                  <td>{{ property.estimate_label }}</td>
+                  <td>{{ property.mean_diagnostic_delay_days }}</td>
+                  <td>{{ property.foursigma_diagnostic_delay_days }}</td>
+                  <td>{{ property.diagnostic_delay_median }}</td>
+                  <td>{{ property.comment }}</td>
+                  <td>{{ property.reference }}</td>
+                </tr>
+              {% endfor %}
+
+              {% for formset_form in user_estimates_formset %}
+                {% with property=formset_form.instance %}
+                  <tr>
+                    {{ formset_form.id }}
+                    <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
+                    <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.foursigma_diagnostic_delay_days show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.diagnostic_delay_median show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.reference show_label=False %}</td>
+                  </tr>
+                {% endwith %}
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary js-save-mapping" value="Save mapping" />
+      </div>
+    </div>
+  </form>
+</div>

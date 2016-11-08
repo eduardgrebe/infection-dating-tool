@@ -4,7 +4,7 @@ from django.contrib.auth import load_backend, login
 from datetime import datetime, timedelta
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser, UserManager, AbstractBaseUser, BaseUserManager, Group, Permission
 from lib.models import BaseModel
 import uuid
 from django.utils import timezone
@@ -45,7 +45,6 @@ class BaseUser(AbstractUser, BaseModel):
         self.num_login_failures = 0
         self.save()
 
-
 class AuthenticationToken(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -81,5 +80,4 @@ class AuthenticationToken(models.Model):
         except AuthenticationToken.DoesNotExist:
             logger.warning("No authentication token found for %s" % token)
             return False
-
 

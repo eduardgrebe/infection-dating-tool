@@ -1,9 +1,8 @@
 from django.forms import *
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.admin.widgets import FilteredSelectMultiple
-
 
 class PermissionChoiceField(ModelMultipleChoiceField):
     def label_from_instance(self, instance):
@@ -133,3 +132,31 @@ class ActivateUserForm(Form):
         user.activation_key_expires_at = None
         user.save()
         return user
+
+class UserCreationForm(ModelForm):
+    username = CharField(widget=TextInput(attrs={'placeholder': 'Username'}), label=None)
+    email = CharField(widget=TextInput(attrs={'placeholder': 'Email'}), label=None)
+    
+    error_messages = {
+        'password_mismatch': ("The two password fields didn't match."),
+    }
+    password = CharField(label=("Password"),
+                                widget=PasswordInput(attrs={'placeholder': 'Password'}))
+    verify_password = CharField(label=("Password confirmation"),
+                                widget=PasswordInput(attrs={'placeholder': 'Confirm Password'}),
+                                help_text=("Enter the same password as above, for verification."))
+
+    class Meta:
+        model = get_user_model()
+        fields = ["username", "email", "password", "verify_password", "is_active", 'user_permissions']
+
+    def clean_verify_password(self):
+        password = self.cleaned_data.get("password")
+        verify_password = self.cleaned_data.get("verify_password")
+        if password and verify_password and password != verify_password:
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return verify_password
+

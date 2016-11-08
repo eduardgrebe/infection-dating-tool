@@ -1,0 +1,66 @@
+{% extends 'outside_eddi/base.html' %}
+{% load bootstrap3 %}
+
+{% block extrajs%}
+  <script src="http://malsup.github.com/jquery.form.js"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      {{ form }}
+      <button class="btn btn-primary">Upload</button>
+    </form>
+    
+
+    <table class="table table-condensed table-striped">
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date Uploaded</th>
+          <th>State</th>
+          <th>Message</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for obj in file_info_data %}
+          <tr>
+	          <td>{{obj.filename}}</td>
+	          <td>{{obj.created}}</td>
+            <td>{{obj.state}}</td>
+            <td>{{obj.message}}</td>
+            {% if obj.state == 'validated' %}
+              <td><a href="{% url 'outside_eddi:save_data_file' obj.id %}" >Save Data</a></td>
+            {% elif obj.state == 'needs_mapping' %}
+              <td><a href="{% url 'outside_eddi:test_mapping' obj.id %}" >Provide Mapping</a></td>
+            {% elif obj.state == 'mapped' or obj.state == 'processed' %}
+              <td><a href="{% url 'outside_eddi:review_mapping_data_file' obj.id %}" >Review Mapping</a></td>
+            {% else %}
+              <td></td>
+            {% endif %}
+            {% if obj.state == 'mapped' or obj.state == 'processed' %}
+              <td><a href="{% url 'outside_eddi:process_data_file' obj.id %}" >Process</a></td>
+            {% else %}
+              <td></td>
+            {% endif %}
+            {% if obj.state == 'processed' %}
+              <td><a href="{% url 'outside_eddi:results' obj.id %}" >View Results</td>
+            {% else %}
+              <td></td>
+            {% endif %}    
+            <td>
+		          <a class="list_buttons" href="{% url 'outside_eddi:delete_data_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file and all the related data?') ) { return false }"><span class="glyphicon glyphicon-remove"></span></a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+{% endblock %}

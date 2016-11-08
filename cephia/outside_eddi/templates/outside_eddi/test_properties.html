@@ -1,0 +1,65 @@
+{% load bootstrap3 %}
+
+<div class="modal-dialog modal-lg" role="document">
+  <form name="properties" method="post" id="form" enctype="multipart/form-data">{% csrf_token %}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Properties for {% if code != 'global' and code != 'user' %}code: {{ code }}, {% endif %}test: {{ test.name }}</h4>
+        {% if code == 'global' %}
+          <h5>The system defaults are being displayed, you can add additional properties but in order to set them as active you will have to map it along with a test and code from the mapping screen</h5>
+        {% endif %}
+      </div>
+
+      <div class="modal-body">
+        {% bootstrap_formset_errors formset %}
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              {% if code == 'global' or code == 'user' %}
+                <th>Default</th>
+              {% else %}
+                <th>Active</th>
+              {% endif %}
+              <th>Name</th>
+              <th>Mean</th>
+              <th>Variability</th>
+              <th>Median</th>
+              <th>Description</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            {{ properties_formset.management_form }}
+            {% for form in properties_formset %}
+              <tr>
+                <td>{% bootstrap_field form.active_property show_label=False %} {{ form.id }}</td>
+                <td>{% bootstrap_field form.estimate_label show_label=False %}</td>
+                <td>{% bootstrap_field form.mean_diagnostic_delay_days show_label=False %}</td>
+                <td>{% bootstrap_field form.foursigma_diagnostic_delay_days show_label=False %}</td>
+                <td>{% bootstrap_field form.diagnostic_delay_median show_label=False %}</td>
+                <td>{% bootstrap_field form.comment show_label=False %}</td>
+                <td>{% bootstrap_field form.reference show_label=False %}</td>
+              </tr>
+            {% endfor %}
+            
+          </tbody>
+        </table>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <input type="submit" name="save" class="btn btn-primary" value="Save"/>
+        </div>
+      </div>
+      
+      <script>
+       $('input[type=checkbox]').change(function() {
+           $('input[type=checkbox]').prop('checked', false);
+           $(this).prop('checked', true);
+       });
+      </script>
+
+    </div>
+  </form>
+</div>

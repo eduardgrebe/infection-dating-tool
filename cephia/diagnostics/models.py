@@ -86,6 +86,3 @@ class DiagnosticTestHistoryRow(ImportedRow):
     source = models.CharField(max_length=255, null=False, blank=True)
     protocol = models.CharField(max_length=255, null=False, blank=True)
     test_history = models.ForeignKey(DiagnosticTestHistory, null=True, blank=False)
-
-
-

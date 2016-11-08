@@ -1,0 +1,43 @@
+{% extends "outside_eddi/base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block content %}
+  <div class="container">
+
+
+    Welcome to the Cephia outside EDDI app.
+
+    {% comment %}
+    <div class="row">
+      <div class="col-md-6">
+        <a class="btn btn-primary" href="{% url 'outside_eddi:tests' %}">Tests</a>
+      </div>
+    </div>
+    
+    <table class="table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>Studies</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for study in studies %}
+          <tr>
+            <td>
+              <a href="{% url "outside_eddi:edit_study" study.pk %}">{{ study.name }}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="row">
+      <div class="col-md-6">
+        <a class="btn btn-primary" href="{% url 'outside_eddi:create_study' %}">Create New Study</a>
+      </div>
+    </div>
+    {% endcomment %}
+    
+  </div>
+{% endblock %}

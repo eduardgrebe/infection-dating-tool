@@ -7,5 +7,3 @@ $(document).ready(function() {
     $("#id_password").attr('placeholder', 'Password');
     
 });
-
-

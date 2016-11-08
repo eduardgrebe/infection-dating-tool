@@ -10,7 +10,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import resolve_url
-from forms import UserEditForm
+from forms import UserEditForm, UserCreationForm
 from user_management.models import AuthenticationToken
 from django.core.urlresolvers import reverse
 
@@ -28,6 +28,9 @@ def login(request, template='admin/cephia_login.html'):
 
             if user.is_locked_out():
                 msg = "User %s got their login correct but is locked out so has not been allowed in. " % user.username
+                messages.add_message(request, messages.WARNING, msg)
+            elif user.groups.filter(name=u'Outside Eddi Users').exists():
+                msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
                 messages.add_message(request, messages.WARNING, msg)
             else:
                 auth_login(request, user)

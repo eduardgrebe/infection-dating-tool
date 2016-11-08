@@ -14,6 +14,7 @@ from fields import ProtectedForeignKey
 from world_regions import models as wr_models
 from django.db.models import QuerySet
 from django.db.models.functions import Length, Substr, Lower
+from django.contrib.auth.models import Group
 
 import datetime
 
@@ -74,7 +75,7 @@ class CephiaUser(BaseUser):
                 allowed.extend((option,choices[option]) for option in options)
 
         return sorted(allowed)
-
+        
 class Region(models.Model):
 
     class Meta:
