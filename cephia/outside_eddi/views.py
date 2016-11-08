@@ -186,18 +186,28 @@ def review_mapping_data_file(request, file_id, context=None):
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
+    user = request.user
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
     test_history = f.test_history.all()
     subjects = []
-    for test in test_history:
-        if test.subject not in subjects:
-            subjects.append(test.subject)
-    for subject in subjects:
-        subject.calculate_eddi()
 
-    f.state = 'processed'
-    f.save()
-    messages.info(request, 'Data Processed')
+    codes = [x.test_code for x in f.test_history.all()]
+    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+    completed_mapping = check_mapping_details(mapping, user)
+
+    if completed_mapping:
+        for test in test_history:
+            if test.subject not in subjects:
+                subjects.append(test.subject)
+        for subject in subjects:
+            subject.calculate_eddi(user, f)
+        f.state = 'processed'
+        f.save()
+        messages.info(request, 'Data Processed')
+    else:
+        f.state = 'needs_mapping'
+        f.save()
+        messages.info(request, 'Incomplete Mapping. Cannot process data')
 
     return redirect(reverse('outside_eddi:data_files'))
 
@@ -336,18 +346,13 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     if file_id:
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         is_file = True
-        context['data_file'] = data_file
+        
         codes = [x.test_code for x in data_file.test_history.all()]
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
-        completed_mapping = True
-        for m in mapping:
-            if not m.code or not  m.test or not m.test_property:
-                completed_mapping = False
-            elif m.code and m.test and m.test_property:
-                properties = m.test.properties.all()
-                if m.test_property not in properties:
-                    completed_mapping = False
+        completed_mapping = check_mapping_details(mapping, user)
+        
         context['completed_mapping'] = completed_mapping
+        context['data_file'] = data_file
         if completed_mapping == True:
             data_file.state = 'mapped'
             data_file.save()
@@ -570,3 +575,15 @@ def check_mapping(test_code, tests, user):
         return False
     else:
         return True
+
+def check_mapping_details(mapping, user):
+    completed_mapping = True
+    for m in mapping:
+        if not m.code or not  m.test or not m.test_property:
+            completed_mapping = False
+        elif m.code and m.test and m.test_property:
+            properties = m.test.properties.all()
+            if m.test_property not in properties:
+                completed_mapping = False
+
+    return completed_mapping

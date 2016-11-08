@@ -4,16 +4,17 @@
 
 {% block content %}
   <div class="container">
-    <h5>These are your results for: {{ file.filename }}</h5>
+    <h3>These are your results for: {{ file.filename }}</h3>
 
     <table class="table table-condensed table-striped">
 
       <thead>
         <tr>
           <th>Subject</th>
+          <th>EP DDI</th>
+          <th>LP DDI</th>
+          <th>Interval Size</th>
           <th>EDDI</th>
-          <th>ep_ddi</th>
-          <th>lp_ddi</th>
         </tr>
       </thead>
 
@@ -21,9 +22,10 @@
         {% for sub in subjects %}
           <tr>
             <td>{{ sub.subject_label }}</td>
-            <td>{{ sub.subject_eddi.eddi }}</td>
-            <td>{{ sub.subject_eddi.ep_ddi }}</td>
-            <td>{{ sub.subject_eddi.lp_ddi }}</td>
+            <td>{{ sub.ep_ddi }}</td>
+            <td>{{ sub.lp_ddi }}</td>
+            <td>{{ sub.interval_size }}</td>
+            <td>{{ sub.eddi }}</td>
           </tr>
         {% endfor %}
       </tbody>

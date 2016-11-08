@@ -13,6 +13,7 @@ from world_regions import models as wr_models
 from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 
 class OutsideEddiDiagnosticTestHistory(models.Model):
     class Meta:
@@ -30,6 +31,7 @@ class OutsideEddiDiagnosticTestHistory(models.Model):
 
     def __unicode__(self):
         return u'%s - %s' % (self.test_date, self.test_result)
+
 
 class Study(models.Model):
     class Meta:
@@ -142,9 +144,13 @@ class OutsideEddiFileInfo(models.Model):
     def get_extension(self):
         return self.filename().split('.')[-1]
 
-class OutsideEddiSubjectEDDI(models.Model):
-    class Meta:
-        db_table = "outside_eddi_subject_eddi"
+    
+class OutsideEddiSubject(models.Model):
+    
+    subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
+    history = HistoricalRecords()
+    edsc_reported  = models.DateField(null=True, blank=True, default=None)
 
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
@@ -152,21 +158,6 @@ class OutsideEddiSubjectEDDI(models.Model):
     edsc_days_difference = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
     recalculate = models.BooleanField(default=False)
-    eddi_type = models.CharField(max_length=100, null=False, blank=False)
-    history = HistoricalRecords()
-
-    @property
-    def eddi_interval_size(self):
-        return self.interval_size
-
-    
-class OutsideEddiSubject(models.Model):
-    
-    subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
-    subject_eddi = ProtectedForeignKey(OutsideEddiSubjectEDDI, null=True, blank=True)
-    history = HistoricalRecords()
-    edsc_reported  = models.DateField(null=True, blank=True, default=None)
 
     def __unicode__(self):
         return self.subject_label
@@ -174,15 +165,16 @@ class OutsideEddiSubject(models.Model):
     class Meta:
         unique_together = ("subject_label", "user")
 
-    def calculate_eddi(self):
+    def calculate_eddi(self, user, data_file):
+        update_adjusted_dates(user, data_file)
         edsc_days_diff = None
         try:
-            lp_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(subject=self, test_result='Positive', ignore=False).earliest('test_date').test_date
+            lp_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
         except OutsideEddiDiagnosticTestHistory.DoesNotExist:
             lp_ddi = None
 
         try:
-            ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(subject=self, test_result='Negative', ignore=False).latest('test_date').test_date
+            ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
         except OutsideEddiDiagnosticTestHistory.DoesNotExist:
             ep_ddi = None
 
@@ -196,14 +188,17 @@ class OutsideEddiSubject(models.Model):
         if self.edsc_reported and eddi:
             edsc_days_diff = timedelta(days=(eddi - self.edsc_reported).days).days
 
-        new_eddi = OutsideEddiSubjectEDDI.objects.create(ep_ddi=ep_ddi,
-                                              lp_ddi=lp_ddi,
-                                              interval_size=interval_size,
-                                              edsc_days_difference=edsc_days_diff,
-                                              eddi=eddi,
-                                              eddi_type='test_history')
-
-        self.subject_eddi = new_eddi
+        self.ep_ddi=ep_ddi
+        self.lp_ddi=lp_ddi
+        self.interval_size=interval_size
+        self.edsc_days_difference=edsc_days_diff
+        self.eddi = eddi
         self.save()
-        # if lp_ddi or ep_ddi or eddi:
-        #     self._handle_visits(subject_to_update)
+
+
+def update_adjusted_dates(user, data_file):
+        with transaction.atomic():
+            for test_history in OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file):
+                test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
+                test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+                test_history.save()
