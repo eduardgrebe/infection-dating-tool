@@ -1,5 +1,5 @@
 from django import forms
-from cephia.models import FileInfo, Panel, Laboratory, Assay
+from cephia.models import FileInfo, Panel, Laboratory, Assay, Visit
 from models import AssayRun
 import unicodecsv as csv
 from cephia.excel_helper import ExcelHelper
@@ -75,6 +75,7 @@ class AssayRunFilterForm(forms.Form):
     panel = forms.ChoiceField(required=False)
     assay = forms.ChoiceField(required=False)
     laboratory = forms.ChoiceField(required=False)
+    visit = forms.ChoiceField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(AssayRunFilterForm, self).__init__(*args, **kwargs)
@@ -91,11 +92,16 @@ class AssayRunFilterForm(forms.Form):
         [ panel_choices.append((x.id, x.name)) for x in Panel.objects.all() ]
         self.fields['panel'].choices = panel_choices
 
+        visit_choices = [('','---------')]
+        [ visit_choices.append((x.id, x.subject_label)) for x in Visit.objects.all() ]
+        self.fields['visit'].choices = visit_choices
+
     def filter(self):
         qs = AssayRun.objects.all()
         panel = self.cleaned_data['panel']
         assay = self.cleaned_data['assay']
         laboratory = self.cleaned_data['laboratory']
+        visit = self.cleaned_data['visit']
 
         if panel:
             qs = qs.filter(panel__id=panel)
@@ -103,6 +109,8 @@ class AssayRunFilterForm(forms.Form):
             qs = qs.filter(assay__id=assay)
         if laboratory:
             qs = qs.filter(laboratory__id=laboratory)
+        if visit:
+            qs = qs.filter(visit__id=visit)
 
         return qs
 
