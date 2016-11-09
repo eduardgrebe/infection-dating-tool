@@ -110,7 +110,17 @@ class AssayRunFilterForm(forms.Form):
         if laboratory:
             qs = qs.filter(laboratory__id=laboratory)
         if visit:
-            qs = qs.filter(visit__id=visit)
+            specimens = Visit.objects.get(pk=visit).specimens.all() or None
+            assay_results = None
+            assay_pks = []
+            
+            if specimens:
+                assay_results = AssayResult.objects.filter(specimen__in=specimens)
+            
+            if assay_results:
+                assay_pks = [ x.pk for x in assay_results.assay_run ]
+            
+            qs = qs.filter(pk__in=assay_pks)
 
         return qs
 
