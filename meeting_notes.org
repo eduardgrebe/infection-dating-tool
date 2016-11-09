@@ -37,6 +37,12 @@ user visits form
 kill delete run button - change permissions for different users / add confirm button
 when permission is added - not available by default to new user (Eduard must add permission to users)
 
+issues
+take out visit id for combine assay results for visits block
+add panel membership filter - if they do not select panel membership then export all results for all panels
+add specimen filter (copy specimen filter from visit filter form)
+if they do not select anything before selecting get results then export everything
+
 ** file upload/download page
 if admin you can upload or download or delete files
 other users can view files
