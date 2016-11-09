@@ -22,22 +22,31 @@
     <div class="col-md-4">
       <div class="panel panel-success">
         <div class="panel-heading">
-          <h3 class="panel-title">Combine assay results for visits</h3>
+          <h3 class="panel-title">
+            <a data-toggle="collapse" href="#panel">Combine assay results for visits</a>
+          </h3>
         </div>
-        <div class="panel-body">
-          <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {% bootstrap_form by_visits_form %}
-            <div class="form-group">
-              <button class="btn btn-default">Get results</button>
-            </div>
-          </form>
+        <div id="panel" class="panel-collapse collapse">
+          <div class="panel-body">
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% bootstrap_form by_visits_form %}
+              <div class="form-group">
+                <button class="btn btn-default">Get results</button>
+                <a class="btn btn-default" id="preview" href="#" >Preview results</a>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
+
+    <div class="col-md-4" id="preview_results">
+      Test test test test
+    </div>
   </div>
   
-  <div class="container">
+  <div class="container" id="runs">
     <div class="row">
       <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
         <div class="panel-heading">
@@ -85,4 +94,17 @@
   </div>
   <div class="shipment-modal">
   </div>
+
+  <script>
+   $("#preview").click(function (e) {
+       event.preventDefault();
+       var vis = $('#preview_results').is(":visible");
+       if (vis === true){
+           $("#preview_results").hide();
+       }
+       else{
+           $("#preview_results").show();
+       }
+   });
+  </script>
 {% endblock %}
