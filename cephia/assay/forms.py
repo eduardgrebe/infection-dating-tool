@@ -98,12 +98,11 @@ class AssaysByVisitForm(forms.Form):
         
         if specimen_labels:
             specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
-
-            if panels:
-                specimens = specimens.filter(visit__panels__in=panels)
-
-
             results = results.filter(specimen__in=specimens)
+
+            
+        if panels:
+            results = results.filter(specimen__visit__panels__in=panels)
 
 
         download = ResultDownload(headers, results, 'detailed', result_models)
