@@ -89,13 +89,17 @@ class AssaysByVisitForm(forms.Form):
 
 
     def get_csv_response(self):
-        assays = self.cleaned_data['assays']
         headers = []
-        result_models = [get_result_model(assay.name) for assay in assays]
-        results = AssayResult.objects.filter(assay_run__assay__in=assays)
+        assays = self.cleaned_data['assays']
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
         panels = self.cleaned_data.get('panels')
-        
+        result_models = [get_result_model(assay.name) for assay in assays]
+        results = AssayResult.objects.all()
+
+        if assays:
+            results = results.filter(assay_run__assay__in=assays)
+
+
         if specimen_labels:
             specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
             results = results.filter(specimen__in=specimens)
