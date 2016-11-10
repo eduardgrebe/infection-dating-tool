@@ -33,7 +33,7 @@
               {% bootstrap_form by_visits_form %}
               <div class="form-group">
                 <button class="btn btn-default">Get results</button>
-                <a class="btn btn-default" id="preview" href="#" >Preview results</a>
+                <button class="btn btn-default" type="submit" id="preview" href="#" >Preview results</button>
               </div>
             </form>
           </div>
@@ -41,8 +41,38 @@
       </div>
     </div>
 
-    <div class="col-md-4" id="preview_results">
-      Test test test test
+    <div class="col-md-8 hidden" id="preview_results">
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <h3 class="panel-title">Preview of results</h3>
+        </div>
+        <table class="table-striped table table-hover" style="overflow:auto;">
+          <thead>
+            <th>Run ID</th>
+            <th>Panel</th>
+            <th>Assay</th>
+            <th>Laboratory</th>
+            <th>File</th>
+            <th>Run Date</th>
+          </thead>
+          <tbody>
+            {% if preview %}
+              {% for prev in preview %}
+                <tr>
+                  <td>{{ prev.pk }}</td>
+                  <td>test</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              {% endfor %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
   
@@ -96,15 +126,22 @@
   </div>
 
   <script>
-   $("#preview").click(function (e) {
+   $("#preview").click(function (event) {
        event.preventDefault();
+
        var vis = $('#preview_results').is(":visible");
-       if (vis === true){
-           $("#preview_results").hide();
-       }
-       else{
-           $("#preview_results").show();
-       }
+       var form = $('#panel').find('form');
+       post_data = form.serialize();
+       $.get(form.attr('action'), post_data).done(function(data) {
+           $("#preview_results").removeClass("hidden");
+       })
+
+       /* if (vis === false){
+        *     $("#preview_results").removeClass("hidden");
+        * }
+        * else if (vis === true){
+        *     $("#preview_results").addClass("hidden");
+        * }*/
    });
   </script>
 {% endblock %}

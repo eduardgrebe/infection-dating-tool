@@ -120,6 +120,29 @@ class AssaysByVisitForm(forms.Form):
             writer.writerow(row)
         return response
 
+    def preview_filter(self):
+        headers = []
+        assays = self.cleaned_data['assays']
+        specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        panels = self.cleaned_data.get('panels')
+        result_models = [get_result_model(assay.name) for assay in assays]
+        results = AssayResult.objects.all()
+
+        if assays:
+            results = results.filter(assay_run__assay__in=assays)
+
+
+        if specimen_labels:
+            specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
+            results = results.filter(specimen__in=specimens)
+
+            
+        if panels:
+            results = results.filter(specimen__visit__panels__in=panels)
+
+
+        return results
+
 
 class AssayRunFilterForm(forms.Form):
 

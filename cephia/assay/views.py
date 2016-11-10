@@ -1,7 +1,7 @@
 from django.shortcuts import render, render_to_response
 from django.core.urlresolvers import reverse
 import logging
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
@@ -154,16 +154,28 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
     runs = AssayRun.objects.all().order_by('-id')
+    
     if request.method == 'GET':
         form = AssayRunFilterForm(request.GET or None)
+        by_visits_form = AssaysByVisitForm(request.POST or None, request.GET or None, request.FILES or None)
+        preview = AssayResult.objects.all().none()
+        
         if form.is_valid():
             runs = form.filter()
+        
+        if by_visits_form.is_valid():
+            if request.is_ajax():
+                import pdb;pdb.set_trace()
+                preview = by_visits_form.preview_filter()
+
+
         context['runs'] = runs
+        context['preview'] = preview
         context['form'] = form
+        context['by_visits_form'] = by_visits_form
 
-
-    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
-    context['by_visits_form'] = by_visits_form
+    # by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
+    
     if request.method == 'POST' and by_visits_form.is_valid():
         return by_visits_form.get_csv_response()
     
