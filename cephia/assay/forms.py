@@ -37,10 +37,11 @@ class PanelFileForm(forms.ModelForm):
             self.fields[key].required = True
 
 class AssaysByVisitForm(forms.Form):
-    # visit_file = forms.FileField(required=True, label='Visit id file')
-    assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
+    visit_file = forms.FileField(required=True, label='Upload a list of visit IDs')
+    visit_ids = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of visit IDs')
     specimen_file = forms.FileField(required=False, label='Upload a list of specimen labels')
     specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
+    assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
     panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Restrict export to panels:')
 
     def clean_specimen_file(self):
@@ -74,18 +75,18 @@ class AssaysByVisitForm(forms.Form):
 
         return self.cleaned_data
 
-    # def clean_visit_file(self):
-    #     visit_file = self.cleaned_data['visit_file']
-    #     filename = visit_file.name
-    #     extension = os.path.splitext(filename)[1][1:].lower()
-    #     if extension == 'csv':
-    #         rows = (z[0] for z in csv.reader(visit_file) if z)
-    #     elif extension in ['xls', 'xlsx']:
-    #         rows = (z[0] for z in ExcelHelper(visit_file).rows() if z)
-    #     else:
-    #         raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
-    #     self.cleaned_data['visit_ids'] = [r for r in rows if r.isdigit()]
-    #     return visit_file
+    def clean_visit_file(self):
+        visit_file = self.cleaned_data['visit_file']
+        filename = visit_file.name
+        extension = os.path.splitext(filename)[1][1:].lower()
+        if extension == 'csv':
+            rows = (z[0] for z in csv.reader(visit_file) if z)
+        elif extension in ['xls', 'xlsx']:
+            rows = (z[0] for z in ExcelHelper(visit_file).rows() if z)
+        else:
+            raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
+        self.cleaned_data['visit_ids'] = [r for r in rows if r.isdigit()]
+        return visit_file
 
 
     def get_csv_response(self):
