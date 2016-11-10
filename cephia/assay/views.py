@@ -157,7 +157,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     
     if request.method == 'GET':
         form = AssayRunFilterForm(request.GET or None)
-        by_visits_form = AssaysByVisitForm(request.POST or None, request.GET or None, request.FILES or None)
+        by_visits_form = AssaysByVisitForm(request.GET or None, request.FILES or None)
         preview = AssayResult.objects.all().none()
         
         if form.is_valid():
@@ -174,7 +174,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
         context['form'] = form
         context['by_visits_form'] = by_visits_form
 
-    # by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
+    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
     
     if request.method == 'POST' and by_visits_form.is_valid():
         return by_visits_form.get_csv_response()
