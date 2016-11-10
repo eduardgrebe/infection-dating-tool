@@ -37,6 +37,12 @@ user visits form
 kill delete run button - change permissions for different users / add confirm button
 when permission is added - not available by default to new user (Eduard must add permission to users)
 
+issues
+take out visit id for combine assay results for visits block
+add panel membership filter - if they do not select panel membership then export all results for all panels
+add specimen filter (copy specimen filter from visit filter form)
+if they do not select anything before selecting get results then export everything
+
 ** file upload/download page
 if admin you can upload or download or delete files
 other users can view files
@@ -48,3 +54,58 @@ save map for a file and set of results so that the user can review the map used 
 ** eddi results
 Subject	EP DDI	LP DDI	Interval Size	EDDI
 provide export csv
+* notes from meeting 10/11
+** full results export - this needs to happen first
+add visit foreign key to results for both specific and generic tables
+add filter by visits option
+
+remove test mode for final results lines
+why is my export giving two copies of the final results?
+make sure that you can export generic and full results
+** outside eddi - this happens next
+*** user registration + catch
+make sure that people cannot spam user registrations (capture?)
+ensure that a logged in user cannot access the main site
+*** visual changes
+leave login screen images at the bottom but change the Sacema logo at the top to Cephia logo
+change app name to Cephia Infection Dating Tool and welcome message to welcome to...
+add banner with logo and app name to the top of the screen above the screen tabs
+
+copy banner and tabs from main site
+
+- drop EDDI and home - replace with image and Cephia Infection Dating Tool at the top, same as Cephia site (clicking on logo link takes you to data files page)
+- add help tab to help page
+- change data files to landing page/home page
+- cephia will provide helpful paragraph for landing page
+*** data file
+change to just subject, date, test, result
+possibly provide example file on help page
+only accept csv files. dates can be a problem in excel
+change verification errors - change to pop up that needs the user to click okay on without any fade away (add disclaimer file not saved)
+change the file to save data to table automatically - remove save data link because this happens automatically
+change mapping requirement notifaction - do not need line by info on mapping needed - just say mapping needed
+change provide and review mapping to just mapping
+remove message column from table
+ensure that all data for the file is deleted along with the file - change x to purge button so that it is clear what the user is doing
+
+*** mapping
+why can I not add new map called new code?
+preselect default property for a test when adding a new map or editing - each time you change the test - add user defaults to their own tests
+when a map code is changed then clicking on the mapping link for a file should replace with a new map for that code to replace it
+
+** github user for R server
+create new user with read access only for the server to deal with this
+cephia-deploy
+do we need to be logged in to read only? if so then we need to create an email address
+
+** add assay imports (do first)
+provide assay name
+define assay
+gets added to list of assays
+fields
+- recent
+- non recent
+- possibly more? check what duke accepts
+
+generic file handler for results
+(copy code from bioplex duke)

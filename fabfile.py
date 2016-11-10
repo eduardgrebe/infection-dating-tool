@@ -110,13 +110,7 @@ def crontab_update(content, marker):
 def host_shiny_prod():
     env.user = 'cephia'
     env.hosts = ['cephiadb.incidence-estimation.org']
-    env.code_dir = "/shiny_server"
-
-def restart_shiny_server():
-    print("   Restarting Shiny Server   ")
-    with cd(env.code_dir):
-        local("sudo service shiny-server restart")
-    print("   Restarted Shiny Server   ")
+    env.code_dir = "~/shiny-inctools"
 
 def deploy_shiny(branch_name="master"):
     print("   Deploying: ** %s **" % branch_name)
@@ -125,8 +119,6 @@ def deploy_shiny(branch_name="master"):
         run("git fetch origin")
         run("git checkout origin/%s" % branch_name)
         run("git pull origin %s" % branch_name)
-        run("./scripts/deploy_server.sh")
+        run("sudo service shiny-server restart")
 
-    restart_shiny_server()
-    
     print("Deployed to: %s" % env.hosts[0])
