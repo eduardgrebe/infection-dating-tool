@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
 from cephia.models import Panel
-from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm, AssayRunResultsFilterForm, AssaysByVisitForm
+from forms import PanelCaptureForm, PanelFileForm, AssayRunFilterForm, AssayRunResultsFilterForm, AssaysByVisitForm, CreateCustomAssayForm
 
 from cephia.forms import FileInfoForm
 from assay.models import AssayResult, PanelShipment, PanelMembership, AssayRun
@@ -175,7 +175,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
         context['by_visits_form'] = by_visits_form
 
     by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
-    
+
     if request.method == 'POST' and by_visits_form.is_valid():
         return by_visits_form.get_csv_response()
     
@@ -248,4 +248,19 @@ def purge_run(request, run_id=None):
         messages.error(request, 'Failed to delete assay run. Please check the log file.')
         return HttpResponseRedirect(request.path)
 
-    _
+
+def custom_assays(request, template="assay/custom_assays.html"):
+    context = {}
+    custom_assays = Assay.objects.filter(is_custom=True)
+    form = CreateCustomAssayForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        instance = form.save(commit=False)
+        instance.created_by = request.user
+        instance.is_custom = True
+        instance.save()
+        return HttpResponseRedirect(reverse('assay:custom_assays'))
+
+    context['form'] = form
+    context['custom_assays'] = custom_assays
+    return render_to_response(template, context, context_instance=RequestContext(request))

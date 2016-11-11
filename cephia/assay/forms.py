@@ -37,11 +37,11 @@ class PanelFileForm(forms.ModelForm):
             self.fields[key].required = True
 
 class AssaysByVisitForm(forms.Form):
-    visit_file = forms.FileField(required=True, label='Upload a list of visit IDs')
+    visit_file = forms.FileField(required=False, label='Upload a list of visit IDs')
     visit_ids = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of visit IDs')
     specimen_file = forms.FileField(required=False, label='Upload a list of specimen labels')
     specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
-    assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
+    by_visit_assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
     panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Restrict export to panels:')
 
     def clean_specimen_file(self):
@@ -75,8 +75,11 @@ class AssaysByVisitForm(forms.Form):
 
         return self.cleaned_data
 
+
     def clean_visit_file(self):
         visit_file = self.cleaned_data['visit_file']
+        if not visit_file:
+            return visit_file
         filename = visit_file.name
         extension = os.path.splitext(filename)[1][1:].lower()
         if extension == 'csv':
@@ -89,23 +92,38 @@ class AssaysByVisitForm(forms.Form):
         return visit_file
 
 
+    def clean_visit_ids(self):
+        value = self.cleaned_data.get('visit_ids')
+        if not value:
+            return value
+        rows = [z.strip() for z in value.split(u'\n')]
+        self.cleaned_data['imported_visit_ids'] = rows
+        return value
+
+
     def get_csv_response(self):
         headers = []
-        assays = self.cleaned_data['assays']
+        assays = self.cleaned_data['by_visit_assays']
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        visit_ids = self.cleaned_data.get('imported_visit_ids')
         panels = self.cleaned_data.get('panels')
         result_models = [get_result_model(assay.name) for assay in assays]
         results = AssayResult.objects.all()
 
-        if assays:
-            results = results.filter(assay_run__assay__in=assays)
+        if visit_ids:
+            visits = Visit.objects.filter(pk__in=visit_ids)
+            results = results.filter(visit__in=visits)
 
 
         if specimen_labels:
             specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
             results = results.filter(specimen__in=specimens)
 
-            
+
+        if assays:
+            results = results.filter(assay_run__assay__in=assays)
+
+
         if panels:
             results = results.filter(specimen__visit__panels__in=panels)
 
@@ -190,4 +208,12 @@ class AssayRunResultsFilterForm(forms.Form):
         if self.cleaned_data.get('specimen_label'):
             qs = qs.filter(specimen__specimen_label__icontains=self.cleaned_data.get('specimen_label')).distinct()
         return qs
-            
+
+
+class CreateCustomAssayForm(forms.ModelForm):
+    class Meta:
+        model = Assay
+        fields = ['name','long_name', 'developer', 'description']
+
+    def __init__(self, *args, **kwargs):
+        super(CreateCustomAssayForm, self).__init__(*args, **kwargs)

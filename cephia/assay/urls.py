@@ -14,5 +14,5 @@ urlpatterns = patterns(
     url(r'^result_file_upload/(?P<panel_id>\d+)/$', views.result_file_upload, name='result_file_upload'),
     url(r'^panel_memberships/(?P<panel_id>\d+)/$', views.panel_memberships, name='panel_memberships'),
     url(r'^panel_shipments/(?P<panel_id>\d+)/$', views.panel_shipments, name='panel_shipments'),
+    url(r'^custom_assays/$', views.custom_assays, name='custom_assays'),
 )
-

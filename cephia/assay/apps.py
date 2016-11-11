@@ -1,5 +1,6 @@
 from django.apps import AppConfig
-
+from cephia.file_handlers.file_handler_register import register_file_handler
+from cephia.file_handlers.custom_assay_file_handler import CustomAssayFileHandler
 
 class AssayConfig(AppConfig):
     name = 'assay'
@@ -42,3 +43,8 @@ class AssayConfig(AppConfig):
         register_result_row_model(VitrosAvidityResultRow, 'Vitros')
         register_result_row_model(ISGlobalResultRow, 'ISGlobal')
         register_result_row_model(BioPlexDukeResultRow, 'BioPlex-Duke')
+
+        for instance in Assay.objects.filter(is_custom=True):
+            register_result_model(CustomAssayResult,  instance.name)
+            register_result_row_model(CustomAssayResult,  instance.name)
+            register_file_handler("assay", CustomAssayFileHandler, instance.name)

@@ -357,6 +357,9 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'ISGlobal':
                 rows = ISGlobalResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/isglobal_row_info.html'
+            elif fileinfo.assay.name == 'Custom':
+                rows = CustomAssayResultRow.objects.filter(fileinfo=fileinfo)
+                template = 'assay/custom_assays.html'
                 
         else:
             raise Exception("Unknown filetype : %s" % fileinfo.file_type)
