@@ -165,7 +165,7 @@ class AssayResult(models.Model):
     panel = models.ForeignKey(Panel, null=True, blank=False, db_index=True)
     assay = models.ForeignKey(Assay, null=True, blank=False, db_index=True)
     specimen = models.ForeignKey(Specimen, null=True, blank=False, db_index=True)
-    # visit = models.ForeignKey(Visit, null=True)
+    visit = models.ForeignKey(Visit, null=True)
     assay_run = ProtectedForeignKey(AssayRun, null=True, db_index=True)
     reported_date = models.DateField(null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
@@ -817,7 +817,8 @@ class ISGlobalResult(BaseAssayResult):
         
     recent_weighted_model = models.NullBooleanField()
     recent_unweighted_model = models.NullBooleanField()
-    
+
+
 class ISGlobalResultRow(BaseAssayResultRow):
     result_detail_fields = ['classification_weighted_model', 'classification_unweighted_model']
     
@@ -827,6 +828,19 @@ class ISGlobalResultRow(BaseAssayResultRow):
     isg_result = models.ForeignKey(ISGlobalResult, null=True)
 
     
+class CustomAssayResult(BaseAssayResult):
+    class Meta:
+        db_table = 'assay_custom'
 
+    result_detail_fields = ['classification', 'recent']
+    
+    classification = models.CharField(max_length=255, null=True)
+    recent = models.NullBooleanField()
 
+    
+class CustomAssayResultRow(BaseAssayResultRow):
+    result_detail_fields = ['classification']
+    
+    classification = models.CharField(max_length=255, null=True)
 
+    custom_result = models.ForeignKey(CustomAssayResult, null=True)

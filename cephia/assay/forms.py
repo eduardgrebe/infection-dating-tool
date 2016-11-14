@@ -42,6 +42,8 @@ class AssaysByVisitForm(forms.Form):
 
     def clean_visit_file(self):
         visit_file = self.cleaned_data['visit_file']
+        if not visit_file:
+            return visit_file
         filename = visit_file.name
         extension = os.path.splitext(filename)[1][1:].lower()
         if extension == 'csv':
@@ -58,6 +60,7 @@ class AssaysByVisitForm(forms.Form):
         headers = []
         result_models = [get_result_model(assay.name) for assay in assays]
         results = AssayResult.objects.filter(assay_run__assay__in=assays)
+
         download = ResultDownload(headers, results, 'detailed', result_models)
 
         response, writer = get_csv_response('detailed_results_%s.csv' % (
@@ -113,4 +116,12 @@ class AssayRunResultsFilterForm(forms.Form):
         if self.cleaned_data.get('specimen_label'):
             qs = qs.filter(specimen__specimen_label__icontains=self.cleaned_data.get('specimen_label')).distinct()
         return qs
-            
+
+
+class CreateCustomAssayForm(forms.ModelForm):
+    class Meta:
+        model = Assay
+        fields = ['name','long_name', 'developer', 'description']
+
+    def __init__(self, *args, **kwargs):
+        super(CreateCustomAssayForm, self).__init__(*args, **kwargs)

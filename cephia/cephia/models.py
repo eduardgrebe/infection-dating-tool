@@ -165,6 +165,8 @@ class Assay(models.Model):
     long_name = models.CharField(max_length=255, null=False, blank=False)
     developer = models.CharField(max_length=255, null=False, blank=False)
     description = models.CharField(max_length=255, null=False, blank=False)
+    is_custom = models.BooleanField(null=False, blank=False, default=False)
+    created_by = ProtectedForeignKey('cephia.CephiaUser', null=True, related_name='assays')
 
     def __unicode__(self):
         return "%s" % (self.name)
