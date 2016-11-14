@@ -44,7 +44,10 @@ class AssayConfig(AppConfig):
         register_result_row_model(ISGlobalResultRow, 'ISGlobal')
         register_result_row_model(BioPlexDukeResultRow, 'BioPlex-Duke')
 
-        for instance in Assay.objects.filter(is_custom=True):
-            register_result_model(CustomAssayResult,  instance.name)
-            register_result_row_model(CustomAssayResult,  instance.name)
-            register_file_handler("assay", CustomAssayFileHandler, instance.name)
+        try:
+            for instance in Assay.objects.filter(is_custom=True):
+                register_result_model(CustomAssayResult,  instance.name)
+                register_result_row_model(CustomAssayResult,  instance.name)
+                register_file_handler("assay", CustomAssayFileHandler, instance.name)
+        except OperationalError:
+            warnings.warn('Could not register custom assay models. Ignore this if running a migration')
