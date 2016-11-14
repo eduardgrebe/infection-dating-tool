@@ -8,7 +8,8 @@ from assay.models import (LagSediaResultRow, LagMaximResultRow, ArchitectUnmodif
                           ArchitectAvidityResultRow, BioRadAvidityCDCResultRow, BioRadAvidityJHUResultRow,
                           BioRadAvidityGlasgowResultRow, VitrosAvidityResultRow, LSVitrosDiluentResultRow,
                           LSVitrosPlasmaResultRow, GeeniusResultRow, BEDResultRow, LuminexCDCResultRow,
-                          IDEV3ResultRow, PanelMembershipRow, ISGlobalResultRow, BioPlexDukeResultRow)
+                          IDEV3ResultRow, PanelMembershipRow, ISGlobalResultRow, BioPlexDukeResultRow,
+                          CustomAssayResultRow)
 from diagnostics.models import DiagnosticTestHistoryRow
 from excel_helper import ExcelHelper
 import unicodecsv as csv
@@ -357,10 +358,10 @@ class RowFilterForm(forms.Form):
             elif fileinfo.assay.name == 'ISGlobal':
                 rows = ISGlobalResultRow.objects.filter(fileinfo=fileinfo)
                 template = 'assay/isglobal_row_info.html'
-            elif fileinfo.assay.name == 'Custom':
+            else:
                 rows = CustomAssayResultRow.objects.filter(fileinfo=fileinfo)
-                template = 'assay/custom_assays.html'
-                
+                template = 'assay/custom_assays_row_info.html'
+
         else:
             raise Exception("Unknown filetype : %s" % fileinfo.file_type)
 

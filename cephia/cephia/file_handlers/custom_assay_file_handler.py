@@ -46,11 +46,11 @@ class CustomAssayFileHandler(FileHandler):
                         plate_identifier = row_dict.get('plate_identifier'),
                         test_mode = row_dict.get('test_mode'),
                         specimen_purpose=row_dict.get('specimen_purpose'),
-                        classification=row_dict.get('classification'),
+                        classification=row_dict['classification'],
                         state='pending',
                         fileinfo=self.upload_file
                     )
-                    
+
                     rows_inserted += 1
             except Exception, e:
                 raise
@@ -138,7 +138,7 @@ class CustomAssayFileHandler(FileHandler):
                     try:
                         laboratory = Laboratory.objects.get(name=custom_assay_result_row.laboratory)
                     except Laboratory.DoesNotExist:
-                        laboratory = None
+                        laboratory = self.upload_file.laboratory
 
                     test_date = None
                     if custom_assay_result_row.test_date:
@@ -159,7 +159,7 @@ class CustomAssayFileHandler(FileHandler):
                     )
 
                     if custom_assay_result_row.classification is not None:
-                        custom_assay_result.recent = custom_assay_result_row.classification == 'Recent'
+                        custom_assay_result.recent = custom_assay_result_row.classification.lower() == 'recent'
 
                     final_result = None
                     if custom_assay_result_row.classification is not None:
@@ -171,6 +171,7 @@ class CustomAssayFileHandler(FileHandler):
                         panel=panel,
                         assay=assay,
                         specimen=specimen,
+                        test_date=test_date,
                         assay_run=assay_run,
                         result=final_result,
                         method='model_classification'
@@ -190,7 +191,6 @@ class CustomAssayFileHandler(FileHandler):
                     rows_inserted += 1
 
             except Exception, e:
-                raise
                 custom_assay_result_row.state = 'error'
                 custom_assay_result_row.error_message = log_exception(e, logger)
                 custom_assay_result_row.save()
