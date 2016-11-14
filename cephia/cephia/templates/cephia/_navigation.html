@@ -18,6 +18,8 @@
       {% if user.is_staff %}
         <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
       {% endif %}
+
+      <li><a class="navtab" href="{% url 'assay:custom_assays' %}">Custom Assays</a></li>
     {% endif %}
   </ul>
 </div>
