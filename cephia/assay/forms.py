@@ -128,7 +128,7 @@ class AssaysByVisitForm(forms.Form):
             results = results.filter(specimen__visit__panels__in=panels)
 
 
-        download = ResultDownload(headers, results, 'detailed', result_models)
+        download = ResultDownload(headers, results, 'detailed', result_models, 300)
 
         response, writer = get_csv_response('detailed_results_%s.csv' % (
             datetime.today().strftime('%d%b%Y_%H%M')))
@@ -141,7 +141,7 @@ class AssaysByVisitForm(forms.Form):
 
     def preview_filter(self):
         headers = []
-        assays = self.cleaned_data['assays']
+        assays = self.cleaned_data['by_visit_assays']
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
         panels = self.cleaned_data.get('panels')
         result_models = [get_result_model(assay.name) for assay in assays]
@@ -160,7 +160,10 @@ class AssaysByVisitForm(forms.Form):
             results = results.filter(specimen__visit__panels__in=panels)
 
 
-        return results
+        download = ResultDownload(headers, results, 'detailed', result_models, 10)
+
+        download.get_headers()
+        return download
 
 
 class AssayRunFilterForm(forms.Form):

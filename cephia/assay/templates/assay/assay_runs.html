@@ -33,48 +33,16 @@
               {% bootstrap_form by_visits_form %}
               <div class="form-group">
                 <button class="btn btn-default">Get results</button>
-                <button class="btn btn-default" type="submit" id="preview" href="#" >Preview results</button>
+                <a class="btn btn-default" id="preview" >Preview results</a>
               </div>
             </form>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="col-md-8 hidden" id="preview_results">
-      <div class="panel panel-success">
-        <div class="panel-heading">
-          <h3 class="panel-title">Preview of results</h3>
-        </div>
-        <table class="table-striped table table-hover" style="overflow:auto;">
-          <thead>
-            <th>Run ID</th>
-            <th>Panel</th>
-            <th>Assay</th>
-            <th>Laboratory</th>
-            <th>File</th>
-            <th>Run Date</th>
-          </thead>
-          <tbody>
-            {% if preview %}
-              {% for prev in preview %}
-                <tr>
-                  <td>{{ prev.pk }}</td>
-                  <td>test</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              {% endfor %}
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
   </div>
+
+  <div class="col-md-8 hidden" id="preview_results"></div>
 
   <div class="container" id="runs">
     <div class="row">
@@ -132,8 +100,10 @@
        var vis = $('#preview_results').is(":visible");
        var form = $('#panel').find('form');
        post_data = form.serialize();
-       $.get(form.attr('action'), post_data).done(function(data) {
+       
+       $.get('{% url 'assay:preview_assay_runs' %}', post_data).done(function(data) {
            $("#preview_results").removeClass("hidden");
+           $("#preview_results").replaceWith(data);
        })
 
        /* if (vis === false){

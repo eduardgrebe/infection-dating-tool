@@ -1,0 +1,29 @@
+<div class="col-md-8" id="preview_results">
+  <div class="panel panel-success">
+    <div class="panel-heading">
+      <h3 class="panel-title">Preview of results</h3>
+    </div>
+    <table class="table-striped table table-hover" style="overflow:auto;">
+      <thead>
+        {% for header in preview.get_headers %}
+          <th>{{ header }}</th>
+        {% endfor %}
+      </thead>
+      <tbody>
+        {% if preview %}
+          {% for row in preview.get_content %}
+            <tr>
+              {% for col in row %}
+                {% if col %}
+                  <td>{{ col }}</td>
+                {% else %}
+                  <td></td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>

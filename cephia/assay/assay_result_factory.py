@@ -24,7 +24,7 @@ def get_result_row_model(assay_name):
 
 class ResultDownload(object):
 
-    def __init__(self, specific_columns, results, generic=False, result_models=None):
+    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None):
 
         self.headers = []
         self.content = []
@@ -38,6 +38,7 @@ class ResultDownload(object):
             'specimen__visit__subject__population_group', 'specimen__visit__subject__subtype',
             'specimen__visit__subject__country', 'assay_run__assay'
         )
+        self.limit = limit
 
         if self.result_models:
             for model in self.result_models:
@@ -166,8 +167,14 @@ class ResultDownload(object):
             
         except (IndexError, ValueError):
             pass
-        
-        for result in self.results:
+
+
+        if self.limit is None:
+            limited_results = self.results
+        else:
+            limited_results = self.results[0:self.limit]
+            
+        for result in limited_results:
             row = [ self.getattr_or_none(result, c) for c in combined_columns ]
             
             if self.detailed:

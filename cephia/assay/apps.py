@@ -1,6 +1,8 @@
 from django.apps import AppConfig
 from cephia.file_handlers.file_handler_register import register_file_handler
 from cephia.file_handlers.custom_assay_file_handler import CustomAssayFileHandler
+import warnings
+from django.db.utils import OperationalError
 
 class AssayConfig(AppConfig):
     name = 'assay'

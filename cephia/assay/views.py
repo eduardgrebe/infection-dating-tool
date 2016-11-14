@@ -1,4 +1,4 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render, render_to_response, redirect
 from django.core.urlresolvers import reverse
 import logging
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
@@ -154,19 +154,40 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
     runs = AssayRun.objects.all().order_by('-id')
+    preview = AssayResult.objects.all().none().order_by('-id')
+    by_visits_form = AssaysByVisitForm(request.POST, request.GET, request.FILES or None)
     
     if request.method == 'GET':
         form = AssayRunFilterForm(request.GET or None)
-        by_visits_form = AssaysByVisitForm(request.GET or None, request.FILES or None)
-        preview = AssayResult.objects.all().none()
         
         if form.is_valid():
             runs = form.filter()
-        
+
         if by_visits_form.is_valid():
-            if request.is_ajax():
-                import pdb;pdb.set_trace()
-                preview = by_visits_form.preview_filter()
+            # first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
+
+            # result_model = None
+            # result_type = ''
+            # if 'generic' in request.GET:
+            #     headers, results = first_result.get_results_for_run()
+            #     result_type = 'generic'
+            # elif 'specific' in request.GET:
+            #     headers, results = first_result.get_specific_results_for_run()
+            #     result_type = 'specific'
+            # elif 'detail' in request.GET:
+            #     headers, results, result_model = first_result.get_detailed_results_for_run()
+            #     result_type = 'detailed'
+
+            # if result_model:
+            #     download = ResultDownload(headers, results, 'generic' in request.GET, [result_model])
+            # else:
+            #     download = ResultDownload(headers, results, 'generic' in request.GET)
+
+            # response, writer = get_csv_response('%s_results_run_%s_%s.csv' % (
+            #     result_type, run_id, datetime.today().strftime('%d%b%Y_%H%M')))
+
+            # writer.writerow(download.get_headers())
+            preview = by_visits_form.preview_filter()
 
 
         context['runs'] = runs
@@ -174,12 +195,35 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
         context['form'] = form
         context['by_visits_form'] = by_visits_form
 
-    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
 
     if request.method == 'POST' and by_visits_form.is_valid():
         return by_visits_form.get_csv_response()
     
     return render_to_response(template, context, context_instance=RequestContext(request))
+
+
+def preview_assay_runs(request, panel_id=None, template="assay/assay_runs_preview.html"):
+    context = {}
+    runs = AssayRun.objects.all().order_by('-id')
+    preview = AssayResult.objects.all().none().order_by('-id')
+    by_visits_form = AssaysByVisitForm(request.POST, request.GET, request.FILES or None)
+
+    form = AssayRunFilterForm(request.GET or None)
+        
+    if form.is_valid():
+        runs = form.filter()
+
+    if by_visits_form.is_valid():
+        preview = by_visits_form.preview_filter()
+
+
+    context['runs'] = runs
+    context['preview'] = preview
+    context['form'] = form
+    context['by_visits_form'] = by_visits_form
+
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
 
 def run_results(request, run_id=None, template="assay/run_results.html"):
     context = {}
