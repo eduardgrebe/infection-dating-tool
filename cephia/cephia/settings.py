@@ -20,6 +20,8 @@ MAX_NUM_FAILED_LOGINS = 3
 LOCKOUT_TIME_IN_MINUTES = 5
 REVISION = git.Repo(os.path.join(PROJECT_HOME, "..", "..")).head.commit.hexsha
 
+MAX_NUM_DOWNLOAD_ROWS = 100000
+
 MAILQUEUE_CELERY = True
 CELERYBEAT_SCHEDULE_FILENAME = os.path.join(LOG_FOLDER, '.celery-beat-schedule')
 CELERY_TIMEZONE = 'UTC'

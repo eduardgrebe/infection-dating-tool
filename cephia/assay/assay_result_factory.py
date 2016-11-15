@@ -1,4 +1,5 @@
 from itertools import chain
+from django.conf import settings
 
 registered_result_models = []
 registered_result_row_models = []
@@ -170,7 +171,7 @@ class ResultDownload(object):
 
 
         if self.limit is None:
-            limited_results = self.results
+            limited_results = self.results[0:settings.MAX_NUM_DOWNLOAD_ROWS]
         else:
             limited_results = self.results[0:self.limit]
             
@@ -196,9 +197,15 @@ class ResultDownload(object):
                     row[result_value_index] = result.result
                     row[method_field_index] = result.method
                     self.content.append(list(row))
+                    if self.limit and len(self.content) >= self.limit:
+                        break
             else:
                 self.content.append(row)
 
+            if self.limit and len(self.content) >= self.limit:
+                break
+
+            
     def prepare_headers(self):
         combined_columns = list(chain(self.common_columns,
                                       self.specific_columns,

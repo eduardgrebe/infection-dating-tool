@@ -6,7 +6,7 @@
       </h3>
     </div>
     <div id="preview_panel" class="panel-collapse collapse in">
-      <div class="panel-body" style="overflow-y:scroll;max-height: 918px;">
+      <div class="panel-body" style="overflow-y:scroll;max-height: 917.5px;">
         <table class="table-striped table table-hover">
           <thead>
             {% for header in preview.get_headers %}
@@ -19,7 +19,7 @@
                 <tr>
                   {% for col in row %}
                     {% if col %}
-                      <td>{{ col }}</td>
+                      <td class="small">{{ col }}</td>
                     {% else %}
                       <td></td>
                     {% endif %}

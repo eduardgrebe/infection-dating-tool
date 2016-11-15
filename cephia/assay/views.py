@@ -155,7 +155,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
     runs = AssayRun.objects.all().order_by('-id')
     preview = AssayResult.objects.all().none().order_by('-id')
-    by_visits_form = AssaysByVisitForm()
+    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
     form = AssayRunFilterForm(request.GET or None)
     
     if request.method == 'GET' and request.GET:

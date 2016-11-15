@@ -43,6 +43,7 @@ class AssaysByVisitForm(forms.Form):
     specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
     by_visit_assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
     panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Restrict export to panels:')
+    result_output = forms.ChoiceField(required=True, choices=((1, 'detailed'), (2, 'generic')), initial='detailed', label='Select generic or detailed')
 
     def clean_specimen_file(self):
         specimen_file = self.cleaned_data.get('specimen_file')
@@ -68,16 +69,11 @@ class AssaysByVisitForm(forms.Form):
         rows = [z.strip() for z in value.split(u'\n')]
         self.cleaned_data['imported_specimen_labels'] = rows
         return value
-    
-    def clean(self):
-        if self.cleaned_data.get('specimen_file') and self.cleaned_data.get('specimen_labels'):
-            raise forms.ValidationError('Options are bexclusive, please complete only one.')
-
-        return self.cleaned_data
 
 
     def clean_visit_file(self):
-        visit_file = self.cleaned_data['visit_file']
+        import pdb;pdb.set_trace()
+        visit_file = self.cleaned_data.get('visit_file')
         if not visit_file:
             return visit_file
         filename = visit_file.name
@@ -101,37 +97,53 @@ class AssaysByVisitForm(forms.Form):
         return value
 
 
+    def clean(self):
+        if self.cleaned_data.get('specimen_file') and self.cleaned_data.get('specimen_labels'):
+            raise forms.ValidationError('Options are bexclusive, please complete only one.')
+        if self.cleaned_data.get('visit_file') and self.cleaned_data.get('visit_ids'):
+            raise forms.ValidationError('Options are bexclusive, please complete only one.')
+
+        return self.cleaned_data
+
+
     def get_csv_response(self):
         headers = []
         assays = self.cleaned_data['by_visit_assays']
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
         visit_ids = self.cleaned_data.get('imported_visit_ids')
         panels = self.cleaned_data.get('panels')
-        result_models = [get_result_model(assay.name) for assay in assays]
+        result_models = None
         results = AssayResult.objects.all()
 
         if visit_ids:
             visits = Visit.objects.filter(pk__in=visit_ids)
-            results = results.filter(visit__in=visits)
-
+            results = results.filter(specimen__visit__in=visits)
 
         if specimen_labels:
             specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
             results = results.filter(specimen__in=specimens)
 
-
         if assays:
             results = results.filter(assay_run__assay__in=assays)
-
 
         if panels:
             results = results.filter(specimen__visit__panels__in=panels)
 
+        if self.cleaned_data['result_output'] == '1':
+            if not assays:
+                assays = Assay.objects.all()
 
-        download = ResultDownload(headers, results, 'detailed', result_models, 300)
+            result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
+            download = ResultDownload(headers, results, False, result_models)
 
-        response, writer = get_csv_response('detailed_results_%s.csv' % (
+            response, writer = get_csv_response('detailed_results_%s.csv' % (
             datetime.today().strftime('%d%b%Y_%H%M')))
+        else:
+            download = ResultDownload(headers, results, True, result_models)
+
+            response, writer = get_csv_response('generic_results_%s.csv' % (
+            datetime.today().strftime('%d%b%Y_%H%M')))
+        
 
         writer.writerow(download.get_headers())
 
@@ -143,24 +155,36 @@ class AssaysByVisitForm(forms.Form):
         headers = []
         assays = self.cleaned_data['by_visit_assays']
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        visit_ids = self.cleaned_data.get('imported_visit_ids')
         panels = self.cleaned_data.get('panels')
-        result_models = [get_result_model(assay.name) for assay in assays]
+        result_models = None
         results = AssayResult.objects.all()
+        import pdb;pdb.set_trace()
+
+        if visit_ids:
+            visits = Visit.objects.filter(pk__in=visit_ids)
+            
+            results = results.filter(specimen__visit__in=visits)
 
         if assays:
             results = results.filter(assay_run__assay__in=assays)
-
 
         if specimen_labels:
             specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
             results = results.filter(specimen__in=specimens)
 
-            
         if panels:
             results = results.filter(specimen__visit__panels__in=panels)
 
+        if self.cleaned_data['result_output'] == '1':
+            if not assays:
+                assays = Assay.objects.all()
 
-        download = ResultDownload(headers, results, 'detailed', result_models, 10)
+            result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
+            download = ResultDownload(headers, results, False, result_models, 10)
+        else:
+            download = ResultDownload(headers, results, True, result_models, 10)
+        
 
         download.get_headers()
         return download
