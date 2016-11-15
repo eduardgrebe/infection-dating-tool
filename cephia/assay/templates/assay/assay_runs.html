@@ -18,7 +18,7 @@
 
   {% paginate runs %}
 
-  <div class="row">
+  <div class="row" display="table">
     <div class="col-md-4">
       <div class="panel panel-success">
         <div class="panel-heading">
@@ -40,9 +40,9 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-8 hidden" id="preview_results"></div>
+    <div class="col-md-8 hidden" id="preview_results"></div>
+  </div>
 
   <div class="container" id="runs">
     <div class="row">
@@ -99,9 +99,9 @@
 
        var vis = $('#preview_results').is(":visible");
        var form = $('#panel').find('form');
-       post_data = form.serialize();
+       form_data = form.serialize();
        
-       $.get('{% url 'assay:preview_assay_runs' %}', post_data).done(function(data) {
+       $.get('{% url 'assay:preview_assay_runs' %}', form_data).done(function(data) {
            $("#preview_results").removeClass("hidden");
            $("#preview_results").replaceWith(data);
        })
