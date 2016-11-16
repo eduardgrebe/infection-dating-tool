@@ -27,11 +27,11 @@ class OutsideEddiFileHandler(FileHandler):
 
     def validate(self):
         valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
-        headers = [u'', u'SubjectId', u'TestDate', u'TestCode', u'TestResult']
+        headers = [u'', u'Subject', u'Date', u'Test', u'Result']
         errors = []
         from outside_eddi.models import OutsideEddiSubject
         if self.header != headers:
-            errors.append("Incorrect headers used. It should be SubjectId, TestDate, TestCode, TestResult")
+            errors.append("Incorrect headers used. It should be Subject, Date, Test, Result")
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -40,10 +40,10 @@ class OutsideEddiFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    if not validate_date(row_dict['TestDate']):
+                    if not validate_date(row_dict['Date']):
                         errors.append("row " + str(row_num) + ": Incorrect date format, should be YYYY-MM-DD")
 
-                    if not row_dict['TestResult'].lower() in valid_results:
+                    if not row_dict['Result'].lower() in valid_results:
                         errors.append("row " + str(row_num) + ": Incorrect result format used")
 
             except Exception, e:
@@ -67,28 +67,28 @@ class OutsideEddiFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    if OutsideEddiSubject.objects.filter(subject_label=row_dict['SubjectId'], user=user).exists():
+                    if OutsideEddiSubject.objects.filter(subject_label=row_dict['Subject'], user=user).exists():
                         subject = OutsideEddiSubject.objects.get(
-                            subject_label=row_dict['SubjectId'],
+                            subject_label=row_dict['Subject'],
                             user=user
                         )
                     else:
                         subject = OutsideEddiSubject.objects.create(
-                            subject_label=row_dict['SubjectId'],
+                            subject_label=row_dict['Subject'],
                             user=user
                         )
                     
                     test_history_row = OutsideEddiDiagnosticTestHistory.objects.create(subject=subject, data_file=self.upload_file)
-                    test_history_row.test_date = row_dict['TestDate']
-                    test_history_row.test_code = row_dict['TestCode']
+                    test_history_row.test_date = row_dict['Date']
+                    test_history_row.test_code = row_dict['Test']
 
                     mapping = check_mapping(test_history_row.test_code, test_names, user)
                     if mapping == False:
                         mapping_needed.append("row " + str(row_num) + ": Mapping needed for test code: " + test_history_row.test_code)
 
-                    if row_dict['TestResult'].lower() in pos_results:
+                    if row_dict['Result'].lower() in pos_results:
                         test_history_row.test_result = 'Positive'
-                    elif row_dict['TestResult'].lower() in neg_results:
+                    elif row_dict['Result'].lower() in neg_results:
                         test_history_row.test_result = 'Negative'
                     test_history_row.save()
 
