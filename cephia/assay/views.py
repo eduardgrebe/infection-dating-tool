@@ -174,7 +174,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
 
 def preview_assay_runs(request, panel_id=None, template="assay/assay_runs_preview.html"):
     context = {}
-    by_visits_form = AssaysByVisitForm(data=request.GET, files=request.FILES)
+    by_visits_form = AssaysByVisitForm(request.GET)
 
     if by_visits_form.is_valid():
         preview = by_visits_form.preview_filter()
