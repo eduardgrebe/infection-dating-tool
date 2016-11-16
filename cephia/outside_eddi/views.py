@@ -61,7 +61,7 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
                     auth_login(request, user)
                     user.login_ok()
                     token = AuthenticationToken.create_token(user)
-                    return redirect("outside_eddi:home")
+                    return redirect("outside_eddi:data_files")
                 else:
                     msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
                     messages.add_message(request, messages.WARNING, msg)
@@ -492,6 +492,14 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     context['is_file'] = is_file
     
     return render(request, template, context)
+
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def help_page(request, file_id=None, template="outside_eddi/help.html"):
+    context = {}
+
+    return render(request, template, context)
+
 
 def _copy_diagnostic_tests():
 

@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^login/$', views.outside_eddi_login, name='login'),
     url(r'^logout/$', views.outside_eddi_logout, name='logout'),
     url(r'^data_files/$', views.data_files, name='data_files'),
+    url(r'^help/$', views.help_page, name='help_page'),
     
     url(r'^tests/$', views.tests, name='tests'),
     url(r'^tests/(?P<test_id>\d+)/edit/$', views.edit_test, name='edit_test'),
