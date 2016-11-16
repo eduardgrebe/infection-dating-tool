@@ -75,7 +75,9 @@
                         <td>{{run.fileinfo.filename}}</td>
                         <td>{{run.run_date}}</td>
                         <td><a href="{% url 'assay:run_results' run_id=run.id %}" target="_blank" class="btn btn-default" style="text-decoration:none;">Preview Results</a></td>
-                        <td><a href="{% url 'assay:purge_run' run_id=run.id %}" class="btn btn-danger" style="text-decoration:none;">Purge</a></td>
+                        {% if user.is_staff %}
+                          <td><a href="{% url 'assay:purge_run' run_id=run.id %}" class="btn btn-danger" style="text-decoration:none;">Purge</a></td>
+                        {% endif %}
                       </tr>
                     {% endfor %}
                   </tbody>

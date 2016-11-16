@@ -8,6 +8,7 @@ from assay_result_factory import get_result_model, ResultDownload
 from cephia.csv_helper import get_csv_response
 from assay.models import AssayResult
 from datetime import datetime
+from django.conf import settings
 
 
 class PanelCaptureForm(forms.ModelForm):
@@ -130,7 +131,11 @@ class AssaysByVisitForm(forms.Form):
 
         if self.cleaned_data['result_output'] == '1':
             if not assays:
-                assays = Assay.objects.all()
+                assays = []
+                for result in results[0:settings.MAX_NUM_DOWNLOAD_ROWS]:
+                    if result.assay not in assays:
+                        assays.append(result.assay)
+                # assays = Assay.objects.all()
 
             result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
             download = ResultDownload(headers, results, False, result_models)
@@ -175,7 +180,11 @@ class AssaysByVisitForm(forms.Form):
 
         if self.cleaned_data['result_output'] == '1':
             if not assays:
-                assays = Assay.objects.all()
+                assays = []
+                for result in results[0:settings.MAX_NUM_DOWNLOAD_ROWS]:
+                    if result.assay not in assays:
+                        assays.append(result.assay)
+                # assays = Assay.objects.all()
 
             result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
             download = ResultDownload(headers, results, False, result_models, 10)

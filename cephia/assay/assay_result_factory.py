@@ -57,6 +57,7 @@ class ResultDownload(object):
                                 "specimen.id",
                                 "specimen.parent_label",
                                 "specimen.specimen_type.name",
+                                "assay_run.id",
                                 "assay_run.assay.name",
                                 "assay_run.panel.name",
                                 "assay_run.laboratory.name",
@@ -174,10 +175,10 @@ class ResultDownload(object):
             limited_results = self.results[0:settings.MAX_NUM_DOWNLOAD_ROWS]
         else:
             limited_results = self.results[0:self.limit]
-            
+
         for result in limited_results:
             row = [ self.getattr_or_none(result, c) for c in combined_columns ]
-            
+
             if self.detailed:
                 for model in self.result_models:
                     row[generic_id_index] = result.pk
@@ -193,7 +194,10 @@ class ResultDownload(object):
                                 row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
                             
                             self.content.append(list(row))
+                            if self.limit and len(self.content) >= self.limit:
+                                break
                     row[result_field_index] = 'final_result'
+                    row[test_mode_field_index] = ''
                     row[result_value_index] = result.result
                     row[method_field_index] = result.method
                     self.content.append(list(row))
