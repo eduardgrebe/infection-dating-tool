@@ -158,7 +158,6 @@ class AssaysByVisitForm(forms.Form):
         panels = self.cleaned_data.get('panels')
         result_models = None
         results = AssayResult.objects.all()
-        import pdb;pdb.set_trace()
 
         if visit_ids:
             visits = Visit.objects.filter(pk__in=visit_ids)
