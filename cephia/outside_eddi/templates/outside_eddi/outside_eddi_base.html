@@ -1,0 +1,67 @@
+{% load admin_static %}{% load firstof from future %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    {% block extrastyle %}{{ block.super }}<link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap-theme.min.css' %}" />
+
+      <link type="text/css" rel="stylesheet" href="{% static 'css/base.css' %}" />{% endblock %}
+      {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}" />{% endif %}
+      <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "admin/" %}{% endfilter %}";</script>
+      {% block extrahead %}{% endblock %}
+      {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+  </head>
+  {% load i18n %}
+  <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+    <!-- Container -->
+    <div id="container">
+      <div style='margin: 0 auto;width: 80%;'>
+        <img src="{% static 'images/CEPHIA.jpg' %}" alt="CEPHIA logo" style="float:left;" height="150" title="CEPHIA">
+        <h1 style="padding-top:60px;" class="site-title">
+          <a href="http://incidence-estimation.org/page/cephia">CEPHIA</a></h1>
+      </div>
+      {% if not is_popup %}
+        <!-- Header -->
+        <div id="header">
+
+        </div>
+        <!-- END Header -->
+        {% block breadcrumbs %}
+          <div class="breadcrumbs">
+            
+            <a href="{% url 'home' %}">{% trans 'Home' %}</a>
+            {% if title %} &rsaquo; {{ title }}{% endif %}
+          </div>
+        {% endblock %}
+      {% endif %}
+
+      {% block messages %}
+        {% if messages %}
+          <ul class="messagelist">{% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+          {% endfor %}</ul>
+        {% endif %}
+      {% endblock messages %}
+
+      <!-- Content -->
+      <div id="content" class="{% block coltype %}colM{% endblock %}">
+        {% block pretitle %}{% endblock %}
+        {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+        {% block content %}
+          {% block object-tools %}{% endblock %}
+          {{ content }}
+        {% endblock %}
+        {% block sidebar %}{% endblock %}
+        <br class="clear" />
+      </div>
+      <!-- END Content -->
+    </div>
+    <!-- END Container -->
+    
+    <div class="container footer">
+      {% block footer %}{% include 'cephia/footer.html' %}{% endblock %}
+    </div>
+
+    
+
+  </body>
+</html>

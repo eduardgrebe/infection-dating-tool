@@ -1,4 +1,4 @@
-{% extends "admin/cephia_base_site.html" %}
+{% extends "outside_eddi/outside_eddi_base.html" %}
 {% load i18n admin_static %}
 {% load staticfiles %}
 {% block extrastyle %}
@@ -23,8 +23,7 @@
 
 {% block content %}
   <p style="text-align: center">
-    Welcome to the Cephia database. The system is currently only accessible to authorised collaborators. For publicly available information, please visit the
-    <a href="http://incidence-estimation.org/page/cephia">Cephia project website</a>.
+    Welcome to the Cephia Infection Dating Tool
   </p>
   {% if form.errors and not form.non_field_errors and not form.this_is_the_login_form.errors %}
     <p class="errornote">
