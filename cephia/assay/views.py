@@ -1,7 +1,7 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render, render_to_response, redirect
 from django.core.urlresolvers import reverse
 import logging
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.contrib import messages
@@ -20,7 +20,8 @@ from django.core.management import call_command
 from tasks import process_file_info
 from django.db import transaction
 from django.conf import settings
-
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import Permission
 
 logger = logging.getLogger(__name__)
 
@@ -154,19 +155,42 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
     runs = AssayRun.objects.all().order_by('-id')
-    if request.method == 'GET':
-        form = AssayRunFilterForm(request.GET or None)
+    preview = AssayResult.objects.all().none().order_by('-id')
+    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
+    form = AssayRunFilterForm(request.GET or None)
+
+    can_purge_runs = False
+    permissions = Permission.objects.filter(user=request.user, name='Can purge assay runs')
+    if permissions:
+        can_purge_runs = True
+
+    if request.method == 'GET' and request.GET:
         if form.is_valid():
             runs = form.filter()
-        context['runs'] = runs
-        context['form'] = form
 
-    by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
+    context['runs'] = runs
+    context['form'] = form
+    context['can_purge_runs'] = can_purge_runs
     context['by_visits_form'] = by_visits_form
+
     if request.method == 'POST' and by_visits_form.is_valid():
         return by_visits_form.get_csv_response()
     
     return render_to_response(template, context, context_instance=RequestContext(request))
+
+
+def preview_assay_runs(request, panel_id=None, template="assay/assay_runs_preview.html"):
+    context = {}
+    by_visits_form = AssaysByVisitForm(request.GET)
+
+    if by_visits_form.is_valid():
+        preview = by_visits_form.preview_filter()
+
+    context['preview'] = preview
+    context['by_visits_form'] = by_visits_form
+
+    return render_to_response(template, context, context_instance=RequestContext(request))
+
 
 def run_results(request, run_id=None, template="assay/run_results.html"):
     context = {}

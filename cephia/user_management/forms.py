@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.db.models import Q
 
 class PermissionChoiceField(ModelMultipleChoiceField):
     def label_from_instance(self, instance):
@@ -17,7 +18,10 @@ class UserEditForm(ModelForm):
     user_permissions = PermissionChoiceField(
         widget=CheckboxSelectMultiple(),
         required=False,
-        queryset=Permission.objects.filter(content_type__app_label='cephia', content_type__model='CephiaUser', name__icontains='upload'), label='Permissions')
+        queryset=Permission.objects.filter(
+            Q(content_type__app_label='cephia', content_type__model='CephiaUser', name__icontains='upload') |
+            Q(content_type__app_label='cephia', content_type__model='CephiaUser', name__icontains='purge assay runs')),
+        label='Permissions')
 
     class Meta:
         model = get_user_model()

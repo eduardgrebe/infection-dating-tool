@@ -1,5 +1,5 @@
 from django import forms
-from cephia.models import FileInfo, Panel, Laboratory, Assay
+from cephia.models import FileInfo, Panel, Laboratory, Assay, Visit, Specimen
 from models import AssayRun
 import unicodecsv as csv
 from cephia.excel_helper import ExcelHelper
@@ -8,6 +8,7 @@ from assay_result_factory import get_result_model, ResultDownload
 from cephia.csv_helper import get_csv_response
 from assay.models import AssayResult
 from datetime import datetime
+from django.conf import settings
 
 
 class PanelCaptureForm(forms.ModelForm):
@@ -37,11 +38,42 @@ class PanelFileForm(forms.ModelForm):
             self.fields[key].required = True
 
 class AssaysByVisitForm(forms.Form):
-    visit_file = forms.FileField(required=True, label='Visit id file')
-    assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
+    visit_file = forms.FileField(required=False, label='Upload a list of visit IDs')
+    visit_ids = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of visit IDs')
+    specimen_file = forms.FileField(required=False, label='Upload a list of specimen labels')
+    specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
+    by_visit_assays = forms.ModelMultipleChoiceField(required=False, queryset=Assay.objects.all().order_by('name'), label='Which assays?')
+    panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Restrict export to panels:')
+    result_output = forms.ChoiceField(required=True, choices=((1, 'detailed'), (2, 'generic')), initial='detailed', label='Select generic or detailed')
+
+    def clean_specimen_file(self):
+        specimen_file = self.cleaned_data.get('specimen_file')
+        if not specimen_file:
+            return specimen_file
+        filename = specimen_file.name
+        extension = os.path.splitext(filename)[1][1:].lower()
+        if extension == 'csv':
+            rows = [z[0] for z in csv.reader(specimen_file) if z]
+        elif extension in ['xls', 'xlsx']:
+            rows = list(z[0] for z in ExcelHelper(specimen_file).rows() if z)
+        else:
+            raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
+
+        self.cleaned_data['imported_specimen_labels'] = rows
+        return rows
+
+
+    def clean_specimen_labels(self):
+        value = self.cleaned_data.get('specimen_labels')
+        if not value:
+            return value
+        rows = [z.strip() for z in value.split(u'\n')]
+        self.cleaned_data['imported_specimen_labels'] = rows
+        return value
+
 
     def clean_visit_file(self):
-        visit_file = self.cleaned_data['visit_file']
+        visit_file = self.cleaned_data.get('visit_file')
         if not visit_file:
             return visit_file
         filename = visit_file.name
@@ -52,25 +84,116 @@ class AssaysByVisitForm(forms.Form):
             rows = (z[0] for z in ExcelHelper(visit_file).rows() if z)
         else:
             raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
-        self.cleaned_data['visit_ids'] = [r for r in rows if r.isdigit()]
+        self.cleaned_data['imported_visit_ids'] = [r for r in rows if r.isdigit()]
         return visit_file
 
+
+    def clean_visit_ids(self):
+        value = self.cleaned_data.get('visit_ids')
+        if not value:
+            return value
+        rows = [z.strip() for z in value.split(u'\n')]
+        self.cleaned_data['imported_visit_ids'] = rows
+        return value
+
+
+    def clean(self):
+        if self.cleaned_data.get('specimen_file') and self.cleaned_data.get('specimen_labels'):
+            raise forms.ValidationError('Options are bexclusive, please complete only one.')
+        if self.cleaned_data.get('visit_file') and self.cleaned_data.get('visit_ids'):
+            raise forms.ValidationError('Options are bexclusive, please complete only one.')
+
+        return self.cleaned_data
+
+
     def get_csv_response(self):
-        assays = self.cleaned_data['assays']
         headers = []
-        result_models = [get_result_model(assay.name) for assay in assays]
-        results = AssayResult.objects.filter(assay_run__assay__in=assays)
+        assays = self.cleaned_data['by_visit_assays']
+        specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        visit_ids = self.cleaned_data.get('imported_visit_ids')
+        panels = self.cleaned_data.get('panels')
+        result_models = None
+        results = AssayResult.objects.all()
 
-        download = ResultDownload(headers, results, 'detailed', result_models)
+        if visit_ids:
+            visits = Visit.objects.filter(pk__in=visit_ids)
+            results = results.filter(specimen__visit__in=visits)
 
-        response, writer = get_csv_response('detailed_results_%s.csv' % (
+        if specimen_labels:
+            specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
+            results = results.filter(specimen__in=specimens)
+
+        if assays:
+            results = results.filter(assay_run__assay__in=assays)
+
+        if panels:
+            results = results.filter(specimen__visit__panels__in=panels)
+
+        if self.cleaned_data['result_output'] == '1':
+            if not assays:
+                assays = []
+                for result in results[0:settings.MAX_NUM_DOWNLOAD_ROWS]:
+                    if result.assay not in assays:
+                        assays.append(result.assay)
+                # assays = Assay.objects.all()
+
+            result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
+            download = ResultDownload(headers, results, False, result_models)
+
+            response, writer = get_csv_response('detailed_results_%s.csv' % (
             datetime.today().strftime('%d%b%Y_%H%M')))
+        else:
+            download = ResultDownload(headers, results, True, result_models)
+
+            response, writer = get_csv_response('generic_results_%s.csv' % (
+            datetime.today().strftime('%d%b%Y_%H%M')))
+        
 
         writer.writerow(download.get_headers())
 
         for row in download.get_content():
             writer.writerow(row)
         return response
+
+    def preview_filter(self):
+        headers = []
+        assays = self.cleaned_data['by_visit_assays']
+        specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        visit_ids = self.cleaned_data.get('imported_visit_ids')
+        panels = self.cleaned_data.get('panels')
+        result_models = None
+        results = AssayResult.objects.all()
+
+        if visit_ids:
+            visits = Visit.objects.filter(pk__in=visit_ids)
+            results = results.filter(specimen__visit__in=visits)
+
+        if assays:
+            results = results.filter(assay_run__assay__in=assays)
+
+        if specimen_labels:
+            specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
+            results = results.filter(specimen__in=specimens)
+
+        if panels:
+            results = results.filter(specimen__visit__panels__in=panels)
+
+        if self.cleaned_data['result_output'] == '1':
+            if not assays:
+                assays = []
+                for result in results[0:settings.MAX_NUM_DOWNLOAD_ROWS]:
+                    if result.assay not in assays:
+                        assays.append(result.assay)
+                # assays = Assay.objects.all()
+
+            result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
+            download = ResultDownload(headers, results, False, result_models, 10)
+        else:
+            download = ResultDownload(headers, results, True, result_models, 10)
+        
+
+        download.get_headers()
+        return download
 
 
 class AssayRunFilterForm(forms.Form):
@@ -94,6 +217,7 @@ class AssayRunFilterForm(forms.Form):
         [ panel_choices.append((x.id, x.name)) for x in Panel.objects.all() ]
         self.fields['panel'].choices = panel_choices
 
+
     def filter(self):
         qs = AssayRun.objects.all()
         panel = self.cleaned_data['panel']
@@ -108,6 +232,7 @@ class AssayRunFilterForm(forms.Form):
             qs = qs.filter(laboratory__id=laboratory)
 
         return qs
+
 
 class AssayRunResultsFilterForm(forms.Form):
     specimen_label = forms.CharField(required=False)
