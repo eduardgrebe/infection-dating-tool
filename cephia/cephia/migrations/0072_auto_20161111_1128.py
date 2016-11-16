@@ -15,14 +15,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='assay',
-            name='created_by',
-            field=cephia.fields.ProtectedForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='assays', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='assay',
-            name='is_custom',
-            field=models.BooleanField(default=False),
-        ),
+        
     ]

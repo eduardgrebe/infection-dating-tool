@@ -14,9 +14,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='assayresult',
-            name='visit',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='cephia.Visit'),
-        ),
+        
     ]
