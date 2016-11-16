@@ -75,8 +75,8 @@
                         <td>{{run.fileinfo.filename}}</td>
                         <td>{{run.run_date}}</td>
                         <td><a href="{% url 'assay:run_results' run_id=run.id %}" target="_blank" class="btn btn-default" style="text-decoration:none;">Preview Results</a></td>
-                        {% if user.is_staff %}
-                          <td><a href="{% url 'assay:purge_run' run_id=run.id %}" class="btn btn-danger" style="text-decoration:none;">Purge</a></td>
+                        {% if can_purge_runs %} 
+                          <td><a href="{% url 'assay:purge_run' run_id=run.id %}" onclick="if ( ! confirm('Are you sure you want to purge this Assay Run?') ) { return false }" class="btn btn-danger" style="text-decoration:none;">Purge</a></td>
                         {% endif %}
                       </tr>
                     {% endfor %}

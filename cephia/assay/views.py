@@ -21,6 +21,7 @@ from tasks import process_file_info
 from django.db import transaction
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import Permission
 
 logger = logging.getLogger(__name__)
 
@@ -157,13 +158,19 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     preview = AssayResult.objects.all().none().order_by('-id')
     by_visits_form = AssaysByVisitForm(request.POST or None, request.FILES or None)
     form = AssayRunFilterForm(request.GET or None)
-    
+
+    can_purge_runs = False
+    permissions = Permission.objects.filter(user=request.user, name='Can purge assay runs')
+    if permissions:
+        can_purge_runs = True
+
     if request.method == 'GET' and request.GET:
         if form.is_valid():
             runs = form.filter()
 
     context['runs'] = runs
     context['form'] = form
+    context['can_purge_runs'] = can_purge_runs
     context['by_visits_form'] = by_visits_form
 
     if request.method == 'POST' and by_visits_form.is_valid():
