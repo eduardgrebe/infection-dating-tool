@@ -72,7 +72,6 @@ class AssaysByVisitForm(forms.Form):
 
 
     def clean_visit_file(self):
-        import pdb;pdb.set_trace()
         visit_file = self.cleaned_data.get('visit_file')
         if not visit_file:
             return visit_file
@@ -84,7 +83,7 @@ class AssaysByVisitForm(forms.Form):
             rows = (z[0] for z in ExcelHelper(visit_file).rows() if z)
         else:
             raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
-        self.cleaned_data['visit_ids'] = [r for r in rows if r.isdigit()]
+        self.cleaned_data['imported_visit_ids'] = [r for r in rows if r.isdigit()]
         return visit_file
 
 
@@ -163,7 +162,6 @@ class AssaysByVisitForm(forms.Form):
 
         if visit_ids:
             visits = Visit.objects.filter(pk__in=visit_ids)
-            
             results = results.filter(specimen__visit__in=visits)
 
         if assays:
