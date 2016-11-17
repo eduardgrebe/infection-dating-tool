@@ -27,11 +27,13 @@ from json import dumps
 from django.db.models import Q
 import datetime
 
+
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
         lambda u: u.is_authenticated and u.groups.filter(name='Outside Eddi Users').exists(),
         login_url=login_url,
     )
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def home(request, file_id=None, template="outside_eddi/home.html"):
@@ -44,6 +46,7 @@ def home(request, file_id=None, template="outside_eddi/home.html"):
     context['outside_eddi'] = True
 
     return render(request, template, context)
+
 
 @csrf_exempt
 def outside_eddi_login(request, template='outside_eddi/login.html'):
@@ -72,10 +75,12 @@ def outside_eddi_login(request, template='outside_eddi/login.html'):
     context['form'] = form
     return render(request, template, context)
 
+
 def outside_eddi_logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
         login_url='outside_eddi:login'
     return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
+
 
 @csrf_exempt
 def outside_eddi_user_registration(request, template='outside_eddi/user_registration.html'):
@@ -152,16 +157,19 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
 
     return render(request, template, context)
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def delete_data_file(request, file_id, context=None):
     context = context or {}
 
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
+    f_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=f).delete()
     f.deleted = True
     f.save()
     
-    messages.info(request, 'File deleted')
+    messages.info(request, "Your file and all it's data has been deleted")
     return redirect(reverse('outside_eddi:data_files'))
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def save_data_file(request, file_id, context=None):
@@ -187,6 +195,7 @@ def save_data_file(request, file_id, context=None):
         f.save()
     return redirect(reverse('outside_eddi:data_files'))
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def review_mapping_data_file(request, file_id, context=None):
     context = context or {}
@@ -199,6 +208,7 @@ def review_mapping_data_file(request, file_id, context=None):
         check_mapping(test.test_code, test_names, user)
 
     return test_mapping(request, file_id, template="outside_eddi/test_mapping.html")
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def process_data_file(request, file_id, context=None):
@@ -229,6 +239,7 @@ def process_data_file(request, file_id, context=None):
 
     return redirect(reverse('outside_eddi:data_files'))
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_study(request, study_id=None, template="outside_eddi/manage_studies.html"):
     context = {}
@@ -253,6 +264,7 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
 
     return render(request, template, context)
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context = {}
@@ -265,6 +277,7 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context['global_tests'] = global_tests
 
     return render(request, template, context)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def create_test(request, template='outside_eddi/create_test_form.html', context=None):
@@ -298,6 +311,7 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', context=None):
@@ -338,6 +352,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
     
     return render(request, template, context)
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def results(request, file_id=None, template="outside_eddi/results.html"):
     context = {}
@@ -354,6 +369,7 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
     context['subjects'] = subjects
 
     return render(request, template, context)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
@@ -382,9 +398,11 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     
     return render(request, template, context)
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def create_test_mapping_properties(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
     return create_test_mapping(request, map_code, test_id, template)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def create_test_mapping(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
@@ -392,6 +410,7 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     user = request.user
     
     if test_id:
+        import pdb;pdb.set_trace()
         form = TestPropertyMappingForm(request.POST or None, initial={'test': test_id, 'code': map_code})
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
@@ -439,9 +458,11 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
+
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test_mapping_properties(request, map_id=None, test_id=None, is_file=False, template='outside_eddi/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, template)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='outside_eddi/edit_mapping_form.html', context=None):
@@ -566,6 +587,7 @@ def test_properties_mapping(request, test):
 
     return formset
 
+
 def set_active_property(test):
     properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
     for prop in properties:
@@ -601,6 +623,7 @@ def check_mapping(test_code, tests, user):
         return False
     else:
         return True
+
 
 def check_mapping_details(mapping, user):
     completed_mapping = True
