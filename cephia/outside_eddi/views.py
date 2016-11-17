@@ -118,17 +118,35 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
                 uploaded_file.user = user
                 uploaded_file.state = 'validated'
                 uploaded_file.save()
+                
+                mapping_needed = OutsideEddiFileHandler(uploaded_file).save_data(user)
+                
+                if uploaded_file.message:
+                    messages.info(request, uploaded_file.message)
+                    uploaded_file.state = 'error'
+                    uploaded_file.save()
+                elif mapping_needed:
+                    uploaded_file.state = 'needs_mapping'
+                    uploaded_file.save()
+                    messages.info(request, 'You need to please provide mapping for your file')
+                else:
+                    messages.info(request, 'Data Saved')
+                    uploaded_file.state = 'mapped'
+                    uploaded_file.save()
+                
                 messages.info(request, u"Your file was uploaded successfully" )
             else:
                 uploaded_file.delete()
                 for error in errors:
                     messages.info(request, error)
+                messages.info(request, 'Your file was not uploaded')
 
             return redirect("outside_eddi:data_files")
 
     else:
         form = TestHistoryFileUploadForm()
 
+    context['data_files_page'] = True
     context['form'] = form
     context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user, deleted=False).order_by("-created")
 

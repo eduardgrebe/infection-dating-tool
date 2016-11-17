@@ -1,4 +1,4 @@
-from cephia.file_handlers.file_handler import FileHandler
+from outside_eddi.file_handlers.outside_eddi_file_handler import FileHandler
 from cephia.file_handlers.handler_imports import *
 import logging
 
@@ -95,7 +95,6 @@ class OutsideEddiFileHandler(FileHandler):
             except Exception, e:
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
-                import pdb;pdb.set_trace()
                 self.upload_file.save()
                 return 0, 1
 
