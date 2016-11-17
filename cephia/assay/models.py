@@ -834,13 +834,15 @@ class CustomAssayResult(BaseAssayResult):
 
     result_detail_fields = ['classification', 'recent']
     
-    classification = models.CharField(max_length=255, null=True)
+    result_classification = models.CharField(max_length=255, null=True)
     recent = models.NullBooleanField()
+    result_quantitative = models.FloatField(null=True, blank=False)
 
     
 class CustomAssayResultRow(BaseAssayResultRow):
     result_detail_fields = ['classification']
     
-    classification = models.CharField(max_length=255, null=True)
-
+    result_classification = models.CharField(max_length=255, null=True)
+    result_quantitative = models.CharField(max_length=255, null=True)
     custom_result = models.ForeignKey(CustomAssayResult, null=True)
+    

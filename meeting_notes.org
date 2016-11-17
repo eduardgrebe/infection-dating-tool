@@ -55,3 +55,5 @@ save map for a file and set of results so that the user can review the map used 
 Subject	EP DDI	LP DDI	Interval Size	EDDI
 provide export csv
 * notes from meeting 10/11
+* notes from meeting 17/11
+mysql optimizer

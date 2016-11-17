@@ -14,14 +14,14 @@ class CustomAssayFileHandler(FileHandler):
         self.registered_columns = [
             'specimen_label',
             'assay',
-            'laboratory',
             'test_date',
             'operator',
             'assay_kit_lot',
             'plate_identifier',
             'test_mode',
             'specimen_purpose',
-            'classification'
+            'result_classification',
+            'result_quantitative',
         ]
 
     def parse(self):
@@ -39,14 +39,14 @@ class CustomAssayFileHandler(FileHandler):
                     custom_assay_result_row = CustomAssayResultRow.objects.create(
                         specimen_label = row_dict.get('specimen_label'),
                         assay = row_dict.get('assay'),
-                        laboratory = row_dict.get('laboratory'),
                         test_date = row_dict.get('test_date'),
                         operator = row_dict.get('operator'),
                         assay_kit_lot = row_dict.get('assay_kit_lot'),
                         plate_identifier = row_dict.get('plate_identifier'),
                         test_mode = row_dict.get('test_mode'),
                         specimen_purpose=row_dict.get('specimen_purpose'),
-                        classification=row_dict['classification'],
+                        result_classification=row_dict.get('result_classification'),
+                        result_quantitative=row_dict.get('result_quantitative'),
                         state='pending',
                         fileinfo=self.upload_file
                     )
@@ -98,7 +98,6 @@ class CustomAssayFileHandler(FileHandler):
                 rows_validated += 1
                 custom_assay_result_row.save()
             except Exception, e:
-                raise
                 logger.exception(e)
                 custom_assay_result_row.state = 'error'
                 custom_assay_result_row.error_message = e.message
@@ -135,11 +134,6 @@ class CustomAssayFileHandler(FileHandler):
                         parent_label__isnull=False
                     )
 
-                    try:
-                        laboratory = Laboratory.objects.get(name=custom_assay_result_row.laboratory)
-                    except Laboratory.DoesNotExist:
-                        laboratory = self.upload_file.laboratory
-
                     test_date = None
                     if custom_assay_result_row.test_date:
                         test_date = datetime.strptime(custom_assay_result_row.test_date, '%Y-%m-%d').date()
@@ -147,23 +141,30 @@ class CustomAssayFileHandler(FileHandler):
                     custom_assay_result = CustomAssayResult.objects.create(
                         specimen=specimen,
                         assay=assay,
-                        laboratory=laboratory,
+                        laboratory=assay_run.laboratory,
                         test_date=test_date,
                         operator=custom_assay_result_row.operator,
                         assay_kit_lot=custom_assay_result_row.assay_kit_lot,
                         plate_identifier=custom_assay_result_row.plate_identifier,
                         test_mode=custom_assay_result_row.test_mode,
                         specimen_purpose=custom_assay_result_row.specimen_purpose,
-                        classification=custom_assay_result_row.classification,
+                        result_classification=custom_assay_result_row.result_classification,
+                        result_quantitative=custom_assay_result_row.result_quantitative or None,
                         assay_run=assay_run
                     )
 
-                    if custom_assay_result_row.classification is not None:
-                        custom_assay_result.recent = custom_assay_result_row.classification.lower() == 'recent'
+                    if custom_assay_result_row.result_classification is not None:
+                        custom_assay_result.recent = custom_assay_result_row.result_classification.lower() == 'recent'
 
                     final_result = None
-                    if custom_assay_result_row.classification is not None:
+
+                    method = None
+                    if 'result_quantitative' in self.header:
+                        final_result = custom_assay_result.result_quantitative
+                        method = None
+                    elif custom_assay_result_row.result_classification is not None:
                         final_result = float(custom_assay_result.recent)
+                        method = 'model_classification'
                     
                     custom_assay_result.save()
 
@@ -174,7 +175,7 @@ class CustomAssayFileHandler(FileHandler):
                         test_date=test_date,
                         assay_run=assay_run,
                         result=final_result,
-                        method='model_classification'
+                        method=method
                     )
                     
                     custom_assay_result.assay_result = assay_result
