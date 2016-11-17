@@ -55,6 +55,7 @@ save map for a file and set of results so that the user can review the map used 
 Subject	EP DDI	LP DDI	Interval Size	EDDI
 provide export csv
 * notes from meeting 10/11
+<<<<<<< HEAD
 ** full results export - this needs to happen first
 add visit foreign key to results for both specific and generic tables
 add filter by visits option
@@ -111,3 +112,7 @@ generic file handler for results
 (copy code from bioplex duke)
 =======
 >>>>>>> sprint16
+=======
+* notes from meeting 17/11
+mysql optimizer
+>>>>>>> meeting_branch

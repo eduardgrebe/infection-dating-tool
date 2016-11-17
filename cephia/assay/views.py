@@ -22,6 +22,10 @@ from django.db import transaction
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import Permission
+from assay_result_factory import register_result_model, register_result_row_model
+from cephia.file_handlers.file_handler_register import register_file_handler
+from cephia.file_handlers.custom_assay_file_handler import CustomAssayFileHandler
+from assay.models import CustomAssayResult
 
 logger = logging.getLogger(__name__)
 
@@ -270,6 +274,9 @@ def custom_assays(request, template="assay/custom_assays.html"):
         instance.created_by = request.user
         instance.is_custom = True
         instance.save()
+        register_result_model(CustomAssayResult,  instance.name)
+        register_result_row_model(CustomAssayResult,  instance.name)
+        register_file_handler("assay", CustomAssayFileHandler, instance.name)
         return HttpResponseRedirect(reverse('assay:custom_assays'))
 
     context['form'] = form
