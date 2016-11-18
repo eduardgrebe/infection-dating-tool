@@ -90,7 +90,7 @@ INSTALLED_APPS = (
     'user_management',
     'diagnostics',
     'assay',
-    'outside_eddi',
+    # 'outside_eddi',
     'djcelery',
     'django_js_reverse',
 )
