@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('diagnostics', '0021_historicaldiagnostictest_historicaldiagnostictesthistory_historicalprotocollookup_historicaltestprop'),
-        ('cephia', '0067_auto_20160923_1027'),
+        ('cephia', '0069_fix_cohort_dates'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('outside_eddi', '0005_auto_20160927_1030'),
     ]

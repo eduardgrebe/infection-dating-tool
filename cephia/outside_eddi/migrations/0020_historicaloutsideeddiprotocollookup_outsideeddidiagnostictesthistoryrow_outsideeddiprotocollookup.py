@@ -11,7 +11,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cephia', '0068_merge'),
+        ('cephia', '0069_fix_cohort_dates'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('outside_eddi', '0019_auto_20161014_1328'),
     ]

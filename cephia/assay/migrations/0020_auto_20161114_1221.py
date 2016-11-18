@@ -16,5 +16,83 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-
+        migrations.CreateModel(
+            name='CustomAssayResult',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('test_date', models.DateField(blank=True, max_length=255, null=True)),
+                ('operator', models.CharField(blank=True, max_length=255, null=True)),
+                ('assay_kit_lot', models.CharField(blank=True, max_length=255, null=True)),
+                ('plate_identifier', models.CharField(blank=True, max_length=255, null=True)),
+                ('test_mode', models.CharField(blank=True, max_length=255, null=True)),
+                ('specimen_purpose', models.CharField(blank=True, max_length=255, null=True)),
+                ('specimen_label', models.CharField(blank=True, max_length=255, null=True)),
+                ('interpretation', models.CharField(choices=[(b'recent', b'Recent'), (b'non_recent', b'Non-Recent')], max_length=255, null=True)),
+                ('exclusion', models.CharField(max_length=255, null=True)),
+                ('warning_msg', models.CharField(max_length=255, null=True)),
+                ('error_message', models.CharField(max_length=255, null=True)),
+                ('classification', models.CharField(max_length=255, null=True)),
+                ('recent', models.NullBooleanField()),
+                ('assay', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='cephia.Assay')),
+            ],
+            options={
+                'db_table': 'assay_custom',
+            },
+        ),
+        migrations.CreateModel(
+            name='CustomAssayResultRow',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('state', models.CharField(choices=[(b'recalled', b'Recalled'), (b'pending', b'Pending'), (b'validated', b'Validated'), (b'imported', b'Imported'), (b'processed', b'Processed'), (b'error', b'Error')], max_length=20)),
+                ('error_message', models.TextField(blank=True)),
+                ('date_processed', models.DateTimeField(auto_now_add=True)),
+                ('specimen_label', models.CharField(blank=True, max_length=255, null=True)),
+                ('assay', models.CharField(blank=True, max_length=255, null=True)),
+                ('laboratory', models.CharField(blank=True, max_length=255, null=True)),
+                ('test_date', models.CharField(blank=True, max_length=255, null=True)),
+                ('operator', models.CharField(blank=True, max_length=255, null=True)),
+                ('assay_kit_lot', models.CharField(blank=True, max_length=255, null=True)),
+                ('plate_identifier', models.CharField(blank=True, max_length=255, null=True)),
+                ('test_mode', models.CharField(blank=True, max_length=255, null=True)),
+                ('specimen_purpose', models.CharField(blank=True, max_length=255, null=True)),
+                ('interpretation', models.CharField(max_length=255, null=True)),
+                ('exclusion', models.CharField(max_length=255, null=True)),
+                ('classification', models.CharField(max_length=255, null=True)),
+                ('custom_result', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='assay.CustomAssayResult')),
+                ('fileinfo', cephia.fields.ProtectedForeignKey(on_delete=django.db.models.deletion.PROTECT, to='cephia.FileInfo')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.AddField(
+            model_name='assayresult',
+            name='visit',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='cephia.Visit'),
+        ),
+        migrations.AddField(
+            model_name='customassayresult',
+            name='assay_result',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='assay.AssayResult'),
+        ),
+        migrations.AddField(
+            model_name='customassayresult',
+            name='assay_run',
+            field=lib.fields.ProtectedForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='assay.AssayRun'),
+        ),
+        migrations.AddField(
+            model_name='customassayresult',
+            name='laboratory',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='cephia.Laboratory'),
+        ),
+        migrations.AddField(
+            model_name='customassayresult',
+            name='specimen',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='cephia.Specimen'),
+        ),
+        migrations.AddField(
+            model_name='customassayresult',
+            name='visit',
+            field=lib.fields.ProtectedForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='cephia.Visit'),
+        ),
     ]
