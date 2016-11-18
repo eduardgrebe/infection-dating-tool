@@ -403,7 +403,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def create_test_mapping_properties(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
+def create_test_mapping_properties(request, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
     return create_test_mapping(request, map_code, test_id, template)
 
 
@@ -411,6 +411,8 @@ def create_test_mapping_properties(request, map_code=None, test_id=None, templat
 def create_test_mapping(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
     context = {}
     user = request.user
+    if request.GET:
+        map_code = request.GET['map_code']
     
     if test_id:
         form = TestPropertyMappingForm(request.POST or None, initial={'test': test_id, 'code': map_code})
@@ -477,7 +479,10 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     if test_id:
-        form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id})
+        map_code = None
+        if request.GET:
+            map_code = request.GET['map_code']
+        form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id, 'code': map_code})
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
         context['test'] = test
