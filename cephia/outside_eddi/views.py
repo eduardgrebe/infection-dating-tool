@@ -376,10 +376,12 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
     user = request.user
     is_file = False
+    js_is_file = 'false'
 
     if file_id:
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         is_file = True
+        js_is_file = 'true'
         
         codes = [x.test_code for x in data_file.test_history.all()]
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
@@ -395,6 +397,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         
     context['mapping'] = mapping
     context['is_file'] = is_file
+    context['js_is_file'] = js_is_file
     
     return render(request, template, context)
 
@@ -410,7 +413,6 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     user = request.user
     
     if test_id:
-        import pdb;pdb.set_trace()
         form = TestPropertyMappingForm(request.POST or None, initial={'test': test_id, 'code': map_code})
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
@@ -461,7 +463,11 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test_mapping_properties(request, map_id=None, test_id=None, is_file=False, template='outside_eddi/edit_mapping_form.html', context=None):
-    return edit_test_mapping(request, map_id, test_id, template)
+    return edit_test_mapping(request, map_id, test_id, is_file, template)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_file=True, template='outside_eddi/edit_mapping_form.html', context=None):
+    return edit_test_mapping(request, map_id, test_id, is_file, template)
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')

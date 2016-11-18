@@ -88,7 +88,13 @@
      $('#modal-edit-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_id = $(this).parents('form').data('map')
-         url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
+         var js_is_file = {{ js_is_file }};
+
+         if (js_is_file === true) {
+             url = Urls["outside_eddi:edit_test_mapping_file_properties"](map_id, test_id)
+         } else if (js_is_file === false) {
+             url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
+             }
          $.get(url).done(function(html) {
              $('#modal-edit-mapping').html(html);
              $('#modal-edit-mapping').modal();
