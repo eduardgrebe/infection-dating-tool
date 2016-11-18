@@ -115,14 +115,18 @@ class TestPropertyMappingForm(BaseModelForm):
 
 class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
     active_property = forms.BooleanField(label="", required=False)
+
     class Meta:
         fields = (
-            'active_property', 'estimate_label',
+            'is_default', 'estimate_label',
             'mean_diagnostic_delay_days',
             'foursigma_diagnostic_delay_days', 'diagnostic_delay_median',
             'comment', 'reference'
         )
         model = OutsideEddiTestPropertyEstimate
+        widgets = {
+            'is_default': forms.HiddenInput()
+        }
 
     def __init__(self, *args, **kwargs):
         super(OutsideEddiTestPropertyEstimateForm, self).__init__(*args, **kwargs)
@@ -172,6 +176,11 @@ DataFileTestPropertyMappingFormSet = modelformset_factory(
 )
 
 TestPropertyEstimateFormSet = modelformset_factory(
+    OutsideEddiTestPropertyEstimate,
+    form=OutsideEddiTestPropertyEstimateForm
+)
+
+UserTestPropertyEstimateFormSet = modelformset_factory(
     OutsideEddiTestPropertyEstimate,
     form=OutsideEddiTestPropertyEstimateForm
 )

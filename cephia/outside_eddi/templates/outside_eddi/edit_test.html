@@ -15,6 +15,9 @@
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
+              {% if test.user %}
+                <th>Default</th>
+              {% endif %}
               <th>Name</th>
               <th>Mean</th>
               <th>Variability</th>
@@ -39,6 +42,9 @@
               {% with property=formset_form.instance %}
                 <tr>
                   {{ formset_form.id }}
+                  {% if test.user %}
+                    <td><input {% ifequal property.pk default_property %}checked{% endifequal %} name="{{ formset_form.is_default.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
+                  {% endif %}
                   <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.foursigma_diagnostic_delay_days show_label=False %}</td>

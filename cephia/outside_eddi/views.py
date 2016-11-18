@@ -299,7 +299,8 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
 
         for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
-            instance.test = test
+            instance.test = test_instance
+            instance.is_default = True
             instance.save()
 
         messages.info(request, 'Test added successfully')
@@ -322,6 +323,9 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
     
     if test.user:
         form = UserTestForm(request.POST or None, instance=test)
+        default_property = test.properties.filter(is_default=True).first()
+        if default_property:
+            context['default_property'] = default_property.pk
     else:
         form = GlobalTestForm(request.POST or None, instance=test)
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
@@ -411,11 +415,15 @@ def create_test_mapping_properties(request, test_id=None, template='outside_eddi
 def create_test_mapping(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
     context = {}
     user = request.user
-    if request.GET:
-        map_code = request.GET['map_code']
+    map_code = request.GET.get('map_code')
     
     if test_id:
-        form = TestPropertyMappingForm(request.POST or None, initial={'test': test_id, 'code': map_code})
+        test_active_property = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.filter(is_default=True).first()
+        form = TestPropertyMappingForm(request.POST or None,
+                                       initial={'test': test_id,
+                                                'code': map_code,
+                                                'test_property': test_active_property}
+        )
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
@@ -479,12 +487,21 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     if test_id:
-        map_code = None
-        if request.GET:
-            map_code = request.GET['map_code']
-        form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id, 'code': map_code})
-        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        map_code = request.GET.get('map_code')
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        if mapping.test == test and mapping.test_property:
+            test_active_property = mapping.test_property
+        else:
+            test_active_property = test.properties.filter(is_default=True).first()
+
+        form = TestPropertyMappingForm(request.POST or None,
+                                       instance=mapping,
+                                       initial={'test': test_id,
+                                                'code': map_code,
+                                                'test_property': test_active_property}
+        )
+        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        
         context['test'] = test
 
         user_estimates_formset = TestPropertyEstimateFormSet(
