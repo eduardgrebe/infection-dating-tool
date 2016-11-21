@@ -9,6 +9,9 @@ from cephia.csv_helper import get_csv_response
 from assay.models import AssayResult
 from datetime import datetime
 from django.conf import settings
+from django.db.models import Q
+from django.db.models import Prefetch
+from django.db.models.functions import Concat
 
 
 class PanelCaptureForm(forms.ModelForm):
@@ -79,9 +82,9 @@ class AssaysByVisitForm(forms.Form):
         filename = visit_file.name
         extension = os.path.splitext(filename)[1][1:].lower()
         if extension == 'csv':
-            rows = (z[0] for z in csv.reader(visit_file) if z)
+            rows = (int(z[0]) for z in csv.reader(visit_file) if z)
         elif extension in ['xls', 'xlsx']:
-            rows = (z[0] for z in ExcelHelper(visit_file).rows() if z)
+            rows = (int(z[0]) for z in ExcelHelper(visit_file).rows() if z)
         else:
             raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
         self.cleaned_data['imported_visit_ids'] = [r for r in rows if r.isdigit()]
@@ -92,7 +95,7 @@ class AssaysByVisitForm(forms.Form):
         value = self.cleaned_data.get('visit_ids')
         if not value:
             return value
-        rows = [z.strip() for z in value.split(u'\n')]
+        rows = [int(z.strip()) for z in value.split(u'\n')]
         self.cleaned_data['imported_visit_ids'] = rows
         return value
 
@@ -115,6 +118,21 @@ class AssaysByVisitForm(forms.Form):
         result_models = None
         results = AssayResult.objects.all()
 
+        if visit_ids and specimen_labels:
+            results = results.filter(
+                Q(specimen__visit__pk__in=visit_ids) |
+                Q(specimen__visit__specimens__specimen_label__in=specimen_labels)
+            ).distinct()
+        elif visit_ids:
+            results = results.filter(specimen__visit__pk__in=visit_ids).distinct()
+        elif specimen_labels:
+            results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels).distinct()
+
+        # visits_left_joined_to_results = Visit.objects.prefetch_related(Prefetch('assay_results'))
+        # visits = visits.extra("VR = concat(visit.id, results.id)")
+        # visits = visits.extra(select={'VR' : Concat('visit.id', 'specimen.assay_results.id')})
+        # visits_left_joined_to_results = visits_left_joined_to_results.distinct('VR')
+        
         # ### gtp
  
         # Select visit.id, visit.name, results.id, results.date
@@ -150,13 +168,11 @@ class AssaysByVisitForm(forms.Form):
         
         # ### end gtp
         
-        if visit_ids:
-            visits = Visit.objects.filter(pk__in=visit_ids)
-            results = results.filter(specimen__visit__in=visits)
+        
 
-        if specimen_labels:
-            specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
-            results = results.filter(specimen__in=specimens)
+        # if specimen_labels:
+        #     specimen_visits = Visit.objects.filter(specimens__specimen_label__in=specimen_labels)
+        #     results = results.filter(specimen__in=specimens)
 
         if assays:
             results = results.filter(assay_run__assay__in=assays)
@@ -166,13 +182,10 @@ class AssaysByVisitForm(forms.Form):
 
         if self.cleaned_data['result_output'] == '1':
             if not assays:
-                assays = []
-                for result in results[0:settings.MAX_NUM_DOWNLOAD_ROWS]:
-                    if result.assay not in assays:
-                        assays.append(result.assay)
-                # assays = Assay.objects.all()
+                assays = results.values('assay').distinct()
+                assays = Assay.objects.filter(pk__in=assays)
 
-            result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
+            result_models = [ get_result_model(assay.name) for assay in assays if get_result_model(assay.name) ]
             download = ResultDownload(headers, results, False, result_models)
 
             response, writer = get_csv_response('detailed_results_%s.csv' % (
@@ -182,7 +195,12 @@ class AssaysByVisitForm(forms.Form):
 
             response, writer = get_csv_response('generic_results_%s.csv' % (
             datetime.today().strftime('%d%b%Y_%H%M')))
-        
+
+        if visit_ids:
+            download.add_extra_visits(visit_ids)
+
+        if specimen_labels:
+            download.add_extra_specimens(specimen_labels)
 
         writer.writerow(download.get_headers())
 
@@ -199,33 +217,38 @@ class AssaysByVisitForm(forms.Form):
         result_models = None
         results = AssayResult.objects.all()
 
-        if visit_ids:
-            visits = Visit.objects.filter(pk__in=visit_ids)
-            results = results.filter(specimen__visit__in=visits)
+        if visit_ids and specimen_labels:
+            results = results.filter(
+                Q(specimen__visit__pk__in=visit_ids) |
+                Q(specimen__visit__specimens__specimen_label__in=specimen_labels)
+            ).distinct()
+        elif visit_ids:
+            results = results.filter(specimen__visit__pk__in=visit_ids).distinct()
+        elif specimen_labels:
+            results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels).distinct()
 
         if assays:
             results = results.filter(assay_run__assay__in=assays)
-
-        if specimen_labels:
-            specimens = Specimen.objects.filter(specimen_label__in=specimen_labels)
-            results = results.filter(specimen__in=specimens)
 
         if panels:
             results = results.filter(specimen__visit__panels__in=panels)
 
         if self.cleaned_data['result_output'] == '1':
             if not assays:
-                assays = []
-                for result in results[0:settings.MAX_NUM_DOWNLOAD_ROWS]:
-                    if result.assay not in assays:
-                        assays.append(result.assay)
-                # assays = Assay.objects.all()
+                assays = results.values('assay').distinct()
+                assays = Assay.objects.filter(pk__in=assays)
 
-            result_models = [get_result_model(assay.name) for assay in assays if get_result_model(assay.name)]
+            result_models = [ get_result_model(assay.name) for assay in assays if get_result_model(assay.name) ]
             download = ResultDownload(headers, results, False, result_models, 10)
+            
         else:
             download = ResultDownload(headers, results, True, result_models, 10)
-        
+
+        if visit_ids:
+            download.add_extra_visits(visit_ids)
+
+        if specimen_labels:
+            download.add_extra_specimens(specimen_labels)
 
         download.get_headers()
         return download

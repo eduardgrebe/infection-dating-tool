@@ -25,7 +25,7 @@ def get_result_row_model(assay_name):
 
 class ResultDownload(object):
 
-    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None):
+    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None, empty=False):
 
         self.headers = []
         self.content = []
@@ -166,7 +166,7 @@ class ResultDownload(object):
             test_mode_field_index = combined_columns.index('test_mode')
             method_field_index = combined_columns.index('method')
             exclusion_field_index = combined_columns.index('exclusion')
-            
+
         except (IndexError, ValueError):
             pass
 
@@ -223,3 +223,45 @@ class ResultDownload(object):
             else:
                 header = column_split[-1]
             self.headers.append(header)
+
+
+    def add_extra_visits(self, visit_ids):
+        result_visit_ids = self.results.values_list('specimen__visit__pk', flat=True).distinct()
+        missing_visits = sorted(set(visit_ids).difference(result_visit_ids))
+
+        self.prepare_empty_content(missing_visits=missing_visits)
+
+
+    def add_extra_specimens(self, specimen_labels):
+        result_specimen_labels = self.results.values_list('specimen__specimen_label', flat=True).distinct()
+        missing_specimen_labels = sorted(set(specimen_labels).difference(result_specimen_labels))
+
+        self.prepare_empty_content(missing_specimens=missing_specimen_labels)
+
+
+    def prepare_empty_content(self, missing_visits=None, missing_specimens=None):
+        combined_columns = list(chain(self.common_columns,
+                                      self.specific_columns,
+                                      self.clinical_columns))
+
+        try:
+            result_field_index = combined_columns.index('result_field')
+            result_value_index = combined_columns.index('result_value')
+            specific_id_index = combined_columns.index('specific_id')
+            generic_id_index = combined_columns.index('generic_id')
+            test_mode_field_index = combined_columns.index('test_mode')
+            method_field_index = combined_columns.index('method')
+            exclusion_field_index = combined_columns.index('exclusion')
+
+        except (IndexError, ValueError):
+            pass
+
+        if missing_visits:
+            for visit_id in missing_visits:
+                row = [ visit_id if col == 'specimen.visit.id' else None for col in combined_columns  ]
+                self.content.append(row)
+
+        if missing_specimens:
+            for specimen_label in missing_specimens:
+                row = [ specimen_label if col == 'specimen.specimen_label' else None for col in combined_columns  ]
+                self.content.append(row)
