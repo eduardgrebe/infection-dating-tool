@@ -163,6 +163,11 @@ class UserTestForm(BaseModelForm):
         model = OutsideEddiDiagnosticTest
         fields = ['name', 'description']
 
+
+class UserTestPropertyDefaultForm(forms.Form):
+    default_property = forms.ChoiceField(widget=forms.RadioSelect())
+
+    
 TestPropertyMappingFormSet = modelformset_factory(
     TestPropertyMapping,
     form=TestPropertyMappingForm,

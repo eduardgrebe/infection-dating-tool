@@ -10,6 +10,7 @@
       </div>
       <div class="modal-body">
         {% bootstrap_form form %}
+        {% bootstrap_form user_default_property_form %}
 
         Properties:
         <table class="table table-condensed table-striped">
@@ -43,7 +44,7 @@
                 <tr>
                   {{ formset_form.id }}
                   {% if test.user %}
-                    <td><input {% ifequal property.pk default_property %}checked{% endifequal %} name="{{ formset_form.is_default.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
+                    <td><input {% ifequal property.pk default_property %}checked{% endifequal %} name="{{ user_default_property_form.default_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
                   {% endif %}
                   <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>

@@ -5,7 +5,7 @@ from forms import (
     EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
-    TestPropertyMappingForm
+    TestPropertyMappingForm, UserTestPropertyDefaultForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -317,10 +317,10 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', context=None):
     context = context or {}
-
     user = request.user
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
-    
+    user_default_property_form = UserTestPropertyDefaultForm(request.POST or None)
+
     if test.user:
         form = UserTestForm(request.POST or None, instance=test)
         default_property = test.properties.filter(is_default=True).first()
@@ -344,6 +344,14 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
             instance.test = test
             instance.save()
 
+        if test.user:
+            default_property_pk = request.POST['default_property']
+            if default_property_pk:
+                user_test_properties = test_instance.properties.all().is_default = False
+                default_property = OutsideEddiTestPropertyEstimate.objects.get(pk=default_property_pk)
+                default_property.is_default = True
+                default_property.save()
+
         messages.info(request, 'Test edited successfully')
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:tests")})
@@ -353,6 +361,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
     context['test'] = test
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
+    context['user_default_property_form'] = user_default_property_form
     
     return render(request, template, context)
 
