@@ -119,9 +119,11 @@ class AssaysByVisitForm(forms.Form):
         results = AssayResult.objects.all()
 
         if visit_ids and specimen_labels:
+            specimen_visit_ids = Visit.objects.filter(specimens__specimen_label__in=specimen_labels)
+            specimen_visit_ids = list(specimen_visit_ids.values_list('pk', flat=True).distinct())
+
             results = results.filter(
-                Q(specimen__visit__pk__in=visit_ids) |
-                Q(specimen__visit__specimens__specimen_label__in=specimen_labels)
+                specimen__visit__pk__in=visit_ids + specimen_visit_ids,
             ).distinct()
         elif visit_ids:
             results = results.filter(specimen__visit__pk__in=visit_ids).distinct()
@@ -217,8 +219,6 @@ class AssaysByVisitForm(forms.Form):
         result_models = None
         results = AssayResult.objects.all()
 
-        
-
         if visit_ids and specimen_labels:
             specimen_visit_ids = Visit.objects.filter(specimens__specimen_label__in=specimen_labels)
             specimen_visit_ids = list(specimen_visit_ids.values_list('pk', flat=True).distinct())
@@ -244,7 +244,6 @@ class AssaysByVisitForm(forms.Form):
 
             result_models = [ get_result_model(assay.name) for assay in assays if get_result_model(assay.name) ]
             download = ResultDownload(headers, results, False, result_models, 10)
-            
         else:
             download = ResultDownload(headers, results, True, result_models, 10)
 
