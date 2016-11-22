@@ -397,6 +397,8 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         js_is_file = 'true'
         
         codes = [x.test_code for x in data_file.test_history.all()]
+        # codes = [u'BScr', u'ANeg', u'BConf', u'AConf', u'LDEIA2', u'LDEIA1', u'WBInd', u'GenVL', u'UnSpecScr', u'BNeg', u'AScr', u'UnSpecConf', u'UnSpecNeg', u'WB']
+
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
         completed_mapping = check_mapping_details(mapping, user)
         
