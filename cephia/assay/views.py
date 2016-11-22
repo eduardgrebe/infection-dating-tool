@@ -26,10 +26,12 @@ from assay_result_factory import register_result_model, register_result_row_mode
 from cephia.file_handlers.file_handler_register import register_file_handler
 from cephia.file_handlers.custom_assay_file_handler import CustomAssayFileHandler
 from assay.models import CustomAssayResult
+from django.contrib.auth.decorators import user_passes_test
 
 logger = logging.getLogger(__name__)
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def panels(request, template="assay/panels.html"):
     context = {}
     panel_capture_form = PanelCaptureForm(request.POST or None)

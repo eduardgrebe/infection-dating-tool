@@ -27,6 +27,7 @@ from lib import log_exception
 logger = logging.getLogger(__name__)
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def home(request, file_id=None, template="cephia/home.html"):
     if request.method == "GET":
         context = {}
@@ -79,12 +80,14 @@ def home(request, file_id=None, template="cephia/home.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def table_management(request, template="cephia/tms_home.html"):
     context = {}
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def countries(request, template="cephia/countries.html"):
     context = {}
@@ -95,6 +98,7 @@ def countries(request, template="cephia/countries.html"):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def ethnicities(request, template="cephia/ethnicities.html"):
     context = {}
@@ -104,6 +108,7 @@ def ethnicities(request, template="cephia/ethnicities.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def studies(request, template="cephia/studies.html"):
     context = {}
@@ -113,6 +118,7 @@ def studies(request, template="cephia/studies.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def labs(request, template="cephia/sites.html"):
     context = {}
@@ -122,6 +128,7 @@ def labs(request, template="cephia/sites.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def subjects(request, template="cephia/subjects.html"):
     context = {}
     subjects = Subject.objects.all()
@@ -155,6 +162,7 @@ def subjects(request, template="cephia/subjects.html"):
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def visit_export(request, template='cephia/visit_export.html'):
     context = {}
     export_form = VisitExportForm(request.POST or None, request.FILES or None)
@@ -172,6 +180,7 @@ def visit_export(request, template='cephia/visit_export.html'):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def visits(request, visit_id=None, template="cephia/visits.html"):
     context = {}
     visits = Visit.objects.all()
@@ -205,6 +214,7 @@ def visits(request, visit_id=None, template="cephia/visits.html"):
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def specimen(request, template="cephia/specimen.html"):
     context = {}
     form = SpecimenFilterForm(request.GET or None)
@@ -237,6 +247,7 @@ def specimen(request, template="cephia/specimen.html"):
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def specimen_type(request, template="cephia/specimen_type.html"):
     context = {}
     spec_type = SpecimenType.objects.all()
@@ -246,6 +257,7 @@ def specimen_type(request, template="cephia/specimen_type.html"):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def file_info(request, template="cephia/file_info.html"):
     context = {}
@@ -268,6 +280,7 @@ def file_info(request, template="cephia/file_info.html"):
 
    
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def row_info(request, file_id, template=None):
     if request.method == 'GET':
@@ -291,6 +304,7 @@ def row_info(request, file_id, template=None):
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def download_file(request, file_id):
     try:
         if request.method == "GET":
@@ -305,6 +319,7 @@ def download_file(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def upload_file(request):
     try:
@@ -357,6 +372,7 @@ def upload_file(request):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def parse_file(request, file_id):
     try:
@@ -392,6 +408,7 @@ def parse_file(request, file_id):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def validate_rows(request, file_id):
     try:
@@ -422,6 +439,7 @@ def validate_rows(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def process_file(request, file_id):
     try:
@@ -455,6 +473,7 @@ def process_file(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def delete_file(request, file_id):
     try:
@@ -471,6 +490,7 @@ def delete_file(request, file_id):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def export_as_csv(request, file_id):
     try:
         fileinfo = FileInfo.objects.get(pk=file_id)
@@ -530,6 +550,7 @@ def export_as_csv(request, file_id):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def download_visits_no_subjects(request):
     try:
         rows = Visit.objects.all().exclude(subject__isnull=True)
@@ -549,6 +570,7 @@ def download_visits_no_subjects(request):
         messages.error(request, 'Failed to download file')
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def download_subjects_no_visits(request):
     try:
         rows = Subject.objects.filter(visit=None)
@@ -569,6 +591,7 @@ def download_subjects_no_visits(request):
         return HttpResponseRedirect(reverse('file_info'))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def export_file_data(request, file_id=None, state=None):
 
@@ -746,6 +769,7 @@ def export_file_data(request, file_id=None, state=None):
 
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def associate_specimen(request, subject_id=None, template="cephia/associate_specimen.html"):
     try:
@@ -800,6 +824,7 @@ def associate_specimen(request, subject_id=None, template="cephia/associate_spec
         return HttpResponseRedirect(reverse('specimen'))
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 @user_passes_test(lambda u: u.is_staff)
 def row_comment(request, file_type=None, file_id=None, row_id=None, template="cephia/comment_modal.html"):
     try:

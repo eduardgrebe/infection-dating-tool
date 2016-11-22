@@ -68,6 +68,7 @@ def logout(request, login_url=None, current_app=None, extra_context=None):
 
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def user_list(request, template="user_management/user_list.html"):
     context = {}
     try:
@@ -82,6 +83,7 @@ def user_list(request, template="user_management/user_list.html"):
 
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def user_add(request, template="user_management/user_add.html"):
     context = {}
     try:
@@ -104,6 +106,7 @@ def user_add(request, template="user_management/user_add.html"):
 
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def user_edit(request, user_id=None, template="user_management/user_edit.html"):
     context = {}
     try:

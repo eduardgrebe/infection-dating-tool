@@ -18,10 +18,12 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.forms import modelformset_factory
 from django.core.management import call_command
+from django.contrib.auth.decorators import user_passes_test
 
 logger = logging.getLogger(__name__)
 
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def eddi_report(request, template="diagnostics/eddi_report.html"):
     context = {}
     subjects = Subject.objects.all()
@@ -82,6 +84,7 @@ def subject_timeline_data(request, subject_id=None, template="diagnostics/timeli
 
 @csrf_exempt
 @login_required
+@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
 def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_report_detail_modal.html"):
     context = {}
     TestHistoryModelFormset = modelformset_factory(DiagnosticTestHistory, fields=('ignore',))
