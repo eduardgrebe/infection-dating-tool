@@ -32,9 +32,9 @@
               {% csrf_token %}
               {% bootstrap_form by_visits_form %}
               <div class="form-group">
-                <button class="btn btn-default">Get results</button>
+                <button class="btn btn-default" id="submit" >Get results</button>
                 <a class="btn btn-default" id="preview" >Preview results</a>
-                <p>The preview does not work with data in uploaded files and only shows the first 10 results to reduct processing time</p>
+                <p>The preview does not work with data in uploaded files and only shows the first 25 results to reduce processing time</p>
               </div>
             </form>
           </div>
@@ -109,12 +109,22 @@
            $("#preview_results").replaceWith(data);
        })
 
-       /* if (vis === false){
-        *     $("#preview_results").removeClass("hidden");
-        * }
-        * else if (vis === true){
-        *     $("#preview_results").addClass("hidden");
-        * }*/
+   });
+
+   $("#submit").click(function (event) {
+       var visit_ids = $('#id_visit_ids').val()
+       var visit_file = $('#id_visit_file').val()
+       var specimen_labels = $('#id_specimen_labels').val()
+       var specimen_file = $('#id_specimen_file').val()
+       var by_visit_assays = $('#id_by_visit_assays').val()
+       var panels = $('#id_panels').val()
+
+       if ( !visit_ids && !visit_file && !specimen_labels && !specimen_file && by_visit_assays===null && panels===null ){
+           if (confirm('You have provided any filters so you will receive all results. This will take a while to process. Are you sure that you want to continue?')) {
+           } else {
+               event.preventDefault();
+           }
+       }
    });
   </script>
 {% endblock %}

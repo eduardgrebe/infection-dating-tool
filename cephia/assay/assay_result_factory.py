@@ -1,5 +1,6 @@
 from itertools import chain
 from django.conf import settings
+import gc
 
 registered_result_models = []
 registered_result_row_models = []
@@ -87,7 +88,6 @@ class ResultDownload(object):
             if not filter_by_visit:
                 self.common_columns = ['generic_id', 'specific_id', 'test_mode'] + self.common_columns
             elif filter_by_visit:
-                import pdb;pdb.set_trace()
                 self.common_columns.insert(3, 'generic_id')
                 self.common_columns.insert(4, 'specific_id')
                 self.common_columns.insert(5, 'test_mode')
@@ -195,41 +195,62 @@ class ResultDownload(object):
             pass
 
 
-        if self.limit is None:
-            limited_results = self.results[0:settings.MAX_NUM_DOWNLOAD_ROWS]
-        else:
+        limited_results = self.results
+        if self.limit:
             limited_results = self.results[0:self.limit]
 
-        for result in limited_results:
-            row = [ self.getattr_or_none(result, c) for c in combined_columns ]
+        batch_size = 5000
+        batch = limited_results[:batch_size]
+        current_index = 0
+        
+        try:
+            batch[0]
+            has_results =  True
+        except IndexError:
+            has_results = False
 
-            if self.detailed:
-                for model in self.result_models:
-                    row[generic_id_index] = result.pk
-                    related_name = model.__name__.lower() + '_set'
-                    for specific_result in getattr(result, related_name).all():
-                        row[specific_id_index] = specific_result.pk
-                        row[test_mode_field_index] = specific_result.test_mode
-                        for field in model.result_detail_fields:
-                            row[result_field_index] = field
-                            row[result_value_index] = getattr(specific_result, field, None)
-                            row[method_field_index] = ''
-                            if exclusion_field_index > -1:
-                                row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
-                            
-                            self.content.append(list(row))
-                            if self.limit and len(self.content) >= self.limit:
-                                break
-                    row[result_field_index] = 'final_result'
-                    row[test_mode_field_index] = ''
-                    row[result_value_index] = result.result
-                    row[method_field_index] = result.method
-                    self.content.append(list(row))
-                    if self.limit and len(self.content) >= self.limit:
-                        break
+        while has_results:
+            
+            for result in batch:
+                row = [ self.getattr_or_none(result, c) for c in combined_columns ]
+
+                if self.detailed:
+                    for model in self.result_models:
+                        row[generic_id_index] = result.pk
+                        related_name = model.__name__.lower() + '_set'
+                        for specific_result in getattr(result, related_name).all():
+                            row[specific_id_index] = specific_result.pk
+                            row[test_mode_field_index] = specific_result.test_mode
+                            for field in model.result_detail_fields:
+                                row[result_field_index] = field
+                                row[result_value_index] = getattr(specific_result, field, None)
+                                row[method_field_index] = ''
+                                if exclusion_field_index > -1:
+                                    row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
+
+                                self.content.append(list(row))
+                                if self.limit and len(self.content) >= self.limit:
+                                    break
+                        row[result_field_index] = 'final_result'
+                        row[test_mode_field_index] = ''
+                        row[result_value_index] = result.result
+                        row[method_field_index] = result.method
+                        self.content.append(list(row))
+                        if self.limit and len(self.content) >= self.limit:
+                            break
             else:
                 self.content.append(row)
 
+            gc.collect()
+
+            current_index += batch_size
+            batch = limited_results[current_index: current_index + batch_size]
+            try:
+                batch[0]
+                has_results =  True
+            except IndexError:
+                has_results = False
+            
             if self.limit and len(self.content) >= self.limit:
                 break
 
