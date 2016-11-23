@@ -15,11 +15,12 @@
       <li><a class="navtab" href="{% url 'assay:panels' %}">Panels</a></li>
       <li><a class="navtab" href="{% url 'assay:assay_runs' %}">Assay Results</a></li>
 
+      <li><a class="navtab" href="{% url 'assay:custom_assays' %}">Custom Assays</a></li>
+
       {% if user.is_staff %}
         <li><a class="navtab" href="{% url 'file_info' %}">Files</a></li>
       {% endif %}
-
-      <li><a class="navtab" href="{% url 'assay:custom_assays' %}">Custom Assays</a></li>
+      
     {% endif %}
   </ul>
 </div>

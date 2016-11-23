@@ -25,7 +25,7 @@ def get_result_row_model(assay_name):
 
 class ResultDownload(object):
 
-    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None, empty=False):
+    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None, filter_by_visit=False):
 
         self.headers = []
         self.content = []
@@ -52,25 +52,45 @@ class ResultDownload(object):
             "specimen_purpose",
             "test_mode",
         ]
-        
-        self.common_columns = [ "specimen.specimen_label",
-                                "specimen.id",
-                                "specimen.parent_label",
-                                "specimen.specimen_type.name",
-                                "assay_run.id",
-                                "assay_run.assay.name",
-                                "assay_run.panel.name",
-                                "assay_run.laboratory.name",
-                                "test_date",
-        ]
 
+        if not filter_by_visit:
+            self.common_columns = [ "specimen.specimen_label",
+                                    "specimen.id",
+                                    "specimen.parent_label",
+                                    "specimen.specimen_type.name",
+                                    "assay_run.id",
+                                    "assay_run.assay.name",
+                                    "assay_run.panel.name",
+                                    "assay_run.laboratory.name",
+                                    "test_date",
+            ]
+
+        elif filter_by_visit:
+            self.common_columns = [ 'specimen.visit.subject.id',
+                                    'specimen.visit.id',
+                                    "specimen.id",
+                                    "specimen.specimen_label",
+                                    "specimen.parent_label",
+                                    "specimen.specimen_type.name",
+                                    "assay_run.id",
+                                    "assay_run.assay.name",
+                                    "assay_run.panel.name",
+                                    "assay_run.laboratory.name",
+                                    "test_date",
+            ]
 
         if not (generic or self.detailed):
             self.common_columns += ['test_mode'] + specific_columns
 
         if self.detailed:
             self.common_columns += ['result_field', 'result_value']
-            self.common_columns = ['generic_id', 'specific_id', 'test_mode'] + self.common_columns
+            if not filter_by_visit:
+                self.common_columns = ['generic_id', 'specific_id', 'test_mode'] + self.common_columns
+            elif filter_by_visit:
+                import pdb;pdb.set_trace()
+                self.common_columns.insert(3, 'generic_id')
+                self.common_columns.insert(4, 'specific_id')
+                self.common_columns.insert(5, 'test_mode')
 
         self.common_columns += [
             "warning_msg",
@@ -135,6 +155,10 @@ class ResultDownload(object):
             "specimen.visit.visitdetail.days_from_eddi_to_first_art",
             "specimen.visit.visitdetail.days_from_eddi_to_current_art",
         ]
+
+        if filter_by_visit:
+            self.clinical_columns.remove('specimen.visit.id')
+            self.clinical_columns.remove('specimen.visit.subject.id')
 
         self.prepare_headers()
         self.prepare_content()

@@ -188,12 +188,12 @@ class AssaysByVisitForm(forms.Form):
                 assays = Assay.objects.filter(pk__in=assays)
 
             result_models = [ get_result_model(assay.name) for assay in assays if get_result_model(assay.name) ]
-            download = ResultDownload(headers, results, False, result_models)
+            download = ResultDownload(headers, results, False, result_models, filter_by_visit=True)
 
             response, writer = get_csv_response('detailed_results_%s.csv' % (
             datetime.today().strftime('%d%b%Y_%H%M')))
         else:
-            download = ResultDownload(headers, results, True, result_models)
+            download = ResultDownload(headers, results, True, result_models, filter_by_visit=True)
 
             response, writer = get_csv_response('generic_results_%s.csv' % (
             datetime.today().strftime('%d%b%Y_%H%M')))
@@ -243,9 +243,9 @@ class AssaysByVisitForm(forms.Form):
                 assays = Assay.objects.filter(pk__in=assays)
 
             result_models = [ get_result_model(assay.name) for assay in assays if get_result_model(assay.name) ]
-            download = ResultDownload(headers, results, False, result_models, 10)
+            download = ResultDownload(headers, results, False, result_models, 25, filter_by_visit=True)
         else:
-            download = ResultDownload(headers, results, True, result_models, 10)
+            download = ResultDownload(headers, results, True, result_models, 25, filter_by_visit=True)
 
         if visit_ids:
             download.add_extra_visits(visit_ids)

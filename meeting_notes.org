@@ -145,6 +145,7 @@ change url name, etc. no more outside eddi
 possibly add a tooltip over column header explaining different states for files
 add a bit of a white space between choose file and upload
 change message about mapping 'Please provide mapping for your file'
+
 make sure that files are processed in the background
 
 when clicking on mapping then the system checks the maps for the file (possibly store a list of unique codes in a file to check against rather than having to query everything)
