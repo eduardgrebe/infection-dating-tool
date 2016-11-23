@@ -133,7 +133,7 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
                 elif mapping_needed:
                     uploaded_file.state = 'needs_mapping'
                     uploaded_file.save()
-                    messages.info(request, 'You need to please provide mapping for your file')
+                    messages.info(request, 'Please provide mapping for your file')
                 else:
                     messages.info(request, 'Data Saved')
                     uploaded_file.state = 'mapped'
