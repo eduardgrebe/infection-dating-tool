@@ -120,7 +120,7 @@
        var panels = $('#id_panels').val()
 
        if ( !visit_ids && !visit_file && !specimen_labels && !specimen_file && by_visit_assays===null && panels===null ){
-           if (confirm('You have provided any filters so you will receive all results. This will take a while to process. Are you sure that you want to continue?')) {
+           if (confirm('You have not provided any filters so you will receive all results. This will take a while to process. Are you sure that you want to continue?')) {
            } else {
                event.preventDefault();
            }
