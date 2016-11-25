@@ -14,6 +14,7 @@ from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
+from django.db.models import Q
 
 class OutsideEddiDiagnosticTestHistory(models.Model):
     class Meta:
@@ -145,38 +146,34 @@ class OutsideEddiFileInfo(models.Model):
         return self.filename().split('.')[-1]
 
     def create_mapping(self, user):
-        tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=self.upload_file.user) | Q(user=None))
-        test_names = [x.name for x in tests]
-
-        new_test_names = list(OutsideEddiDiagnosticTest.objects.filter(
-            Q(user=self.upload_file.user) | Q(user=None)
+        test_names = list(OutsideEddiDiagnosticTest.objects.filter(
+            Q(user=user) | Q(user=None)
         ).values_list('name', flat=True))
-
-        import pdb;pdb.set_trace()
         
         map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
-        
-        if test_code in tests:
-            if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
-                mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
-            else:
-                test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
+        file_maps = []
+
+        for code in map_codes:
+            if TestPropertyMapping.objects.filter(code=code, user=user).exists():
+                mapping = TestPropertyMapping.objects.get(code=code, user=user)
+            elif code in test_names:
+                test = OutsideEddiDiagnosticTest.objects.get(name=code)
                 test_property = test.get_default_property()
             
                 mapping = TestPropertyMapping.objects.create(
-                    code=str(test_code),
+                    code=str(code),
                     test=test,
                     test_property=test_property,
                     user=user
                 )
-        else:
-            if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
-                mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
             else:
                 mapping = TestPropertyMapping.objects.create(
-                    code=test_code,
+                    code=code,
                     user=user
                 )
+            file_maps.append(mapping)
+
+        return file_maps
 
     
 class OutsideEddiSubject(models.Model):

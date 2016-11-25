@@ -55,6 +55,9 @@
       <h3>Mapping completed</h3>
       <a class="btn btn-primary" href="{% url 'outside_eddi:data_files' %}">Return to data files</a>
     {% endif %}
+    {% if completed_mapping == False %}
+      <a class="btn btn-primary" href="{% url 'outside_eddi:validate_mapping' data_file.pk %}">Validate Mapping</a>
+    {% endif %}
     <div class="modal fade" id="modal-add-mapping"></div>
     <div class="modal fade" id="modal-edit-mapping"></div>
 
