@@ -196,18 +196,17 @@ class OutsideEddiSubject(models.Model):
     class Meta:
         unique_together = ("subject_label", "user")
 
-    def calculate_eddi(self, user, data_file):
-        update_adjusted_dates(user, data_file)
+    def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
-        try:
-            lp_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
-        except OutsideEddiDiagnosticTestHistory.DoesNotExist:
-            lp_ddi = None
+        # try:
+        #     lp_ddi = OutsideEddiDiagnosticTestHistoryxbeo.objects.filter(data_file=data_file, subject=self, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
+        # except OutsideEddiDiagnosticTestHistory.DoesNotExist:
+        #     lp_ddi = None
 
-        try:
-            ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
-        except OutsideEddiDiagnosticTestHistory.DoesNotExist:
-            ep_ddi = None
+        # try:
+        #     ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
+        # except OutsideEddiDiagnosticTestHistory.DoesNotExist:
+        #     ep_ddi = None
 
         if ep_ddi is None or lp_ddi is None:
             eddi = None
@@ -225,11 +224,3 @@ class OutsideEddiSubject(models.Model):
         self.edsc_days_difference=edsc_days_diff
         self.eddi = eddi
         self.save()
-
-
-def update_adjusted_dates(user, data_file):
-        with transaction.atomic():
-            for test_history in OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file):
-                test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
-                test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
-                test_history.save()

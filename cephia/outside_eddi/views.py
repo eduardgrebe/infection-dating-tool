@@ -30,6 +30,9 @@ import json
 from json import dumps
 from django.db.models import Q
 import datetime
+from django.db import transaction
+from dateutil.relativedelta import relativedelta
+from django.db.models import Max
 
 
 def outside_eddi_login_required(login_url=None):
@@ -505,73 +508,46 @@ def delete_data_file(request, file_id, context=None):
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def review_mapping_data_file(request, file_id, context=None):
-    context = context or {}
-
-    user = request.user
-    tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
-    test_names = [x.name for x in tests]
-    test_history_rows = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=file_id)
-    for test in test_history_rows:
-        check_mapping(test.test_code, test_names, user)
-
-    return test_mapping(request, file_id, template="outside_eddi/test_mapping.html")
-
-
-@outside_eddi_login_required(login_url='outside_eddi:login')
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
     user = request.user
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    test_history = data_file.test_history.all()
-    subjects = []
+    data_file = validate_mapping(file_id, user)
 
-    codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
-    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
-    completed_mapping = check_mapping_details(mapping, user)
-
-    if completed_mapping:
+    if data_file.state == 'mapped':
         subject_pks = list(data_file.test_history.all().values_list('subject', flat=True).distinct())
         subjects = OutsideEddiSubject.objects.filter(pk__in=subject_pks)
+        update_adjusted_dates(user, data_file)
+        
+        lp_ddis = OutsideEddiDiagnosticTestHistory.objects.filter(test_result='Positive')
+        lp_ddis = lp_ddis.values('subject')
+        lp_ddis = lp_ddis.annotate(earliest_positive=Max('adjusted_date'))
+        lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
 
-        import pdb;pdb.set_trace()
-        for subject in subjects:
-            subject.calculate_eddi(user, data_file)
+        ep_ddis = OutsideEddiDiagnosticTestHistory.objects.filter(test_result='Negative')
+        ep_ddis = ep_ddis.values('subject')
+        ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
+        ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
+        
+        with transaction.atomic():
+            for subject in subjects:
+                subject.calculate_eddi(user, data_file, lp_ddis.get(subject.pk), ep_ddis.get(subject.pk))
         data_file.state = 'processed'
         data_file.save()
         messages.info(request, 'Data Processed')
-    else:
-        data_file.state = 'needs_mapping'
-        data_file.save()
+    elif data_file.state == 'needs_mapping':
         messages.info(request, 'Incomplete Mapping. Cannot process data')
 
     return redirect(reverse('outside_eddi:data_files'))
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def validate_mapping(request, file_id, context=None):
+def validate_mapping_from_page(request, file_id, context=None):
     context = context or {}
     user = request.user
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
-    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
-
-    if len(codes) > mapping.count():
-        codes_with_map = list(mapping.filter(code__in=codes).values_list('code', flat=True))
-        codes_without_map = list(set(codes) - set(codes_with_map))
-
-        for code in codes_without_map:
-            new_map = TestPropertyMapping.objects.create(
-                code=code,
-                user=user
-            )
-        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
-
-    check_mapping_details(mapping, user, data_file)
+    validate_mapping(file_id, user)
 
     return test_mapping(request, file_id)
-
 
 
 def _copy_diagnostic_tests():
@@ -631,34 +607,6 @@ def set_active_property(test):
         prop.save()
 
 
-def check_mapping(test_code, tests, user):
-    if test_code in tests:
-        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
-            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
-        else:
-            test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
-            test_property = test.get_default_property()
-
-            mapping = TestPropertyMapping.objects.create(
-                code=str(test_code),
-                test=test,
-                test_property=test_property,
-                user=user
-            )
-    else:
-        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
-            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
-        else:
-            mapping = TestPropertyMapping.objects.create(
-                code=test_code,
-                user=user
-            )
-    if not mapping.test or not mapping.test_property:
-        return False
-    else:
-        return True
-
-
 def check_mapping_details(mapping, user, data_file):
     completed_mapping = True
     for m in mapping:
@@ -687,3 +635,32 @@ def save_file_data(file_id, user):
     check_mapping_details(mapping, user, data_file)
 
     return data_file
+
+
+def validate_mapping(file_id, user):
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
+    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+
+    if len(codes) > mapping.count():
+        codes_with_map = list(mapping.filter(code__in=codes).values_list('code', flat=True))
+        codes_without_map = list(set(codes) - set(codes_with_map))
+
+        for code in codes_without_map:
+            new_map = TestPropertyMapping.objects.create(
+                code=code,
+                user=user
+            )
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+
+    check_mapping_details(mapping, user, data_file)
+
+    return data_file
+
+
+def update_adjusted_dates(user, data_file):
+    with transaction.atomic():
+        for test_history in OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file):
+            test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
+            test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+            test_history.save()

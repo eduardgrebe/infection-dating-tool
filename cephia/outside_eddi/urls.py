@@ -41,9 +41,8 @@ urlpatterns = [
     
     url('^data_files/(?P<file_id>\d+)/delete', views.delete_data_file, name='delete_data_file'),
     url('^data_files/(?P<file_id>\d+)/process_data', views.process_data_file, name='process_data_file'),
-    url('^data_files/(?P<file_id>\d+)/review_mapping_data', views.review_mapping_data_file, name='review_mapping_data_file'),
     
-    url('^validate_mapping/(?P<file_id>\d+)/', views.validate_mapping, name='validate_mapping'),
+    url('^validate_mapping/(?P<file_id>\d+)/', views.validate_mapping_from_page, name='validate_mapping_from_page'),
 
     url(r'^results/(?P<file_id>\d+)/$', views.results, name='results'),
 
