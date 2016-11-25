@@ -640,7 +640,7 @@ def save_file_data(file_id, user):
 def validate_mapping(file_id, user):
     data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
     codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
-    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
     if len(codes) > mapping.count():
         codes_with_map = list(mapping.filter(code__in=codes).values_list('code', flat=True))
@@ -651,7 +651,7 @@ def validate_mapping(file_id, user):
                 code=code,
                 user=user
             )
-        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
     check_mapping_details(mapping, user, data_file)
 
@@ -660,7 +660,14 @@ def validate_mapping(file_id, user):
 
 def update_adjusted_dates(user, data_file):
     with transaction.atomic():
-        for test_history in OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file):
+        file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+        # codes = list(file_test_history.values_list('test_code', flat=True).distinct())
+        # mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+
+        # test_properties = mapping.values('code', 'test_property')
+        # test_properties = test_properties.annotate(code='code', test_property='test_property')
+        
+        for test_history in file_test_history:
             test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
             test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
             test_history.save()

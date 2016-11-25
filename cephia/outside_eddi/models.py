@@ -198,15 +198,6 @@ class OutsideEddiSubject(models.Model):
 
     def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
-        # try:
-        #     lp_ddi = OutsideEddiDiagnosticTestHistoryxbeo.objects.filter(data_file=data_file, subject=self, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
-        # except OutsideEddiDiagnosticTestHistory.DoesNotExist:
-        #     lp_ddi = None
-
-        # try:
-        #     ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
-        # except OutsideEddiDiagnosticTestHistory.DoesNotExist:
-        #     ep_ddi = None
 
         if ep_ddi is None or lp_ddi is None:
             eddi = None
