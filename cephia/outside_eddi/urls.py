@@ -22,7 +22,7 @@ urlpatterns = [
     url(r'^test_mapping/create/$', views.create_test_mapping, name='create_test_mapping'),
     url(r'^test_mapping/create/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping'),
     url(r'^test_mapping/create/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping_properties'),
-    url(r'^test_mapping/create/(?P<map_code>\w+)/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping_properties'),
+    url(r'^test_mapping/create/([?P<map_code>\w ]+)/(?P<test_id>\d+)/$', views.create_test_mapping, name='create_test_mapping_properties'),
     
     url(r'^test_mapping/(?P<map_id>\d+)/edit/$', views.edit_test_mapping, {'is_file': False}, name='edit_test_mapping'),
     url(r'^test_mapping/(?P<map_id>\d+)/edit/file/$', views.edit_test_mapping, {'is_file': True}, name='edit_test_mapping_file'),
@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/$', views.edit_test_mapping, {'is_file': False}, name='edit_test_mapping'),
     url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/file/$', views.edit_test_mapping, {'is_file': True}, name='edit_test_mapping_file'),
     
-    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/file/properties/$', views.edit_test_mapping_properties, {'is_file': False}, name='edit_test_mapping_properties'),
+    url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/file/properties/$', views.edit_test_mapping_file_properties, {'is_file': False}, name='edit_test_mapping_properties'),
     url(r'^test_mapping/(?P<map_id>\d+)/(?P<test_id>\d+)/edit/properties/$', views.edit_test_mapping_properties, {'is_file': True}, name='edit_test_mapping_file_properties'),
     
     
@@ -40,9 +40,9 @@ urlpatterns = [
     url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
     
     url('^data_files/(?P<file_id>\d+)/delete', views.delete_data_file, name='delete_data_file'),
-    url('^data_files/(?P<file_id>\d+)/save_data', views.save_data_file, name='save_data_file'),
     url('^data_files/(?P<file_id>\d+)/process_data', views.process_data_file, name='process_data_file'),
-    url('^data_files/(?P<file_id>\d+)/review_mapping_data', views.review_mapping_data_file, name='review_mapping_data_file'),
+    
+    url('^validate_mapping/(?P<file_id>\d+)/', views.validate_mapping_from_page, name='validate_mapping_from_page'),
 
     url(r'^results/(?P<file_id>\d+)/$', views.results, name='results'),
 

@@ -25,6 +25,7 @@ class OutsideEddiFileHandler(FileHandler):
             'protocol'
         ]
 
+
     def validate(self):
         valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
         headers = [u'', u'Subject', u'Date', u'Test', u'Result']
@@ -54,10 +55,8 @@ class OutsideEddiFileHandler(FileHandler):
 
         return errors
 
+
     def save_data(self, user):
-        tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=self.upload_file.user) | Q(user=None))
-        test_names = [x.name for x in tests]
-        mapping_needed = []
         pos_results = ('positive', 'pos', '+')
         neg_results = ('negative', 'neg', '-')
         for row_num in range(self.num_rows):
@@ -77,14 +76,10 @@ class OutsideEddiFileHandler(FileHandler):
                             subject_label=row_dict['Subject'],
                             user=user
                         )
-                    
+
                     test_history_row = OutsideEddiDiagnosticTestHistory.objects.create(subject=subject, data_file=self.upload_file)
                     test_history_row.test_date = row_dict['Date']
                     test_history_row.test_code = row_dict['Test']
-
-                    mapping = check_mapping(test_history_row.test_code, test_names, user)
-                    if mapping == False:
-                        mapping_needed.append("row " + str(row_num) + ": Mapping needed for test code: " + test_history_row.test_code)
 
                     if row_dict['Result'].lower() in pos_results:
                         test_history_row.test_result = 'Positive'
@@ -98,7 +93,6 @@ class OutsideEddiFileHandler(FileHandler):
                 self.upload_file.save()
                 return 0, 1
 
-        return mapping_needed
 
 def validate_date(date_text):
     try:
@@ -108,6 +102,7 @@ def validate_date(date_text):
         return False
 
 def check_mapping(test_code, tests, user):
+    import pdb;pdb.set_trace()
     if test_code in tests:
         if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
             mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
@@ -133,3 +128,27 @@ def check_mapping(test_code, tests, user):
         return False
     else:
         return True
+
+
+def create_mapping(test_code, tests, user):
+    if test_code in tests:
+        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+        else:
+            test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
+            test_property = test.get_default_property()
+            
+            mapping = TestPropertyMapping.objects.create(
+                code=str(test_code),
+                test=test,
+                test_property=test_property,
+                user=user
+            )
+    else:
+        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+        else:
+            mapping = TestPropertyMapping.objects.create(
+                code=test_code,
+                user=user
+            )

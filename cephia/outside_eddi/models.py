@@ -14,6 +14,7 @@ from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
+from django.db.models import Q
 
 class OutsideEddiDiagnosticTestHistory(models.Model):
     class Meta:
@@ -144,6 +145,36 @@ class OutsideEddiFileInfo(models.Model):
     def get_extension(self):
         return self.filename().split('.')[-1]
 
+    def create_mapping(self, user):
+        test_names = list(OutsideEddiDiagnosticTest.objects.filter(
+            Q(user=user) | Q(user=None)
+        ).values_list('name', flat=True))
+        
+        map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
+        file_maps = []
+
+        for code in map_codes:
+            if TestPropertyMapping.objects.filter(code=code, user=user).exists():
+                mapping = TestPropertyMapping.objects.get(code=code, user=user)
+            elif code in test_names:
+                test = OutsideEddiDiagnosticTest.objects.get(name=code)
+                test_property = test.get_default_property()
+            
+                mapping = TestPropertyMapping.objects.create(
+                    code=str(code),
+                    test=test,
+                    test_property=test_property,
+                    user=user
+                )
+            else:
+                mapping = TestPropertyMapping.objects.create(
+                    code=code,
+                    user=user
+                )
+            file_maps.append(mapping)
+
+        return file_maps
+
     
 class OutsideEddiSubject(models.Model):
     
@@ -165,18 +196,8 @@ class OutsideEddiSubject(models.Model):
     class Meta:
         unique_together = ("subject_label", "user")
 
-    def calculate_eddi(self, user, data_file):
-        update_adjusted_dates(user, data_file)
+    def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
-        try:
-            lp_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Positive', ignore=False).earliest('adjusted_date').adjusted_date
-        except OutsideEddiDiagnosticTestHistory.DoesNotExist:
-            lp_ddi = None
-
-        try:
-            ep_ddi = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file, subject=self, test_result='Negative', ignore=False).latest('adjusted_date').adjusted_date
-        except OutsideEddiDiagnosticTestHistory.DoesNotExist:
-            ep_ddi = None
 
         if ep_ddi is None or lp_ddi is None:
             eddi = None
@@ -194,11 +215,3 @@ class OutsideEddiSubject(models.Model):
         self.edsc_days_difference=edsc_days_diff
         self.eddi = eddi
         self.save()
-
-
-def update_adjusted_dates(user, data_file):
-        with transaction.atomic():
-            for test_history in OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file):
-                test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
-                test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
-                test_history.save()

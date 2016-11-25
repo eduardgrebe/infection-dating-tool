@@ -53,7 +53,11 @@
 
     {% if completed_mapping %}
       <h3>Mapping completed</h3>
+      <a class="btn btn-primary" href="{% url 'outside_eddi:validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
       <a class="btn btn-primary" href="{% url 'outside_eddi:data_files' %}">Return to data files</a>
+    {% endif %}
+    {% if completed_mapping == False %}
+      <a class="btn btn-primary" href="{% url 'outside_eddi:validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
     {% endif %}
     <div class="modal fade" id="modal-add-mapping"></div>
     <div class="modal fade" id="modal-edit-mapping"></div>
@@ -88,8 +92,15 @@
      $('#modal-edit-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_id = $(this).parents('form').data('map')
-         url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
-         $.get(url).done(function(html) {
+         var js_is_file = {{ js_is_file }};
+         var map_code = $("#id_code").val();
+
+         if (js_is_file === true) {
+             url = Urls["outside_eddi:edit_test_mapping_file_properties"](map_id, test_id)
+         } else if (js_is_file === false) {
+             url = Urls["outside_eddi:edit_test_mapping_properties"](map_id, test_id)
+             }
+         $.get(url, {map_code: map_code }).done(function(html) {
              $('#modal-edit-mapping').html(html);
              $('#modal-edit-mapping').modal();
          });
@@ -121,13 +132,8 @@
      $('#modal-add-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_code = $("#id_code").val();
-         if (!map_code){
-             url = Urls["outside_eddi:create_test_mapping_properties"](test_id)
-         }
-         else {
-             url = Urls["outside_eddi:create_test_mapping_properties"](map_code, test_id)
-         }
-         $.get(url).done(function(html) {
+         url = Urls["outside_eddi:create_test_mapping_properties"](test_id)
+         $.get(url, {map_code: map_code }).done(function(html) {
              $('#modal-add-mapping').html(html);
              $('#modal-add-mapping').modal();
          });

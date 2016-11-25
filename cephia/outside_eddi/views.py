@@ -5,7 +5,7 @@ from forms import (
     EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
-    TestPropertyMappingForm
+    TestPropertyMappingForm, UserTestPropertyDefaultForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -19,13 +19,20 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
 from cephia.models import CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory
+from models import (
+    Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate,
+    TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory,
+    OutsideEddiSubject
+    )
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
 from json import dumps
 from django.db.models import Q
 import datetime
+from django.db import transaction
+from dateutil.relativedelta import relativedelta
+from django.db.models import Max
 
 
 def outside_eddi_login_required(login_url=None):
@@ -121,23 +128,15 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
                 uploaded_file.user = user
-                uploaded_file.state = 'validated'
                 uploaded_file.save()
-                
-                mapping_needed = OutsideEddiFileHandler(uploaded_file).save_data(user)
-                
+                uploaded_file = save_file_data(uploaded_file.pk, user)
+
                 if uploaded_file.message:
                     messages.info(request, uploaded_file.message)
                     uploaded_file.state = 'error'
                     uploaded_file.save()
-                elif mapping_needed:
-                    uploaded_file.state = 'needs_mapping'
-                    uploaded_file.save()
-                    messages.info(request, 'You need to please provide mapping for your file')
-                else:
-                    messages.info(request, 'Data Saved')
-                    uploaded_file.state = 'mapped'
-                    uploaded_file.save()
+                elif uploaded_file.state == 'needs_mapping':
+                    messages.info(request, 'Please provide mapping for your file')
                 
                 messages.info(request, u"Your file was uploaded successfully" )
             else:
@@ -151,93 +150,10 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
     else:
         form = TestHistoryFileUploadForm()
 
-    context['data_files_page'] = True
     context['form'] = form
     context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user, deleted=False).order_by("-created")
 
     return render(request, template, context)
-
-
-@outside_eddi_login_required(login_url='outside_eddi:login')
-def delete_data_file(request, file_id, context=None):
-    context = context or {}
-
-    f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    f_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=f).delete()
-    f.deleted = True
-    f.save()
-    
-    messages.info(request, "Your file and all it's data has been deleted")
-    return redirect(reverse('outside_eddi:data_files'))
-
-
-@outside_eddi_login_required(login_url='outside_eddi:login')
-def save_data_file(request, file_id, context=None):
-    context = context or {}
-
-    user = request.user
-    
-    f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    mapping_needed = OutsideEddiFileHandler(f).save_data(user)
-
-    if f.message:
-        messages.info(request, f.message)
-        f.state = 'error'
-        f.save()
-    elif mapping_needed:
-        f.state = 'needs_mapping'
-        f.save()
-        for mapping in mapping_needed:
-            messages.info(request, mapping)
-    else:
-        messages.info(request, 'Data Saved')
-        f.state = 'mapped'
-        f.save()
-    return redirect(reverse('outside_eddi:data_files'))
-
-
-@outside_eddi_login_required(login_url='outside_eddi:login')
-def review_mapping_data_file(request, file_id, context=None):
-    context = context or {}
-    
-    user = request.user
-    tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
-    test_names = [x.name for x in tests]
-    test_history_rows = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=file_id)
-    for test in test_history_rows:
-        check_mapping(test.test_code, test_names, user)
-
-    return test_mapping(request, file_id, template="outside_eddi/test_mapping.html")
-
-
-@outside_eddi_login_required(login_url='outside_eddi:login')
-def process_data_file(request, file_id, context=None):
-    context = context or {}
-
-    user = request.user
-    f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    test_history = f.test_history.all()
-    subjects = []
-
-    codes = [x.test_code for x in f.test_history.all()]
-    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
-    completed_mapping = check_mapping_details(mapping, user)
-
-    if completed_mapping:
-        for test in test_history:
-            if test.subject not in subjects:
-                subjects.append(test.subject)
-        for subject in subjects:
-            subject.calculate_eddi(user, f)
-        f.state = 'processed'
-        f.save()
-        messages.info(request, 'Data Processed')
-    else:
-        f.state = 'needs_mapping'
-        f.save()
-        messages.info(request, 'Incomplete Mapping. Cannot process data')
-
-    return redirect(reverse('outside_eddi:data_files'))
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -299,7 +215,8 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
 
         for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
-            instance.test = test
+            instance.test = test_instance
+            instance.is_default = True
             instance.save()
 
         messages.info(request, 'Test added successfully')
@@ -316,12 +233,15 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', context=None):
     context = context or {}
-
     user = request.user
     test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
-    
+    user_default_property_form = UserTestPropertyDefaultForm(request.POST or None)
+
     if test.user:
         form = UserTestForm(request.POST or None, instance=test)
+        default_property = test.properties.filter(is_default=True).first()
+        if default_property:
+            context['default_property'] = default_property.pk
     else:
         form = GlobalTestForm(request.POST or None, instance=test)
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
@@ -340,6 +260,14 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
             instance.test = test
             instance.save()
 
+        if test.user:
+            default_property_pk = request.POST['default_property']
+            if default_property_pk:
+                user_test_properties = test_instance.properties.all().is_default = False
+                default_property = OutsideEddiTestPropertyEstimate.objects.get(pk=default_property_pk)
+                default_property.is_default = True
+                default_property.save()
+
         messages.info(request, 'Test edited successfully')
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("outside_eddi:tests")})
@@ -349,6 +277,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
     context['test'] = test
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
+    context['user_default_property_form'] = user_default_property_form
     
     return render(request, template, context)
 
@@ -376,31 +305,35 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     context = {}
     user = request.user
     is_file = False
+    js_is_file = 'false'
 
     if file_id:
         data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
         is_file = True
+        js_is_file = 'true'
         
-        codes = [x.test_code for x in data_file.test_history.all()]
+        codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
-        completed_mapping = check_mapping_details(mapping, user)
-        
+
+        if data_file.state == 'mapped' or data_file.state == 'processed':
+            completed_mapping = True
+        else:
+            completed_mapping = False
+
         context['completed_mapping'] = completed_mapping
         context['data_file'] = data_file
-        if completed_mapping == True:
-            data_file.state = 'mapped'
-            data_file.save()
     else:
         mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
         
     context['mapping'] = mapping
     context['is_file'] = is_file
+    context['js_is_file'] = js_is_file
     
     return render(request, template, context)
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
-def create_test_mapping_properties(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
+def create_test_mapping_properties(request, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
     return create_test_mapping(request, map_code, test_id, template)
 
 
@@ -408,10 +341,15 @@ def create_test_mapping_properties(request, map_code=None, test_id=None, templat
 def create_test_mapping(request, map_code=None, test_id=None, template='outside_eddi/create_mapping_form.html', context=None):
     context = {}
     user = request.user
+    map_code = request.GET.get('map_code')
     
     if test_id:
-        import pdb;pdb.set_trace()
-        form = TestPropertyMappingForm(request.POST or None, initial={'test': test_id, 'code': map_code})
+        test_active_property = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.filter(is_default=True).first()
+        form = TestPropertyMappingForm(request.POST or None,
+                                       initial={'test': test_id,
+                                                'code': map_code,
+                                                'test_property': test_active_property}
+        )
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
 
@@ -461,7 +399,11 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def edit_test_mapping_properties(request, map_id=None, test_id=None, is_file=False, template='outside_eddi/edit_mapping_form.html', context=None):
-    return edit_test_mapping(request, map_id, test_id, template)
+    return edit_test_mapping(request, map_id, test_id, is_file, template)
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_file=True, template='outside_eddi/edit_mapping_form.html', context=None):
+    return edit_test_mapping(request, map_id, test_id, is_file, template)
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -471,9 +413,21 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     if test_id:
-        form = TestPropertyMappingForm(request.POST or None, instance=mapping, initial={'test': test_id})
-        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        map_code = request.GET.get('map_code')
         test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        if mapping.test == test and mapping.test_property:
+            test_active_property = mapping.test_property
+        else:
+            test_active_property = test.properties.filter(is_default=True).first()
+
+        form = TestPropertyMappingForm(request.POST or None,
+                                       instance=mapping,
+                                       initial={'test': test_id,
+                                                'code': map_code,
+                                                'test_property': test_active_property}
+        )
+        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        
         context['test'] = test
 
         user_estimates_formset = TestPropertyEstimateFormSet(
@@ -540,6 +494,62 @@ def help_page(request, file_id=None, template="outside_eddi/help.html"):
     return render(request, template, context)
 
 
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def delete_data_file(request, file_id, context=None):
+    context = context or {}
+
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    data_file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file).delete()
+    data_file.deleted = True
+    data_file.save()
+    
+    messages.info(request, "Your file and all it's data has been deleted")
+    return redirect(reverse('outside_eddi:data_files'))
+
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def process_data_file(request, file_id, context=None):
+    context = context or {}
+
+    user = request.user
+    data_file = validate_mapping(file_id, user)
+
+    if data_file.state == 'mapped':
+        subject_pks = list(data_file.test_history.all().values_list('subject', flat=True).distinct())
+        subjects = OutsideEddiSubject.objects.filter(pk__in=subject_pks)
+        update_adjusted_dates(user, data_file)
+        
+        lp_ddis = OutsideEddiDiagnosticTestHistory.objects.filter(test_result='Positive')
+        lp_ddis = lp_ddis.values('subject')
+        lp_ddis = lp_ddis.annotate(earliest_positive=Max('adjusted_date'))
+        lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
+
+        ep_ddis = OutsideEddiDiagnosticTestHistory.objects.filter(test_result='Negative')
+        ep_ddis = ep_ddis.values('subject')
+        ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
+        ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
+        
+        with transaction.atomic():
+            for subject in subjects:
+                subject.calculate_eddi(user, data_file, lp_ddis.get(subject.pk), ep_ddis.get(subject.pk))
+        data_file.state = 'processed'
+        data_file.save()
+        messages.info(request, 'Data Processed')
+    elif data_file.state == 'needs_mapping':
+        messages.info(request, 'Incomplete Mapping. Cannot process data')
+
+    return redirect(reverse('outside_eddi:data_files'))
+
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def validate_mapping_from_page(request, file_id, context=None):
+    context = context or {}
+    user = request.user
+    validate_mapping(file_id, user)
+
+    return test_mapping(request, file_id)
+
+
 def _copy_diagnostic_tests():
 
     tests = DiagnosticTest.objects.all()
@@ -597,42 +607,67 @@ def set_active_property(test):
         prop.save()
 
 
-def check_mapping(test_code, tests, user):
-    if test_code in tests:
-        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
-            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
-        else:
-            test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
-            test_property = test.get_default_property()
-
-            mapping = TestPropertyMapping.objects.create(
-                code=str(test_code),
-                test=test,
-                test_property=test_property,
-                user=user
-            )
-    else:
-        if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
-            mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
-        else:
-            mapping = TestPropertyMapping.objects.create(
-                code=test_code,
-                user=user
-            )
-    if not mapping.test or not mapping.test_property:
-        return False
-    else:
-        return True
-
-
-def check_mapping_details(mapping, user):
+def check_mapping_details(mapping, user, data_file):
     completed_mapping = True
     for m in mapping:
         if not m.code or not  m.test or not m.test_property:
             completed_mapping = False
         elif m.code and m.test and m.test_property:
-            properties = m.test.properties.all()
-            if m.test_property not in properties:
+            if m.test_property not in m.test.properties.all():
                 completed_mapping = False
 
+        if completed_mapping == False:
+            break
+
+    if completed_mapping:
+        data_file.state = 'mapped'
+    elif not completed_mapping:
+        data_file.state = 'needs_mapping'
+    data_file.save()
+
     return completed_mapping
+
+
+def save_file_data(file_id, user):
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    OutsideEddiFileHandler(data_file).save_data(user)
+    mapping = data_file.create_mapping(user)
+    check_mapping_details(mapping, user, data_file)
+
+    return data_file
+
+
+def validate_mapping(file_id, user):
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
+    mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+
+    if len(codes) > mapping.count():
+        codes_with_map = list(mapping.filter(code__in=codes).values_list('code', flat=True))
+        codes_without_map = list(set(codes) - set(codes_with_map))
+
+        for code in codes_without_map:
+            new_map = TestPropertyMapping.objects.create(
+                code=code,
+                user=user
+            )
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+
+    check_mapping_details(mapping, user, data_file)
+
+    return data_file
+
+
+def update_adjusted_dates(user, data_file):
+    with transaction.atomic():
+        file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+        # codes = list(file_test_history.values_list('test_code', flat=True).distinct())
+        # mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+
+        # test_properties = mapping.values('code', 'test_property')
+        # test_properties = test_properties.annotate(code='code', test_property='test_property')
+        
+        for test_history in file_test_history:
+            test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
+            test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+            test_history.save()

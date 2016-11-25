@@ -1,5 +1,6 @@
 from itertools import chain
 from django.conf import settings
+import gc
 
 registered_result_models = []
 registered_result_row_models = []
@@ -25,7 +26,7 @@ def get_result_row_model(assay_name):
 
 class ResultDownload(object):
 
-    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None):
+    def __init__(self, specific_columns, results, generic=False, result_models=None, limit=None, filter_by_visit=False):
 
         self.headers = []
         self.content = []
@@ -52,25 +53,44 @@ class ResultDownload(object):
             "specimen_purpose",
             "test_mode",
         ]
-        
-        self.common_columns = [ "specimen.specimen_label",
-                                "specimen.id",
-                                "specimen.parent_label",
-                                "specimen.specimen_type.name",
-                                "assay_run.id",
-                                "assay_run.assay.name",
-                                "assay_run.panel.name",
-                                "assay_run.laboratory.name",
-                                "test_date",
-        ]
 
+        if not filter_by_visit:
+            self.common_columns = [ "specimen.specimen_label",
+                                    "specimen.id",
+                                    "specimen.parent_label",
+                                    "specimen.specimen_type.name",
+                                    "assay_run.id",
+                                    "assay_run.assay.name",
+                                    "assay_run.panel.name",
+                                    "assay_run.laboratory.name",
+                                    "test_date",
+            ]
+
+        elif filter_by_visit:
+            self.common_columns = [ 'specimen.visit.subject.id',
+                                    'specimen.visit.id',
+                                    "specimen.id",
+                                    "specimen.specimen_label",
+                                    "specimen.parent_label",
+                                    "specimen.specimen_type.name",
+                                    "assay_run.id",
+                                    "assay_run.assay.name",
+                                    "assay_run.panel.name",
+                                    "assay_run.laboratory.name",
+                                    "test_date",
+            ]
 
         if not (generic or self.detailed):
             self.common_columns += ['test_mode'] + specific_columns
 
         if self.detailed:
             self.common_columns += ['result_field', 'result_value']
-            self.common_columns = ['generic_id', 'specific_id', 'test_mode'] + self.common_columns
+            if not filter_by_visit:
+                self.common_columns = ['generic_id', 'specific_id', 'test_mode'] + self.common_columns
+            elif filter_by_visit:
+                self.common_columns.insert(3, 'generic_id')
+                self.common_columns.insert(4, 'specific_id')
+                self.common_columns.insert(5, 'test_mode')
 
         self.common_columns += [
             "warning_msg",
@@ -136,6 +156,10 @@ class ResultDownload(object):
             "specimen.visit.visitdetail.days_from_eddi_to_current_art",
         ]
 
+        if filter_by_visit:
+            self.clinical_columns.remove('specimen.visit.id')
+            self.clinical_columns.remove('specimen.visit.subject.id')
+
         self.prepare_headers()
         self.prepare_content()
 
@@ -166,46 +190,67 @@ class ResultDownload(object):
             test_mode_field_index = combined_columns.index('test_mode')
             method_field_index = combined_columns.index('method')
             exclusion_field_index = combined_columns.index('exclusion')
-            
+
         except (IndexError, ValueError):
             pass
 
 
-        if self.limit is None:
-            limited_results = self.results[0:settings.MAX_NUM_DOWNLOAD_ROWS]
-        else:
+        limited_results = self.results
+        if self.limit:
             limited_results = self.results[0:self.limit]
 
-        for result in limited_results:
-            row = [ self.getattr_or_none(result, c) for c in combined_columns ]
+        batch_size = 5000
+        batch = limited_results[:batch_size]
+        current_index = 0
+        
+        try:
+            batch[0]
+            has_results =  True
+        except IndexError:
+            has_results = False
 
-            if self.detailed:
-                for model in self.result_models:
-                    row[generic_id_index] = result.pk
-                    related_name = model.__name__.lower() + '_set'
-                    for specific_result in getattr(result, related_name).all():
-                        row[specific_id_index] = specific_result.pk
-                        row[test_mode_field_index] = specific_result.test_mode
-                        for field in model.result_detail_fields:
-                            row[result_field_index] = field
-                            row[result_value_index] = getattr(specific_result, field, None)
-                            row[method_field_index] = ''
-                            if exclusion_field_index > -1:
-                                row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
-                            
-                            self.content.append(list(row))
-                            if self.limit and len(self.content) >= self.limit:
-                                break
-                    row[result_field_index] = 'final_result'
-                    row[test_mode_field_index] = ''
-                    row[result_value_index] = result.result
-                    row[method_field_index] = result.method
-                    self.content.append(list(row))
-                    if self.limit and len(self.content) >= self.limit:
-                        break
+        while has_results:
+            
+            for result in batch:
+                row = [ self.getattr_or_none(result, c) for c in combined_columns ]
+
+                if self.detailed:
+                    for model in self.result_models:
+                        row[generic_id_index] = result.pk
+                        related_name = model.__name__.lower() + '_set'
+                        for specific_result in getattr(result, related_name).all():
+                            row[specific_id_index] = specific_result.pk
+                            row[test_mode_field_index] = specific_result.test_mode
+                            for field in model.result_detail_fields:
+                                row[result_field_index] = field
+                                row[result_value_index] = getattr(specific_result, field, None)
+                                row[method_field_index] = ''
+                                if exclusion_field_index > -1:
+                                    row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
+
+                                self.content.append(list(row))
+                                if self.limit and len(self.content) >= self.limit:
+                                    break
+                        row[result_field_index] = 'final_result'
+                        row[test_mode_field_index] = ''
+                        row[result_value_index] = result.result
+                        row[method_field_index] = result.method
+                        self.content.append(list(row))
+                        if self.limit and len(self.content) >= self.limit:
+                            break
             else:
                 self.content.append(row)
 
+            gc.collect()
+
+            current_index += batch_size
+            batch = limited_results[current_index: current_index + batch_size]
+            try:
+                batch[0]
+                has_results =  True
+            except IndexError:
+                has_results = False
+            
             if self.limit and len(self.content) >= self.limit:
                 break
 
@@ -223,3 +268,45 @@ class ResultDownload(object):
             else:
                 header = column_split[-1]
             self.headers.append(header)
+
+
+    def add_extra_visits(self, visit_ids):
+        result_visit_ids = self.results.values_list('specimen__visit__pk', flat=True).distinct()
+        missing_visits = sorted(set(visit_ids).difference(result_visit_ids))
+
+        self.prepare_empty_content(missing_visits=missing_visits)
+
+
+    def add_extra_specimens(self, specimen_labels):
+        result_specimen_labels = self.results.values_list('specimen__specimen_label', flat=True).distinct()
+        missing_specimen_labels = sorted(set(specimen_labels).difference(result_specimen_labels))
+
+        self.prepare_empty_content(missing_specimens=missing_specimen_labels)
+
+
+    def prepare_empty_content(self, missing_visits=None, missing_specimens=None):
+        combined_columns = list(chain(self.common_columns,
+                                      self.specific_columns,
+                                      self.clinical_columns))
+
+        try:
+            result_field_index = combined_columns.index('result_field')
+            result_value_index = combined_columns.index('result_value')
+            specific_id_index = combined_columns.index('specific_id')
+            generic_id_index = combined_columns.index('generic_id')
+            test_mode_field_index = combined_columns.index('test_mode')
+            method_field_index = combined_columns.index('method')
+            exclusion_field_index = combined_columns.index('exclusion')
+
+        except (IndexError, ValueError):
+            pass
+
+        if missing_visits:
+            for visit_id in missing_visits:
+                row = [ visit_id if col == 'specimen.visit.id' else None for col in combined_columns  ]
+                self.content.append(row)
+
+        if missing_specimens:
+            for specimen_label in missing_specimens:
+                row = [ specimen_label if col == 'specimen.specimen_label' else None for col in combined_columns  ]
+                self.content.append(row)

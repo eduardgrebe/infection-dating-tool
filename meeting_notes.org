@@ -116,3 +116,40 @@ generic file handler for results
 * notes from meeting 17/11
 mysql optimizer
 >>>>>>> meeting_branch
+* notes from meeting 22/11
+** small new feature for filter
+background clinical data
+filter by specimen and visits
+supress results, there could be more than one and they are not looking for results with this filter
+** flip order of files and custom asssay tabs
+** change column order
+generic id
+specific id
+visit id
+specimen id
+subject id
+specimen label
+(order by subject id, visit id, specimen id, generic id, specific id)
+
+
+
+** change preview limit to 25
+** remove hard limit for result output
+explore more efficient ways of producing everything
+if result output exceeds a certain amoutn then prompt the user to confirm that they want to export such a large amout of data.
+another option would be to put a promt for the user to confirm when the form has no values (i.e. when it would return everything)
+** can we move data and system over to postgres?
+** outside eddi
+change url name, etc. no more outside eddi
+** outside eddi
+possibly add a tooltip over column header explaining different states for files
+add a bit of a white space between choose file and upload
+change message about mapping 'Please provide mapping for your file'
+
+make sure that files are processed in the background
+
+when clicking on mapping then the system checks the maps for the file (possibly store a list of unique codes in a file to check against rather than having to query everything)
+this also happenes every time the mapping page is loaded for a file. needs to be improved a lot
+
+possibly add a button to the file mapping page which allows the user to confirm the mapping to be completed. remove function call on page load, etc
+will possibly need to save unique subjects at the same time
