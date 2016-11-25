@@ -53,6 +53,7 @@
 
     {% if completed_mapping %}
       <h3>Mapping completed</h3>
+      <a class="btn btn-primary" href="{% url 'outside_eddi:validate_mapping' data_file.pk %}">Validate Mapping</a>
       <a class="btn btn-primary" href="{% url 'outside_eddi:data_files' %}">Return to data files</a>
     {% endif %}
     {% if completed_mapping == False %}

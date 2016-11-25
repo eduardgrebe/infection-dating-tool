@@ -312,7 +312,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
         codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
 
-        if data_file.state == 'mapped':
+        if data_file.state == 'mapped' or data_file.state == 'processed':
             completed_mapping = True
         else:
             completed_mapping = False
@@ -556,6 +556,18 @@ def validate_mapping(request, file_id, context=None):
     data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
     codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
     mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+
+    if len(codes) > mapping.count():
+        codes_with_map = list(mapping.filter(code__in=codes).values_list('code', flat=True))
+        codes_without_map = list(set(codes) - set(codes_with_map))
+
+        for code in codes_without_map:
+            new_map = TestPropertyMapping.objects.create(
+                code=code,
+                user=user
+            )
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
+
     check_mapping_details(mapping, user, data_file)
 
     return test_mapping(request, file_id)
