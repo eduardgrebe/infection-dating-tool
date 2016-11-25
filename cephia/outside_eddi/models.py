@@ -144,6 +144,40 @@ class OutsideEddiFileInfo(models.Model):
     def get_extension(self):
         return self.filename().split('.')[-1]
 
+    def create_mapping(self, user):
+        tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=self.upload_file.user) | Q(user=None))
+        test_names = [x.name for x in tests]
+
+        new_test_names = list(OutsideEddiDiagnosticTest.objects.filter(
+            Q(user=self.upload_file.user) | Q(user=None)
+        ).values_list('name', flat=True))
+
+        import pdb;pdb.set_trace()
+        
+        map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
+        
+        if test_code in tests:
+            if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+                mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+            else:
+                test = OutsideEddiDiagnosticTest.objects.get(name=test_code)
+                test_property = test.get_default_property()
+            
+                mapping = TestPropertyMapping.objects.create(
+                    code=str(test_code),
+                    test=test,
+                    test_property=test_property,
+                    user=user
+                )
+        else:
+            if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
+                mapping = TestPropertyMapping.objects.get(code=test_code, user=user)
+            else:
+                mapping = TestPropertyMapping.objects.create(
+                    code=test_code,
+                    user=user
+                )
+
     
 class OutsideEddiSubject(models.Model):
     

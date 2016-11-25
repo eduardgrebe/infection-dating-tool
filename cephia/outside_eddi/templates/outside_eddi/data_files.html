@@ -34,7 +34,7 @@
 	          <td>{{obj.created}}</td>
             <td>{{obj.state}}</td>
             {% if obj.state == 'needs_mapping' or obj.state == 'mapped' or obj.state == 'processed' %}
-              <td><a href="{% url 'outside_eddi:review_mapping_data_file' obj.id %}" >Mapping</a></td>
+              <td><a href="{% url 'outside_eddi:test_mapping' obj.id %}" >Mapping</a></td>
             {% else %}
               <td></td>
             {% endif %}

@@ -19,7 +19,11 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
 from cephia.models import CephiaUser
-from models import Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory
+from models import (
+    Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate,
+    TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory,
+    OutsideEddiSubject
+    )
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
@@ -176,9 +180,9 @@ def save_data_file(request, file_id, context=None):
     context = context or {}
 
     user = request.user
-    
     f = OutsideEddiFileInfo.objects.get(pk=file_id)
-    mapping_needed = OutsideEddiFileHandler(f).save_data(user)
+    OutsideEddiFileHandler(f).save_data(user)
+    f.create_mapping(user)
 
     if f.message:
         messages.info(request, f.message)
@@ -199,7 +203,7 @@ def save_data_file(request, file_id, context=None):
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def review_mapping_data_file(request, file_id, context=None):
     context = context or {}
-    
+
     user = request.user
     tests = OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None))
     test_names = [x.name for x in tests]
@@ -219,14 +223,15 @@ def process_data_file(request, file_id, context=None):
     test_history = f.test_history.all()
     subjects = []
 
-    codes = [x.test_code for x in f.test_history.all()]
+    codes = list(f.test_history.all().values_list('test_code', flat=True).distinct())
     mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
     completed_mapping = check_mapping_details(mapping, user)
 
     if completed_mapping:
-        for test in test_history:
-            if test.subject not in subjects:
-                subjects.append(test.subject)
+        subject_pks = list(f.test_history.all().values_list('subject', flat=True).distinct())
+        subjects = OutsideEddiSubject.objects.filter(pk__in=subject_pks)
+
+        import pdb;pdb.set_trace()
         for subject in subjects:
             subject.calculate_eddi(user, f)
         f.state = 'processed'
