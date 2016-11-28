@@ -661,13 +661,20 @@ def validate_mapping(file_id, user):
 def update_adjusted_dates(user, data_file):
     with transaction.atomic():
         file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
-        # codes = list(file_test_history.values_list('test_code', flat=True).distinct())
-        # mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+        codes = list( file_test_history.all().values_list('test_code', flat=True).distinct() )
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
-        # test_properties = mapping.values('code', 'test_property')
-        # test_properties = test_properties.annotate(code='code', test_property='test_property')
+        map_property_means = list( mapping.values_list(
+            'code', 'test_property__mean_diagnostic_delay_days'
+        ).distinct() )
+        
+        map_property_means = dict( (v[0], v[1]) for v in map_property_means )
+        test_history_dates = list( file_test_history.values_list('test_code', 'test_date') )
+        dates_means = dict( (v[0], (v[1], int(map_property_means[v[0]]))) for v in test_history_dates )
         
         for test_history in file_test_history:
-            test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
-            test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+            test_code = test_history.test_code
+            test_date = dates_means[test_code][0]
+            mean_diagnostic_delay_days = dates_means[test_code][1]
+            test_history.adjusted_date = test_date - relativedelta(days=mean_diagnostic_delay_days)
             test_history.save()
