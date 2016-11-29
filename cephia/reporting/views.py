@@ -13,10 +13,11 @@ from reporting.models import Report as ReportModel
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from reporting.forms import VisitReportFilterForm, GenericReportFilterForm, GenericReportSaveForm
+from cephia.views import cephia_login_required
 
 logger = logging.getLogger(__name__)
 
-@login_required
+@cephia_login_required(login_url='users:auth_login')
 def visit_material(request, template="reporting/visit_material.html"):
     context = {}
 
@@ -144,13 +145,15 @@ def visit_material(request, template="reporting/visit_material.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-@login_required
+
+@cephia_login_required(login_url='users:auth_login')
 def all_subject_material(request, template="reporting/all_subject_material.html"):
     context = {}
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-@login_required
+
+@cephia_login_required(login_url='users:auth_login')
 def generic_report(request, template="reporting/generic_report.html"):
     context = {}
     query_form = GenericReportFilterForm(request.POST or None)
@@ -180,14 +183,16 @@ def generic_report(request, template="reporting/generic_report.html"):
     
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-@login_required
+
+@cephia_login_required(login_url='users:auth_login')
 def report_landing_page(request, template="reporting/report_landing_page.html"):
     context = {}
     context['reports'] = ReportModel.objects.all()
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 
-@login_required
+
+@cephia_login_required(login_url='users:auth_login')
 def saved_report(request, report_id, template="reporting/saved_report.html"):
     context = {}
     saved_report = ReportModel.objects.get(pk=report_id)
@@ -199,7 +204,7 @@ def saved_report(request, report_id, template="reporting/saved_report.html"):
 
 
 @csrf_exempt
-@login_required
+@cephia_login_required(login_url='users:auth_login')
 def visit_specimen_report(request, template="reporting/visit_specimen_modal.html"):
     context = {}
 
@@ -241,7 +246,7 @@ def visit_specimen_report(request, template="reporting/visit_specimen_modal.html
         return HttpResponse(json.dumps({'response': response.content}))
 
 
-@login_required
+@cephia_login_required(login_url='users:auth_login')
 def visit_specimen_detail_download(request):
     context = {}
 
@@ -305,7 +310,8 @@ def visit_specimen_detail_download(request):
                            specimen.is_available ] )
     return response
 
-@login_required
+
+@cephia_login_required(login_url='users:auth_login')
 def fixed_query_template(request, template="reporting/fixed_query_template.html"):
     context = {}
 

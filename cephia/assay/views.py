@@ -27,11 +27,11 @@ from cephia.file_handlers.file_handler_register import register_file_handler
 from cephia.file_handlers.custom_assay_file_handler import CustomAssayFileHandler
 from assay.models import CustomAssayResult
 from django.contrib.auth.decorators import user_passes_test
+from cephia.views import cephia_login_required
 
 logger = logging.getLogger(__name__)
 
-@login_required
-@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
+@cephia_login_required(login_url='users:auth_login')
 def panels(request, template="assay/panels.html"):
     context = {}
     panel_capture_form = PanelCaptureForm(request.POST or None)
@@ -52,6 +52,8 @@ def panels(request, template="assay/panels.html"):
         
         return render_to_response(template, context, context_instance=RequestContext(request))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def shipment_file_upload(request, panel_id=None, template="assay/shipment_modal.html"):
     context = {}
 
@@ -79,6 +81,8 @@ def shipment_file_upload(request, panel_id=None, template="assay/shipment_modal.
         response = render_to_response(template, context, context_instance=RequestContext(request))
         return HttpResponse(json.dumps({'response': response.content}))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def membership_file_upload(request, panel_id=None, template="assay/membership_modal.html"):
     context = {}
 
@@ -106,6 +110,8 @@ def membership_file_upload(request, panel_id=None, template="assay/membership_mo
         response = render_to_response(template, context, context_instance=RequestContext(request))
         return HttpResponse(json.dumps({'response': response.content}))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def result_file_upload(request, panel_id=None, template="assay/result_modal.html"):
     context = {}
 
@@ -141,6 +147,8 @@ def result_file_upload(request, panel_id=None, template="assay/result_modal.html
         response = render_to_response(template, context, context_instance=RequestContext(request))
         return HttpResponse(json.dumps({'response': response.content}))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def panel_memberships(request, panel_id=None, template="assay/panel_memberships.html"):
     context = {}
 
@@ -149,6 +157,8 @@ def panel_memberships(request, panel_id=None, template="assay/panel_memberships.
 
         return render_to_response(template, context, context_instance=RequestContext(request))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html"):
     context = {}
 
@@ -158,6 +168,7 @@ def panel_shipments(request, panel_id=None, template="assay/panel_shipments.html
         return render_to_response(template, context, context_instance=RequestContext(request))
 
 
+@cephia_login_required(login_url='users:auth_login')
 def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     context = {}
     runs = AssayRun.objects.all().order_by('-id')
@@ -185,6 +196,7 @@ def assay_runs(request, panel_id=None, template="assay/assay_runs.html"):
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
+@cephia_login_required(login_url='users:auth_login')
 def preview_assay_runs(request, panel_id=None, template="assay/assay_runs_preview.html"):
     context = {}
     by_visits_form = AssaysByVisitForm(request.GET)
@@ -198,6 +210,7 @@ def preview_assay_runs(request, panel_id=None, template="assay/assay_runs_previe
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 
+@cephia_login_required(login_url='users:auth_login')
 def run_results(request, run_id=None, template="assay/run_results.html"):
     context = {}
 
@@ -244,6 +257,8 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
         context['run'] = AssayRun.objects.get(pk=run_id)
         return render_to_response(template, context, context_instance=RequestContext(request))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def specific_results(request, result_id=None, template="assay/specific_results_modal.html"):
     context = {}
     assay_result = AssayResult.objects.get(pk=result_id)
@@ -266,6 +281,7 @@ def purge_run(request, run_id=None):
         return HttpResponseRedirect(request.path)
 
 
+@cephia_login_required(login_url='users:auth_login')
 def custom_assays(request, template="assay/custom_assays.html"):
     context = {}
     custom_assays = Assay.objects.filter(is_custom=True)

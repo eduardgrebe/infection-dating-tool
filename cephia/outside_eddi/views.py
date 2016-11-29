@@ -37,7 +37,7 @@ from django.db.models import Max
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
-        lambda u: u.is_authenticated and u.groups.filter(name='Outside Eddi Users').exists(),
+        lambda u: u.is_authenticated() and u.groups.filter(name='Outside Eddi Users').exists(),
         login_url=login_url,
     )
 

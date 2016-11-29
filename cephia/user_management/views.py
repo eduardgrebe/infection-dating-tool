@@ -13,10 +13,10 @@ from django.shortcuts import resolve_url
 from forms import UserEditForm, UserCreationForm
 from user_management.models import AuthenticationToken
 from django.core.urlresolvers import reverse
-
+from cephia.views import cephia_login_required
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def login(request, template='admin/cephia_login.html'):
@@ -44,6 +44,7 @@ def login(request, template='admin/cephia_login.html'):
     context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+
 def _check_for_login_hack_attempt(request, context):
     if request.POST.get('username'):
         try:
@@ -68,7 +69,7 @@ def logout(request, login_url=None, current_app=None, extra_context=None):
 
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
-@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
+@cephia_login_required(login_url='users:auth_login')
 def user_list(request, template="user_management/user_list.html"):
     context = {}
     try:
@@ -81,9 +82,10 @@ def user_list(request, template="user_management/user_list.html"):
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
-@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
+@cephia_login_required(login_url='users:auth_login')
 def user_add(request, template="user_management/user_add.html"):
     context = {}
     try:
@@ -104,9 +106,10 @@ def user_add(request, template="user_management/user_add.html"):
     context['form'] = form
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
-@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
+@cephia_login_required(login_url='users:auth_login')
 def user_edit(request, user_id=None, template="user_management/user_edit.html"):
     context = {}
     try:
