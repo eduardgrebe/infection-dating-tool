@@ -289,10 +289,8 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
     data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
     test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
 
-    subjects = []
-    for test in test_history:
-        if test.subject not in subjects:
-            subjects.append(test.subject)
+    test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
+    subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
 
     context['file'] = data_file
     context['subjects'] = subjects
