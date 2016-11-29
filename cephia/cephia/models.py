@@ -560,20 +560,43 @@ class Visit(models.Model):
         earliest_date = self.visit_date - relativedelta(days=30)
         latest_date = self.visit_date + relativedelta(days=30)
 
-        latest_earlier_visit = Visit.objects.filter(
+        earlier_visit = Visit.objects.filter(
             viral_load__isnull=False,
             visit_date__range=[earliest_date, self.visit_date],
             on_treatment=self.on_treatment,
             subject_label=self.subject_label
         ).order_by('visit_date').exclude(pk=self.pk).last()
 
-        earliest_later_visit = Visit.objects.filter(
+        later_visit = Visit.objects.filter(
             viral_load__isnull=False,
             visit_date__range=[self.visit_date, latest_date],
             on_treatment=self.on_treatment,
             subject_label=self.subject_label
         ).order_by('visit_date').exclude(pk=self.pk).first()
+
         import pdb;pdb.set_trace()
+        viral_load_offset = None
+
+        if earlier_visit and later_visit:
+            days_diff_later = (later_visit.visit_date - self.visit_date).days
+            days_diff_earlier = (self.visit_date - earlier_visit.visit_date).days
+
+            if days_diff_later < days_diff_earlier:
+                viral_load_offset = (later_visit.visit_date - self.visit_date).days
+                self.viral_load = later_visit.viral_load
+            else:
+                viral_load_offset = (earlier_visit.visit_date - self.visit_date).days
+                self.viral_load = earlier_visit.viral_load
+        elif earlier_visit:
+            viral_load_offset = (earlier_visit.visit_date - self.visit_date).days
+            self.viral_load = earlier_visit.viral_load
+        elif later_visit:
+            viral_load_offset = (later_visit.visit_date - self.visit_date).days
+            self.viral_load = later_visit.viral_load
+
+        if viral_load_offset:
+            self.viral_load_offset = viral_load_offset
+        self.save()
 
     def get_region(self):
         pass
