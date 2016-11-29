@@ -81,3 +81,10 @@ class Command(BaseCommand):
                 except Exception, e:
                     traceback.print_exc()
                     break
+
+    def fix_viral_loads():
+        with transaction.atomic():
+            visits = Visit.Objects.filter(viral_load=None)
+            for visit in visits:
+                visit.update_viral_load()
+                

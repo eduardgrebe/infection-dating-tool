@@ -20,11 +20,3 @@ class Command(BaseCommand):
                         logger.error('Error with creating detail for visit: %s' % visit.pk)
                         traceback.print_exc()
                         continue
-
-                    if not visit.viral_load:
-                        try:
-                            visit.update_viral_load()
-                        except Exception, e:
-                            logger.error('Error when updating null viral load for visit: %s' % visit.pk)
-                            traceback.print_exc()
-                            continue
