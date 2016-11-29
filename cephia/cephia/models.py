@@ -15,6 +15,7 @@ from world_regions import models as wr_models
 from django.db.models import QuerySet
 from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
+from dateutil.relativedelta import relativedelta
 
 import datetime
 
@@ -76,6 +77,27 @@ class CephiaUser(BaseUser):
                 allowed.extend((option,choices[option]) for option in options)
 
         return sorted(allowed)
+
+    def send_registration_notification(self, instore_user=False):
+        email_context = {}        
+        email_context['user'] = self.username
+        email_context['link_home'] = settings.SITE_BASE_URL
+        email_context = update_email_context(email_context)
+        if instore_user:
+            email_context['instore'] = True
+        if not self.has_usable_password():
+            OdrinUser.generate_password_reset_link(self)
+            email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
+                                                    reverse('finalise_user_account',
+                                                    kwargs={'token': self.password_reset_token}))
+
+        queue_templated_email(request=None, context=email_context,
+                              subject_template="Welcome to Odrin",
+                              text_template='odrin/emails/signup.txt',
+                              html_template='odrin/emails/new_member.html',
+                              to_addresses=[self.email],
+                              bcc_addresses=settings.BCC_EMAILS or [],
+                              from_address=settings.FROM_EMAIL)
         
 class Region(models.Model):
 
@@ -498,6 +520,7 @@ class Visit(models.Model):
     viral_load = models.IntegerField(null=True, blank=False)
     vl_type = models.CharField(max_length=20, null=True, blank=False)
     vl_detectable = models.NullBooleanField()
+    viral_load_offset = models.IntegerField(default=0)
 
     scopevisit_ec = models.BooleanField(default=False)
     pregnant = models.NullBooleanField()
@@ -532,6 +555,25 @@ class Visit(models.Model):
         vd.region = self.subject.country.region_name
         vd.save()
         return vd
+
+    def update_viral_load(self):
+        earliest_date = self.visit_date - relativedelta(days=30)
+        latest_date = self.visit_date + relativedelta(days=30)
+
+        latest_earlier_visit = Visit.objects.filter(
+            viral_load__isnull=False,
+            visit_date__range=[earliest_date, self.visit_date],
+            on_treatment=self.on_treatment,
+            subject_label=self.subject_label
+        ).order_by('visit_date').exclude(pk=self.pk).last()
+
+        earliest_later_visit = Visit.objects.filter(
+            viral_load__isnull=False,
+            visit_date__range=[self.visit_date, latest_date],
+            on_treatment=self.on_treatment,
+            subject_label=self.subject_label
+        ).order_by('visit_date').exclude(pk=self.pk).first()
+        import pdb;pdb.set_trace()
 
     def get_region(self):
         pass

@@ -49,6 +49,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_TIMEOUT_MINUTES = 999999
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
+SITE_BASE_URL = 'https://cephiadb.incidence-estimation.org/'
+
 # used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
 URL_PREFIX = ''
 

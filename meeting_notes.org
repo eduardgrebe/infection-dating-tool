@@ -153,3 +153,16 @@ this also happenes every time the mapping page is loaded for a file. needs to be
 
 possibly add a button to the file mapping page which allows the user to confirm the mapping to be completed. remove function call on page load, etc
 will possibly need to save unique subjects at the same time
+
+* call with Eduard 29/11
+with all result downloads
+viral load offset (num days between) negative number if viral load is before current visit or positive if viral load is after.
+
+if viral load is null and there is a visit within 30 days before or 30 days after with a viral load. get the viral load from the other visit
+if there is a visit before or after 
+
+if there is more than one visit within the 30 day range then take closest. only grab a viral load from a different visit if the treatment status is the same as the current visit. reports offset.
+always report viral load off set, defaults to 0 when viral load is from the current visit.
+
+
+management command that calculates the numeric viral load - add this to the command if vl is null
