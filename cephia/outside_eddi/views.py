@@ -37,7 +37,7 @@ from django.db.models import Max
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
-        lambda u: u.is_authenticated and u.groups.filter(name='Outside Eddi Users').exists(),
+        lambda u: u.is_authenticated() and u.groups.filter(name='Outside Eddi Users').exists(),
         login_url=login_url,
     )
 
@@ -289,10 +289,8 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
     data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
     test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
 
-    subjects = []
-    for test in test_history:
-        if test.subject not in subjects:
-            subjects.append(test.subject)
+    test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
+    subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
 
     context['file'] = data_file
     context['subjects'] = subjects
@@ -661,13 +659,20 @@ def validate_mapping(file_id, user):
 def update_adjusted_dates(user, data_file):
     with transaction.atomic():
         file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
-        # codes = list(file_test_history.values_list('test_code', flat=True).distinct())
-        # mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
+        codes = list( file_test_history.all().values_list('test_code', flat=True).distinct() )
+        mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
-        # test_properties = mapping.values('code', 'test_property')
-        # test_properties = test_properties.annotate(code='code', test_property='test_property')
+        map_property_means = list( mapping.values_list(
+            'code', 'test_property__mean_diagnostic_delay_days'
+        ).distinct() )
+        
+        map_property_means = dict( (v[0], v[1]) for v in map_property_means )
+        test_history_dates = list( file_test_history.values_list('test_code', 'test_date') )
+        dates_means = dict( (v[0], (v[1], int(map_property_means[v[0]]))) for v in test_history_dates )
         
         for test_history in file_test_history:
-            test_property = TestPropertyMapping.objects.get(code=test_history.test_code, user=user).test_property
-            test_history.adjusted_date = test_history.test_date - relativedelta(days=test_property.mean_diagnostic_delay_days)
+            test_code = test_history.test_code
+            test_date = dates_means[test_code][0]
+            mean_diagnostic_delay_days = dates_means[test_code][1]
+            test_history.adjusted_date = test_date - relativedelta(days=mean_diagnostic_delay_days)
             test_history.save()

@@ -19,11 +19,11 @@ import json
 from django.forms import modelformset_factory
 from django.core.management import call_command
 from django.contrib.auth.decorators import user_passes_test
+from cephia.views import cephia_login_required
 
 logger = logging.getLogger(__name__)
 
-@login_required
-@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
+@cephia_login_required(login_url='users:auth_login')
 def eddi_report(request, template="diagnostics/eddi_report.html"):
     context = {}
     subjects = Subject.objects.all()
@@ -70,11 +70,15 @@ def eddi_report(request, template="diagnostics/eddi_report.html"):
 
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def subject_test_timeline(request, subject_id=None, template="cephia/subject_test_timeline.html"):
     context = {}
     context['subject_id'] = subject_id
     return render_to_response(template, context, context_instance=RequestContext(request))
 
+
+@cephia_login_required(login_url='users:auth_login')
 def subject_timeline_data(request, subject_id=None, template="diagnostics/timeline_data.json"):
     context = {}
     context['tests'] = DiagnosticTestHistory.objects.filter(subject__id=subject_id, ignore=False)
@@ -82,9 +86,9 @@ def subject_timeline_data(request, subject_id=None, template="diagnostics/timeli
     response = render_to_response(template, context, context_instance=RequestContext(request))
     return HttpResponse(json.dumps({'response': response.content}))
 
+
 @csrf_exempt
-@login_required
-@user_passes_test(lambda u: not (u.groups.filter(name='Outside Eddi Users').exists()))
+@cephia_login_required(login_url='users:auth_login')
 def eddi_report_detail(request, subject_id=None, template="diagnostics/eddi_report_detail_modal.html"):
     context = {}
     TestHistoryModelFormset = modelformset_factory(DiagnosticTestHistory, fields=('ignore',))
