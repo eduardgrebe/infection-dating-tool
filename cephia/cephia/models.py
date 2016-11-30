@@ -17,6 +17,7 @@ from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
 from dateutil.relativedelta import relativedelta
 from lib.email_context_helper import update_email_context
+from mailqueue.mailqueue_helper import queue_email, queue_templated_email
 
 import datetime
 

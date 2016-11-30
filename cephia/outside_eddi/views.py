@@ -97,6 +97,7 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
+            user.send_registration_notification()
 
             tests = OutsideEddiDiagnosticTest.objects.all()
 

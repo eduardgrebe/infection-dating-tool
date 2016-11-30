@@ -47,20 +47,20 @@ def queue_templated_email(request, context, subject_template, text_template, htm
     text_content = render_to_string(text_template, request_context)
     html_content = render_to_string(html_template, request_context)
     return queue_email(
-        subject_content, text_content, html_content, to_addresses, from_address, 
+        subject_content, text_content, html_content, to_addresses, from_address,
         bcc_addresses, attachments, inline_attachments=inline_attachments)
 
 def queue_email(subject_content, text_content, html_content, to_addresses, from_address=None,
                 bcc_addresses=None, attachments=None, inline_attachments=None):
 
     msg = MailerMessage(
-        subject=subject_content, 
+        subject=subject_content,
         content=text_content,
         html_content=html_content,
         to_address=",".join(to_addresses),
         bcc_address=",".join(bcc_addresses or []),
         from_address=from_address or settings.FROM_EMAIL,
-        app='gemsreport',
+        app='outside_eddi',
         created=timezone.now()
         )
 
