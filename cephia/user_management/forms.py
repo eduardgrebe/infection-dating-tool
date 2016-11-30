@@ -144,23 +144,23 @@ class UserCreationForm(ModelForm):
     error_messages = {
         'password_mismatch': ("The two password fields didn't match."),
     }
-    password = CharField(label=("Password"),
-                                widget=PasswordInput(attrs={'placeholder': 'Password'}))
-    verify_password = CharField(label=("Password confirmation"),
-                                widget=PasswordInput(attrs={'placeholder': 'Confirm Password'}),
-                                help_text=("Enter the same password as above, for verification."))
+    # password = CharField(label=("Password"),
+    #                             widget=PasswordInput(attrs={'placeholder': 'Password'}))
+    # verify_password = CharField(label=("Password confirmation"),
+    #                             widget=PasswordInput(attrs={'placeholder': 'Confirm Password'}),
+    #                             help_text=("Enter the same password as above, for verification."))
 
     class Meta:
         model = get_user_model()
-        fields = ["username", "email", "password", "verify_password", "is_active", 'user_permissions']
+        fields = ["username", "email", "is_active", 'user_permissions']
 
-    def clean_verify_password(self):
-        password = self.cleaned_data.get("password")
-        verify_password = self.cleaned_data.get("verify_password")
-        if password and verify_password and password != verify_password:
-            raise forms.ValidationError(
-                self.error_messages['password_mismatch'],
-                code='password_mismatch',
-            )
-        return verify_password
+    # def clean_verify_password(self):
+    #     password = self.cleaned_data.get("password")
+    #     verify_password = self.cleaned_data.get("verify_password")
+    #     if password and verify_password and password != verify_password:
+    #         raise forms.ValidationError(
+    #             self.error_messages['password_mismatch'],
+    #             code='password_mismatch',
+    #         )
+    #     return verify_password
 

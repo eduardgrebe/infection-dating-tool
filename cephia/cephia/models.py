@@ -18,6 +18,8 @@ from django.contrib.auth.models import Group
 from dateutil.relativedelta import relativedelta
 from lib.email_context_helper import update_email_context
 from mailqueue.mailqueue_helper import queue_email, queue_templated_email
+import uuid
+from django.core.urlresolvers import reverse
 
 import datetime
 
@@ -45,6 +47,9 @@ def as_days(tdelta):
     return tdelta.days
 
 class CephiaUser(BaseUser):
+    
+    password_reset_token = models.CharField(max_length=200, blank=True, null=True, db_index=True)
+    
     class Meta:
         db_table = "cephia_users"
         permissions = [
@@ -80,11 +85,24 @@ class CephiaUser(BaseUser):
 
         return sorted(allowed)
 
+    @classmethod
+    def generate_password_reset_link(self, user):
+        """ create an password authentication token for this user """
+        token = str(uuid.uuid4()).replace("-","").replace("_","")
+        user.password_reset_token = token
+        user.save()
+
     def send_registration_notification(self):
         email_context = {}
         email_context['user'] = self.username
         email_context['link_home'] = settings.SITE_BASE_URL
         email_context = update_email_context(email_context)
+
+        if not self.has_usable_password():
+            CephiaUser.generate_password_reset_link(self)
+            email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
+                                                    reverse('finalise_user_account',
+                                                    kwargs={'token': self.password_reset_token}))
 
         queue_templated_email(request=None, context=email_context,
                               subject_template="Welcome to the Cephia Infection Dating Tool",
