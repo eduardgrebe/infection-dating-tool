@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
 from forms import (
@@ -19,6 +19,7 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
 from cephia.models import CephiaUser
+from user_management.forms import UserPasswordForm
 from models import (
     Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate,
     TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory,
@@ -547,6 +548,34 @@ def validate_mapping_from_page(request, file_id, context=None):
     validate_mapping(file_id, user)
 
     return test_mapping(request, file_id)
+
+
+def finalise_user_account(request, token, template='outside_eddi/complete_signup.html', hide_error_message=None):
+    context = {}
+
+    user = CephiaUser.objects.get(password_reset_token=token)
+    form = UserPasswordForm(request.POST or None, instance=user)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            user.set_password(self.cleaned_data['password'])
+            user.is_active = True
+            user.password_reset_token = None
+            user.save()
+            outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
+            outside_eddi_group.user_set.add(user)
+            
+            # user = form.save(user)
+            return redirect("outside_eddi:home")
+        else:
+            messages.add_message(request, messages.WARNING, "Invalid credentials")
+            _check_for_login_hack_attempt(request, context)
+
+
+
+    context['token'] = token
+    context['form'] = form
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 def _copy_diagnostic_tests():

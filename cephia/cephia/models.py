@@ -101,7 +101,7 @@ class CephiaUser(BaseUser):
         if not self.has_usable_password():
             CephiaUser.generate_password_reset_link(self)
             email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
-                                                    reverse('finalise_user_account',
+                                                    reverse('outside_eddi:finalise_user_account',
                                                     kwargs={'token': self.password_reset_token}))
 
         queue_templated_email(request=None, context=email_context,

@@ -46,5 +46,7 @@ urlpatterns = [
 
     url(r'^results/(?P<file_id>\d+)/$', views.results, name='results'),
 
+    url(r'^user_registration/finalise/(?P<token>.*)/$', views.finalise_user_account, name='finalise_user_account'),
+
 ]
 urlpatterns += staticfiles_urlpatterns()
