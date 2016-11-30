@@ -16,6 +16,7 @@ from django.db.models import QuerySet
 from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
 from dateutil.relativedelta import relativedelta
+from lib.email_context_helper import update_email_context
 
 import datetime
 
@@ -78,27 +79,20 @@ class CephiaUser(BaseUser):
 
         return sorted(allowed)
 
-    def send_registration_notification(self, instore_user=False):
-        email_context = {}        
+    def send_registration_notification(self):
+        email_context = {}
         email_context['user'] = self.username
         email_context['link_home'] = settings.SITE_BASE_URL
         email_context = update_email_context(email_context)
-        if instore_user:
-            email_context['instore'] = True
-        if not self.has_usable_password():
-            OdrinUser.generate_password_reset_link(self)
-            email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
-                                                    reverse('finalise_user_account',
-                                                    kwargs={'token': self.password_reset_token}))
 
         queue_templated_email(request=None, context=email_context,
-                              subject_template="Welcome to Odrin",
-                              text_template='odrin/emails/signup.txt',
-                              html_template='odrin/emails/new_member.html',
+                              subject_template="Welcome to the Cephia Infection Dating Tool",
+                              text_template='outside_eddi/emails/signup.txt',
+                              html_template='outside_eddi/emails/new_member.html',
                               to_addresses=[self.email],
                               bcc_addresses=settings.BCC_EMAILS or [],
                               from_address=settings.FROM_EMAIL)
-        
+
 class Region(models.Model):
 
     class Meta:
