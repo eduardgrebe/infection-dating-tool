@@ -32,30 +32,12 @@
                           <td style="text-align:center;padding:15px 0 20px">
                             <p style="font-size:22px;font-weight:bold">Welcome to the Cephia Infection Dating Tool</p>
                             
-                            <p><a style="color: #9b9b9b; text-decoration: underline" href="{{ link_home }}"><font color="#9b9b9b">{% if instore %}Click here to access your account{% else %}Visit our website to get started on your journey{% endif %}</font></a></p>
+                            <p><a style="color: #9b9b9b; text-decoration: underline" href="{{ site_base_url }}cephia_infection_dating_tool/"><font color="#9b9b9b">Visit our website to get started</font></a></p>
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   </td>
-                </tr>
-
-                <tr>
-                  <td>
-                    <img width="700" src="{{ STATIC_URL }}emails/outfits2_largebannermobile.jpg" alt=""/>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td bgcolor="#fff">
-                    <table width="700" border="0" cellspacing="0" cellpadding="20">
-                      <tbody>
-                        <tr>
-                          <td style="text-align:center;padding:0 0 20px">If you have any questions about your order, <a style="color: #9b9b9b; text-decoration: underline" href="{{ faq_url }}"><font color="#9b9b9b">please visit customer care</font></a> <br>
-                            or email us at <a style="color: #9b9b9b; text-decoration: underline" href="mailto:{{ mailto_url }}" target="_top"><font color="#9b9b9b">{{ mailto_url }}</font></a></td>
-                        </tr>
-                      </tbody>
-                    </table></td>
                 </tr>
                 
                 {% include 'outside_eddi/emails/email_footer.html' %}
