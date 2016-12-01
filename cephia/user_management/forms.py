@@ -166,7 +166,6 @@ class UserCreationForm(ModelForm):
 
 
 class UserPasswordForm(ModelForm):
-    username = CharField(widget=TextInput(attrs={'placeholder': 'Username'}), label=None)
     email = CharField(widget=TextInput(attrs={'placeholder': 'Email'}), label=None)
     
     error_messages = {
@@ -180,7 +179,7 @@ class UserPasswordForm(ModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ["username", "email", "is_active", 'user_permissions']
+        fields = ["email", "is_active", 'user_permissions']
 
     def clean_verify_password(self):
         password = self.cleaned_data.get("password")
@@ -192,10 +191,7 @@ class UserPasswordForm(ModelForm):
             )
         return verify_password
 
-    def save(self, user, commit=True):
-
-        # user = user.save(True)
-        # user = super(UserPasswordForm, self).save(True)
+    def save(self, user):
         user.set_password(self.cleaned_data['password'])
         user.is_active = True
         user.password_reset_token = None
@@ -203,3 +199,6 @@ class UserPasswordForm(ModelForm):
         outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
         outside_eddi_group.user_set.add(user)
         return user
+
+    def get_user(self):
+        return self.user_cache

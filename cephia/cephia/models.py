@@ -112,6 +112,7 @@ class CephiaUser(BaseUser):
                               bcc_addresses=settings.BCC_EMAILS or [],
                               from_address=settings.FROM_EMAIL)
 
+
 class Region(models.Model):
 
     class Meta:

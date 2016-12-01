@@ -558,23 +558,29 @@ def finalise_user_account(request, token, template='outside_eddi/complete_signup
 
     if request.method == 'POST':
         if form.is_valid():
-            user.set_password(self.cleaned_data['password'])
-            user.is_active = True
-            user.password_reset_token = None
-            user.save()
-            outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
-            outside_eddi_group.user_set.add(user)
-            
-            # user = form.save(user)
+            user_instance = form.save(user)
+
             return redirect("outside_eddi:home")
-        else:
-            messages.add_message(request, messages.WARNING, "Invalid credentials")
-            _check_for_login_hack_attempt(request, context)
+            # user = form.get_user()
+
+        #     if user.groups.filter(name=u'Outside Eddi Users').exists():
+        #         auth_login(request, user)
+        #         user.login_ok()
+        #         token = AuthenticationToken.create_token(user)
+        #         return redirect("outside_eddi:data_files")
+        #     else:
+        #         msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
+        #         messages.add_message(request, messages.WARNING, msg)
+
+        # else:
+        #     messages.add_message(request, messages.WARNING, "Invalid credentials")
+        #     _check_for_login_hack_attempt(request, context)
 
 
 
     context['token'] = token
     context['form'] = form
+
     return render_to_response(template, context, context_instance=RequestContext(request))
 
 

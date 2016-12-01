@@ -61,8 +61,8 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 1025
 EMAIL_USE_TLS = False
-MAIL_ADMINS = []
-EMAIL_TEST_MODE = True
+MAIL_ADMINS = ['andrew@impd.co.za']
+EMAIL_TEST_MODE = False
 
 # used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
 URL_PREFIX = ''
