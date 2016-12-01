@@ -14,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
+from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
@@ -559,8 +560,12 @@ def finalise_user_account(request, token, template='outside_eddi/complete_signup
     if request.method == 'POST':
         if form.is_valid():
             user_instance = form.save(user)
+            import pdb;pdb.set_trace()
 
-            return redirect("outside_eddi:home")
+            auth_user = authenticate(username=user_instance.username, password=user_instance.password)
+            if auth_user:
+                auth.login(request, auth_user)
+                return redirect("outside_eddi:home")
             # user = form.get_user()
 
         #     if user.groups.filter(name=u'Outside Eddi Users').exists():
