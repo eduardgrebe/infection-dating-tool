@@ -20,6 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.update_source_study_viral_loads()
         self.update_cephia_viral_loads()
+        self.find_nearby_viral_loads()
 
     def update_cephia_viral_loads(self):
         upper_limit = Visit.objects.filter(vl_cephia__isnull=False, vl_cephia__startswith='<')

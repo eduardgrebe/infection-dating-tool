@@ -567,7 +567,6 @@ class Visit(models.Model):
             on_treatment=self.on_treatment,
             subject=self.subject
         ).order_by('visit_date').exclude(pk=self.pk).first()
-        import pdb;pdb.set_trace()
 
         if earlier_visit and later_visit:
             days_diff_later = (later_visit.visit_date - self.visit_date).days
