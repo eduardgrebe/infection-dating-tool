@@ -1,0 +1,7 @@
+Welcome to the Cephia Infection Dating Tool {{ user }}
+
+
+Go to the home page by following this link: {{ url }}
+
+
+

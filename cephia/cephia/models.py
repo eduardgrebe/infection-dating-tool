@@ -15,6 +15,8 @@ from world_regions import models as wr_models
 from django.db.models import QuerySet
 from django.db.models.functions import Length, Substr, Lower
 from django.contrib.auth.models import Group
+from dateutil.relativedelta import relativedelta
+from lib.email_context_helper import update_email_context
 
 import datetime
 
@@ -76,7 +78,21 @@ class CephiaUser(BaseUser):
                 allowed.extend((option,choices[option]) for option in options)
 
         return sorted(allowed)
-        
+
+    def send_registration_notification(self):
+        email_context = {}
+        email_context['user'] = self.username
+        email_context['link_home'] = settings.SITE_BASE_URL
+        email_context = update_email_context(email_context)
+
+        queue_templated_email(request=None, context=email_context,
+                              subject_template="Welcome to the Cephia Infection Dating Tool",
+                              text_template='outside_eddi/emails/signup.txt',
+                              html_template='outside_eddi/emails/new_member.html',
+                              to_addresses=[self.email],
+                              bcc_addresses=settings.BCC_EMAILS or [],
+                              from_address=settings.FROM_EMAIL)
+
 class Region(models.Model):
 
     class Meta:
@@ -498,6 +514,7 @@ class Visit(models.Model):
     viral_load = models.IntegerField(null=True, blank=False)
     vl_type = models.CharField(max_length=20, null=True, blank=False)
     vl_detectable = models.NullBooleanField()
+    viral_load_offset = models.IntegerField(null=True, default=None)
 
     scopevisit_ec = models.BooleanField(default=False)
     pregnant = models.NullBooleanField()
@@ -532,6 +549,38 @@ class Visit(models.Model):
         vd.region = self.subject.country.region_name
         vd.save()
         return vd
+
+    def find_nearby_viral_load(self):
+        earliest_date = self.visit_date - relativedelta(days=30)
+        latest_date = self.visit_date + relativedelta(days=30)
+
+        earlier_visit = Visit.objects.filter(
+            viral_load__isnull=False,
+            visit_date__range=[earliest_date, self.visit_date],
+            on_treatment=self.on_treatment,
+            subject=self.subject
+        ).order_by('visit_date').exclude(pk=self.pk).last()
+
+        later_visit = Visit.objects.filter(
+            viral_load__isnull=False,
+            visit_date__range=[self.visit_date, latest_date],
+            on_treatment=self.on_treatment,
+            subject=self.subject
+        ).order_by('visit_date').exclude(pk=self.pk).first()
+
+        if earlier_visit and later_visit:
+            days_diff_later = (later_visit.visit_date - self.visit_date).days
+            days_diff_earlier = (self.visit_date - earlier_visit.visit_date).days
+
+            if days_diff_later < days_diff_earlier:
+                update_visit(self, later_visit)
+            else:
+                update_visit(self, earlier_visit)
+        elif earlier_visit:
+            update_visit(self, earlier_visit)
+        elif later_visit:
+            update_visit(self, later_visit)
+
 
     def get_region(self):
         pass
@@ -889,3 +938,12 @@ class TreatmentStatusUpdateRow(ImportedRow):
 
     def __unicode__(self):
         return self.subject_label
+
+
+def update_visit(current_visit, nearby_visit):
+    viral_load_offset = (nearby_visit.visit_date - current_visit.visit_date).days
+    current_visit.viral_load = nearby_visit.viral_load
+    current_visit.vl_type = nearby_visit.vl_type
+    current_visit.vl_detectable = nearby_visit.vl_detectable
+    current_visit.viral_load_offset = viral_load_offset
+    current_visit.save()

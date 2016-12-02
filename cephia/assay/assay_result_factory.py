@@ -132,6 +132,7 @@ class ResultDownload(object):
             "specimen.visit.pregnant",
             "specimen.visit.cd4_count",
             "specimen.visit.viral_load",
+            "specimen.visit.viral_load_offset",
             "specimen.visit.vl_type",
             "specimen.visit.vl_detectable",
             "specimen.visit.subject.subject_eddi.eddi",
