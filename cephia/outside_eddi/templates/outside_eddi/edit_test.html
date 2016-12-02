@@ -1,6 +1,6 @@
 {% load bootstrap3 %}
 
-<div class="modal-dialog" role="document" >
+<div class="modal-dialog modal-lg" role="document" >
   <form method="post" action="{% url 'outside_eddi:edit_test' test.pk %}">{% csrf_token %}
     {{ user_estimates_formset.management_form }}
     <div class="modal-content">
@@ -20,7 +20,7 @@
                 <th>Default</th>
               {% endif %}
               <th>Name</th>
-              <th>Mean</th>
+              <th>Diagnostic Delay</th>
               <th>Description</th>
               <th>Reference</th>
             </tr>

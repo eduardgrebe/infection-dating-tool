@@ -70,7 +70,7 @@ class VisitFileHandler(FileHandler):
         return rows_inserted, rows_failed
 
     def validate(self):
-        from cephia.models import Visit, VisitRow, Subject
+        from cephia.models import Visit, VisitRow, Subject, Study
 
         default_less_date = datetime.now().date() - relativedelta(years=75)
         default_more_date = datetime.now().date() + relativedelta(years=75)
@@ -85,6 +85,12 @@ class VisitFileHandler(FileHandler):
                     subject = Subject.objects.get(subject_label=visit_row.subject_label)
                 except Subject.DoesNotExist:
                     subject = None
+                    raise Exception("Subject does not exist.")
+
+                try:
+                    source_study = Study.objects.get(name=visit_row.source_study)
+                except Study.DoesNotExist:
+                    error_msg += 'Source study does not exist.\n'
 
                 first_visit = Visit.objects.filter(subject_label=visit_row.subject_label).order_by('visit_date').first()
                 already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
@@ -96,7 +102,7 @@ class VisitFileHandler(FileHandler):
                     if not self.registered_dates.get('visitdate', default_less_date) >= (subject.cohort_entry_date or default_less_date):
                         error_msg += 'visit_date cannot be before cohort_entry_date.\n'
 
-                    if visit_row.pregnant == 'Y' and subject.sex == 'M':
+                    if self.get_bool(visit_row.pregnant) == True and subject.sex == 'M':
                         error_msg += 'Male subjects cannot be marked as pregnant.\n'
 
                     if subject.cohort_entry_hiv_status == 'P' and visit_row.visit_hivstatus == 'N':
@@ -112,6 +118,48 @@ class VisitFileHandler(FileHandler):
 
                 if visit_row.scopevisit_ec and visit_row.source_study != 'SCOPE':
                     error_msg += 'scope_visit_ec must be null if source study is not "SCOPE".\n'
+
+                if visit_row.source_study == 'SCOPE':
+                    if not visit_row.scopevisit_ec:
+                        error_msg += 'scope_visit_ec must be provided if source study is "SCOPE".\n'
+                    elif self.get_bool(visit_row.scopevisit_ec) == None:
+                        error_msg += 'scope_visit_ec must be True or False".\n'
+
+                if visit_row.vl == '0':
+                    erros_msg += 'viral load cannot be 0, please provide lower detection threshold.\n'
+
+                if visit_row.vl != '':
+                    vl_first_char = visit_row.vl[0] 
+                    if vl_first_char == '<' or vl_first_char == '>' or vl_first_char == '=':
+                        vl_number = visit_row.vl[1:]
+                    else:
+                        vl_number = visit_row.vl
+
+                    try:
+                        int(vl_number)
+                    except ValueError:
+                        error_msg += 'viral_load must be an integer or an integer following >, <, =.\n'
+
+                if visit_row.cd4_count != '':
+                    try:
+                        int(visit_row.cd4_count)
+                    except ValueError:
+                        error_msg += 'cd4_count must either be blank or an integer.\n'
+
+                if visit_row.artificial == '':
+                    error_msg += 'artificial cannot be blank.\n'
+                elif self.get_bool(visit_row.artificial) == None:
+                    error_msg += 'artificial must be True or False.\n'
+
+                if visit_row.pregnant == '':
+                    error_msg += 'pregnant cannot be blank.\n'
+                elif self.get_bool(visit_row.pregnant) == None and visit_row.pregnant.upper() != 'UNKNOWN':
+                    error_msg += 'pregnant must be True or False or Unknown.\n'
+
+                if visit_row.hepatitis == '':
+                    error_msg += 'hepatitis cannot be blank.\n'
+                elif self.get_bool(visit_row.hepatitis) == None and visit_row.hepatitis.upper() != 'UNKNOWN':
+                    error_msg += 'hepatitis must be True or False or Unknown.\n'
         
                 if error_msg:
                     raise Exception(error_msg)

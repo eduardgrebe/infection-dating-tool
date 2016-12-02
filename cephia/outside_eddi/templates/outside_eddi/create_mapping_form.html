@@ -1,6 +1,6 @@
 {% load bootstrap3 %}
 
-<div class="modal-dialog" role="document">
+<div class="modal-dialog modal-lg" role="document">
   <form method="POST" action="{% if test %}{% url 'outside_eddi:create_test_mapping' test.pk %}{% else %}{% url 'outside_eddi:create_test_mapping' %}{% endif %}">
     {{ user_estimates_formset.management_form }}
     <div class="modal-content">
@@ -22,7 +22,7 @@
               <tr>
                 <th>Active</th>
                 <th>Name</th>
-                <th>Mean</th>
+                <th>Diagnostic Delay</th>
                 <th>Description</th>
                 <th>Reference</th>
               </tr>

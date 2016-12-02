@@ -150,6 +150,7 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
     else:
         form = TestHistoryFileUploadForm()
 
+    context['data_files_page'] = True
     context['form'] = form
     context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user, deleted=False).order_by("-created")
 
