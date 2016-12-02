@@ -16,4 +16,5 @@ fi
 cd -
 
 cd ${SITE_PATH}
-python manage.py process_imported_files --settings=cephia.management_settings
+python manage.py validate_imported_files --settings=cephia.management_settings
+python manage.py validate_imported_files_2 --settings=cephia.management_settings

@@ -17,8 +17,6 @@
             <tr>
               <th>Name</th>
               <th>Mean</th>
-              <th>Variability</th>
-              <th>Median</th>
               <th>Description</th>
               <th>Reference</th>
             </tr>
@@ -29,8 +27,6 @@
                 {{ formset_form.id }}
                 <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                 <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
-                <td>{% bootstrap_field formset_form.foursigma_diagnostic_delay_days show_label=False %}</td>
-                <td>{% bootstrap_field formset_form.diagnostic_delay_median show_label=False %}</td>
                 <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                 <td>{% bootstrap_field formset_form.reference show_label=False %}</td>
               </tr>
