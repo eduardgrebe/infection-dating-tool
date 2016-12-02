@@ -88,7 +88,7 @@ class Command(BaseCommand):
 
     def find_nearby_viral_loads(self):
         with transaction.atomic():
-            visits = Visit.Objects.filter(viral_load=None)
+            visits = Visit.objects.filter(viral_load=None)
             for visit in visits:
                 visit.find_nearby_viral_load()
                 

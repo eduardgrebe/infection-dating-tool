@@ -581,14 +581,6 @@ class Visit(models.Model):
         elif later_visit:
             update_visit(self, later_visit)
 
-        def update_visit(current_visit, nearby_visit):
-            viral_load_offset = (nearby_visit.visit_date - self.visit_date).days
-            current_visit.viral_load = nearby_visit.viral_load
-            current_visit.vl_type = nearby_visit.vl_type
-            current_visit.vl_detectable = nearby_visit.vl_detectable
-            current_visit.viral_load_offset = viral_load_offset
-            current_visit.save()
-
 
     def get_region(self):
         pass
@@ -946,3 +938,12 @@ class TreatmentStatusUpdateRow(ImportedRow):
 
     def __unicode__(self):
         return self.subject_label
+
+
+def update_visit(current_visit, nearby_visit):
+    viral_load_offset = (nearby_visit.visit_date - current_visit.visit_date).days
+    current_visit.viral_load = nearby_visit.viral_load
+    current_visit.vl_type = nearby_visit.vl_type
+    current_visit.vl_detectable = nearby_visit.vl_detectable
+    current_visit.viral_load_offset = viral_load_offset
+    current_visit.save()
