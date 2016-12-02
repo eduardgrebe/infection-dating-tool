@@ -86,7 +86,7 @@ class Command(BaseCommand):
                     traceback.print_exc()
                     break
 
-    def find_nearby_viral_loads():
+    def find_nearby_viral_loads(self):
         with transaction.atomic():
             visits = Visit.Objects.filter(viral_load=None)
             for visit in visits:
