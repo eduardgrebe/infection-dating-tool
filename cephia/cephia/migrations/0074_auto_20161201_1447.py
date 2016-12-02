@@ -12,14 +12,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='historicalvisit',
-            name='viral_load_offset',
-            field=models.IntegerField(default=None),
-        ),
-        migrations.AlterField(
-            model_name='visit',
-            name='viral_load_offset',
-            field=models.IntegerField(default=None),
-        ),
+
     ]
