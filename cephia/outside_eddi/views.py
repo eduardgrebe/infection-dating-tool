@@ -263,11 +263,13 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
 
         if test.user:
             default_property_pk = request.POST['default_property']
+            user_test_properties = test_instance.properties.all().is_default = False
             if default_property_pk:
-                user_test_properties = test_instance.properties.all().is_default = False
                 default_property = OutsideEddiTestPropertyEstimate.objects.get(pk=default_property_pk)
-                default_property.is_default = True
-                default_property.save()
+            else:
+                default_property = test_instance.properties.all().order_by('-pk').first()
+            default_property.is_default = True
+            default_property.save()
 
         messages.info(request, 'Test edited successfully')
         if request.is_ajax():
