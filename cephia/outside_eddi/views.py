@@ -35,6 +35,7 @@ import datetime
 from django.db import transaction
 from dateutil.relativedelta import relativedelta
 from django.db.models import Max
+from result_factory import ResultDownload
 
 
 def outside_eddi_login_required(login_url=None):
@@ -297,6 +298,7 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
 
     test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
     subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
+    download = ResultDownload(subjects)
 
     context['file'] = data_file
     context['subjects'] = subjects
