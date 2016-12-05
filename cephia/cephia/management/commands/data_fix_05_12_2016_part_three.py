@@ -37,12 +37,12 @@ class Command(BaseCommand):
                  ['2030070', 'B']
         ]
 
-    for i in lines:
-        try:
-            subtype = Subtype.objects.get(name=i[1])
-        except Subtype.DoesNotExist:
-            subtype = Subtype.objects.create(name=i[1])
-        subject = Subject.objects.get(subject_label=i[0])
-        subject.subtype = subtype
-        subject.subtype_confirmed=True
-        subject.save()
+        for i in lines:
+            try:
+                subtype = Subtype.objects.get(name=i[1])
+            except Subtype.DoesNotExist:
+                subtype = Subtype.objects.create(name=i[1])
+            subject = Subject.objects.get(subject_label=i[0])
+            subject.subtype = subtype
+            subject.subtype_confirmed=True
+            subject.save()

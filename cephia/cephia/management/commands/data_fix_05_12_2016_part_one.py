@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from cephia.models import Visit, Subject
+from datetime import datetime
 from django.db.models import Q, F
 from django.db import transaction
 import logging
