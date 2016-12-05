@@ -108,7 +108,7 @@ INSTALLED_APPS = (
     'outside_eddi',
     'djcelery',
     'django_js_reverse',
-    'mailqueue',
+    # 'mailqueue',
 )
 
 MIDDLEWARE_CLASSES = (

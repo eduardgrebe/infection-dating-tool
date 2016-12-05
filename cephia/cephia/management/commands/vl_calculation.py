@@ -20,6 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.update_source_study_viral_loads()
         self.update_cephia_viral_loads()
+        self.find_nearby_viral_loads()
 
     def update_cephia_viral_loads(self):
         upper_limit = Visit.objects.filter(vl_cephia__isnull=False, vl_cephia__startswith='<')
@@ -43,15 +44,16 @@ class Command(BaseCommand):
         with transaction.atomic():
             for visit in quantitative:
                 try:
-                    vl_reported = getattr(visit, field)
-                    if vl_reported.startswith('='):
-                        value = vl_reported[1:]
+                    vl = getattr(visit, field)
+                    if vl.startswith('='):
+                        value = vl[1:]
                     else:
-                        value = vl_reported
+                        value = vl
 
                     visit.viral_load = vl_as_int(value)
                     visit.vl_detectable = True
                     visit.vl_type = 'quantitative'
+                    visit.viral_load_offset = 0
                     visit.save()
                 except Exception, e:
                     traceback.print_exc()
@@ -64,6 +66,7 @@ class Command(BaseCommand):
                     visit.viral_load = vl_as_int(vl_reported[1:])
                     visit.vl_detectable = False
                     visit.vl_type = 'upper_limit'
+                    visit.viral_load_offset = 0
                     visit.save()
                 except Exception, e:
                     traceback.print_exc()
@@ -77,14 +80,15 @@ class Command(BaseCommand):
                     visit.viral_load = vl_as_int(vl_reported[1:])
                     visit.vl_detectable = True
                     visit.vl_type = 'lower_limit'
+                    visit.viral_load_offset = 0
                     visit.save()
                 except Exception, e:
                     traceback.print_exc()
                     break
 
-    def fix_viral_loads():
+    def find_nearby_viral_loads(self):
         with transaction.atomic():
-            visits = Visit.Objects.filter(viral_load=None)
+            visits = Visit.objects.filter(viral_load=None)
             for visit in visits:
-                visit.update_viral_load()
+                visit.find_nearby_viral_load()
                 

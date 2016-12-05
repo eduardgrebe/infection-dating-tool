@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='historicalvisit',
             name='viral_load_offset',
-            field=models.IntegerField(default=0),
+            field=models.IntegerField(default=None, null=True),
         ),
         migrations.AddField(
             model_name='visit',
             name='viral_load_offset',
-            field=models.IntegerField(default=0),
+            field=models.IntegerField(default=None, null=True),
         ),
     ]

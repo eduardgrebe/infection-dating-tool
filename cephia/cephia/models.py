@@ -534,7 +534,7 @@ class Visit(models.Model):
     viral_load = models.IntegerField(null=True, blank=False)
     vl_type = models.CharField(max_length=20, null=True, blank=False)
     vl_detectable = models.NullBooleanField()
-    viral_load_offset = models.IntegerField(default=0)
+    viral_load_offset = models.IntegerField(null=True, default=None)
 
     scopevisit_ec = models.BooleanField(default=False)
     pregnant = models.NullBooleanField()
@@ -570,7 +570,7 @@ class Visit(models.Model):
         vd.save()
         return vd
 
-    def update_viral_load(self):
+    def find_nearby_viral_load(self):
         earliest_date = self.visit_date - relativedelta(days=30)
         latest_date = self.visit_date + relativedelta(days=30)
 
@@ -578,39 +578,29 @@ class Visit(models.Model):
             viral_load__isnull=False,
             visit_date__range=[earliest_date, self.visit_date],
             on_treatment=self.on_treatment,
-            subject_label=self.subject_label
+            subject=self.subject
         ).order_by('visit_date').exclude(pk=self.pk).last()
 
         later_visit = Visit.objects.filter(
             viral_load__isnull=False,
             visit_date__range=[self.visit_date, latest_date],
             on_treatment=self.on_treatment,
-            subject_label=self.subject_label
+            subject=self.subject
         ).order_by('visit_date').exclude(pk=self.pk).first()
-
-        import pdb;pdb.set_trace()
-        viral_load_offset = None
 
         if earlier_visit and later_visit:
             days_diff_later = (later_visit.visit_date - self.visit_date).days
             days_diff_earlier = (self.visit_date - earlier_visit.visit_date).days
 
             if days_diff_later < days_diff_earlier:
-                viral_load_offset = (later_visit.visit_date - self.visit_date).days
-                self.viral_load = later_visit.viral_load
+                update_visit(self, later_visit)
             else:
-                viral_load_offset = (earlier_visit.visit_date - self.visit_date).days
-                self.viral_load = earlier_visit.viral_load
+                update_visit(self, earlier_visit)
         elif earlier_visit:
-            viral_load_offset = (earlier_visit.visit_date - self.visit_date).days
-            self.viral_load = earlier_visit.viral_load
+            update_visit(self, earlier_visit)
         elif later_visit:
-            viral_load_offset = (later_visit.visit_date - self.visit_date).days
-            self.viral_load = later_visit.viral_load
+            update_visit(self, later_visit)
 
-        if viral_load_offset:
-            self.viral_load_offset = viral_load_offset
-        self.save()
 
     def get_region(self):
         pass
@@ -968,3 +958,12 @@ class TreatmentStatusUpdateRow(ImportedRow):
 
     def __unicode__(self):
         return self.subject_label
+
+
+def update_visit(current_visit, nearby_visit):
+    viral_load_offset = (nearby_visit.visit_date - current_visit.visit_date).days
+    current_visit.viral_load = nearby_visit.viral_load
+    current_visit.vl_type = nearby_visit.vl_type
+    current_visit.vl_detectable = nearby_visit.vl_detectable
+    current_visit.viral_load_offset = viral_load_offset
+    current_visit.save()

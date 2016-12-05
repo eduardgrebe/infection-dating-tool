@@ -166,3 +166,112 @@ always report viral load off set, defaults to 0 when viral load is from the curr
 
 
 management command that calculates the numeric viral load - add this to the command if vl is null
+* notes from meeting 01/12
+** vl update
+if there is an earlier and later date equally distant, which do we use?
+*** check the reason for all lines failing
+most recent visit file uploaded (leading zero dropped off subject labels)
+**** error log
+***** columns
+Your file contained the following extra columns 
+and they have been ignored [u'VISIT_Date', u'notes', u'pendingspecimenmatch']
+
+***** validate
+ERROR 2016-12-02 10:29:34,222 4289 visit_file_handler.py 124: Visit already exists.
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 93, in validate
+    raise Exception("Visit already exists.")
+Exception: Visit already exists.
+ERROR 2016-12-02 10:29:37,077 4289 visit_file_handler.py 124: Visit already exists.
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 93, in validate
+    raise Exception("Visit already exists.")
+Exception: Visit already exists.
+ERROR 2016-12-02 10:29:37,551 4289 visit_file_handler.py 124: 'visitdate'
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 90, in validate
+    already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
+KeyError: 'visitdate'
+ERROR 2016-12-02 10:29:37,589 4289 visit_file_handler.py 124: 'visitdate'
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 90, in validate
+    already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
+KeyError: 'visitdate'
+ERROR 2016-12-02 10:29:37,622 4289 visit_file_handler.py 124: 'visitdate'
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 90, in validate
+    already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
+KeyError: 'visitdate'
+ERROR 2016-12-02 10:29:37,656 4289 visit_file_handler.py 124: 'visitdate'
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 90, in validate
+    already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
+KeyError: 'visitdate'
+ERROR 2016-12-02 10:29:37,691 4289 visit_file_handler.py 124: 'visitdate'
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 90, in validate
+    already_exists = Visit.objects.filter(subject_label=visit_row.subject_label, visit_date=self.registered_dates['visitdate']).exists()
+KeyError: 'visitdate'
+Unknown command: 'validate_imported_files2'
+Type 'manage.py help' for usage.
+
+***** process
+ValueError: invalid literal for int() with base 10: '3<L'
+ERROR 2016-12-02 11:05:18,023 4916 visit_file_handler.py 166: (1048, "Column 'artificial' cannot be null")
+Traceback (most recent call last):
+  File "/home/andrew/id/cephia/cephia/cephia/file_handlers/visit_file_handler.py", line 154, in process
+    artificial = self.get_bool(visit_row.artificial)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/manager.py", line 122, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/query.py", line 401, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/base.py", line 708, in save
+    force_update=force_update, update_fields=update_fields)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/base.py", line 736, in save_base
+    updated = self._save_table(raw, cls, force_insert, force_update, using, update_fields)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/base.py", line 820, in _save_table
+    result = self._do_insert(cls._base_manager, using, fields, update_pk, raw)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/base.py", line 859, in _do_insert
+    using=using, raw=raw)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/manager.py", line 122, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/query.py", line 1039, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/models/sql/compiler.py", line 1060, in execute_sql
+    cursor.execute(sql, params)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/backends/utils.py", line 79, in execute
+    return super(CursorDebugWrapper, self).execute(sql, params)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/backends/utils.py", line 64, in execute
+    return self.cursor.execute(sql, params)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/backends/mysql/base.py", line 117, in execute
+    six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/django/db/backends/mysql/base.py", line 112, in execute
+    return self.cursor.execute(query, args)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/MySQLdb/cursors.py", line 205, in execute
+    self.errorhandler(self, exc, value)
+  File "/home/andrew/id/cephia/venv/local/lib/python2.7/site-packages/MySQLdb/connections.py", line 36, in defaulterrorhandler
+    raise errorclass, errorvalue
+IntegrityError: (1048, "Column 'artificial' cannot be null")
+
+
+** cephia infection dating tool
+set up result download via csv.
+hide/remove variability and median from properties
+change mean name to something more descriptive
+enlarge modals for extra room
+user test property default not selected when mapping?
+file notifications are not popping up on staging server?
+*** categorise tests for test ordering, etc
+2nd gen
+3rd gen
+4th gen
+rapid tests
+NAT/viral load
+supplemental assay
+share mapping/add to global tests.
+add user groups for multiple users to use same codes, etc.
+
+add an additional result type, pos, neg, indeterminate (important)
+
+
+
