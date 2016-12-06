@@ -4,7 +4,7 @@ from django.conf import settings
 class ResultDownload(object):
 
     def __init__(self, results):
-        
+
         self.headers = ['Subject', 'EP DDI', 'LP DDI', 'Interval Size', 'EDDI']
         self.content = []
         self.results = results

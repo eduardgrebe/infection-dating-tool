@@ -31,11 +31,13 @@ from django.forms import modelformset_factory
 import json
 from json import dumps
 from django.db.models import Q
+from datetime import datetime
 import datetime
 from django.db import transaction
 from dateutil.relativedelta import relativedelta
 from django.db.models import Max
 from result_factory import ResultDownload
+from cephia.csv_helper import get_csv_response
 
 
 def outside_eddi_login_required(login_url=None):
@@ -298,12 +300,34 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
 
     test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
     subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
-    download = ResultDownload(subjects)
+
+    
 
     context['file'] = data_file
     context['subjects'] = subjects
 
     return render(request, template, context)
+
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
+def download_results(request, file_id=None, context=None):
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+
+    test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
+    subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
+
+    download = ResultDownload(subjects)
+
+    response, writer = get_csv_response('results_run_%s_%s.csv' % (
+        data_file.data_file.name, datetime.datetime.today().strftime('%d%b%Y_%H%M')))
+    
+    writer.writerow(download.get_headers())
+
+    for row in download.get_content():
+        writer.writerow(row)
+
+    return response
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')

@@ -45,6 +45,7 @@ urlpatterns = [
     url('^validate_mapping/(?P<file_id>\d+)/', views.validate_mapping_from_page, name='validate_mapping_from_page'),
 
     url(r'^results/(?P<file_id>\d+)/$', views.results, name='results'),
+    url(r'^results/(?P<file_id>\d+)/download/$', views.download_results, name='download_results'),
 
     url(r'^user_registration/finalise/(?P<token>.*)/$', views.finalise_user_account, name='finalise_user_account'),
 
