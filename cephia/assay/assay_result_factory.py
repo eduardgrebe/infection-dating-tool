@@ -239,8 +239,8 @@ class ResultDownload(object):
                         self.content.append(list(row))
                         if self.limit and len(self.content) >= self.limit:
                             break
-            else:
-                self.content.append(row)
+                else:
+                    self.content.append(row)
 
             gc.collect()
 
