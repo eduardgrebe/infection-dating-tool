@@ -15,17 +15,21 @@ class Command(BaseCommand):
     args = '<type>'
 
     def handle(self, *args, **options):
-        if args[0] == 'flagged':
-            subjects = Subject.objects.filter(subject_eddi__recalculate=True)
-            with transaction.atomic():
-                for subject in subjects:
-                    self._handle_subject(subject.id)
-        elif args[0] == 'all':
-            self.update_adjusted_dates()
-            subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
-            with transaction.atomic():
-                for subject_id in subject_ids:
-                    self._handle_subject(subject_id)
+        if not args:
+            print 'Please specify either flagged or all'
+        else:
+            if args[0] == 'flagged':
+                subjects = Subject.objects.filter(subject_eddi__recalculate=True)
+                with transaction.atomic():
+                    for subject in subjects:
+                        self._handle_subject(subject.id)
+            elif args[0] == 'all':
+                self.update_adjusted_dates()
+                subject_ids = DiagnosticTestHistory.objects.values_list('subject_id', flat=True).distinct()
+                with transaction.atomic():
+                    for subject_id in subject_ids:
+                        self._handle_subject(subject_id)
+        
 
         self._handle_subjects_without_test_history()
         self.cleanup_orphans()

@@ -203,7 +203,7 @@ class ResultDownload(object):
         batch_size = 5000
         batch = limited_results[:batch_size]
         current_index = 0
-        
+
         try:
             batch[0]
             has_results =  True
@@ -239,8 +239,8 @@ class ResultDownload(object):
                         self.content.append(list(row))
                         if self.limit and len(self.content) >= self.limit:
                             break
-            else:
-                self.content.append(row)
+                else:
+                    self.content.append(row)
 
             gc.collect()
 

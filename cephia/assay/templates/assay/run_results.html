@@ -22,13 +22,13 @@
             <div class="container"
                  {% show_pages %}
               <div class="btn-group">
-                <a href="{% url 'assay:run_results' run_id=run.id %}?csv=1&specific=1" name="specific" class="btn btn-default" style="text-decoration:none;">Export raw data</a>
-              </div>
-              <div class="btn-group">
                 <a href="{% url 'assay:run_results' run_id=run.id %}?csv=1&generic=1" name="generic" class="btn btn-success" style="text-decoration:none;">Export generic results</a>
               </div>
               <div class="btn-group">
-                <a href="{% url 'assay:run_results' run_id=run.id %}?csv=1&detail=1" name="generic" class="btn btn-primary" style="text-decoration:none;">Export full results</a>
+                <a href="{% url 'assay:run_results' run_id=run.id %}?csv=1&detail=1" name="generic" class="btn btn-primary" style="text-decoration:none;">Export detailed results (long)</a>
+              </div>
+              <div class="btn-group">
+                <a href="{% url 'assay:run_results' run_id=run.id %}?csv=1&specific=1" name="specific" class="btn btn-default" style="text-decoration:none;">Export detailed results (wide)</a>
               </div>
 
               <div class="row">
