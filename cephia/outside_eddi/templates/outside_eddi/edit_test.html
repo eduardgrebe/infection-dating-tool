@@ -27,7 +27,7 @@
           </thead>
           <tbody>
             {% for property in properties %}
-              <tr {% if property.is_default %}style="font-weight: bold; color:#990033";"{% endif %}>
+              <tr {% if property.is_default %}style="font-weight: bold;;"{% endif %}>
                 <td>{{ property.estimate_label }}</td>
                 <td>{{ property.mean_diagnostic_delay_days }}</td>
                 <td>{{ property.comment }}</td>
