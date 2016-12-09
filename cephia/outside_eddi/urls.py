@@ -9,8 +9,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     url(r'^$', views.home, name='home'),
     url(r'^register/$', views.outside_eddi_user_registration, name='registration'),
+    url(r'^register/info/$', views.outside_eddi_user_registration_info, name='registration_info'),
     url(r'^login/$', views.outside_eddi_login, name='login'),
     url(r'^logout/$', views.outside_eddi_logout, name='logout'),
+    
     url(r'^data_files/$', views.data_files, name='data_files'),
     url(r'^help/$', views.help_page, name='help_page'),
     

@@ -111,12 +111,19 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
                 add_tests = _copy_diagnostic_tests()
                 test_properties = _copy_test_properties()
 
-            return redirect("outside_eddi:home")
+            return redirect("outside_eddi:registration_info")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
 
     context['form'] = form
+
+    return render(request, template, context)
+
+
+@csrf_exempt
+def outside_eddi_user_registration_info(request, template='outside_eddi/user_registration_info.html'):
+    context = {}
 
     return render(request, template, context)
 

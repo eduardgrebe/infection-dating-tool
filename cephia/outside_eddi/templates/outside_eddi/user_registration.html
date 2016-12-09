@@ -22,20 +22,6 @@
         {{form.email}}
 
       </div>
-      {% comment %}
-      <div class="row password" id="password">
-
-        {% if not form.this_is_the_login_form.errors %}{{ form.password.errors }}{% endif %}
-        {{form.password}}
-
-      </div>
-      <div class="row verify_password" id="verify_password">
-
-        {% if not form.this_is_the_login_form.errors %}{{ form.verify_password.errors }}{% endif %}
-        {{form.verify_password}}
-
-      </div>
-      {% endcomment %}
       
       {% url 'admin_password_reset' as password_reset_url %}
       {% if password_reset_url %}
