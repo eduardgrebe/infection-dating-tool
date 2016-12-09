@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.core.files import File
 from django.core.files.base import ContentFile
 import datetime
+from django.core.mail import send_mail
 
 def queue_admin_email(subject, msg, supplementary_to_addresses=None):
     return queue_email(subject_content=subject, text_content="%s\n\n%s" % (subject,msg),

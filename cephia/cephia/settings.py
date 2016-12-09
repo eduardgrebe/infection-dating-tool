@@ -56,7 +56,7 @@ MAIL_TO = 'andrew@impd.co.za'
 FROM_EMAIL = 'andrew@impd.co.za'
 BCC_EMAILS = []
 
-EMAIL_HOST = ''
+EMAIL_HOST = 'cephiadb.incidence-estimation.org'
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 1025
