@@ -38,6 +38,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Max
 from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
+import os
 
 
 def outside_eddi_login_required(login_url=None):
@@ -129,7 +130,10 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            uploaded_file = form.save()
+            uploaded_file = form.save(commit=False)
+            name, file_ext = uploaded_file.data_file.name.split('.')
+            uploaded_file.file_name = name
+            uploaded_file.save()
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
@@ -301,8 +305,6 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
     test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
     subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
 
-    
-
     context['file'] = data_file
     context['subjects'] = subjects
 
@@ -319,8 +321,8 @@ def download_results(request, file_id=None, context=None):
 
     download = ResultDownload(subjects)
 
-    response, writer = get_csv_response('results_run_%s_%s.csv' % (
-        data_file.data_file.name, datetime.datetime.today().strftime('%d%b%Y_%H%M')))
+    response, writer = get_csv_response('infection_dates_%s_%s.csv' % (
+        data_file.file_name, datetime.datetime.today().strftime('%d%b%Y_%H%M')))
     
     writer.writerow(download.get_headers())
 
@@ -352,6 +354,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
         context['completed_mapping'] = completed_mapping
         context['data_file'] = data_file
+        context['file_name'] = os.path.basename(data_file.data_file.name)
     else:
         mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
         

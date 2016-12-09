@@ -34,7 +34,7 @@
             
             <tbody>
               {% for property in properties %}
-                <tr>
+                <tr {% if property.is_default %}style="font-weight: bold; color:#990033";"{% endif %}>
                   <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                   <td>{{ property.estimate_label }}</td>
                   <td>{{ property.mean_diagnostic_delay_days }}</td>

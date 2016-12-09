@@ -30,7 +30,7 @@
       <tbody>
         {% for obj in file_info_data %}
           <tr>
-	          <td>{{obj.filename}}</td>
+            <td>{{obj.file_name}}</td>
 	          <td>{{obj.created}}</td>
             <td>{{obj.state}}</td>
             {% if obj.state == 'needs_mapping' or obj.state == 'mapped' or obj.state == 'processed' %}
