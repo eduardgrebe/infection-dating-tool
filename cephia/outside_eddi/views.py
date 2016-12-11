@@ -137,10 +137,11 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
     if request.method == 'POST':
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            uploaded_file = form.save(commit=False)
-            name, file_ext = uploaded_file.data_file.name.split('.')
+            uploaded_file = form.save()
+            name, file_ext = uploaded_file.filename().split('.')
             uploaded_file.file_name = name
             uploaded_file.save()
+
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
