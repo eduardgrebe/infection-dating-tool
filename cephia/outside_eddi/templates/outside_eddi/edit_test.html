@@ -10,9 +10,12 @@
       </div>
       <div class="modal-body">
         {% bootstrap_form form %}
-        {% bootstrap_form user_default_property_form %}
+        {% bootstrap_form user_default_property_form show_label=False %}
 
-        Properties:
+        <strong>Properties:</strong>
+        {% if not test.user %}
+          <p style="color:#990033;">System default properties are shown in a different colour</p>
+        {% endif %}
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
@@ -27,7 +30,7 @@
           </thead>
           <tbody>
             {% for property in properties %}
-              <tr {% if property.is_default %}style="font-weight: bold;;"{% endif %}>
+              <tr {% if property.is_default %}style="color:#990033;"{% endif %}>
                 <td>{{ property.estimate_label }}</td>
                 <td>{{ property.mean_diagnostic_delay_days }}</td>
                 <td>{{ property.comment }}</td>

@@ -352,13 +352,16 @@ why does it say default property? this should be a hidden form field.
 Change properties header to be bolder
 use colour, not bold.
 provide reason why colour
+** run results
+make the extra visit tables above the results default to collapsed
+
+*** are we doing these?
 ** result downloads
 add generic/final result to wide/raw result export i.e. for each wide result row, provide the generic result row on the next line
 ** preview detailed results
 can we load on html page?
 
-** run results
-make the extra visit tables above the results default to collapsed
+
 ** possibly provide an excel file output of all tests and test properties for cephia
 they need to review names, descriptions, etc.
 could I provide an option to export this to excel?
