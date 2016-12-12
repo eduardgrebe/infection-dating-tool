@@ -39,6 +39,7 @@ from django.db.models import Max
 from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
 import os
+from django.core.mail import send_mail
 
 
 def outside_eddi_login_required(login_url=None):

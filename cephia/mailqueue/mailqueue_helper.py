@@ -54,30 +54,45 @@ def queue_templated_email(request, context, subject_template, text_template, htm
 def queue_email(subject_content, text_content, html_content, to_addresses, from_address=None,
                 bcc_addresses=None, attachments=None, inline_attachments=None):
 
-    msg = MailerMessage(
+    msg = MailerMessage(html_content=html_content, from_address=from_address or settings.FROM_EMAIL, to_address=",".join(to_addresses),)
+
+    send_mail(
         subject=subject_content,
-        content=text_content,
-        html_content=html_content,
-        to_address=",".join(to_addresses),
-        bcc_address=",".join(bcc_addresses or []),
-        from_address=from_address or settings.FROM_EMAIL,
-        app='outside_eddi',
-        created=timezone.now()
-        )
+        message=text_content,
+        from_email=msg.from_address,
+        recipient_list=[msg.to_address],
+        fail_silently=False,
+        auth_user=None,
+        auth_password=None,
+        connection=None,
+        html_message=msg.html_content
+    )
 
-    logger.debug(msg, msg.to_address)
+    # msg = MailerMessage(
+    #     subject=subject_content,
+    #     content=text_content,
+    #     html_content=html_content,
+    #     to_address=",".join(to_addresses),
+    #     bcc_address=",".join(bcc_addresses or []),
+    #     from_address=from_address or settings.FROM_EMAIL,
+    #     app='outside_eddi',
+    #     created=timezone.now()
+    #     )
+    # logger.debug(msg, msg.to_address)
 
-    if attachments:
-        for f, filename in attachments:
-            if not isinstance(f, File):
-                f = ContentFile(f)
-            msg.add_attachment(f, filename)
+    # if attachments:
+    #     for f, filename in attachments:
+    #         if not isinstance(f, File):
+    #             f = ContentFile(f)
+    #         msg.add_attachment(f, filename)
 
-    if inline_attachments:
-        for f, filename, content_id in inline_attachments:
-            if not isinstance(f, File):
-                f = ContentFile(f)
-            msg.add_attachment(f, filename, content_id)
+    # if inline_attachments:
+    #     for f, filename, content_id in inline_attachments:
+    #         if not isinstance(f, File):
+    #             f = ContentFile(f)
+    #         msg.add_attachment(f, filename, content_id)
 
-    msg.save()
-    return msg
+    # recipient_list = [msg.to_address]
+    # send_mail(subject=msg.subject, message=msg.content, from_email=msg.from_address, recipient_list=recipient_list, fail_silently=False, auth_user=None, auth_password=None, connection=None, html_message=msg.html_content)
+    # # msg.save()
+    # return msg

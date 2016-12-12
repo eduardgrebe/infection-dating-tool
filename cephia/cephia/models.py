@@ -20,7 +20,7 @@ from lib.email_context_helper import update_email_context
 from mailqueue.mailqueue_helper import queue_email, queue_templated_email
 import uuid
 from django.core.urlresolvers import reverse
-
+from django.core.mail import send_mail
 import datetime
 
 logger = logging.getLogger(__name__)
