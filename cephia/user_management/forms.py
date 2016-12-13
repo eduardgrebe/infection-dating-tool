@@ -144,6 +144,33 @@ class UserCreationForm(ModelForm):
     error_messages = {
         'password_mismatch': ("The two password fields didn't match."),
     }
+    # password = CharField(label=("Password"),
+    #                             widget=PasswordInput(attrs={'placeholder': 'Password'}))
+    # verify_password = CharField(label=("Password confirmation"),
+    #                             widget=PasswordInput(attrs={'placeholder': 'Confirm Password'}),
+    #                             help_text=("Enter the same password as above, for verification."))
+
+    class Meta:
+        model = get_user_model()
+        fields = ["username", "email", "is_active", 'user_permissions']
+
+    # def clean_verify_password(self):
+    #     password = self.cleaned_data.get("password")
+    #     verify_password = self.cleaned_data.get("verify_password")
+    #     if password and verify_password and password != verify_password:
+    #         raise forms.ValidationError(
+    #             self.error_messages['password_mismatch'],
+    #             code='password_mismatch',
+    #         )
+    #     return verify_password
+
+
+class UserPasswordForm(ModelForm):
+    email = CharField(widget=TextInput(attrs={'placeholder': 'Email'}), label=None)
+    
+    error_messages = {
+        'password_mismatch': ("The two password fields didn't match."),
+    }
     password = CharField(label=("Password"),
                                 widget=PasswordInput(attrs={'placeholder': 'Password'}))
     verify_password = CharField(label=("Password confirmation"),
@@ -152,7 +179,7 @@ class UserCreationForm(ModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ["username", "email", "password", "verify_password", "is_active", 'user_permissions']
+        fields = ["email", "is_active", 'user_permissions']
 
     def clean_verify_password(self):
         password = self.cleaned_data.get("password")
@@ -164,3 +191,14 @@ class UserCreationForm(ModelForm):
             )
         return verify_password
 
+    def save(self, user):
+        user.set_password(self.cleaned_data['password'])
+        user.is_active = True
+        user.password_reset_token = None
+        user.save()
+        outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
+        outside_eddi_group.user_set.add(user)
+        return user
+
+    def get_user(self):
+        return self.user_cache

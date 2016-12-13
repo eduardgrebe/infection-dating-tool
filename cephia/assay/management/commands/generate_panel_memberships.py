@@ -16,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         assay_run = AssayRun.objects.get(pk=args[0])
-        
+
         results = AssayResult.objects.filter(assay_run__pk=args[0]).select_related('specimen', 'specimen__visit')
 
         visit_totals = defaultdict(lambda: 0)
@@ -36,5 +36,3 @@ class Command(BaseCommand):
                     category='',
                     panel_inclusion_criterion=''
                 )
-                
-

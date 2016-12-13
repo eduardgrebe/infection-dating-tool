@@ -14,8 +14,9 @@
         {% bootstrap_form form %}
 
         {% if test %}
-          <p>Properties for: {{ test.name }}</p>
+          <strong>Properties for: {{ test.name }}</strong>
           <p>Test Description: {{ test.description }}</p>
+          <p style="color:#990033;">System default properties are shown in a different colour</p>
 
           <table class="table table-condensed table-striped">
             <thead>
@@ -30,7 +31,7 @@
             
             <tbody>
               {% for property in properties %}
-                <tr>
+                <tr {% if property.is_default %}style="color:#990033;"{% endif %}>
                   <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                   <td>{{ property.estimate_label }}</td>
                   <td>{{ property.mean_diagnostic_delay_days }}</td>

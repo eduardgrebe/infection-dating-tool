@@ -295,7 +295,6 @@ def row_info(request, file_id, template=None):
         else:
             rows, template = filter_form.filter(fileinfo)
 
-        
         context['rows'] = rows
         context['file_id'] = fileinfo.id
         context['file'] = fileinfo.filename()
@@ -674,7 +673,8 @@ def export_file_data(request, file_id=None, state=None):
                        'vl',
                        'scopevisit_ec',
                        'pregnant',
-                       'hepatitis']
+                       'hepatitis',
+                       'artificial']
         elif fileinfo.file_type == 'transfer_in':
             rows = TransferInRow.objects.filter(fileinfo__id=file_id, state__in=state)
             headers = ['specimen_label',

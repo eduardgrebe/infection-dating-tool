@@ -397,6 +397,11 @@ class FileInfoFilterForm(forms.Form):
         ('protocol_lookup','Protocol Lookup'),
         ('test_history','Diagnostic Test History'),
         ('test_property','Diagnostic Test Properties'),
+        ('assay','Assay'),
+        ('panel_membership','Panel Membership'),
+        ('panel_shipment','Panel Shipment'),
+        ('treatment_status_update','Treatment Status Update'),
+        ('viral_load','Viral Load'),
     )
 
     file_type = forms.ChoiceField(choices=FILE_TYPE_CHOICES, required=False)

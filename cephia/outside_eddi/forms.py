@@ -25,12 +25,13 @@ class BaseModelForm(ModelForm):
         return self.context
 
 class EddiUserCreationForm(UserCreationForm):
-    
+    fields = ['username', 'email']
+
     def save(self, commit=True):
         
         user = super(EddiUserCreationForm, self).save(True)
-        user.set_password(self.cleaned_data['password'])
-        user.is_active = True
+        # user.set_password(self.cleaned_data['password'])
+        user.is_active = False
         user.save()
         outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
         outside_eddi_group.user_set.add(user)

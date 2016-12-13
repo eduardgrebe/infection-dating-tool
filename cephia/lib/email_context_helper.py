@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 def update_email_context(context):
-    
+
     context['site_base_url'] = settings.SITE_BASE_URL
     context['base_url'] = settings.BASE_URL
     context['mailto_url'] = settings.MAIL_TO

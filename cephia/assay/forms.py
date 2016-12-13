@@ -130,52 +130,6 @@ class AssaysByVisitForm(forms.Form):
         elif specimen_labels:
             results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels).distinct()
 
-        # visits_left_joined_to_results = Visit.objects.prefetch_related(Prefetch('assay_results'))
-        # visits = visits.extra("VR = concat(visit.id, results.id)")
-        # visits = visits.extra(select={'VR' : Concat('visit.id', 'specimen.assay_results.id')})
-        # visits_left_joined_to_results = visits_left_joined_to_results.distinct('VR')
-        
-        # ### gtp
- 
-        # Select visit.id, visit.name, results.id, results.date
-        #      from visit
-        #      LEFT JOIN specimen as specimen_alias where speciman.visit_id=visit.id
-        #      LEFT JOIN results where results.visit_id = visit.id
-        #      where (visit.id IN [1,2,3]) OR (speciman_alias.specimen_label IN [3,2,1])
-
-        #      where (visit.id IN [1,2,3]) OR (visit.id IN (select visit_id from specimen where label in [3,2,1])
-
-        # select * from visit
-        # left join results
-
-        # specimen_visits = Visit.objects.filter(specimens__specimen_label__in=specimen_labels))
-                                             
-        # visits = Visit.objects.filter( Q(pk__in=visit_ids) | Q(pk_in=specimen_visits))
-
-        # #  Q(specimens__specimen_label__in=specimen_labels) )
-        # visits_left_joined_to_results = prefetch_related('results')
-        # visits = visits.extra("VR = concat(visit.id, results.id)")
-        # visits_left_joined_to_results = visits_left_joined_to_results.distinct('VR')
-        # print visits_left_joined_to_results.queryset.sql()
-
-        # for visit_result in visits_left_joined_to_results:
-        #     print(visit_result)
-        #
-
-        # CSV
-        # Visit.objects.all().values_list('id', 'name', 'date', 'specimen__type', flat=True)
-        # [ {'id':1, 'name':'bob'}, {}, {} ]
-
-        # select count('id') from cephia_results;
-        
-        # ### end gtp
-        
-        
-
-        # if specimen_labels:
-        #     specimen_visits = Visit.objects.filter(specimens__specimen_label__in=specimen_labels)
-        #     results = results.filter(specimen__in=specimens)
-
         if assays:
             results = results.filter(assay_run__assay__in=assays)
 

@@ -22,7 +22,7 @@ REVISION = git.Repo(os.path.join(PROJECT_HOME, "..", "..")).head.commit.hexsha
 
 MAX_NUM_DOWNLOAD_ROWS = 100000
 
-MAILQUEUE_CELERY = True
+MAILQUEUE_CELERY = False
 CELERYBEAT_SCHEDULE_FILENAME = os.path.join(LOG_FOLDER, '.celery-beat-schedule')
 CELERY_TIMEZONE = 'UTC'
 BROKER_URL = 'amqp://cephia_celery:cephia_celery@localhost:5672/cephia_celery'
@@ -51,9 +51,6 @@ SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
 SITE_BASE_URL = 'https://cephiadb.incidence-estimation.org/'
 BASE_URL = 'https://cephiadb.incidence-estimation.org'
-
-MAIL_TO = 'andrew@impd.co.za'
-FROM_EMAIL = 'andrew@impd.co.za'
 
 # used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
 URL_PREFIX = ''
@@ -99,7 +96,7 @@ INSTALLED_APPS = (
     # 'outside_eddi',
     'djcelery',
     'django_js_reverse',
-    # 'mailqueue',
+    'mailqueue',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -179,8 +176,20 @@ STATIC_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'static_collected', REVISIO
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'media')
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(LOG_FOLDER, "email")
+
+EMAIL_HOST = 'cephiadb.incidence-estimation.org'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False
+FROM_EMAIL = 'andrew@impd.co.za'
+MAIL_ADMINS = ['andrew@impd.co.za']
+BCC_EMAILS = []
+EMAIL_TEST_MODE = False
+
+MAIL_TO = 'andrew@impd.co.za'
 
 LOGGING = {
     'version': 1,

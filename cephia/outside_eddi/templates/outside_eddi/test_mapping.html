@@ -11,7 +11,7 @@
   <div class="container">
 
     {% if data_file %}
-      <h3>Mapping for {{ data_file.filename }}</h3>
+      <h3>Mapping for {{ data_file.file_name }}</h3>
       Please complete any maps without all three values
     {% else %}
       <button class="js-add-mapping btn btn-default" data-add-url="{% url 'outside_eddi:create_test_mapping' %}">Add a new mapping</button>

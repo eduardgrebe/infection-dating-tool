@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
 from forms import (
@@ -14,11 +14,13 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
+from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
 from cephia.models import CephiaUser
+from user_management.forms import UserPasswordForm
 from models import (
     Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate,
     TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory,
@@ -29,10 +31,15 @@ from django.forms import modelformset_factory
 import json
 from json import dumps
 from django.db.models import Q
+from datetime import datetime
 import datetime
 from django.db import transaction
 from dateutil.relativedelta import relativedelta
 from django.db.models import Max
+from result_factory import ResultDownload
+from cephia.csv_helper import get_csv_response
+import os
+from django.core.mail import send_mail
 
 
 def outside_eddi_login_required(login_url=None):
@@ -97,6 +104,7 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
+            user.send_registration_notification()
 
             tests = OutsideEddiDiagnosticTest.objects.all()
 
@@ -104,12 +112,19 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
                 add_tests = _copy_diagnostic_tests()
                 test_properties = _copy_test_properties()
 
-            return redirect("outside_eddi:home")
+            return redirect("outside_eddi:registration_info")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
 
     context['form'] = form
+
+    return render(request, template, context)
+
+
+@csrf_exempt
+def outside_eddi_user_registration_info(request, template='outside_eddi/user_registration_info.html'):
+    context = {}
 
     return render(request, template, context)
 
@@ -124,6 +139,10 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
         form = TestHistoryFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = form.save()
+            name, file_ext = uploaded_file.filename().split('.')
+            uploaded_file.file_name = name
+            uploaded_file.save()
+
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
@@ -263,11 +282,13 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
 
         if test.user:
             default_property_pk = request.POST['default_property']
+            user_test_properties = test_instance.properties.all().is_default = False
             if default_property_pk:
-                user_test_properties = test_instance.properties.all().is_default = False
                 default_property = OutsideEddiTestPropertyEstimate.objects.get(pk=default_property_pk)
-                default_property.is_default = True
-                default_property.save()
+            else:
+                default_property = test_instance.properties.all().order_by('-pk').first()
+            default_property.is_default = True
+            default_property.save()
 
         messages.info(request, 'Test edited successfully')
         if request.is_ajax():
@@ -300,6 +321,27 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
+def download_results(request, file_id=None, context=None):
+    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+
+    test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
+    subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
+
+    download = ResultDownload(subjects)
+
+    response, writer = get_csv_response('infection_dates_%s_%s.csv' % (
+        data_file.file_name, datetime.datetime.today().strftime('%d%b%Y_%H%M')))
+    
+    writer.writerow(download.get_headers())
+
+    for row in download.get_content():
+        writer.writerow(row)
+
+    return response
+
+
+@outside_eddi_login_required(login_url='outside_eddi:login')
 def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html"):
     context = {}
     user = request.user
@@ -321,6 +363,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
 
         context['completed_mapping'] = completed_mapping
         context['data_file'] = data_file
+        context['file_name'] = os.path.basename(data_file.data_file.name)
     else:
         mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
         
@@ -547,6 +590,30 @@ def validate_mapping_from_page(request, file_id, context=None):
     validate_mapping(file_id, user)
 
     return test_mapping(request, file_id)
+
+
+def finalise_user_account(request, token, template='outside_eddi/complete_signup.html', hide_error_message=None):
+    context = {}
+
+    user = CephiaUser.objects.get(password_reset_token=token)
+    form = UserPasswordForm(request.POST or None, instance=user)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            user_instance = form.save(user)
+            password = form.cleaned_data['password']
+            auth_user = authenticate(username=user_instance.username, password=password)
+            
+            if auth_user:
+                auth_login(request, auth_user)
+                auth_user.login_ok()
+                token = AuthenticationToken.create_token(auth_user)
+                return redirect("outside_eddi:data_files")
+
+    context['token'] = token
+    context['form'] = form
+
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 def _copy_diagnostic_tests():

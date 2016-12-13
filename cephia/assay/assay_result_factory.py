@@ -203,7 +203,7 @@ class ResultDownload(object):
         batch_size = 5000
         batch = limited_results[:batch_size]
         current_index = 0
-        
+
         try:
             batch[0]
             has_results =  True

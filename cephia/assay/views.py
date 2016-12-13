@@ -224,9 +224,10 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
                 if 'generic' in request.GET:
                     headers, results = first_result.get_results_for_run()
                     result_type = 'generic'
-                elif 'specific' in request.GET:
-                    headers, results = first_result.get_specific_results_for_run()
-                    result_type = 'specific'
+                # this is for wide format download
+                # elif 'specific' in request.GET:
+                #     headers, results = first_result.get_specific_results_for_run()
+                #     result_type = 'specific'
                 elif 'detail' in request.GET:
                     headers, results, result_model = first_result.get_detailed_results_for_run()
                     result_type = 'detailed'
@@ -256,6 +257,31 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
         context['run_results'] = qs
         context['run'] = AssayRun.objects.get(pk=run_id)
         return render_to_response(template, context, context_instance=RequestContext(request))
+
+
+@cephia_login_required(login_url='users:auth_login')
+def detailed_run_results(request, run_id=None, template="assay/detailed_run_results.html"):
+    context = {}
+
+    filter_form = AssayRunResultsFilterForm(request.GET or None)
+    first_result = AssayResult.objects.filter(assay_run__id=run_id).first()
+    headers, results, result_model = first_result.get_detailed_results_for_run()
+        
+    if filter_form.is_valid():
+        results = filter_form.filter(results)
+        specimen_label = filter_form.cleaned_data['specimen_label']
+            
+    download = ResultDownload(headers, results, 'generic' in request.GET, [result_model])
+    run_results = download.get_content()
+    run_headers = download.get_headers()
+    result_for_header = AssayResult.objects.filter(assay_run__id=run_id).order_by('-warning_msg').first()
+
+    context['filter_form'] = filter_form
+    context['run_results'] = run_results
+    context['run_headers'] = run_headers
+    context['result_for_header'] = result_for_header
+    context['run'] = AssayRun.objects.get(pk=run_id)
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @cephia_login_required(login_url='users:auth_login')

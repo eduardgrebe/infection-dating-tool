@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.core.files import File
 from django.core.files.base import ContentFile
 import datetime
+from django.core.mail import send_mail
 
 def queue_admin_email(subject, msg, supplementary_to_addresses=None):
     return queue_email(subject_content=subject, text_content="%s\n\n%s" % (subject,msg),
@@ -47,36 +48,51 @@ def queue_templated_email(request, context, subject_template, text_template, htm
     text_content = render_to_string(text_template, request_context)
     html_content = render_to_string(html_template, request_context)
     return queue_email(
-        subject_content, text_content, html_content, to_addresses, from_address, 
+        subject_content, text_content, html_content, to_addresses, from_address,
         bcc_addresses, attachments, inline_attachments=inline_attachments)
 
 def queue_email(subject_content, text_content, html_content, to_addresses, from_address=None,
                 bcc_addresses=None, attachments=None, inline_attachments=None):
 
-    msg = MailerMessage(
-        subject=subject_content, 
-        content=text_content,
-        html_content=html_content,
-        to_address=",".join(to_addresses),
-        bcc_address=",".join(bcc_addresses or []),
-        from_address=from_address or settings.FROM_EMAIL,
-        app='gemsreport',
-        created=timezone.now()
-        )
+    msg = MailerMessage(html_content=html_content, from_address=from_address or settings.FROM_EMAIL, to_address=",".join(to_addresses),)
 
-    logger.debug(msg, msg.to_address)
+    send_mail(
+        subject=subject_content,
+        message=text_content,
+        from_email=msg.from_address,
+        recipient_list=[msg.to_address],
+        fail_silently=False,
+        auth_user=None,
+        auth_password=None,
+        connection=None,
+        html_message=msg.html_content
+    )
 
-    if attachments:
-        for f, filename in attachments:
-            if not isinstance(f, File):
-                f = ContentFile(f)
-            msg.add_attachment(f, filename)
+    # msg = MailerMessage(
+    #     subject=subject_content,
+    #     content=text_content,
+    #     html_content=html_content,
+    #     to_address=",".join(to_addresses),
+    #     bcc_address=",".join(bcc_addresses or []),
+    #     from_address=from_address or settings.FROM_EMAIL,
+    #     app='outside_eddi',
+    #     created=timezone.now()
+    #     )
+    # logger.debug(msg, msg.to_address)
 
-    if inline_attachments:
-        for f, filename, content_id in inline_attachments:
-            if not isinstance(f, File):
-                f = ContentFile(f)
-            msg.add_attachment(f, filename, content_id)
+    # if attachments:
+    #     for f, filename in attachments:
+    #         if not isinstance(f, File):
+    #             f = ContentFile(f)
+    #         msg.add_attachment(f, filename)
 
-    msg.save()
-    return msg
+    # if inline_attachments:
+    #     for f, filename, content_id in inline_attachments:
+    #         if not isinstance(f, File):
+    #             f = ContentFile(f)
+    #         msg.add_attachment(f, filename, content_id)
+
+    # recipient_list = [msg.to_address]
+    # send_mail(subject=msg.subject, message=msg.content, from_email=msg.from_address, recipient_list=recipient_list, fail_silently=False, auth_user=None, auth_password=None, connection=None, html_message=msg.html_content)
+    # # msg.save()
+    # return msg

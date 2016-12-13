@@ -5,21 +5,31 @@
   <p style="text-align: center">
     Welcome to the Cephia Infection Dating Tool
   </p>
+  <p style="text-align: center">
+    Please provide your password
+  </p>
 
   <div id="content-main" class="login">
     {{app_path}}
-    <form action="{% url 'outside_eddi:registration' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
+    <form method="post" class="login_form" id="login-form">{% csrf_token %}
       
-      <div class="row username" id="username">
-
-        {% if not form.this_is_the_login_form.errors %}{{ form.username.errors }}{% endif %}
-        {{form.username}}
-
-      </div>
       <div class="row email" id="email">
 
         {% if not form.this_is_the_login_form.errors %}{{ form.email.errors }}{% endif %}
         {{form.email}}
+
+      </div>
+
+      <div class="row password" id="password">
+
+        {% if not form.this_is_the_login_form.errors %}{{ form.password.errors }}{% endif %}
+        {{form.password}}
+
+      </div>
+      <div class="row verify_password" id="verify_password">
+
+        {% if not form.this_is_the_login_form.errors %}{{ form.verify_password.errors }}{% endif %}
+        {{form.verify_password}}
 
       </div>
       
@@ -31,7 +41,7 @@
       {% endif %}
       <br/>
       <div>
-        <button class="button login_button" onclick="$('.login_form').submit(); return false;">
+        <button class="button login_button" >
           Register
         </button>
       </div>

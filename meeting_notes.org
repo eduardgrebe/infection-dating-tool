@@ -275,3 +275,94 @@ add an additional result type, pos, neg, indeterminate (important)
 
 
 
+* notes from meeting 08/12
+two recomendations
+- do not allow 
+
+change email link text. 'Follow this link to complete your registration'
+fix file name to not include directory on result download
+change results export name to 'infection_dates_file_name_date'
+
+under global test - show default test as a different colour/font colour or bold. on the edit test page
+
+help page - index for page headers with links
+
+is there an easy/safe django way to change all field names.
+
+filter generic only showing one result when not selecting anything in the assay results filter
+
+** mail server setup
+is iRedMail the best option for only sending mail
+use send mail (django plug)
+install send mail possibly
+use django send mail plugin
+
+test most basic setup on a gmail and exchange/outlook mail (Alex has one)
+google does gmail drop mails from sub-domain
+
+have a 'haven't received an email? do this...' link on the registration page
+domain must be cephiadb.incidence-estimation.org
+
+drop footer
+
+** other server
+what is backup protocol?
+what is security update protocol?
+
+
+** old issues notes
+*** 601 estimate type
+this issue can be closed, nothing needs doing.
+*** issue103 Integrate the panel model tables
+drop
+*** issue134 Create assay lookup
+drop
+*** issue532 install the existing CMS django onto the new server
+not likely to happen
+*** issue581 Panel Memberships
+investigate the QP and EP scripts. can we do this easily?
+*** issue583 reverse engineering panel memberships
+look at issue above
+*** issue585 Shipments
+on hold until further notice
+*** issue587 Public facing data
+will be dealt with middle of next year
+*** issue588 single website
+drop
+*** issue595 diagnostic script for checking volume counts
+on hold for now but make sure that the file handler update is pushed to live
+*** issue586 Testing
+put on hold
+
+
+
+** row_info pages
+how does the system know which row info page to insert in table_header block, etc?
+It seems that it is not always loading the correct page.
+* notes from meeting 09/12
+** cephia infection dating tool
+keep extra characters at end of file names to distringuish which is which
+** row_info pages
+only seems to be affecting assay results. there are more than one assay file type, perhaps this adds to the confusion.
+** file_info filter
+update file type list to include all file types.
+** registration help link
+** test property defaults
+why does it say default property? this should be a hidden form field.
+Change properties header to be bolder
+use colour, not bold.
+provide reason why colour
+** run results
+make the extra visit tables above the results default to collapsed
+
+*** are we doing these?
+** result downloads
+add generic/final result to wide/raw result export i.e. for each wide result row, provide the generic result row on the next line
+** preview detailed results
+can we load on html page?
+
+
+** possibly provide an excel file output of all tests and test properties for cephia
+they need to review names, descriptions, etc.
+could I provide an option to export this to excel?
+possibly provide a mamangement command so that they can re-use the code

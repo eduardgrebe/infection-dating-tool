@@ -180,6 +180,21 @@ class TransferInFileHandler(FileHandler):
                 transfer_in_row.save()
                 continue
 
+        error_rows = TransferInRow.objects.filter(fileinfo=self.upload_file, state='error')
+        
+        if error_rows:
+            unique_specimens = list(error_rows.values_list('specimen_label', flat=True).distinct())
+            
+            for specimen in unique_specimens:
+                rows = TransferInRow.objects.filter(fileinfo=self.upload_file, specimen_label=specimen, state='validated')
+
+                for row in rows:
+                    row.state = 'error'
+                    row.error_message = 'another row for this specimen was rejected so this row will not be processed'
+                    rows_failed += 1
+                    rows_validated = rows_validated - 1
+                    row.save()
+
         return rows_validated, rows_failed
 
     def process(self):
@@ -189,7 +204,6 @@ class TransferInFileHandler(FileHandler):
         rows_failed = 0
         validated_records = TransferInRow.objects.filter(fileinfo=self.upload_file, state='validated', roll_up=False)
 
-        import pdb;pdb.set_trace()
         sql = """
         SELECT
         specimen_label,
