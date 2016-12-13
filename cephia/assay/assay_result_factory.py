@@ -223,6 +223,7 @@ class ResultDownload(object):
                             row[specific_id_index] = specific_result.pk
                             row[test_mode_field_index] = specific_result.test_mode
                             for field in model.result_detail_fields:
+                                import pdb;pdb.set_trace()
                                 row[result_field_index] = field
                                 row[result_value_index] = getattr(specific_result, field, None)
                                 row[method_field_index] = ''

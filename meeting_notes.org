@@ -366,3 +366,6 @@ can we load on html page?
 they need to review names, descriptions, etc.
 could I provide an option to export this to excel?
 possibly provide a mamangement command so that they can re-use the code
+
+* notes from call with Eduard 13/12
+custom assay results export is showing recent in some result_field rows, recent is a result value, not a result field.
