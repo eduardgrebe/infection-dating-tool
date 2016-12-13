@@ -35,15 +35,51 @@
     {% for row in rows %}
       <tr>
         <td>{{row.specimen_label}}</td>
-        <td>{{row.assay}}</td>
-        <td>{{row.test_date}}</td>
-        <td>{{row.operator}}</td>
-        <td>{{row.assay_kit_lot}}</td>
-        <td>{{row.plate_identifier}}</td>
-        <td>{{row.test_mode}}</td>
-        <td>{{row.specimen_purpose}}</td>
-        <td>{{row.result_classification}}</td>
-        <td>{{row.result_quantitative}}</td>
+        {% if row.assay %}
+          <td>{{row.assay}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.test_date %}
+          <td>{{row.test_date}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.operator %}
+          <td>{{row.operator}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.assay_kit_lot %}
+          <td>{{row.assay_kit_lot}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.plate_identifier %}
+          <td>{{row.plate_identifier}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.test_mode %}
+          <td>{{row.test_mode}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.specimen_purpose %}
+          <td>{{row.specimen_purpose}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.result_classification %}
+          <td>{{row.result_classification}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if row.result_quantitative %}
+          <td>{{row.result_quantitative}}</td>
+        {% else %}
+          <td></td>
+        {% endif %}
         <td>{{row.state}}</td>
         <td><pre>{{row.error_message}}
           {{row.error_message}}</pre></td>
