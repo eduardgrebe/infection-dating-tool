@@ -295,7 +295,6 @@ def row_info(request, file_id, template=None):
         else:
             rows, template = filter_form.filter(fileinfo)
 
-
         context['rows'] = rows
         context['file_id'] = fileinfo.id
         context['file'] = fileinfo.filename()
