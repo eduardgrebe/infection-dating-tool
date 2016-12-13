@@ -8,6 +8,7 @@ urlpatterns = patterns(
     url(r'^assay_runs/$', views.assay_runs, name='assay_runs'),
     url(r'^preview_assay_runs/$', views.preview_assay_runs, name='preview_assay_runs'),
     url(r'^run_results/(?P<run_id>\d+)$', views.run_results, name='run_results'),
+    url(r'^detailed_run_results/(?P<run_id>\d+)$', views.detailed_run_results, name='detailed_run_results'),
     url(r'^purge_run/(?P<run_id>\d+)$', views.purge_run, name='purge_run'),
     url(r'^specific_results/(?P<result_id>\d+)$', views.specific_results, name='specific_results'),
     url(r'^membership_file_upload/(?P<panel_id>\d+)/$', views.membership_file_upload, name='membership_file_upload'),
