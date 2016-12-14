@@ -124,11 +124,11 @@ class AssaysByVisitForm(forms.Form):
 
             results = results.filter(
                 specimen__visit__pk__in=visit_ids + specimen_visit_ids,
-            ).distinct()
+            )
         elif visit_ids:
-            results = results.filter(specimen__visit__pk__in=visit_ids).distinct()
+            results = results.filter(specimen__visit__pk__in=visit_ids)
         elif specimen_labels:
-            results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels).distinct()
+            results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels)
 
         if assays:
             results = results.filter(assay_run__assay__in=assays)
@@ -136,6 +136,8 @@ class AssaysByVisitForm(forms.Form):
         if panels:
             results = results.filter(specimen__visit__panels__in=panels)
 
+        results = results.distinct()
+        
         if self.cleaned_data['result_output'] == '1':
             if not assays:
                 assays = results.values('assay').distinct()
@@ -179,11 +181,11 @@ class AssaysByVisitForm(forms.Form):
 
             results = results.filter(
                 specimen__visit__pk__in=visit_ids + specimen_visit_ids,
-            ).distinct()
+            )
         elif visit_ids:
-            results = results.filter(specimen__visit__pk__in=visit_ids).distinct()
+            results = results.filter(specimen__visit__pk__in=visit_ids)
         elif specimen_labels:
-            results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels).distinct()
+            results = results.filter(specimen__visit__specimens__specimen_label__in=specimen_labels)
 
         if assays:
             results = results.filter(assay_run__assay__in=assays)
@@ -191,6 +193,8 @@ class AssaysByVisitForm(forms.Form):
         if panels:
             results = results.filter(specimen__visit__panels__in=panels)
 
+        results = results.distinct()
+        
         if self.cleaned_data['result_output'] == '1':
             if not assays:
                 assays = results.values('assay').distinct()

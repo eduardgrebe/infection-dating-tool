@@ -223,7 +223,6 @@ class ResultDownload(object):
                             row[specific_id_index] = specific_result.pk
                             row[test_mode_field_index] = specific_result.test_mode
                             for field in model.result_detail_fields:
-                                import pdb;pdb.set_trace()
                                 row[result_field_index] = field
                                 row[result_value_index] = getattr(specific_result, field, None)
                                 row[method_field_index] = ''
@@ -233,13 +232,13 @@ class ResultDownload(object):
                                 self.content.append(list(row))
                                 if self.limit and len(self.content) >= self.limit:
                                     break
-                        row[result_field_index] = 'final_result'
-                        row[test_mode_field_index] = ''
-                        row[result_value_index] = result.result
-                        row[method_field_index] = result.method
-                        self.content.append(list(row))
-                        if self.limit and len(self.content) >= self.limit:
-                            break
+                    row[result_field_index] = 'final_result'
+                    row[test_mode_field_index] = ''
+                    row[result_value_index] = result.result
+                    row[method_field_index] = result.method
+                    self.content.append(list(row))
+                    if self.limit and len(self.content) >= self.limit:
+                        break
                 else:
                     self.content.append(row)
 
