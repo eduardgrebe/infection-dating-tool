@@ -224,10 +224,10 @@ def run_results(request, run_id=None, template="assay/run_results.html"):
                 if 'generic' in request.GET:
                     headers, results = first_result.get_results_for_run()
                     result_type = 'generic'
-                # this is for wide format download
-                # elif 'specific' in request.GET:
-                #     headers, results = first_result.get_specific_results_for_run()
-                #     result_type = 'specific'
+                # this is for wide format download including all rows in specific table
+                elif 'specific' in request.GET:
+                    headers, results = first_result.get_specific_results_for_run()
+                    result_type = 'specific'
                 elif 'detail' in request.GET:
                     headers, results, result_model = first_result.get_detailed_results_for_run()
                     result_type = 'detailed'

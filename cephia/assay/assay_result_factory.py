@@ -239,6 +239,7 @@ class ResultDownload(object):
                     row[test_mode_field_index] = ''
                     row[result_value_index] = result.result
                     row[method_field_index] = result.method
+                    row[specific_id_index] = ''
                     self.content.append(list(row))
                     if self.limit and len(self.content) >= self.limit:
                         break
