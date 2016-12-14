@@ -205,10 +205,11 @@ class AssayResult(models.Model):
     def get_specific_results_for_run(self):
         if self.assay:
             result_model = get_result_model(self.assay.name)
-            parent_fields = BaseAssayResult._meta.get_all_field_names()
-            child_fields = result_model._meta.get_all_field_names()
-            local_fields = list(set(child_fields)-set(parent_fields))
-            headers = [ header for header in local_fields if header != 'id']
+            # parent_fields = BaseAssayResult._meta.get_all_field_names()
+            # child_fields = result_model._meta.get_all_field_names()
+            # local_fields = list(set(child_fields)-set(parent_fields))
+            # headers = [ header for header in local_fields if header != 'id']
+            headers = result_model.result_detail_fields
             return headers, result_model.objects.filter(assay_run=self.assay_run)
 
         return None
@@ -286,7 +287,7 @@ class LagSediaResult(BaseAssayResult):
     class Meta:
         db_table = "assay_lagsedia"
 
-    result_detail_fields = ['ODn']
+    result_detail_fields = ['OD', 'calibrator_OD', 'ODn']
 
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
@@ -318,7 +319,7 @@ class LagMaximResult(BaseAssayResult):
     class Meta:
         db_table = "assay_lagmaxim"
 
-    result_detail_fields = ['ODn']
+    result_detail_fields = ['OD', 'calibrator_OD', 'ODn']
 
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
@@ -334,7 +335,6 @@ class LagMaximResultRow(BaseAssayResultRow):
     class Meta:
         db_table = "assay_lagmaxim_row"
         
-
     OD = models.CharField(max_length=255, null=False, blank=True)
     calibrator_OD = models.CharField(max_length=255, null=False, blank=True)
     ODn = models.CharField(max_length=255, null=False, blank=True)
@@ -599,7 +599,7 @@ class BEDResult(BaseAssayResult):
     class Meta:
         db_table = "assay_bed"
 
-    result_detail_fields = ['ODn']
+    result_detail_fields = ['OD', 'calibrator_OD', 'ODn']
 
     OD = models.FloatField(null=True, blank=False)
     calibrator_OD = models.FloatField(null=True, blank=False)
@@ -730,7 +730,7 @@ class IDEV3Result(BaseAssayResult):
         db_table = "assay_idev3"
 
     result_detail_fields = [
-        'tm_OD', 'v3_OD', 'conclusion', 'intermediaire',
+        'tm_OD', 'v3_OD', 'intermediaire', 'conclusion',
     ]
 
     well_tm = models.CharField(max_length=10, null=True)
@@ -789,19 +789,19 @@ class IDEV3ResultRow(BaseAssayResultRow):
     
 class BioPlexDukeResult(BaseAssayResult):
     class Meta:
-        db_table = 'assay_duke'
+        db_table = 'assay_bioplexduke'
 
     result_detail_fields = ['classification', 'recent']
     
     classification = models.CharField(max_length=255, null=True)
     recent = models.NullBooleanField()
 
-    
-class BioPlexDukeResultRow(BaseAssayResultRow):
-    result_detail_fields = ['classification']
-    
-    classification = models.CharField(max_length=255, null=True)
 
+class BioPlexDukeResultRow(BaseAssayResultRow):
+    class Meta:
+        db_table = 'assay_bioplexduke_row'
+        
+    classification = models.CharField(max_length=255, null=True)
     duke_result = models.ForeignKey(BioPlexDukeResult, null=True)
     
 
@@ -820,11 +820,11 @@ class ISGlobalResult(BaseAssayResult):
 
 
 class ISGlobalResultRow(BaseAssayResultRow):
-    result_detail_fields = ['classification_weighted_model', 'classification_unweighted_model']
-    
+    class Meta:
+        db_table = 'assay_isglobal_row'
+        
     classification_weighted_model = models.CharField(max_length=255, null=True)
     classification_unweighted_model = models.CharField(max_length=255, null=True)
-
     isg_result = models.ForeignKey(ISGlobalResult, null=True)
 
     
@@ -832,7 +832,7 @@ class CustomAssayResult(BaseAssayResult):
     class Meta:
         db_table = 'assay_custom'
 
-    result_detail_fields = ['classification', 'recent']
+    result_detail_fields = ['classification', 'recent', 'result_quantitative']
     
     result_classification = models.CharField(max_length=255, null=True)
     recent = models.NullBooleanField()
@@ -840,8 +840,9 @@ class CustomAssayResult(BaseAssayResult):
 
     
 class CustomAssayResultRow(BaseAssayResultRow):
-    result_detail_fields = ['classification']
-    
+    class Meta:
+        db_table = 'assay_custom_row'
+
     result_classification = models.CharField(max_length=255, null=True)
     result_quantitative = models.CharField(max_length=255, null=True)
     custom_result = models.ForeignKey(CustomAssayResult, null=True)
