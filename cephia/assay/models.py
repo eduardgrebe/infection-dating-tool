@@ -204,7 +204,6 @@ class AssayResult(models.Model):
 
     def get_specific_results_for_run(self):
         if self.assay:
-            import pdb;pdb.set_trace()
             result_model = get_result_model(self.assay.name)
             # parent_fields = BaseAssayResult._meta.get_all_field_names()
             # child_fields = result_model._meta.get_all_field_names()
@@ -797,13 +796,12 @@ class BioPlexDukeResult(BaseAssayResult):
     classification = models.CharField(max_length=255, null=True)
     recent = models.NullBooleanField()
 
-    
+
 class BioPlexDukeResultRow(BaseAssayResultRow):
     class Meta:
         db_table = 'assay_bioplexduke_row'
         
     classification = models.CharField(max_length=255, null=True)
-
     duke_result = models.ForeignKey(BioPlexDukeResult, null=True)
     
 
@@ -827,7 +825,6 @@ class ISGlobalResultRow(BaseAssayResultRow):
         
     classification_weighted_model = models.CharField(max_length=255, null=True)
     classification_unweighted_model = models.CharField(max_length=255, null=True)
-
     isg_result = models.ForeignKey(ISGlobalResult, null=True)
 
     
