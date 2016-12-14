@@ -61,6 +61,7 @@ class ResultDownload(object):
                                     "specimen.specimen_type.name",
                                     "assay_run.id",
                                     "assay_run.assay.name",
+                                    "assay_run.panel.short_name",
                                     "assay_run.panel.name",
                                     "assay_run.laboratory.name",
                                     "test_date",
@@ -75,6 +76,7 @@ class ResultDownload(object):
                                     "specimen.specimen_type.name",
                                     "assay_run.id",
                                     "assay_run.assay.name",
+                                    "assay_run.panel.short_name",
                                     "assay_run.panel.name",
                                     "assay_run.laboratory.name",
                                     "test_date",
@@ -229,7 +231,8 @@ class ResultDownload(object):
                                 if exclusion_field_index > -1:
                                     row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
 
-                                self.content.append(list(row))
+                                if row[result_value_index] != None:
+                                    self.content.append(list(row))
                                 if self.limit and len(self.content) >= self.limit:
                                     break
                     row[result_field_index] = 'final_result'
@@ -265,6 +268,10 @@ class ResultDownload(object):
             if column_split[-1] in ['id']:
                 header = column_split[-2] + '_'  + column_split[-1]
             elif column_split[-1] in ['name']:
+                header = column_split[-2]
+                if header == 'panel':
+                    header = 'panel_name'
+            elif column_split[-1] in ['short_name']:
                 header = column_split[-2]
             else:
                 header = column_split[-1]

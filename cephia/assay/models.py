@@ -832,7 +832,7 @@ class CustomAssayResult(BaseAssayResult):
     class Meta:
         db_table = 'assay_custom'
 
-    result_detail_fields = ['classification', 'recent']
+    result_detail_fields = ['classification', 'recent', 'result_quantitative']
     
     result_classification = models.CharField(max_length=255, null=True)
     recent = models.NullBooleanField()
