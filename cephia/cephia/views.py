@@ -11,7 +11,7 @@ from models import (Country, FileInfo, SubjectRow, Subject, Ethnicity, Visit,
 from diagnostics.models import DiagnosticTestHistoryRow
 from forms import (FileInfoForm, RowCommentForm, SubjectFilterForm,
                    VisitFilterForm, RowFilterForm, SpecimenFilterForm,
-                   FileInfoFilterForm, VisitExportForm)
+                   FileInfoFilterForm, VisitExportForm, SpecimenFilterDownloadForm)
 from django.forms.models import model_to_dict
 from csv_helper import get_csv_response
 from datetime import datetime
@@ -221,6 +221,7 @@ def visits(request, visit_id=None, template="cephia/visits.html"):
 def specimen(request, template="cephia/specimen.html"):
     context = {}
     form = SpecimenFilterForm(request.GET or None)
+    download_form = SpecimenFilterDownloadForm(request.POST or None, request.FILES or None)
 
     if form.is_valid():
         specimen = form.filter()
@@ -229,6 +230,10 @@ def specimen(request, template="cephia/specimen.html"):
 
     context['specimen'] = specimen
     context['form'] = form
+    context['download_form'] = download_form
+
+    if request.method == 'POST' and download_form.is_valid():
+        return download_form.get_csv_response()
 
     if 'csv' in request.GET:
         try:

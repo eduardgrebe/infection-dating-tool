@@ -501,3 +501,92 @@ class VisitExportForm(forms.Form):
             visits = visits.filter(panels__in=panels)
         return visits.order_by('pk')
         
+
+class SpecimenFilterDownloadForm(forms.Form):
+    specimen_file = forms.FileField(required=False, label='Upload a list of specimen labels')
+    specimen_labels = forms.CharField(required=False, widget=forms.Textarea(), label='Or enter a newline-separated list of specimen labels')
+    panels = forms.ModelMultipleChoiceField(required=False, queryset=Panel.objects.all().order_by('name'), label='Restrict export to panels:')
+
+    def clean_specimen_file(self):
+        specimen_file = self.cleaned_data.get('specimen_file')
+        if not specimen_file:
+            return specimen_file
+        filename = specimen_file.name
+        extension = os.path.splitext(filename)[1][1:].lower()
+        if extension == 'csv':
+            rows = [z[0] for z in csv.reader(specimen_file) if z]
+        elif extension in ['xls', 'xlsx']:
+            rows = list(z[0] for z in ExcelHelper(specimen_file).rows() if z)
+        else:
+            raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
+
+        self.cleaned_data['imported_specimen_labels'] = rows
+        return rows
+
+
+    def clean_specimen_labels(self):
+        value = self.cleaned_data.get('specimen_labels')
+        if not value:
+            return value
+        rows = [z.strip() for z in value.split(u'\n')]
+        self.cleaned_data['imported_specimen_labels'] = rows
+        return value
+
+
+    def clean(self):
+        if self.cleaned_data.get('specimen_file') and self.cleaned_data.get('specimen_labels'):
+            raise forms.ValidationError('Options are bexclusive, please complete only one.')
+
+        return self.cleaned_data
+
+
+    def get_csv_response(self):
+        headers = []
+        specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        panels = self.cleaned_data.get('panels')
+        specimens = Specimen.objects.all()
+
+        if specimen_labels:
+            specimens = specimens.filter(specimen_label__in=specimen_labels)
+
+        if panels:
+            specimens = specimens.filter(specimen__visit__panels__in=panels)
+
+        specimens = specimens.distinct()
+        import pdb;pdb.set_trace()
+        
+        # download = ResultDownload(headers, results, True, result_models, filter_by_visit=True)
+
+        # response, writer = get_csv_response('generic_results_%s.csv' % (
+        #     datetime.today().strftime('%d%b%Y_%H%M')))
+
+        # if specimen_labels:
+        #     download.add_extra_specimens(specimen_labels)
+
+        # writer.writerow(download.get_headers())
+
+        # for row in download.get_content():
+        #     writer.writerow(row)
+        # return response
+
+    def preview_filter(self):
+        headers = []
+        specimen_labels = self.cleaned_data.get('imported_specimen_labels')
+        panels = self.cleaned_data.get('panels')
+        specimens = Specimen.objects.all()
+
+        if specimen_labels:
+            specimens = specimens.filter(specimen_label__in=specimen_labels)
+
+        if panels:
+            specimens = specimens.filter(specimen__visit__panels__in=panels)
+
+        specimens = specimens.distinct()
+        
+        download = ResultDownload(headers, results, True, result_models, filter_by_visit=True)
+
+        if specimen_labels:
+            download.add_extra_specimens(specimen_labels)
+
+        download.get_headers()
+        return download
