@@ -221,6 +221,7 @@ def visits(request, visit_id=None, template="cephia/visits.html"):
 def specimen(request, template="cephia/specimen.html"):
     context = {}
     form = SpecimenFilterForm(request.GET or None)
+    preview = Specimen.objects.all().none().order_by('-id')
     download_form = SpecimenFilterDownloadForm(request.POST or None, request.FILES or None)
 
     if form.is_valid():
@@ -253,6 +254,20 @@ def specimen(request, template="cephia/specimen.html"):
             messages.error(request, 'Failed to download file')
     else:
         return render_to_response(template, context, context_instance=RequestContext(request))
+
+
+@cephia_login_required(login_url='users:auth_login')
+def preview_specimen_download(request, template="cephia/specimen_download_preview.html"):
+    context = {}
+    download_form = SpecimenFilterDownloadForm(request.GET)
+
+    if download_form.is_valid():
+        preview = download_form.preview_filter()
+
+    context['preview'] = preview
+    context['download_form'] = download_form
+
+    return render_to_response(template, context, context_instance=RequestContext(request))
 
 
 @cephia_login_required(login_url='users:auth_login')

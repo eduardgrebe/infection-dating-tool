@@ -14,6 +14,8 @@ from diagnostics.models import DiagnosticTestHistoryRow
 from excel_helper import ExcelHelper
 import unicodecsv as csv
 from csv_helper import get_csv_response
+from specimen_factory import SpecimenDownload
+from datetime import datetime
 
 class BaseFilterForm(forms.Form):
 
@@ -545,6 +547,7 @@ class SpecimenFilterDownloadForm(forms.Form):
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
         panels = self.cleaned_data.get('panels')
         specimens = Specimen.objects.all()
+        import pdb;pdb.set_trace()
 
         if specimen_labels:
             specimens = specimens.filter(specimen_label__in=specimen_labels)
@@ -553,21 +556,19 @@ class SpecimenFilterDownloadForm(forms.Form):
             specimens = specimens.filter(specimen__visit__panels__in=panels)
 
         specimens = specimens.distinct()
-        import pdb;pdb.set_trace()
-        
-        # download = ResultDownload(headers, results, True, result_models, filter_by_visit=True)
+        download = SpecimenDownload(specimens)
 
-        # response, writer = get_csv_response('generic_results_%s.csv' % (
-        #     datetime.today().strftime('%d%b%Y_%H%M')))
+        response, writer = get_csv_response('specimens_%s.csv' % (
+            datetime.today().strftime('%d%b%Y_%H%M')))
 
-        # if specimen_labels:
-        #     download.add_extra_specimens(specimen_labels)
+        if specimen_labels:
+            download.add_extra_specimens(specimen_labels)
 
-        # writer.writerow(download.get_headers())
+        writer.writerow(download.get_headers())
 
-        # for row in download.get_content():
-        #     writer.writerow(row)
-        # return response
+        for row in download.get_content():
+            writer.writerow(row)
+        return response
 
     def preview_filter(self):
         headers = []
@@ -582,8 +583,8 @@ class SpecimenFilterDownloadForm(forms.Form):
             specimens = specimens.filter(specimen__visit__panels__in=panels)
 
         specimens = specimens.distinct()
-        
-        download = ResultDownload(headers, results, True, result_models, filter_by_visit=True)
+
+        download = SpecimenDownload(specimens, limit=25)
 
         if specimen_labels:
             download.add_extra_specimens(specimen_labels)
