@@ -547,7 +547,6 @@ class SpecimenFilterDownloadForm(forms.Form):
         specimen_labels = self.cleaned_data.get('imported_specimen_labels')
         panels = self.cleaned_data.get('panels')
         specimens = Specimen.objects.all()
-        import pdb;pdb.set_trace()
 
         if specimen_labels:
             specimens = specimens.filter(specimen_label__in=specimen_labels)
