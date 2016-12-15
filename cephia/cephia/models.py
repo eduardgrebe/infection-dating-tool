@@ -747,7 +747,7 @@ class SpecimenQuerySet(QuerySet):
             specimen_type=specimen_type,
             parent_label__isnull=False
         )
-        
+
         return partial_matches
 
 class Specimen(models.Model):
