@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^visits/$', views.visits, name='visits'),
     url(r'^visits/export$', views.visit_export, name='visit_export'),
     url(r'^specimen/$', views.specimen, name='specimen'),
+    url(r'^preview_specimen_download/$', views.preview_specimen_download, name='preview_specimen_download'),
     url(r'^file_info/$', views.file_info, name='file_info'),
     url(r'^row_info/(?P<file_id>\d+)/$', views.row_info, name='row_info'),
     url(r'^upload_file/$', views.upload_file, name='upload_file'),

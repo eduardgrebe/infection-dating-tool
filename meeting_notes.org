@@ -370,8 +370,31 @@ possibly provide a mamangement command so that they can re-use the code
 * notes from call with Eduard 13/12
 custom assay results export is showing recent in some result_field rows, recent is a result value, not a result field.
 * notes from meeting 14/12
-** filter by visit
+** filter by specimens
 create another version of the assay run filter by visit for Visit queryset.
 we can upload specimen labels or visit ids. (for now just specimen labels)
 
 this will filter the Visit objects and provide all related data
+add to specimens page the same as the filter on the assay results page.
+filter by:
+specimen label
+panels
+
+provide an export that uses the same columns as the results export (possibly only clinical columns)
+
+** volume counts scripts
+for each root specimen find all rows in the bellow the line table that reported against speciment label/type combination
+add up all volumes from bellow the line (volume value times number of containers) for each row bellow the line.
+figure out if there was a re-reporting error in which some rows were rejected. if this happened then were any of the bellow the line rows rejected?
+
+- write a script which looks for all the bellow the line rows for the specimen label/type combination (these could be from more than one file).
+- check with each batch of rows what the total container count and volume should be (i.e. number of containers x volume for each row, added together)
+- does the reported volume and number of containers match the result of this calculation? if not then add message with specimen label and id and volume not matching expected
+values to the message log.
+- if any of the rows had an error message then add a message with the error, specimen label and id. (these are the most likely to fail the volume calculation)
+
+** test and test properties export
+do this.
+
+** send_mail
+can we use local host?

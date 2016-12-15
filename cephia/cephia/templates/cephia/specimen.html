@@ -24,79 +24,136 @@
 
 {% block page_content %}
 
-{% paginate specimen %}
-<div class="container">
+  {% paginate specimen %}
+  
   <div class="row">
-    <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Specimen</h3>
+    <div class="col-md-4">
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" href="#panel">Filter and Download Specimens</a>
+          </h3>
+        </div>
+        <div id="panel" class="panel-collapse collapse">
+          <div class="panel-body">
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% bootstrap_form download_form %}
+              <div class="form-group">
+                <button class="btn btn-default" id="submit" >Get Specimens</button>
+                <a class="btn btn-default" id="preview" >Preview Specimens</a>
+                <p>The preview does not work with data in uploaded files and only shows the first 25 results to reduce processing time</p>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="container"
-               {% show_pages %}
-               <div class="btn-group">
-                 <a href="#" class="btn btn-default" style="text-decoration:none;" onclick="submitFilterFormCSV();">Export as CSV</a>
-               </div>
-            <div class="table-responsive">
-              <table class="table-striped table table-hover" style="overflow:auto;">
-                <thead>
-                  <th>Specimen Label</th>
-                  <th>Parent Label</th>
-                  <th>Number of Containers</th>
-                  <th>Draw Date</th>
-                  <th>Transfer in Date</th>
-                  <th>Transfer out Date</th>
-                  <th>Modified Date</th>
-                  <th>Created Date</th>
-                  <th>Reason</th>
-                  <th>Specimen Type</th>
-                  <th>Volume</th>
-                  <th>Initial Claimed Volume</th>
-                  <th>Shipped To</th>
-                  <th>Source Study</th>
-                  <th>Aliquoting Reason</th>
-                  <th>Available</th>
-                </thead>
+    </div>
 
-                <tbody>
-                  {% for spec in specimen %}
-                  <tr>
-                    <td>{{spec.specimen_label}}</td>
-                    <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
-                    <td>{% if spec.number_of_containers %}{{spec.number_of_containers}}{% endif %}</td>
-                    <td>
-	              {% if spec.reported_draw_date %}
-	              {% if spec.visit %}
-	              <a href="#">{{spec.reported_draw_date}}</a>
-	              {% else %}
-	              {{spec.reported_draw_date}}
-	              {% endif %}
-	              {% endif %}
-                    </td>
-                    <td>{% if spec.transfer_in_date %}{{spec.transfer_in_date}}{% endif %}</td>
-                    <td>{% if spec.transfer_out_date %}{{spec.transfer_out_date}}{% endif %}</td>
-                    <td>{% if spec.modified_date %}{{spec.modified_date}}{% endif %}</td>
-                    <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
-                    <td>{% if spec.transfer_reason %}{{spec.transfer_reason}}{% endif %}</td>
-                    <td>{{spec.specimen_type.name}}</td>
-                    <td>{{spec.volume}}</td>
-                    <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
-                    <td>{{spec.receiving_site.name}}</td>
-                    <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
-                    <td>{{spec.aliquoting_reason.name}}</td>
-                    <td>{% if spec.is_available %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+    <div class="col-md-8 hidden" id="preview_specimen_download"></div>
+  </div>
+  
+  <div class="container">
+    <div class="row">
+      <div class="panel panel-default" style="box-shadow: 10px 10px 5px #888888;">
+        <div class="panel-heading">
+          <h3 class="panel-title">Specimen</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="container"
+                 {% show_pages %}
+              <div class="btn-group">
+                <a href="#" class="btn btn-default" style="text-decoration:none;" onclick="submitFilterFormCSV();">Export as CSV</a>
+              </div>
+              <div class="table-responsive">
+                <table class="table-striped table table-hover" style="overflow:auto;">
+                  <thead>
+                    <th>Specimen Label</th>
+                    <th>Parent Label</th>
+                    <th>Number of Containers</th>
+                    <th>Draw Date</th>
+                    <th>Transfer in Date</th>
+                    <th>Transfer out Date</th>
+                    <th>Modified Date</th>
+                    <th>Created Date</th>
+                    <th>Reason</th>
+                    <th>Specimen Type</th>
+                    <th>Volume</th>
+                    <th>Initial Claimed Volume</th>
+                    <th>Shipped To</th>
+                    <th>Source Study</th>
+                    <th>Aliquoting Reason</th>
+                    <th>Available</th>
+                  </thead>
+
+                  <tbody>
+                    {% for spec in specimen %}
+                      <tr>
+                        <td>{{spec.specimen_label}}</td>
+                        <td>{% if spec.parent_label %}{{spec.parent_label}} {% endif %}</td>
+                        <td>{% if spec.number_of_containers %}{{spec.number_of_containers}}{% endif %}</td>
+                        <td>
+	                        {% if spec.reported_draw_date %}
+	                          {% if spec.visit %}
+	                            <a href="#">{{spec.reported_draw_date}}</a>
+	                          {% else %}
+	                            {{spec.reported_draw_date}}
+	                          {% endif %}
+	                        {% endif %}
+                        </td>
+                        <td>{% if spec.transfer_in_date %}{{spec.transfer_in_date}}{% endif %}</td>
+                        <td>{% if spec.transfer_out_date %}{{spec.transfer_out_date}}{% endif %}</td>
+                        <td>{% if spec.modified_date %}{{spec.modified_date}}{% endif %}</td>
+                        <td>{% if spec.created_date %}{{spec.created_date}}{% endif %}</td>
+                        <td>{% if spec.transfer_reason %}{{spec.transfer_reason}}{% endif %}</td>
+                        <td>{{spec.specimen_type.name}}</td>
+                        <td>{{spec.volume}}</td>
+                        <td>{% if spec.initial_claimed_volume %}{{spec.initial_claimed_volume}}{% endif %}</td>
+                        <td>{{spec.receiving_site.name}}</td>
+                        <td>{% if spec.source_study %}{{spec.source_study}}{% endif %}</td>
+                        <td>{{spec.aliquoting_reason.name}}</td>
+                        <td>{% if spec.is_available %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+
+  <script>
+   $("#preview").click(function (event) {
+       event.preventDefault();
+
+       var vis = $('#preview_specimen_download').is(":visible");
+       var form = $('#panel').find('form');
+       form_data = form.serialize();
+       
+       $.get('{% url 'preview_specimen_download' %}', form_data).done(function(data) {
+           $("#preview_specimen_download").removeClass("hidden");
+           $("#preview_specimen_download").replaceWith(data);
+       })
+
+   });
+
+   $("#submit").click(function (event) {
+       var specimen_labels = $('#id_specimen_labels').val()
+       var specimen_file = $('#id_specimen_file').val()
+       var panels = $('#id_panels').val()
+
+       if ( !specimen_labels && !specimen_file && panels===null ){
+           if (confirm('You have not provided any filters so you will receive all specimens. This will take a while to process. Are you sure that you want to continue?')) {
+           } else {
+               event.preventDefault();
+           }
+       }
+   });
+  </script>
 {% endblock %}
 
 

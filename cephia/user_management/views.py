@@ -74,6 +74,7 @@ def user_list(request, template="user_management/user_list.html"):
     context = {}
     try:
         users = get_user_model().objects.all().order_by("username")
+        users = users.exclude(groups__name='Outside Eddi Users')
         flattened_users = list(users.values())
         context = {'users' : flattened_users,
                    'user_count': users.count() }
