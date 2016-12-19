@@ -18,17 +18,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         specimens = Specimen.objects.all()
         spec_label_type = specimens.values('id', 'specimen_label', 'specimen_type__spec_type', 'volume', 'number_of_containers').distinct()
-        import pdb;pdb.set_trace()
 
         errors = {}
-        print_count = 0
+
         for spec in spec_label_type:
             rows = TransferInRow.objects.filter(specimen_label=spec['specimen_label'], specimen_type=spec['specimen_type__spec_type'])
             row_details = rows.values('id', 'number_of_containers', 'volume', 'state', 'error_message')
-            print 'row_details', print_count
-            print_count += 1
-            error_msgs = {}
 
+            error_msgs = {}
             volume_count = 0
             container_count = 0
             
@@ -66,7 +63,6 @@ class Command(BaseCommand):
 
 
 def dump(errors, outfile_path):
-    import pdb;pdb.set_trace()
     writer = csv.writer(open(outfile_path, 'w'))
 
     headers = ['Specimen id', 'Specimen label', 'Below the line error msg', 'Specimen volume', 'Below the Lines total volume', 'Specimen containers', 'Below the Lines total containers']
