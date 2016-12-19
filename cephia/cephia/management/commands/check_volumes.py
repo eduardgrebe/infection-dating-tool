@@ -6,81 +6,82 @@ from cephia.models import TransferInRow, Specimen, SpecimenType
 from django.db import connection
 import logging
 import csv
-from django.db.models.loading import get_model
+from cephia.settings import BASE_DIR
 
 logger = logging.getLogger(__name__)
+
+outfile_path = '%s/volume_log.csv' % BASE_DIR
 
 class Command(BaseCommand):
     help = 'Check all specimen label/specimen type sets to confirm that the volumes are as expected and provide a list of any which have unexpected volumes or had an error for one or more bellow the line rows'
 
     def handle(self, *args, **options):
         specimens = Specimen.objects.all()
-
-        spec_label_type = specimens.values('id', 'specimen_label', 'specimen_type__spec_type').distinct()
+        spec_label_type = specimens.values('id', 'specimen_label', 'specimen_type__spec_type', 'volume', 'number_of_containers').distinct()
+        import pdb;pdb.set_trace()
 
         errors = {}
-        
+        print_count = 0
         for spec in spec_label_type:
             rows = TransferInRow.objects.filter(specimen_label=spec['specimen_label'], specimen_type=spec['specimen_type__spec_type'])
-            error_msgs = ''
+            row_details = rows.values('id', 'number_of_containers', 'volume', 'state', 'error_message')
+            print 'row_details', print_count
+            print_count += 1
+            error_msgs = {}
 
             volume_count = 0
             container_count = 0
             
-            for row in rows:
-                containers = int(row.number_of_containers)
-                volume = float(row.volume) * containers
+            for row in row_details:
+                containers = int(row['number_of_containers'])
+                volume = float(row['volume']) * containers
                 volume_count = volume_count + volume
                 container_count = container_count + containers
 
-                if row.state == 'error':
-                    error_msgs += 'Below the line id: %s, specimen_label: %s, Error message: %s' % (row.id, row.specimen_label, row.error_message)
+                if row['state'] == 'error':
+                    error_msgs['Below the line error msg'] = 'Below the line id: %s, Error message: %s' % (row['id'], row['error_message'])
 
 
-            specimen = Specimen.objects.get(id=spec['id'])
-            if specimen.volume != volume_count:
-                error_msgs += 'Specimen: %s, Volume: %s.\n' % (specimen.id, specimen.volume)
-                error_msgs += 'Below the lines total volume: %s.\n' % volume_count
-            if specimen.number_of_containers != container_count:
-                error_msgs += 'Specimen: %s, Container count: %s.\n' % (specimen.id, specimen.number_of_containers)
-                error_msgs += 'Below the lines total containers: %s.\n' % container_count
+            try:
+                spec_volume = float(spec['volume'])
+            except TypeError:
+                spec_volume = 'None'
+            try:
+                spec_number_of_containers = int(spec['number_of_containers'])
+            except TypeError:
+                spec_number_of_containers = 'None'
+            
+            if spec_volume != volume_count:
+                error_msgs['Specimen volume'] = spec_volume
+                error_msgs['Below the Lines total volume'] = volume_count or 'None'
+            if spec_number_of_containers != container_count:
+                error_msgs['Specimen containers'] = spec_number_of_containers
+                error_msgs['Below the Lines total containers'] = container_count or 'None'
 
             if error_msgs:
+                error_msgs['Specimen label'] = spec['specimen_label']
                 errors[spec['id']] = error_msgs
-                print errors[spec['id']]
+
+        dump(errors, outfile_path)
 
 
-    def dump(qs, outfile_path):
-	"""
-	Takes in a Django queryset and spits out a CSV file.
-	
-	Usage::
-	
-		>> from utils import dump2csv
-		>> from dummy_app.models import *
-		>> qs = DummyModel.objects.all()
-		>> dump2csv.dump(qs, './data/dump.csv')
-	
-	Based on a snippet by zbyte64::
-		
-		http://www.djangosnippets.org/snippets/790/
-	
-	"""
-        model = qs.model
-	writer = csv.writer(open(outfile_path, 'w'))
-	
-	headers = []
-	for field in model._meta.fields:
-		headers.append(field.name)
-	writer.writerow(headers)
-	
-	for obj in qs:
-		row = []
-		for field in headers:
-			val = getattr(obj, field)
-			if callable(val):
-				val = val()
-			if type(val) == unicode:
-				val = val.encode("utf-8")
-			row.append(val)
-		writer.writerow(row)
+def dump(errors, outfile_path):
+    import pdb;pdb.set_trace()
+    writer = csv.writer(open(outfile_path, 'w'))
+
+    headers = ['Specimen id', 'Specimen label', 'Below the line error msg', 'Specimen volume', 'Below the Lines total volume', 'Specimen containers', 'Below the Lines total containers']
+    writer.writerow(headers)
+
+    for error in errors:
+        row = []
+        row.append(error)
+        
+	for header in headers:
+            if header == 'Specimen id':
+                continue
+            try:
+	        row.append(errors[error][header])
+            except KeyError:
+                row.append('')
+
+	writer.writerow(row)

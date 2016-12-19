@@ -15,3 +15,4 @@ db_backups/
 
 *.swp
 \.#*
+volume_log.csv
