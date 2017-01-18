@@ -94,6 +94,8 @@ class ResultDownload(object):
                 self.common_columns.insert(4, 'specific_id')
                 self.common_columns.insert(5, 'test_mode')
 
+        
+            
         self.common_columns += [
             "warning_msg",
             "method",
@@ -158,6 +160,11 @@ class ResultDownload(object):
             "specimen.visit.visitdetail.days_from_eddi_to_first_art",
             "specimen.visit.visitdetail.days_from_eddi_to_current_art",
         ]
+
+        if not self.detailed:
+            self.clinical_columns += [
+                "result",
+            ]
 
         if filter_by_visit:
             self.clinical_columns.remove('specimen.visit.id')
@@ -230,9 +237,8 @@ class ResultDownload(object):
                                 row[method_field_index] = ''
                                 if exclusion_field_index > -1:
                                     row[exclusion_field_index] = getattr(specific_result, 'exclusion', None)
-
-                                if row[result_value_index] != None:
-                                    self.content.append(list(row))
+                                # if row[result_value_index] != None:
+                                self.content.append(list(row))
                                 if self.limit and len(self.content) >= self.limit:
                                     break
                     row[result_field_index] = 'final_result'

@@ -398,3 +398,5 @@ do this.
 
 ** send_mail
 can we use local host?
+* noets from meeting 18/01
+commit 570534521d289eed1ccb707b33bbbf860f98a8a2
