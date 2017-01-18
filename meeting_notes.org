@@ -398,3 +398,4 @@ do this.
 
 ** send_mail
 can we use local host?
+* noets from meeting 18/01
