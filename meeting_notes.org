@@ -465,6 +465,11 @@ will receive from Eduard and Alex
 ind - tests must be set to accept or not
 tests have indeterminate allowed
 
+**** styling
+show which tab you are currently on - possibly make it look like the main site navigation
+
+add a link to the help page for non logged in users to view before signing up. probably
+hide navigation bar, etc from users not logged in
 
 ** notes from Alex
 Features loose ends

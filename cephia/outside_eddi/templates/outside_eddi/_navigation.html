@@ -1,30 +1,22 @@
 {% extends "outside_eddi/logo_header.html" %}
 
 {% block nav %}
-<nav class="navbar navbar-default">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="{% url 'outside_eddi:data_files' %}">Data Files</a>
-    </div>
-
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li><a href="{% url 'outside_eddi:test_mapping' %}">Mapping</a></li>
-        <li><a href="{% url 'outside_eddi:tests' %}">Tests</a></li>
-        <li><a href="{% url 'outside_eddi:help_page' %}">Help</a></li>
-      </ul>
-
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="{% url 'outside_eddi:logout' %}">Logout</a></li>
-      </ul>
-    </div>
-    
-  </div>
-</nav>
+  {% if user.id %}
+    <nav class="navbar navbar-default">
+      <div id="nav" class="nav_top container">
+        
+        <ul class="sf-menu sf-menu-eddi sf-js-enabled">
+          <li><a class="navtab" href="{% url 'outside_eddi:data_files' %}">Data Files</a></li>
+          <li><a class="navtab" href="{% url 'outside_eddi:test_mapping' %}">Mapping</a></li>
+          <li><a class="navtab" href="{% url 'outside_eddi:tests' %}">Tests</a></li>
+          <li><a class="navtab" href="{% url 'outside_eddi:help_page' %}">Help</a></li>
+        </ul>
+        
+        <ul class="sf-menu sf-js-enabled navbar-right">
+          <li><a class="navtab" href="{% url 'outside_eddi:logout' %}">Logout</a></li>
+        </ul>
+        
+      </div>
+    </nav>
+  {% endif %}
 {% endblock %}

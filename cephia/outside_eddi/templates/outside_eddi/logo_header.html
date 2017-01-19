@@ -8,6 +8,15 @@
     <a href="{% url 'outside_eddi:data_files' %}">CEPHIA Infection Dating Tool</a></h1>
   <span class="site-tagline">Consortium for the Evaluation and Performance of HIV Incidence Assays</span>
 </div>
+{% if not user.id %}
+  <div>
+    <a href="{% url 'outside_eddi:login' %}">
+      <button class="button login_button">
+        Return to login screen
+      </button>
+    </a>
+  </div>
+{% endif %}
 {% endblock %}
 {% block nav %}
 {% endblock %}

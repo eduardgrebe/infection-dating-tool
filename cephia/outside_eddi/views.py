@@ -529,7 +529,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     return render(request, template, context)
 
 
-@outside_eddi_login_required(login_url='outside_eddi:login')
+
 def help_page(request, file_id=None, template="outside_eddi/help.html"):
     context = {}
 
