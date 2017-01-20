@@ -42,9 +42,24 @@ class Study(models.Model):
     user = ProtectedForeignKey('cephia.CephiaUser')
 
 class OutsideEddiDiagnosticTest(models.Model):
+    CATEGORIES = (
+        ('1st_gen', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+        ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+        ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+        ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+        ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+        ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+        ('4th_gen_rapid', '4th Gen Rapid Test'),
+        ('dpp', 'DPP'),
+        ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+        ('p24_antigen', 'p24 Antigen'),
+        ('viral_load', 'Viral Load'),
+        ('western_blot', 'Western Blot'),
+    )
+    
     name = models.CharField(max_length=100, null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
-    description = models.CharField(max_length=255, null=False, blank=False)
+    category = models.CharField(choices=CATEGORIES, max_length=255, null=True, blank=True)
     history = HistoricalRecords()
 
     class Meta:
@@ -88,7 +103,6 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     
     active_property = models.BooleanField(blank=False, default=False)
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
-    estimate_type = models.CharField(max_length=255, null=False, blank=True)
     
     history = HistoricalRecords()
     test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True, related_name='properties')
@@ -98,9 +112,7 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     diagnostic_delay_median = models.IntegerField(null=True, blank=True)
     foursigma_diagnostic_delay_days = models.IntegerField(null=True, blank=True)
     is_default = models.BooleanField(blank=False, default=False)
-    time0_ref = models.CharField(max_length=255, null=False, blank=True)
     comment = models.CharField(max_length=255, null=False, blank=True)
-    reference = models.CharField(max_length=255, null=False, blank=True)
 
     def __str__(self):
         return '%s' % (self.id)

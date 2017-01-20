@@ -15,7 +15,7 @@ class FileHandler(object):
         if extension in ['csv','CSV']:
             self.file_rows = self.open_csv(upload_file.data_file.url)
         else:
-            raise Exception("Invalid file type. Only .csv and .xls/x are supported.")
+            raise Exception("Invalid file type. Only .csv are supported.")
             
         self.header = self.file_rows[0]
         self.num_rows = len(self.file_rows)

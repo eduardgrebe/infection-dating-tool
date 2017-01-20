@@ -122,7 +122,7 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
             'is_default', 'estimate_label',
             'mean_diagnostic_delay_days',
             'foursigma_diagnostic_delay_days', 'diagnostic_delay_median',
-            'comment', 'reference'
+            'comment'
         )
         model = OutsideEddiTestPropertyEstimate
         widgets = {
@@ -137,32 +137,30 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
             self.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
             self.fields['comment'].widget.attrs['readonly'] = True
-            self.fields['reference'].widget.attrs['readonly'] = True
 
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
         self.fields['mean_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
         self.fields['foursigma_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
         self.fields['diagnostic_delay_median'].widget.attrs['placeholder'] = ''
         self.fields['comment'].widget.attrs['placeholder'] = ''
-        self.fields['reference'].widget.attrs['placeholder'] = ''
         
 class GlobalTestForm(BaseModelForm):
 
     class Meta:
         model = OutsideEddiDiagnosticTest
-        fields = ['name', 'description']
+        fields = ['name', 'category']
 
     def __init__(self, *args, **kwargs):
         super(GlobalTestForm, self).__init__(*args, **kwargs)
         if self.instance.pk and not self.instance.user:
             self.fields['name'].widget.attrs['readonly'] = True
-            self.fields['description'].widget.attrs['readonly'] = True
+            self.fields['category'].widget.attrs['readonly'] = True
 
 class UserTestForm(BaseModelForm):
-    
+
     class Meta:
         model = OutsideEddiDiagnosticTest
-        fields = ['name', 'description']
+        fields = ['name', 'category']
 
 
 class UserTestPropertyDefaultForm(forms.Form):

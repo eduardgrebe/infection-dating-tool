@@ -102,7 +102,6 @@ def validate_date(date_text):
         return False
 
 def check_mapping(test_code, tests, user):
-    import pdb;pdb.set_trace()
     if test_code in tests:
         if TestPropertyMapping.objects.filter(code=test_code, user=user).exists():
             mapping = TestPropertyMapping.objects.get(code=test_code, user=user)

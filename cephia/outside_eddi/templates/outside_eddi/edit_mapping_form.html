@@ -33,8 +33,7 @@
                 <th>Active</th>
                 <th>Name</th>
                 <th>Diagnostic Delay</th>
-                <th>Description</th>
-                <th>Reference</th>
+                <th>Comment</th>
               </tr>
             </thead>
             
@@ -45,7 +44,6 @@
                   <td>{{ property.estimate_label }}</td>
                   <td>{{ property.mean_diagnostic_delay_days }}</td>
                   <td>{{ property.comment }}</td>
-                  <td>{{ property.reference }}</td>
                 </tr>
               {% endfor %}
 
@@ -57,7 +55,6 @@
                     <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
-                    <td>{% bootstrap_field formset_form.reference show_label=False %}</td>
                   </tr>
                 {% endwith %}
               {% endfor %}

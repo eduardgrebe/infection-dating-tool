@@ -19,6 +19,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
+from file_handlers.outside_eddi_test_and_properties_file_handler import TestsAndPropertiesFileHandler
 from cephia.models import CephiaUser
 from user_management.forms import UserPasswordForm
 from models import (
@@ -143,6 +144,8 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             uploaded_file.file_name = name
             uploaded_file.save()
 
+            # tests = TestsAndPropertiesFileHandler(uploaded_file).import_data() # for tests and properties #TODO remove
+            
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
