@@ -2,11 +2,11 @@
 {% load nav_active %}
 
 {% block nav %}
-  {% if user.id %}
-    <nav class="navbar navbar-default">
-      <div id="nav-eddi" class="nav_top container_nav" style="height:38px;">
-        {% nav_active request 'data_files' as nav_active_response %}
-        
+  
+  <nav class="navbar navbar-default">
+    <div id="nav-eddi" class="nav_top container_nav">
+
+      {% if user.id %}
         <ul class="eddi-menu js-enabled">
           <li><a class="{% nav_active request 'data_files' %}" href="{% url 'outside_eddi:data_files' %}">Data Files</a></li>
           <li><a class="{% nav_active request 'test_mapping' %}" href="{% url 'outside_eddi:test_mapping' %}">Mapping</a></li>
@@ -18,7 +18,13 @@
           <li><a href="{% url 'outside_eddi:logout' %}">Logout</a></li>
         </ul>
         
-      </div>
-    </nav>
-  {% endif %}
+      {% elif not user.id %}
+        <ul class="eddi-menu js-enabled navbar-right">
+          <li><a href="{% url 'outside_eddi:login' %}">Return to Login</a></li>
+        </ul>
+      {% endif %}
+
+    </div>
+  </nav>
+  
 {% endblock %}

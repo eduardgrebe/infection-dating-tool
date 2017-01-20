@@ -2,28 +2,12 @@
 {% load bootstrap3 %}
 
 {% block header %}
-  {% if user.id %}
-    <div class="heading" style="padding-bottom: 50px;padding-left: 10px;">
-      <img src="{% static 'images/CEPHIA.jpg' %}" alt="CEPHIA logo" style="float:left;" height="150" title="CEPHIA">
-      <h1 style="padding-top:40px;" class="site-title">
-        <a href="{% url 'outside_eddi:data_files' %}">CEPHIA Infection Dating Tool</a></h1>
-      <span class="site-tagline">Consortium for the Evaluation and Performance of HIV Incidence Assays</span>
-    </div>
-    {% elif not user.id %}
-      <div class="heading" style="padding: 0 0 50px 10px; width:700px; float:left;">
-        <img src="{% static 'images/CEPHIA.jpg' %}" alt="CEPHIA logo" style="float:left;" height="150" title="CEPHIA">
-        <h1 style="padding-top:40px;" class="site-title">
-          <a href="{% url 'outside_eddi:data_files' %}">CEPHIA Infection Dating Tool</a></h1>
-        <span class="site-tagline">Consortium for the Evaluation and Performance of HIV Incidence Assays</span>
-      </div>
-      <div style="float:right; padding: 50px 20px 0 0;">
-        <a href="{% url 'outside_eddi:login' %}">
-          <button class="button login_button">
-            Return to login screen
-          </button>
-        </a>
-      </div>
-    {% endif %}
+  <div style="padding-bottom: 50px;padding-left: 10px;">
+    <img src="{% static 'images/CEPHIA.jpg' %}" alt="CEPHIA logo" style="float:left;" height="150" title="CEPHIA">
+    <h1 style="padding-top:40px;" class="site-title">
+      <a href="{% url 'outside_eddi:data_files' %}">CEPHIA Infection Dating Tool</a></h1>
+    <span class="site-tagline">Consortium for the Evaluation and Performance of HIV Incidence Assays</span>
+  </div>
 {% endblock %}
 {% block nav %}
 {% endblock %}
