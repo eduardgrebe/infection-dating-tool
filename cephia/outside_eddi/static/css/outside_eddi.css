@@ -1,3 +1,4 @@
+
 /**
  * Basic
  */
@@ -193,3 +194,63 @@ div.actions ul li a:hover {
 
 #debug-kit-toolbar ul li.panel-tab { display: none; }
 #debug-kit-toolbar ul li.icon { display: inline; }
+
+
+
+.home_page_study_table {
+    width: 50%;
+}
+
+.nav_top {
+    border-bottom: 1px solid #990033;
+    margin-bottom: 40px;
+    margin-top: 50px;
+    height: 37px;
+}
+
+.container_nav {
+    margin-right: auto;
+    margin-left: auto;
+    width: 1170px;
+}
+
+#nav-eddi { border-bottom: 1px solid #990033; margin-bottom: 40px; margin-top: 50px; height: 37px; }
+#nav-eddi ul li,
+#nav-eddi ul li a { float: left; display: block; background: #CC6666; line-height: 16px; font-size: 16px; }
+#nav-eddi ul li:first-child a { border-left: 1px solid #990033; }
+#nav-eddi ul li a { color: #fff; padding: 10px; border-top: 1px solid #990033; border-right: 1px solid #990033; border-bottom: 1px solid #990033; text-decoration: none; }
+#nav-eddi ul li a.active { background: #FF9999; }
+#nav-eddi ul li a:hover { background: #FF9999; }
+
+.eddi-menu, .eddi-menu * { margin:0; padding:0; list-style:none; }
+.eddi-menu { line-height:1.0; }
+.eddi-menu ul { position:absolute; top:-999em; width:10em; }
+.eddi-menu ul li { width:100%; }
+.eddi-menu li:hover { visibility:inherit; }
+.eddi-menu li { float:left; position:relative; }
+.eddi-menu a { display:block; position:relative; }
+.eddi-menu li:hover ul,
+.eddi-menu li.eddiHover ul { left:0; top:2.5em; z-index:99; }
+ul.eddi-menu li:hover li ul,
+ul.eddi-menu li.eddiHover li ul { top:-999em; }
+ul.eddi-menu li li:hover ul,
+ul.eddi-menu li li.eddiHover ul { left:10em; top:0; }
+ul.eddi-menu li li:hover li ul,
+ul.eddi-menu li li.eddiHover li ul { top:-999em; }
+ul.eddi-menu li li li:hover ul,
+ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
+
+#nav-eddi ul li:first-child ul { margin: -3px 0px 0px 0px; }
+#nav-eddi ul li ul { margin: -3px 0px 0px -1px; }
+#nav-eddi li li:first-child a { border-top: 1px solid #ccc; }
+#nav-eddi li li a { background: #CC6666; border-top: 0px solid #ccc; border-bottom: 1px solid #ccc; border-left: 1px solid #ccc; }
+#nav-eddi li li a:hover { color: #ff4b33; }
+#nav-eddi li li a.selected { color: #fff; background: #cc6666; border-bottom: 1px solid #ccc; }
+#nav-eddi li li a.selected:hover { color: #ff4b33; background: #FF9999;; border-bottom: 1px solid #ccc; }
+
+#nav-eddi li li li:first-child { margin: 2px 0px 0px -1px; border-left: 0px solid #ccc; }
+#nav-eddi li li li { margin: 0px 0px 0px -1px; }
+
+.nav_active {
+    color: #fff;
+}
