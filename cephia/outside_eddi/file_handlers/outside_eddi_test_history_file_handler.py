@@ -76,6 +76,8 @@ class OutsideEddiFileHandler(FileHandler):
                             subject_label=row_dict['Subject'],
                             user=user
                         )
+                        subject.rand_id = 'rand%s' % subject.pk
+                        subject.save()
 
                     test_history_row = OutsideEddiDiagnosticTestHistory.objects.create(subject=subject, data_file=self.upload_file)
                     test_history_row.test_date = row_dict['Date']

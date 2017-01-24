@@ -421,7 +421,7 @@ R shiny apps
 make sure that the guy who wrote the R code is set up for deploying new code
 might sub-contract a guy
 
-filter and download speciments - name will be changed (check that all fields are the same as result download, even if invalid)
+filter and download specimens - name will be changed (check that all fields are the same as result download, even if invalid)
 
 status of outstanding assays
 will be given a list

@@ -195,6 +195,7 @@ class OutsideEddiSubject(models.Model):
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
     history = HistoricalRecords()
     edsc_reported  = models.DateField(null=True, blank=True, default=None)
+    rand_id = models.CharField(max_length=255, null=True, blank=True)
 
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
