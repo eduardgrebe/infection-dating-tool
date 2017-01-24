@@ -11,6 +11,21 @@ from django.db.models import Q
         
 logger = logging.getLogger(__name__)
 
+CATEGORIES = {
+    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen',
+    '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)': '2nd_gen_lab',
+    '2nd Gen Rapid Test': '2nd_gen_rapid',
+    '3rd Gen Lab Assay (IgM sensitive Antibody)': '3rd_gen_lab',
+    '3rd Gen Rapid Test': '3rd_gen_rapid',
+    '4th Gen Lab Assay (p24 Ag/Ab Combo)': '4th_gen_lab',
+    '4th Gen Rapid Test': '4th_gen_rapid',
+    'DPP': 'dpp',
+    'Immunofluorescence Assay': 'immunofluorescence_assay',
+    'p24 Antigen': 'p24_antigen',
+    'Viral Load': 'viral_load',
+    'Western Blot': 'western_blot',
+}
+
 class TestsAndPropertiesFileHandler(FileHandler):
 
     def __init__(self, upload_file, *args, **kwargs):
@@ -41,8 +56,8 @@ class TestsAndPropertiesFileHandler(FileHandler):
                         test=OutsideEddiDiagnosticTest.objects.get(name=row_dict['Test name'])
                     except OutsideEddiDiagnosticTest.DoesNotExist:
                         test=OutsideEddiDiagnosticTest.objects.create(name=row_dict['Test name'])
-                    
-                    test.category = row_dict['Test category']
+
+                    test.category = CATEGORIES[row_dict['Test category']]
                     test.save()
 
                     try:

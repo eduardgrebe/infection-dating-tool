@@ -155,6 +155,8 @@ class GlobalTestForm(BaseModelForm):
         if self.instance.pk and not self.instance.user:
             self.fields['name'].widget.attrs['readonly'] = True
             self.fields['category'].widget.attrs['readonly'] = True
+            self.fields['category'].widget.attrs['disabled'] = True
+
 
 class UserTestForm(BaseModelForm):
 

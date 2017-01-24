@@ -267,6 +267,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
             context['default_property'] = default_property.pk
     else:
         form = GlobalTestForm(request.POST or None, instance=test)
+        form.fields['category'].initial = test.category
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['properties'] = properties
 
