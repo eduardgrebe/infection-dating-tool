@@ -7,22 +7,20 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Edit mapping</h4>
+        <h3 class="modal-title">Edit mapping</h3>
         {% if is_file %}You are editing a map specific to a file so you are unable to edit the code{% endif %}
       </div>
       <div class="modal-body">
         {% bootstrap_form form %}
         {% if test %}
-          <strong>Properties for: {{ test.name }}</strong>
-          <p>Test Description: {{ test.description }}</p>
+          <h4>Test property estimates for: {{ test.name }}</h4>
           {% if not test.user %}
-            <p style="color:#990033;">System default properties are shown in a different colour</p>
+            <p style="color:#990033;">System default properties are shown in red</p>
           {% endif %}
         {% elif map.test %}
-          <strong>Properties for: {{ map.test.name }}</strong>
-          <p>Test Description: {{ map.test.description }}</p>
+          <h4>Test property estimates for: {{ map.test.name }}</h4>
           {% if not map.test.user %}
-            <p style="color:#990033;">System default properties are shown in a different colour</p>
+            <p style="color:#990033;">System default properties are shown in red</p>
           {% endif %}
         {% endif %}
         
@@ -32,7 +30,7 @@
               <tr>
                 <th>Active</th>
                 <th>Name</th>
-                <th>Diagnostic Delay</th>
+                <th>Diagnostic delay</th>
                 <th>Comment</th>
               </tr>
             </thead>
@@ -42,7 +40,7 @@
                 <tr {% if property.is_default %}style="color:#990033;"{% endif %}>
                   <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                   <td>{{ property.estimate_label }}</td>
-                  <td>{{ property.mean_diagnostic_delay_days }}</td>
+                  <td>{{ property.diagnostic_delay }}</td>
                   <td>{{ property.comment }}</td>
                 </tr>
               {% endfor %}
@@ -53,7 +51,7 @@
                     {{ formset_form.id }}
                     <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
                     <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
-                    <td>{% bootstrap_field formset_form.mean_diagnostic_delay_days show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.diagnostic_delay show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                   </tr>
                 {% endwith %}

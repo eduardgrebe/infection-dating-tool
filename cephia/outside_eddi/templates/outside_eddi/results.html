@@ -12,7 +12,6 @@
       <thead>
         <tr>
           <th>Subject</th>
-          <th>Subject ID</th>
           <th>EP DDI</th>
           <th>LP DDI</th>
           <th>Interval Size</th>
@@ -24,7 +23,6 @@
         {% for sub in subjects %}
           <tr>
             <td>{{ sub.subject_label }}</td>
-            <td>{{ sub.rand_id }}</td>
             <td>{{ sub.ep_ddi }}</td>
             <td>{{ sub.lp_ddi }}</td>
             <td>{{ sub.interval_size }}</td>

@@ -12,7 +12,7 @@ from django.db.models import Q
 logger = logging.getLogger(__name__)
 
 CATEGORIES = {
-    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen',
+    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen_lab',
     '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)': '2nd_gen_lab',
     '2nd Gen Rapid Test': '2nd_gen_rapid',
     '3rd Gen Lab Assay (IgM sensitive Antibody)': '3rd_gen_lab',
@@ -26,18 +26,27 @@ CATEGORIES = {
     'Western Blot': 'western_blot',
 }
 
+# global tests will only have one test property. if this needs to change then the code bellow must be updated
+
 class TestsAndPropertiesFileHandler(FileHandler):
 
     def __init__(self, upload_file, *args, **kwargs):
         super(TestsAndPropertiesFileHandler, self).__init__(upload_file)
 
         self.registered_columns = [
-            'Test name',
-            'Test category',
-            'Test property name',
-            'Mean diagnostic delay',
-            'S.E. mean diagnostic delay',
-            'Comment'
+            'id',
+            'test_name',
+            'test_category',
+            'estimate_label',
+            'diagnostic_delay',
+            'comment',
+            'diagnostic_delay_mean',
+            'diagnostic_delay_median',
+            'diagnostic_delay_mean_se',
+            'diagnostic_delay_mean_ci_lower',
+            'diagnostic_delay_mean_ci_upper',
+            'diagnostic_delay_range',
+            'diagnostic_delay_iqr',
         ]
 
 
@@ -52,31 +61,43 @@ class TestsAndPropertiesFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    try:
-                        test=OutsideEddiDiagnosticTest.objects.get(name=row_dict['Test name'])
-                    except OutsideEddiDiagnosticTest.DoesNotExist:
-                        test=OutsideEddiDiagnosticTest.objects.create(name=row_dict['Test name'])
+                    if row_dict['id']:
+                        try:
+                            test=OutsideEddiDiagnosticTest.objects.get(pk=row_dict['id'])
+                            test.name=row_dict['test_name']
+                        except OutsideEddiDiagnosticTest.DoesNotExist:
+                            error_msg += 'A test for id %s does not exist.\n' %row_dict['id']
+                            raise Exception(error_msg)
+                    else:
+                        test=OutsideEddiDiagnosticTest.objects.create(name=row_dict['test_name'])
 
-                    test.category = CATEGORIES[row_dict['Test category']]
+                    test.category = CATEGORIES[row_dict['test_category']]
                     test.save()
+                    properties = test.properties.filter(user=None)
 
-                    try:
-                        test_property=OutsideEddiTestPropertyEstimate.objects.get(
-                            estimate_label=row_dict['Test property name']
-                        )
-                        test_property.mean_diagnostic_delay_days=float(row_dict['Mean diagnostic delay'])
-                        test_property.comment=row_dict['Comment']
+                    if properties:
+                        test_property = properties.first()
+                        test_property.diagnostic_delay=float(row_dict['diagnostic_delay'])
+                        test_property.comment=row_dict['comment']
                         test_property.test=test
                         test_property.is_default=True
                         test_property.save()
-                    except OutsideEddiTestPropertyEstimate.DoesNotExist:
+                    else:
                         test_property=OutsideEddiTestPropertyEstimate.objects.create(
-                            estimate_label=row_dict['Test property name'],
-                            mean_diagnostic_delay_days=float(row_dict['Mean diagnostic delay']),
-                            comment=row_dict['Comment'],
+                            estimate_label=row_dict['estimate_label'],
+                            diagnostic_delay=float(row_dict['diagnostic_delay']),
+                            comment=row_dict['comment'],
                             test=test,
                             is_default=True
                         )
+
+                    test_property.diagnostic_delay_median=row_dict['diagnostic_delay_median'] or None
+                    test_property.diagnostic_delay_mean_se=row_dict['diagnostic_delay_mean_se'] or None
+                    test_property.diagnostic_delay_mean_ci_lower=row_dict['diagnostic_delay_mean_ci_lower'] or None
+                    test_property.diagnostic_delay_mean_ci_upper=row_dict['diagnostic_delay_mean_ci_upper'] or None
+                    test_property.diagnostic_delay_range=row_dict['diagnostic_delay_range'] or None
+                    test_property.diagnostic_delay_iqr=row_dict['diagnostic_delay_iqr'] or None
+                    test_property.save()
 
 
             except Exception, e:

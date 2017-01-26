@@ -23,7 +23,7 @@ class ResultDownload(object):
         return value
 
     def prepare_content(self):
-        columns = ['subject_label', 'rand_id', 'ep_ddi', 'lp_ddi', 'interval_size', 'eddi']
+        columns = ['subject_label', 'ep_ddi', 'lp_ddi', 'interval_size', 'eddi']
         for result in self.results:
             row = [ self.getattr_or_none(result, c) for c in columns ]
             self.content.append(row)

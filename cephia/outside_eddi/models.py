@@ -43,7 +43,7 @@ class Study(models.Model):
 
 class OutsideEddiDiagnosticTest(models.Model):
     CATEGORIES = (
-        ('1st_gen', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+        ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
         ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
         ('2nd_gen_rapid', '2nd Gen Rapid Test'),
         ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
@@ -74,15 +74,6 @@ class OutsideEddiDiagnosticTest(models.Model):
 
         return default_property
 
-class OutsideEddiProtocolLookup(models.Model):
-    class Meta:
-        db_table = "outside_eddi_cephia_protocol_lookup"
-
-    history = HistoricalRecords()
-    name = models.CharField(max_length=100, null=False, blank=False)
-    protocol = models.CharField(max_length=100, null=False, blank=False)
-    test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=False)
-
 
 class OutsideEddiTestPropertyEstimateQuerySet(QuerySet):
     def for_user(self, user):
@@ -92,27 +83,31 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     class Meta:
         db_table = "outside_eddi_test_property_estimates"
         
-    TYPE_CHOICES = (
-        ('published','Published'),
-        ('cephia','CEPHIA'),
-        ('analogue','Analogue'),
-        ('placeholder','Placeholder'),
-        ('user_added','UserAdded'),
-    )
     objects = OutsideEddiTestPropertyEstimateQuerySet.as_manager()
     
     active_property = models.BooleanField(blank=False, default=False)
-    estimate_label = models.CharField(max_length=255, null=False, blank=True)
-    
-    history = HistoricalRecords()
+    is_default = models.BooleanField(blank=False, default=False)
     test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True, related_name='properties')
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     
-    mean_diagnostic_delay_days = models.IntegerField(null=True, blank=False)
-    diagnostic_delay_median = models.IntegerField(null=True, blank=True)
-    foursigma_diagnostic_delay_days = models.IntegerField(null=True, blank=True)
-    is_default = models.BooleanField(blank=False, default=False)
+    estimate_label = models.CharField(max_length=255, null=False, blank=True)
     comment = models.CharField(max_length=255, null=False, blank=True)
+
+    
+    diagnostic_delay = models.FloatField(null=True, blank=False)
+    diagnostic_delay_mean = models.FloatField(null=True, blank=False)
+    diagnostic_delay_mean_se = models.FloatField(null=True, blank=False)
+    diagnostic_delay_mean_ci_lower = models.FloatField(null=True, blank=False)
+    diagnostic_delay_mean_ci_upper = models.FloatField(null=True, blank=False)
+    
+    diagnostic_delay_median = models.FloatField(null=True, blank=False)
+    diagnostic_delay_median_se = models.FloatField(null=True, blank=False)
+    diagnostic_delay_median_ci_lower = models.FloatField(null=True, blank=False)
+    diagnostic_delay_median_ci_upper = models.FloatField(null=True, blank=False)
+    diagnostic_delay_range = models.FloatField(null=True, blank=False)
+    diagnostic_delay_iqr = models.FloatField(null=True, blank=False)
+    
+    history = HistoricalRecords()
 
     def __str__(self):
         return '%s' % (self.id)
@@ -195,7 +190,6 @@ class OutsideEddiSubject(models.Model):
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
     history = HistoricalRecords()
     edsc_reported  = models.DateField(null=True, blank=True, default=None)
-    rand_id = models.CharField(max_length=255, null=True, blank=True)
 
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)

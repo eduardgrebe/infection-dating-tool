@@ -107,11 +107,11 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
             user = form.save()
             user.send_registration_notification()
 
-            tests = OutsideEddiDiagnosticTest.objects.all()
+            # tests = OutsideEddiDiagnosticTest.objects.all()
 
-            if not tests:
-                add_tests = _copy_diagnostic_tests()
-                test_properties = _copy_test_properties()
+            # if not tests:
+            #     add_tests = _copy_diagnostic_tests()
+            #     test_properties = _copy_test_properties()
 
             return redirect("outside_eddi:registration_info")
         else:
@@ -144,7 +144,7 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             uploaded_file.file_name = name
             uploaded_file.save()
 
-            # tests = TestsAndPropertiesFileHandler(uploaded_file).import_data() # for tests and properties #TODO remove
+            tests = TestsAndPropertiesFileHandler(uploaded_file).import_data() # for tests and properties #TODO separate
             
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
@@ -414,6 +414,7 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
         )
 
     form.set_context_data({'user': request.user})
+
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices
 
@@ -735,7 +736,7 @@ def update_adjusted_dates(user, data_file):
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
         map_property_means = list( mapping.values_list(
-            'code', 'test_property__mean_diagnostic_delay_days'
+            'code', 'test_property__diagnostic_delay'
         ).distinct() )
         
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
@@ -745,6 +746,6 @@ def update_adjusted_dates(user, data_file):
         for test_history in file_test_history:
             test_code = test_history.test_code
             test_date = dates_means[test_code][0]
-            mean_diagnostic_delay_days = dates_means[test_code][1]
-            test_history.adjusted_date = test_date - relativedelta(days=mean_diagnostic_delay_days)
+            diagnostic_delay = dates_means[test_code][1]
+            test_history.adjusted_date = test_date - relativedelta(days=diagnostic_delay)
             test_history.save()

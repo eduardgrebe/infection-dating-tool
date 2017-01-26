@@ -120,8 +120,7 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
     class Meta:
         fields = (
             'is_default', 'estimate_label',
-            'mean_diagnostic_delay_days',
-            'foursigma_diagnostic_delay_days', 'diagnostic_delay_median',
+            'diagnostic_delay',
             'comment'
         )
         model = OutsideEddiTestPropertyEstimate
@@ -133,15 +132,13 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
         super(OutsideEddiTestPropertyEstimateForm, self).__init__(*args, **kwargs)
         if self.instance.pk and not self.instance.user:
             self.fields['estimate_label'].widget.attrs['readonly'] = True
-            self.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
+            self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
             self.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
             self.fields['comment'].widget.attrs['readonly'] = True
 
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
-        self.fields['mean_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
-        self.fields['foursigma_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
-        self.fields['diagnostic_delay_median'].widget.attrs['placeholder'] = ''
+        self.fields['diagnostic_delay'].widget.attrs['placeholder'] = ''
         self.fields['comment'].widget.attrs['placeholder'] = ''
         
 class GlobalTestForm(BaseModelForm):
@@ -212,6 +209,7 @@ class Grouped(object):
         """
         super(Grouped, self).__init__(queryset, *args, **kwargs)
         self.group_by_field = group_by_field
+
         if group_label is None:
             self.group_label = lambda group: group
         else:
@@ -231,7 +229,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
         queryset = self.queryset.all()
         if not queryset._prefetch_related_lookups:
             queryset = queryset.iterator()
-        for group, choices in groupby(self.queryset.all().order_by('-user', 'name'),
+        for group, choices in groupby(self.queryset.all().order_by('-user', 'name', 'category'),
                     key=lambda row: getattr(row, self.field.group_by_field)):
             if not group:
                 group = 'Global Tests'

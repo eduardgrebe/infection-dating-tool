@@ -398,7 +398,7 @@ do this.
 
 ** send_mail
 can we use local host?
-* noets from meeting 18/01
+* notes from meeting 18/01
 commit 570534521d289eed1ccb707b33bbbf860f98a8a2
 * notes from meeting 19/01
 ** issues
@@ -457,6 +457,9 @@ name
 mean
 mean delay
 comment
+***** new notes
+do not need historical records
+
 
 **** help page and link
 will receive from Eduard and Alex
@@ -485,3 +488,47 @@ Outstanding assays -
 Results/clinical data extraction
  
 Eddi tools (as discussed – launch ASAP – lots of help material to be produced)
+* notes from meeting 26/01
+** rand id
+use primary key - whatever comes out gets multiplied by 1 million and then truncated down to a certain size digit
+call subject_label_blinded
+add to file handler for new sujects uploaded
+use management command to update previous subjects with field still blank
+use unique constraint
+rand function from sql
+
+remove incorrect code from infection dating tool
+
+include this new field in result downloads
+** volumes
+
+** panel memberships
+
+** eddi tool
+*** help page
+
+*** tests and properties
+property names are all the same (check if current test has a property when importing, then update or create)
+
+remove OutsideEddiProtocolLookup
+remove type choices from properties
+write script to upload a new version of the file to the file handler
+
+sort tests by category in drop downs - order:
+('western_blot', 'Western Blot'),
+('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+('2nd_gen_rapid', '2nd Gen Rapid Test'),
+('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+('3rd_gen_rapid', '3rd Gen Rapid Test'),
+('p24_antigen', 'p24 Antigen'),
+('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+('4th_gen_rapid', '4th Gen Rapid Test'),
+('viral_load', 'Viral Load'),
+
+these might get dropped
+('dpp', 'DPP'),
+('immunofluorescence_assay', 'Immunofluorescence Assay'),
+
+
+
