@@ -12,7 +12,7 @@ from django.db.models import Q
 logger = logging.getLogger(__name__)
 
 CATEGORIES = {
-    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen_lab',
+    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen',
     '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)': '2nd_gen_lab',
     '2nd Gen Rapid Test': '2nd_gen_rapid',
     '3rd Gen Lab Assay (IgM sensitive Antibody)': '3rd_gen_lab',
@@ -23,10 +23,9 @@ CATEGORIES = {
     'Immunofluorescence Assay': 'immunofluorescence_assay',
     'p24 Antigen': 'p24_antigen',
     'Viral Load': 'viral_load',
-    'Western Blot': 'western_blot',
+    'Western blot': 'western_blot',
 }
 
-# global tests will only have one test property. if this needs to change then the code bellow must be updated
 
 class TestsAndPropertiesFileHandler(FileHandler):
 

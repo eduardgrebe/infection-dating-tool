@@ -530,5 +530,8 @@ these might get dropped
 ('dpp', 'DPP'),
 ('immunofluorescence_assay', 'Immunofluorescence Assay'),
 
+return button on register screen not working?
 
-
+why is the one test category not displaying the long name?
+add new test (Name header should change)
+check calculations with new model field names

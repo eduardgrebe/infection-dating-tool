@@ -54,7 +54,7 @@ class OutsideEddiDiagnosticTest(models.Model):
         ('immunofluorescence_assay', 'Immunofluorescence Assay'),
         ('p24_antigen', 'p24 Antigen'),
         ('viral_load', 'Viral Load'),
-        ('western_blot', 'Western Blot'),
+        ('western_blot', 'Western blot'),
     )
     
     name = models.CharField(max_length=100, null=False, blank=False)
