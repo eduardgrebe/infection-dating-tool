@@ -508,10 +508,10 @@ include this new field in result downloads
 *** help page
 
 *** tests and properties
-property names are all the same (check if current test has a property when importing, then update or create)
+# property names are all the same (check if current test has a property when importing, then update or create)
 
-remove OutsideEddiProtocolLookup
-remove type choices from properties
+# remove OutsideEddiProtocolLookup
+# remove type choices from properties
 write script to upload a new version of the file to the file handler
 
 sort tests by category in drop downs - order:
@@ -530,8 +530,8 @@ these might get dropped
 ('dpp', 'DPP'),
 ('immunofluorescence_assay', 'Immunofluorescence Assay'),
 
-return button on register screen not working?
+return button on register screen not working? - this is working for me, may be a mac browser issue
 
-why is the one test category not displaying the long name?
-add new test (Name header should change)
+# why is the one test category not displaying the long name?
+# add new test (Name header should change)
 check calculations with new model field names

@@ -144,7 +144,7 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             uploaded_file.file_name = name
             uploaded_file.save()
 
-            tests = TestsAndPropertiesFileHandler(uploaded_file).import_data() # for tests and properties #TODO separate
+            # tests = TestsAndPropertiesFileHandler(uploaded_file).import_data() # for tests and properties #TODO separate
             
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
@@ -416,6 +416,8 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     form.set_context_data({'user': request.user})
 
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+    import pdb;pdb.set_trace()
+    # choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
     form.fields['test'] = choices
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():

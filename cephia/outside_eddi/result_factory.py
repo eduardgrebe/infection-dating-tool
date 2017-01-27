@@ -5,7 +5,7 @@ class ResultDownload(object):
 
     def __init__(self, results):
 
-        self.headers = ['Subject', 'Subject ID', 'EP DDI', 'LP DDI', 'Interval Size', 'EDDI']
+        self.headers = ['Subject', 'EP DDI', 'LP DDI', 'Interval Size', 'EDDI']
         self.content = []
         self.results = results
         self.prepare_content()

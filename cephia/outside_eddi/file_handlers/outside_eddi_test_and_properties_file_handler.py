@@ -12,7 +12,7 @@ from django.db.models import Q
 logger = logging.getLogger(__name__)
 
 CATEGORIES = {
-    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen',
+    '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)': '1st_gen_lab',
     '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)': '2nd_gen_lab',
     '2nd Gen Rapid Test': '2nd_gen_rapid',
     '3rd Gen Lab Assay (IgM sensitive Antibody)': '3rd_gen_lab',
@@ -68,7 +68,10 @@ class TestsAndPropertiesFileHandler(FileHandler):
                             error_msg += 'A test for id %s does not exist.\n' %row_dict['id']
                             raise Exception(error_msg)
                     else:
-                        test=OutsideEddiDiagnosticTest.objects.create(name=row_dict['test_name'])
+                        try:
+                            test=OutsideEddiDiagnosticTest.objects.get(name=row_dict['test_name'], user__isnull=True)
+                        except OutsideEddiDiagnosticTest.DoesNotExist:
+                            test=OutsideEddiDiagnosticTest.objects.create(name=row_dict['test_name'])
 
                     test.category = CATEGORIES[row_dict['test_category']]
                     test.save()

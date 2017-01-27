@@ -17,20 +17,19 @@ class OutsideEddiFileHandler(FileHandler):
         super(OutsideEddiFileHandler, self).__init__(upload_file)
 
         self.registered_columns = [
-            'subject_id',
-            'test_date',
-            'test_code',
-            'test_result',
-            'test_source',
-            'protocol'
+            'Subject',
+            'Date',
+            'Test',
+            'Result',
         ]
 
 
     def validate(self):
         valid_results = ('positive', 'pos', 'negative', 'neg', '+', '-')
-        headers = [u'', u'Subject', u'Date', u'Test', u'Result']
+        headers = [u'Subject', u'Date', u'Test', u'Result']
         errors = []
         from outside_eddi.models import OutsideEddiSubject
+        
         if self.header != headers:
             errors.append("Incorrect headers used. It should be Subject, Date, Test, Result")
         for row_num in range(self.num_rows):
@@ -51,7 +50,7 @@ class OutsideEddiFileHandler(FileHandler):
                 logger.exception(e)
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
-                return 0, 1
+                return errors
 
         return errors
 
@@ -59,6 +58,7 @@ class OutsideEddiFileHandler(FileHandler):
     def save_data(self, user):
         pos_results = ('positive', 'pos', '+')
         neg_results = ('negative', 'neg', '-')
+        import pdb;pdb.set_trace()
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -100,6 +100,8 @@ def validate_date(date_text):
         datetime.datetime.strptime(date_text, '%Y-%m-%d')
         return True
     except ValueError:
+        if not date_text:
+            return True
         return False
 
 def check_mapping(test_code, tests, user):
