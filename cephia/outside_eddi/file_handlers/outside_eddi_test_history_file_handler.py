@@ -90,7 +90,6 @@ class OutsideEddiFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                import pdb;pdb.set_trace()
                 self.upload_file.message = "row " + str(row_num) + ": " + e.message
                 self.upload_file.save()
                 return 0, 1
