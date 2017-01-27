@@ -416,8 +416,7 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     form.set_context_data({'user': request.user})
 
     choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
-    import pdb;pdb.set_trace()
-    # choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+
     form.fields['test'] = choices
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
