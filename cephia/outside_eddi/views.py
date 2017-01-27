@@ -415,7 +415,7 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
 
     form.set_context_data({'user': request.user})
 
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
 
     form.fields['test'] = choices
 
@@ -500,7 +500,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
 
     
     form.set_context_data({'user': request.user})
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
     form.fields['test'] = choices
     if is_file:
         form.fields['code'].widget.attrs['readonly'] = True

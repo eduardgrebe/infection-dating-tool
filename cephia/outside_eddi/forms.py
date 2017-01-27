@@ -221,6 +221,21 @@ class Grouped(object):
         return GroupedModelChoiceIterator(self)
 
 
+CATEGORIES = {
+    '1st_gen_lab': '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)',
+    '2nd_gen_lab': '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)',
+    '2nd_gen_rapid': '2nd Gen Rapid Test',
+    '3rd_gen_lab': '3rd Gen Lab Assay (IgM sensitive Antibody)',
+    '3rd_gen_rapid': '3rd Gen Rapid Test',
+    '4th_gen_lab': '4th Gen Lab Assay (p24 Ag/Ab Combo)',
+    '4th_gen_rapid': '4th Gen Rapid Test',
+    'dpp': 'DPP',
+    'immunofluorescence_assay': 'Immunofluorescence Assay',
+    'p24_antigen': 'p24 Antigen',
+    'viral_load': 'Viral Load',
+    'western_blot': 'Western blot',
+}
+    
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
         if self.field.empty_label is not None:
@@ -228,12 +243,20 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
         queryset = self.queryset.all()
         if not queryset._prefetch_related_lookups:
             queryset = queryset.iterator()
-        for group, choices in groupby(self.queryset.all().order_by('-user', 'name'),
+        for group, choices in groupby(self.queryset.filter(user__isnull=False).order_by('category', 'name'),
                     key=lambda row: getattr(row, self.field.group_by_field)):
-            if not group:
-                group = 'Global Tests'
+            group = 'Your Tests'
+            if self.field.group_label(group):
+                yield (
+                    self.field.group_label(group),
+                    [self.choice(ch) for ch in choices]
+                )
+        for group, choices in groupby(self.queryset.filter(user__isnull=True).order_by('category', 'name'),
+                    key=lambda row: getattr(row, self.field.group_by_field)):
+            if group:
+                group = CATEGORIES[group]
             else:
-                group = 'Your Tests'
+                group = 'No category'
             if self.field.group_label(group):
                 yield (
                     self.field.group_label(group),
