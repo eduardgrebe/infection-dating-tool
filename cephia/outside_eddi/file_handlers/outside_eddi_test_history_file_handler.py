@@ -100,8 +100,8 @@ def validate_date(date_text):
         datetime.datetime.strptime(date_text, '%Y-%m-%d')
         return True
     except ValueError:
-        if not date_text:
-            return True
+        # if not date_text:
+        #     return True
         return False
 
 def check_mapping(test_code, tests, user):
