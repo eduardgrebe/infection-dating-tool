@@ -23,7 +23,7 @@ class OutsideEddiDiagnosticTestHistory(models.Model):
     history = HistoricalRecords()
     subject = ProtectedForeignKey('OutsideEddiSubject', null=True, blank=False, related_name='outside_eddi_test_history')
     data_file = ProtectedForeignKey('OutsideEddiFileInfo', null=False, blank=False, related_name='test_history')
-    test_code = models.CharField(max_length=25, null=True, blank=True)
+    test_code = models.CharField(max_length=50, null=True, blank=True)
     # test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
@@ -115,7 +115,7 @@ class OutsideEddiTestPropertyEstimate(models.Model):
 
 class TestPropertyMapping(models.Model):
 
-    code = models.CharField(max_length=25)
+    code = models.CharField(max_length=50)
     test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=True)
     test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate', null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
