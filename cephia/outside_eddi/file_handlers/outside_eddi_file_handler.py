@@ -10,12 +10,16 @@ class FileHandler(object):
 
     def __init__(self, upload_file):
         self.upload_file = upload_file
-        extension = self.upload_file.get_extension()
+        try:
+            extension = self.upload_file.get_extension()
+            
+            if extension in ['csv','CSV']:
+                self.file_rows = self.open_csv(upload_file.data_file.url)
+            else:
+                raise Exception("Invalid file type. Only .csv are supported.")
+        except AttributeError:
+            self.file_rows = self.open_test_csv(upload_file)
 
-        if extension in ['csv','CSV']:
-            self.file_rows = self.open_csv(upload_file.data_file.url)
-        else:
-            raise Exception("Invalid file type. Only .csv are supported.")
             
         self.header = self.file_rows[0]
         self.num_rows = len(self.file_rows)
@@ -83,6 +87,21 @@ class FileHandler(object):
 
         try:
             with open(to_read, 'rU') as got_a_file:
+                return [line for line in unicode_csv_reader(got_a_file)]
+        except (IOError, csv.Error):
+            print "Couldn't read from file %s. Exiting." % (to_read)
+            raise
+
+
+    def open_test_csv(self, to_read):
+        def unicode_csv_reader(unicode_csv_data, dialect = csv.excel, **kwargs):
+            csv_reader = csv.reader(unicode_csv_data,
+                                    dialect = dialect, **kwargs)
+            for row in csv_reader:
+                yield [unicode(cell.strip(), 'utf-8') for cell in row]
+
+        try:
+            with to_read as got_a_file:
                 return [line for line in unicode_csv_reader(got_a_file)]
         except (IOError, csv.Error):
             print "Couldn't read from file %s. Exiting." % (to_read)

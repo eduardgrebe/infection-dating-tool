@@ -41,6 +41,7 @@ from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
 import os
 from django.core.mail import send_mail
+from collections import OrderedDict
 
 
 def outside_eddi_login_required(login_url=None):
@@ -144,8 +145,6 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             uploaded_file.file_name = name
             uploaded_file.save()
 
-            # tests = TestsAndPropertiesFileHandler(uploaded_file).import_data() # for tests and properties #TODO separate
-            
             errors = []
             errors = OutsideEddiFileHandler(uploaded_file).validate()
             if not errors:
@@ -203,6 +202,22 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
 
     return render(request, template, context)
 
+CATEGORIES = (
+    ('western_blot', 'Western blot'),
+    ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+    ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+    ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+    ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+    ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+    ('p24_antigen', 'p24 Antigen'),
+    ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+    ('4th_gen_rapid', '4th Gen Rapid Test'),
+    ('viral_load', 'Viral Load'),
+    ('dpp', 'DPP'),
+    ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+    ('No category', 'No category'),
+)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def tests(request, file_id=None, template="outside_eddi/tests.html"):
@@ -210,10 +225,19 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     user = request.user
 
     user_tests = OutsideEddiDiagnosticTest.objects.filter(user=user).order_by('name')
-    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True).order_by('name')
+    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
 
+    global_tests_dict = OrderedDict()
+
+    for category in CATEGORIES:
+        if category[0] != 'No category':
+            tests = global_tests.filter(category=category[0])
+        else:
+            tests = global_tests.filter(category__isnull=True)
+        global_tests_dict[category[1]] = tests
+                
     context['user_tests'] = user_tests
-    context['global_tests'] = global_tests
+    context['global_tests'] = global_tests_dict
 
     return render(request, template, context)
 

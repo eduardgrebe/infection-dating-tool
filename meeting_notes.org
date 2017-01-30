@@ -514,24 +514,24 @@ include this new field in result downloads
 # remove type choices from properties
 write script to upload a new version of the file to the file handler
 
-sort tests by category in drop downs - order:
-('western_blot', 'Western Blot'),
-('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
-('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
-('2nd_gen_rapid', '2nd Gen Rapid Test'),
-('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
-('3rd_gen_rapid', '3rd Gen Rapid Test'),
-('p24_antigen', 'p24 Antigen'),
-('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
-('4th_gen_rapid', '4th Gen Rapid Test'),
-('viral_load', 'Viral Load'),
+# sort tests by category in drop downs - order:
+# ('western_blot', 'Western Blot'),
+# ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+# ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+# ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+# ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+# ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+# ('p24_antigen', 'p24 Antigen'),
+# ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+# ('4th_gen_rapid', '4th Gen Rapid Test'),
+# ('viral_load', 'Viral Load'),
 
-these might get dropped
-('dpp', 'DPP'),
-('immunofluorescence_assay', 'Immunofluorescence Assay'),
+# these might get dropped
+# ('dpp', 'DPP'),
+# ('immunofluorescence_assay', 'Immunofluorescence Assay'),
 
 return button on register screen not working? - this is working for me, may be a mac browser issue
 
 # why is the one test category not displaying the long name?
 # add new test (Name header should change)
-check calculations with new model field names
+# check calculations with new model field names

@@ -11,12 +11,12 @@
 {% block content %}
   <div class="container_nav">
 
-    <h3>Your tests</h3>
+    <h2>Your tests</h2>
     <button class="js-add-test btn btn-default" data-add-url="{% url 'outside_eddi:create_test' %}">Add a new test</button>
     <table class="table table-condensed table-striped">
       <thead>
         <tr>
-          <th>Tests</th>
+          <th>Name</th>
           <th>Category</th>
           <th></th>
         </tr>
@@ -41,34 +41,34 @@
       </tbody>
     </table>
 
-    <h3>Global tests</h3>
-    <table class="table table-condensed table-striped">
-      <thead>
-        <tr>
-          <th>Tests</th>
-          <th>Category</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        
-        {% for test in global_tests %}
-          <tr>
-            <td>
-              {{ test.name }}
-            </td>
-            <td>
-              {{ test.get_category_display }}
-            </td>
-            <td align="right">
-              <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
-                 data-edit-url="{% url 'outside_eddi:edit_test' test.pk %}">Edit</a>
-            </td>
-          </tr>
-        {% endfor %}
-        
-      </tbody>
-    </table>
+    <h2>Global tests</h2>
+    {% for category, tests in global_tests.items %}
+      {% if tests %}
+        <h3>{{ category }}</h3>
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th></th>
+            </tr>
+          </thead>
+          
+          <tbody>
+            {% for test in tests %}
+              <tr>
+                <td>
+                  {{ test.name }}
+                </td>
+                <td align="right">
+                  <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
+                     data-edit-url="{% url 'outside_eddi:edit_test' test.pk %}">Edit</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% endfor %}
 
     <div class="modal fade" id="modal-add-test"></div>
     <div class="modal fade" id="modal-edit-test"></div>

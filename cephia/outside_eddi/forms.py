@@ -221,20 +221,21 @@ class Grouped(object):
         return GroupedModelChoiceIterator(self)
 
 
-CATEGORIES = {
-    '1st_gen_lab': '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)',
-    '2nd_gen_lab': '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)',
-    '2nd_gen_rapid': '2nd Gen Rapid Test',
-    '3rd_gen_lab': '3rd Gen Lab Assay (IgM sensitive Antibody)',
-    '3rd_gen_rapid': '3rd Gen Rapid Test',
-    '4th_gen_lab': '4th Gen Lab Assay (p24 Ag/Ab Combo)',
-    '4th_gen_rapid': '4th Gen Rapid Test',
-    'dpp': 'DPP',
-    'immunofluorescence_assay': 'Immunofluorescence Assay',
-    'p24_antigen': 'p24 Antigen',
-    'viral_load': 'Viral Load',
-    'western_blot': 'Western blot',
-}
+CATEGORIES = (
+    ('western_blot', 'Western blot'),
+    ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+    ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+    ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+    ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+    ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+    ('p24_antigen', 'p24 Antigen'),
+    ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+    ('4th_gen_rapid', '4th Gen Rapid Test'),
+    ('viral_load', 'Viral Load'),
+    ('dpp', 'DPP'),
+    ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+    ('No category', 'No category'),
+)
     
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
@@ -251,17 +252,38 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
                     self.field.group_label(group),
                     [self.choice(ch) for ch in choices]
                 )
-        for group, choices in groupby(self.queryset.filter(user__isnull=True).order_by('category', 'name'),
-                    key=lambda row: getattr(row, self.field.group_by_field)):
-            if group:
-                group = CATEGORIES[group]
+
+
+        for category in CATEGORIES:
+            if category[0] != 'No category':
+                for group, choices in groupby(
+                        self.queryset.filter(user__isnull=True, category=category[0]).order_by('name'),
+                        key=lambda row: getattr(row, self.field.group_by_field)
+                ):
+                    if group:
+                        group = category[1]
+                    else:
+                        group = 'No category'
+                    if self.field.group_label(group):
+                        yield (
+                            self.field.group_label(group),
+                            [self.choice(ch) for ch in choices]
+                        )
             else:
-                group = 'No category'
-            if self.field.group_label(group):
-                yield (
-                    self.field.group_label(group),
-                    [self.choice(ch) for ch in choices]
-                )
+                for group, choices in groupby(
+                        self.queryset.filter(user__isnull=True, category__isnull=True).order_by('name'),
+                        key=lambda row: getattr(row, self.field.group_by_field)
+                ):
+                    if group:
+                        group = category[1]
+                    else:
+                        group = 'No category'
+                    if self.field.group_label(group):
+                        yield (
+                            self.field.group_label(group),
+                            [self.choice(ch) for ch in choices]
+                        )
+        
 
 
 class GroupedModelChoiceField(Grouped, ModelChoiceField):

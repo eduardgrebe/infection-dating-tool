@@ -51,6 +51,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
 
     def import_data(self):
         errors = []
+        
         from outside_eddi.models import OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
         for row_num in range(self.num_rows):
             try:
