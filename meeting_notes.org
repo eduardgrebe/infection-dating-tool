@@ -512,7 +512,7 @@ include this new field in result downloads
 
 # remove OutsideEddiProtocolLookup
 # remove type choices from properties
-write script to upload a new version of the file to the file handler
+# write script to upload a new version of the file to the file handler
 
 # sort tests by category in drop downs - order:
 # ('western_blot', 'Western Blot'),
@@ -535,3 +535,8 @@ return button on register screen not working? - this is working for me, may be a
 # why is the one test category not displaying the long name?
 # add new test (Name header should change)
 # check calculations with new model field names
+
+*** results download improvement
+Eduard Grebe: Actually, it seems to work, but when I tried to download all evaluation panel results in one go (would be a useful file to have), it gave an internal server error
+[1:45:15 PM] Eduard Grebe: Is there any way of enhancing the stability of that feature so that it can produce the download file without an issue?
+[1:45:25 PM] Eduard Grebe: For example by sending it off to celery
