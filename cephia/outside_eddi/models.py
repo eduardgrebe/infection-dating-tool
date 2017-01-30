@@ -104,8 +104,8 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     diagnostic_delay_median_se = models.FloatField(null=True, blank=False)
     diagnostic_delay_median_ci_lower = models.FloatField(null=True, blank=False)
     diagnostic_delay_median_ci_upper = models.FloatField(null=True, blank=False)
-    diagnostic_delay_range = models.FloatField(null=True, blank=False)
-    diagnostic_delay_iqr = models.FloatField(null=True, blank=False)
+    diagnostic_delay_range = models.CharField(max_length=255, null=True, blank=True)
+    diagnostic_delay_iqr = models.CharField(max_length=255, null=True, blank=True)
     
     history = HistoricalRecords()
 

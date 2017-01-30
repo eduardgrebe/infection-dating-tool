@@ -105,8 +105,6 @@ class TestsAndPropertiesFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
-                self.upload_file.save()
                 return 0, 1
 
         return errors

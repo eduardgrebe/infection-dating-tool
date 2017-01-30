@@ -44,11 +44,10 @@
     <h2>Global tests</h2>
     {% for category, tests in global_tests.items %}
       {% if tests %}
-        <h3>{{ category }}</h3>
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
-              <th>Name</th>
+              <th><h3>{{ category }}</h3></th>
               <th></th>
             </tr>
           </thead>
