@@ -209,7 +209,7 @@ class ResultDownload(object):
         if self.limit:
             limited_results = self.results[0:self.limit]
 
-        batch_size = 1000
+        batch_size = 1500
         batch = limited_results[:batch_size]
         current_index = 0
 
