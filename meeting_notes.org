@@ -398,5 +398,145 @@ do this.
 
 ** send_mail
 can we use local host?
-* noets from meeting 18/01
+* notes from meeting 18/01
 commit 570534521d289eed1ccb707b33bbbf860f98a8a2
+* notes from meeting 19/01
+** issues
+*** main site
+shipments - kill
+public facing data - on hold
+issue532 install the existing CMS django onto the new server - kill
+tests - hold - fix last test or comment out
+volume counts - needs to be done, waiting on Eduard's instruction (check current handling of volumes, should be correct)
+field names (can change db field name on model) - Eduard can let me know which fields he wants changed
+wide/raw results download - kill
+
+panel memberships - look at generic results
+find unique id for each specimen
+look at one assay run, find all visits and how many times
+for each unique visit, create panel membership and how many times
+visit id and number of times that it occurs in the panel
+
+R shiny apps
+make sure that the guy who wrote the R code is set up for deploying new code
+might sub-contract a guy
+
+filter and download specimens - name will be changed (check that all fields are the same as result download, even if invalid)
+
+status of outstanding assays
+will be given a list
+
+extracting data
+will be given details once Eduard and Alex have looked over what might still need to be done
+
+new issues:
+blinded subject id - new field?
+
+
+*** cephia infection dating tool
+**** mail
+use gmail for send mail - get final name (no_reply_cephia_eddi_tool@gmail.com) might use a gmail account which uses a different domain. if no cost then use this
+instead of gmail.
+
+**** update tests and properties
+now a manual input rather than import from main site
+
+tests:
+new names
+test category (organise by category) - add headers to table for categories
+
+
+properties:
+only default properties - name cephia estimate
+drop reference and description for comment field
+add field standard error mean diagnostics delay
+update display names for fields
+
+fields:
+name
+mean
+mean delay
+comment
+***** new notes
+do not need historical records
+
+
+**** help page and link
+will receive from Eduard and Alex
+
+**** possible future feature
+ind - tests must be set to accept or not
+tests have indeterminate allowed
+
+**** styling
+show which tab you are currently on - possibly make it look like the main site navigation
+
+add a link to the help page for non logged in users to view before signing up. probably
+hide navigation bar, etc from users not logged in
+
+** notes from Alex
+Features loose ends
+ 
+Shipments (hold)
+Clean up field names (if we want to)
+Public facing data (hold -  deal with it post Seattle)
+ 
+Testing (clean and park)
+Panel  memberships – status? Possibly run more reconstructions
+Volume arithmetic - status, and park
+Outstanding assays -
+Results/clinical data extraction
+ 
+Eddi tools (as discussed – launch ASAP – lots of help material to be produced)
+* notes from meeting 26/01
+** rand id
+use primary key - whatever comes out gets multiplied by 1 million and then truncated down to a certain size digit
+call subject_label_blinded
+add to file handler for new sujects uploaded
+use management command to update previous subjects with field still blank
+use unique constraint
+rand function from sql
+
+remove incorrect code from infection dating tool
+
+include this new field in result downloads
+** volumes
+
+** panel memberships
+
+** eddi tool
+*** help page
+
+*** tests and properties
+# property names are all the same (check if current test has a property when importing, then update or create)
+
+# remove OutsideEddiProtocolLookup
+# remove type choices from properties
+# write script to upload a new version of the file to the file handler
+
+# sort tests by category in drop downs - order:
+# ('western_blot', 'Western Blot'),
+# ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+# ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+# ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+# ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+# ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+# ('p24_antigen', 'p24 Antigen'),
+# ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+# ('4th_gen_rapid', '4th Gen Rapid Test'),
+# ('viral_load', 'Viral Load'),
+
+# these might get dropped
+# ('dpp', 'DPP'),
+# ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+
+return button on register screen not working? - this is working for me, may be a mac browser issue
+
+# why is the one test category not displaying the long name?
+# add new test (Name header should change)
+# check calculations with new model field names
+
+*** results download improvement
+Eduard Grebe: Actually, it seems to work, but when I tried to download all evaluation panel results in one go (would be a useful file to have), it gave an internal server error
+[1:45:15 PM] Eduard Grebe: Is there any way of enhancing the stability of that feature so that it can produce the download file without an issue?
+[1:45:25 PM] Eduard Grebe: For example by sending it off to celery

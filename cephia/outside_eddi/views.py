@@ -19,6 +19,7 @@ from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
+from file_handlers.outside_eddi_test_and_properties_file_handler import TestsAndPropertiesFileHandler
 from cephia.models import CephiaUser
 from user_management.forms import UserPasswordForm
 from models import (
@@ -40,6 +41,7 @@ from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
 import os
 from django.core.mail import send_mail
+from collections import OrderedDict
 
 
 def outside_eddi_login_required(login_url=None):
@@ -106,11 +108,11 @@ def outside_eddi_user_registration(request, template='outside_eddi/user_registra
             user = form.save()
             user.send_registration_notification()
 
-            tests = OutsideEddiDiagnosticTest.objects.all()
+            # tests = OutsideEddiDiagnosticTest.objects.all()
 
-            if not tests:
-                add_tests = _copy_diagnostic_tests()
-                test_properties = _copy_test_properties()
+            # if not tests:
+            #     add_tests = _copy_diagnostic_tests()
+            #     test_properties = _copy_test_properties()
 
             return redirect("outside_eddi:registration_info")
         else:
@@ -200,6 +202,22 @@ def edit_study(request, study_id=None, template="outside_eddi/manage_studies.htm
 
     return render(request, template, context)
 
+CATEGORIES = (
+    ('western_blot', 'Western blot'),
+    ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+    ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+    ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+    ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+    ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+    ('p24_antigen', 'p24 Antigen'),
+    ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+    ('4th_gen_rapid', '4th Gen Rapid Test'),
+    ('viral_load', 'Viral Load'),
+    ('dpp', 'DPP'),
+    ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+    ('No category', 'No category'),
+)
+
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def tests(request, file_id=None, template="outside_eddi/tests.html"):
@@ -207,10 +225,19 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     user = request.user
 
     user_tests = OutsideEddiDiagnosticTest.objects.filter(user=user).order_by('name')
-    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True).order_by('name')
+    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
 
+    global_tests_dict = OrderedDict()
+
+    for category in CATEGORIES:
+        if category[0] != 'No category':
+            tests = global_tests.filter(category=category[0])
+        else:
+            tests = global_tests.filter(category__isnull=True)
+        global_tests_dict[category[1]] = tests
+                
     context['user_tests'] = user_tests
-    context['global_tests'] = global_tests
+    context['global_tests'] = global_tests_dict
 
     return render(request, template, context)
 
@@ -264,6 +291,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
             context['default_property'] = default_property.pk
     else:
         form = GlobalTestForm(request.POST or None, instance=test)
+        form.fields['category'].initial = test.category
         properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['properties'] = properties
 
@@ -410,7 +438,9 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
         )
 
     form.set_context_data({'user': request.user})
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+
     form.fields['test'] = choices
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
@@ -494,7 +524,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
 
     
     form.set_context_data({'user': request.user})
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='user')
+    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
     form.fields['test'] = choices
     if is_file:
         form.fields['code'].widget.attrs['readonly'] = True
@@ -529,7 +559,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     return render(request, template, context)
 
 
-@outside_eddi_login_required(login_url='outside_eddi:login')
+
 def help_page(request, file_id=None, template="outside_eddi/help.html"):
     context = {}
 
@@ -731,7 +761,7 @@ def update_adjusted_dates(user, data_file):
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
         map_property_means = list( mapping.values_list(
-            'code', 'test_property__mean_diagnostic_delay_days'
+            'code', 'test_property__diagnostic_delay'
         ).distinct() )
         
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
@@ -741,6 +771,6 @@ def update_adjusted_dates(user, data_file):
         for test_history in file_test_history:
             test_code = test_history.test_code
             test_date = dates_means[test_code][0]
-            mean_diagnostic_delay_days = dates_means[test_code][1]
-            test_history.adjusted_date = test_date - relativedelta(days=mean_diagnostic_delay_days)
+            diagnostic_delay = dates_means[test_code][1]
+            test_history.adjusted_date = test_date - relativedelta(days=diagnostic_delay)
             test_history.save()

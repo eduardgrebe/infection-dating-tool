@@ -120,9 +120,8 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
     class Meta:
         fields = (
             'is_default', 'estimate_label',
-            'mean_diagnostic_delay_days',
-            'foursigma_diagnostic_delay_days', 'diagnostic_delay_median',
-            'comment', 'reference'
+            'diagnostic_delay',
+            'comment'
         )
         model = OutsideEddiTestPropertyEstimate
         widgets = {
@@ -133,36 +132,34 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
         super(OutsideEddiTestPropertyEstimateForm, self).__init__(*args, **kwargs)
         if self.instance.pk and not self.instance.user:
             self.fields['estimate_label'].widget.attrs['readonly'] = True
-            self.fields['mean_diagnostic_delay_days'].widget.attrs['readonly'] = True
+            self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
             self.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
             self.fields['comment'].widget.attrs['readonly'] = True
-            self.fields['reference'].widget.attrs['readonly'] = True
 
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
-        self.fields['mean_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
-        self.fields['foursigma_diagnostic_delay_days'].widget.attrs['placeholder'] = ''
-        self.fields['diagnostic_delay_median'].widget.attrs['placeholder'] = ''
+        self.fields['diagnostic_delay'].widget.attrs['placeholder'] = ''
         self.fields['comment'].widget.attrs['placeholder'] = ''
-        self.fields['reference'].widget.attrs['placeholder'] = ''
         
 class GlobalTestForm(BaseModelForm):
 
     class Meta:
         model = OutsideEddiDiagnosticTest
-        fields = ['name', 'description']
+        fields = ['name', 'category']
 
     def __init__(self, *args, **kwargs):
         super(GlobalTestForm, self).__init__(*args, **kwargs)
         if self.instance.pk and not self.instance.user:
             self.fields['name'].widget.attrs['readonly'] = True
-            self.fields['description'].widget.attrs['readonly'] = True
+            self.fields['category'].widget.attrs['readonly'] = True
+            self.fields['category'].widget.attrs['disabled'] = True
+
 
 class UserTestForm(BaseModelForm):
-    
+
     class Meta:
         model = OutsideEddiDiagnosticTest
-        fields = ['name', 'description']
+        fields = ['name', 'category']
 
 
 class UserTestPropertyDefaultForm(forms.Form):
@@ -212,10 +209,10 @@ class Grouped(object):
         """
         super(Grouped, self).__init__(queryset, *args, **kwargs)
         self.group_by_field = group_by_field
+
         if group_label is None:
             self.group_label = lambda group: group
         else:
-            
             self.group_label = group_label
    
     def _get_choices(self):
@@ -224,6 +221,22 @@ class Grouped(object):
         return GroupedModelChoiceIterator(self)
 
 
+CATEGORIES = (
+    ('western_blot', 'Western blot'),
+    ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+    ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+    ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+    ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+    ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+    ('p24_antigen', 'p24 Antigen'),
+    ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+    ('4th_gen_rapid', '4th Gen Rapid Test'),
+    ('viral_load', 'Viral Load'),
+    ('dpp', 'DPP'),
+    ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+    ('No category', 'No category'),
+)
+    
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
         if self.field.empty_label is not None:
@@ -231,17 +244,46 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
         queryset = self.queryset.all()
         if not queryset._prefetch_related_lookups:
             queryset = queryset.iterator()
-        for group, choices in groupby(self.queryset.all().order_by('-user', 'name'),
+        for group, choices in groupby(self.queryset.filter(user__isnull=False).order_by('category', 'name'),
                     key=lambda row: getattr(row, self.field.group_by_field)):
-            if not group:
-                group = 'Global Tests'
-            else:
-                group = 'Your Tests'
+            group = 'Your Tests'
             if self.field.group_label(group):
                 yield (
                     self.field.group_label(group),
                     [self.choice(ch) for ch in choices]
                 )
+
+
+        for category in CATEGORIES:
+            if category[0] != 'No category':
+                for group, choices in groupby(
+                        self.queryset.filter(user__isnull=True, category=category[0]).order_by('name'),
+                        key=lambda row: getattr(row, self.field.group_by_field)
+                ):
+                    if group:
+                        group = category[1]
+                    else:
+                        group = 'No category'
+                    if self.field.group_label(group):
+                        yield (
+                            self.field.group_label(group),
+                            [self.choice(ch) for ch in choices]
+                        )
+            else:
+                for group, choices in groupby(
+                        self.queryset.filter(user__isnull=True, category__isnull=True).order_by('name'),
+                        key=lambda row: getattr(row, self.field.group_by_field)
+                ):
+                    if group:
+                        group = category[1]
+                    else:
+                        group = 'No category'
+                    if self.field.group_label(group):
+                        yield (
+                            self.field.group_label(group),
+                            [self.choice(ch) for ch in choices]
+                        )
+        
 
 
 class GroupedModelChoiceField(Grouped, ModelChoiceField):

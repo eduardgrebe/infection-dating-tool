@@ -209,7 +209,7 @@ class ResultDownload(object):
         if self.limit:
             limited_results = self.results[0:self.limit]
 
-        batch_size = 5000
+        batch_size = 1000
         batch = limited_results[:batch_size]
         current_index = 0
 
@@ -220,7 +220,6 @@ class ResultDownload(object):
             has_results = False
 
         while has_results:
-            
             for result in batch:
                 row = [ self.getattr_or_none(result, c) for c in combined_columns ]
 

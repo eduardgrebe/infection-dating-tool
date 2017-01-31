@@ -6,13 +6,14 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container">
+  <div class="container_nav">
     <form method="post" enctype="multipart/form-data">{% csrf_token %}
       {{ form }}
       <button class="btn btn-primary" style="margin-top: 3px;">Upload</button>
     </form>
     
 
+    <div>
     <table class="table table-condensed table-striped">
 
       <thead>
@@ -44,7 +45,7 @@
               <td></td>
             {% endif %}
             {% if obj.state == 'processed' %}
-              <td><a href="{% url 'outside_eddi:results' obj.id %}" >View Results</td>
+              <td><a href="{% url 'outside_eddi:results' obj.id %}" >View Results</a></td>
             {% else %}
               <td></td>
             {% endif %}    

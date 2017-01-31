@@ -22,6 +22,7 @@ import uuid
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 import datetime
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,16 @@ FILE_TYPE_CHOICES = (
 
 def as_days(tdelta):
     return tdelta.days
+
+def random_string():
+    unique_number = False
+    while unique_number == False:
+        random_number = str(random.randint(10000000, 99999999))
+        try:
+            Subject.objects.get(subject_label_blinded=random_number)
+        except Subject.DoesNotExist:
+            unique_number = True
+            return str(random.randint(10000000, 99999999))
 
 class CephiaUser(BaseUser):
     
@@ -436,6 +447,7 @@ class Subject(models.Model):
     subject_eddi = ProtectedForeignKey(SubjectEDDI, null=True, blank=True)
     subject_eddi_status = ProtectedForeignKey(SubjectEDDIStatus, null=True, blank=True)
     history = HistoricalRecords()
+    # subject_label_blinded = models.CharField(max_length=25, null=False, blank=False, default = random_string, unique = True, db_index=True)
 
     def __unicode__(self):
         return self.subject_label
@@ -967,3 +979,6 @@ def update_visit(current_visit, nearby_visit):
     current_visit.vl_detectable = nearby_visit.vl_detectable
     current_visit.viral_load_offset = viral_load_offset
     current_visit.save()
+
+
+
