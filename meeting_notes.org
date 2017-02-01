@@ -560,36 +560,36 @@ management command(s)
 url, etc change from cephia infection to just infection
 rename app - infection_dating_tool - idt for short
 
-drop study
+# drop study
 
-IDTDiagnosticTestHistory
-IDTDiagnosticTest
-IDTTestPropertyEstimate
-IDTTestPropertyMapping
-IDTFileInfo
-IDTSubject
+# IDTDiagnosticTestHistory
+# IDTDiagnosticTest
+# IDTTestPropertyEstimate
+# IDTTestPropertyMapping
+# IDTFileInfo
+# IDTSubject
 IDTUser
 
 table names
-idt_diagnostic_test_history
-idt_diagnostic_tests
-idt_test_property_estimates
-idt_test_property_mapping
-idt_file_info
-idt_subjects
+# idt_diagnostic_test_history
+# idt_diagnostic_tests
+# idt_test_property_estimates
+# idt_test_property_mapping
+# idt_file_info
+# idt_subjects
 idt_users
 
 field names
-drop all historical records
-test_history - drop ignore
+# drop all historical records
+# test_history - drop ignore
 
-rename active_property and is_default on property estimate
+# rename active_property and is_default on property estimate
 
-task_id? - file info
+# task_id? - file info
 
 subject:
-edsc_reported - remove field and from calculation, results, etc
-drop recalculate
+edsc_reported - remove field and from calculation, results, etc - what about edsc_days_difference?
+# drop recalculate
 ** eddi help page
 ** eddi finishing touches
 # failed file uploads. produce a better error message system
