@@ -23,7 +23,7 @@ class OutsideEddiDiagnosticTestHistory(models.Model):
     history = HistoricalRecords()
     subject = ProtectedForeignKey('OutsideEddiSubject', null=True, blank=False, related_name='outside_eddi_test_history')
     data_file = ProtectedForeignKey('OutsideEddiFileInfo', null=False, blank=False, related_name='test_history')
-    test_code = models.CharField(max_length=50, null=True, blank=True)
+    test_code = models.CharField(max_length=255, null=True, blank=True)
     # test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=False)
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
@@ -57,7 +57,7 @@ class OutsideEddiDiagnosticTest(models.Model):
         ('western_blot', 'Western blot'),
     )
     
-    name = models.CharField(max_length=100, null=False, blank=False)
+    name = models.CharField(max_length=255, null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     category = models.CharField(choices=CATEGORIES, max_length=255, null=True, blank=True)
     history = HistoricalRecords()
@@ -115,7 +115,7 @@ class OutsideEddiTestPropertyEstimate(models.Model):
 
 class TestPropertyMapping(models.Model):
 
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=255)
     test = ProtectedForeignKey('OutsideEddiDiagnosticTest', null=True, blank=True)
     test_property = ProtectedForeignKey('OutsideEddiTestPropertyEstimate', null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
@@ -136,7 +136,7 @@ class OutsideEddiFileInfo(models.Model):
 
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
     data_file = models.FileField(upload_to=settings.MEDIA_ROOT+"/outside_eddi_uploads", null=False, blank=False)
-    file_name = models.CharField(max_length=150)
+    file_name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
     state = models.CharField(choices=STATE_CHOICES, max_length=15, null=False, blank=False, default='pending')
     message = models.TextField(blank=True)
