@@ -12,6 +12,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         base_dir = settings.BASE_DIR
-        uploaded_file = open("%s/outside_eddi/static/test_and_properties/DiagnosticTests_and_Properties.csv" %base_dir, "rb")
+        uploaded_file = open("%s/outside_eddi/static/test_and_properties/Diagnostic Tests and Properties Public.csv" %base_dir, "rb")
         TestsAndPropertiesFileHandler(uploaded_file).import_data()
 

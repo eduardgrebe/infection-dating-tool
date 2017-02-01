@@ -89,24 +89,24 @@ class OutsideEddiTestPropertyEstimate(models.Model):
     is_default = models.BooleanField(blank=False, default=False)
     test = models.ForeignKey(OutsideEddiDiagnosticTest, null=False, blank=True, related_name='properties')
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
-    
+
     estimate_label = models.CharField(max_length=255, null=False, blank=True)
     comment = models.CharField(max_length=255, null=False, blank=True)
 
-    
+
     diagnostic_delay = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_se = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_ci_lower = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_ci_upper = models.FloatField(null=True, blank=False)
-    
+
     diagnostic_delay_median = models.FloatField(null=True, blank=False)
     diagnostic_delay_median_se = models.FloatField(null=True, blank=False)
     diagnostic_delay_median_ci_lower = models.FloatField(null=True, blank=False)
     diagnostic_delay_median_ci_upper = models.FloatField(null=True, blank=False)
     diagnostic_delay_range = models.CharField(max_length=255, null=True, blank=True)
     diagnostic_delay_iqr = models.CharField(max_length=255, null=True, blank=True)
-    
+
     history = HistoricalRecords()
 
     def __str__(self):

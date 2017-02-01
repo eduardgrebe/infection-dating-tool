@@ -33,7 +33,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
         super(TestsAndPropertiesFileHandler, self).__init__(upload_file)
 
         self.registered_columns = [
-            'id',
+            'test_id',
             'test_name',
             'test_category',
             'estimate_label',
@@ -61,18 +61,11 @@ class TestsAndPropertiesFileHandler(FileHandler):
                     if not row_dict:
                         continue
 
-                    if row_dict['id']:
-                        try:
-                            test=OutsideEddiDiagnosticTest.objects.get(pk=row_dict['id'])
-                            test.name=row_dict['test_name']
-                        except OutsideEddiDiagnosticTest.DoesNotExist:
-                            error_msg += 'A test for id %s does not exist.\n' %row_dict['id']
-                            raise Exception(error_msg)
-                    else:
-                        try:
-                            test=OutsideEddiDiagnosticTest.objects.get(name=row_dict['test_name'], user__isnull=True)
-                        except OutsideEddiDiagnosticTest.DoesNotExist:
-                            test=OutsideEddiDiagnosticTest.objects.create(name=row_dict['test_name'])
+                    try:
+                        test=OutsideEddiDiagnosticTest.objects.get(pk=row_dict['test_id'], user__isnull=True)
+                        test.name = row_dict['test_name']
+                    except OutsideEddiDiagnosticTest.DoesNotExist:
+                        test=OutsideEddiDiagnosticTest.objects.create(pk=row_dict['test_id'], name=row_dict['test_name'])
 
                     test.category = CATEGORIES[row_dict['test_category']]
                     test.save()
@@ -105,6 +98,6 @@ class TestsAndPropertiesFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                return 0, 1
+                return e
 
         return errors
