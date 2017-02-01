@@ -592,12 +592,12 @@ edsc_reported - remove field and from calculation, results, etc
 drop recalculate
 ** eddi help page
 ** eddi finishing touches
-failed file uploads. produce a better error message system
-character size too large and failing was an issue. produce a clear human
-readable error message for the user to be able to fix the issue
+# failed file uploads. produce a better error message system
+# character size too large and failing was an issue. produce a clear human
+# readable error message for the user to be able to fix the issue
 
-check properties import. does it update when name changes?
-assign ids for tests and properties from the file rather than django
+# check properties import. does it update when name changes?
+# assign ids for tests and properties from the file rather than django
 possibly add a delete option?
 
 ** volumes
