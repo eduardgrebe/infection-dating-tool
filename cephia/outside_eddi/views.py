@@ -772,12 +772,14 @@ def update_adjusted_dates(user, data_file):
         ).distinct() )
         
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
-        test_history_dates = list( file_test_history.values_list('test_code', 'test_date') )
-        dates_means = dict( (v[0], (v[1], int(map_property_means[v[0]]))) for v in test_history_dates )
+        test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
+
+        dates_means = dict( (v[2], (v[1], int(map_property_means[v[0]]))) for v in test_history_dates )
         
         for test_history in file_test_history:
-            test_code = test_history.test_code
-            test_date = dates_means[test_code][0]
-            diagnostic_delay = dates_means[test_code][1]
+            dict_values = dates_means[test_history.id]
+            # test_code = test_history.test_code
+            test_date = dict_values[0]
+            diagnostic_delay = dict_values[1]
             test_history.adjusted_date = test_date - relativedelta(days=diagnostic_delay)
             test_history.save()
