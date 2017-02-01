@@ -150,16 +150,22 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             if not errors:
                 uploaded_file.user = user
                 uploaded_file.save()
-                uploaded_file = save_file_data(uploaded_file.pk, user)
+                with transaction.atomic():
+                    saving_errors, uploaded_file = save_file_data(uploaded_file.pk, user)
 
-                if uploaded_file.message:
-                    messages.info(request, uploaded_file.message)
-                    uploaded_file.state = 'error'
-                    uploaded_file.save()
-                elif uploaded_file.state == 'needs_mapping':
-                    messages.info(request, 'Please provide mapping for your file')
+                if saving_errors:
+                    uploaded_file.delete()
+                    for error in saving_errors:
+                        messages.info(request, error)
+                        messages.info(request, 'Your file was unable to save so it was not uploaded')
+                    # messages.info(request, uploaded_file.message)
+                    # uploaded_file.state = 'error'
+                    # uploaded_file.save()
+                elif uploaded_file.state == 'needs_mapping' or uploaded_file.state == 'mapped':
+                    if uploaded_file.state == 'needs_mapping':
+                        messages.info(request, 'Please provide mapping for your file')
+                    messages.info(request, u"Your file was uploaded successfully" )
                 
-                messages.info(request, u"Your file was uploaded successfully" )
             else:
                 uploaded_file.delete()
                 for error in errors:
@@ -726,11 +732,12 @@ def check_mapping_details(mapping, user, data_file):
 
 def save_file_data(file_id, user):
     data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    OutsideEddiFileHandler(data_file).save_data(user)
-    mapping = data_file.create_mapping(user)
-    check_mapping_details(mapping, user, data_file)
+    errors = OutsideEddiFileHandler(data_file).save_data(user)
+    if not errors:
+        mapping = data_file.create_mapping(user)
+        check_mapping_details(mapping, user, data_file)
 
-    return data_file
+    return errors, data_file
 
 
 def validate_mapping(file_id, user):

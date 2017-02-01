@@ -540,3 +540,66 @@ return button on register screen not working? - this is working for me, may be a
 Eduard Grebe: Actually, it seems to work, but when I tried to download all evaluation panel results in one go (would be a useful file to have), it gave an internal server error
 [1:45:15 PM] Eduard Grebe: Is there any way of enhancing the stability of that feature so that it can produce the download file without an issue?
 [1:45:25 PM] Eduard Grebe: For example by sending it off to celery
+* notes from meeting 01/02
+** separating eddi tool
+url name should include incidence-estimation.org. possibly tools. ...
+possibly have a domain for all their tools to sit on. i.e. shiny, eddi tool
+
+get it to a point when it can be migrated to another server if needed.
+
+remove 'outside_eddi' from code and other out of date names.
+make naming (including db_table names) consistant
+remove/cleanup out of date code.
+
+start separating db tables so that this can be done more easily (separate user tables)
+and clean up table names
+
+management command(s)
+
+** eddi names
+url, etc change from cephia infection to just infection
+rename app - infection_dating_tool - idt for short
+
+drop study
+
+IDTDiagnosticTestHistory
+IDTDiagnosticTest
+IDTTestPropertyEstimate
+IDTTestPropertyMapping
+IDTFileInfo
+IDTSubject
+IDTUser
+
+table names
+idt_diagnostic_test_history
+idt_diagnostic_tests
+idt_test_property_estimates
+idt_test_property_mapping
+idt_file_info
+idt_subjects
+idt_users
+
+field names
+drop all historical records
+test_history - drop ignore
+
+rename active_property and is_default on property estimate
+
+task_id? - file info
+
+subject:
+edsc_reported - remove field and from calculation, results, etc
+drop recalculate
+** eddi help page
+** eddi finishing touches
+failed file uploads. produce a better error message system
+character size too large and failing was an issue. produce a clear human
+readable error message for the user to be able to fix the issue
+
+check properties import. does it update when name changes?
+assign ids for tests and properties from the file rather than django
+possibly add a delete option?
+
+** volumes
+** panel memberships
+** server memory/file downloads

@@ -48,8 +48,9 @@ class OutsideEddiFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
-                self.upload_file.save()
+                # self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                # self.upload_file.save()
+                errors.append("row " + str(row_num) + ": %s" %e)
                 return errors
 
         return errors
@@ -58,6 +59,7 @@ class OutsideEddiFileHandler(FileHandler):
     def save_data(self, user):
         pos_results = ('positive', 'pos', '+')
         neg_results = ('negative', 'neg', '-')
+        errors = []
         
         for row_num in range(self.num_rows):
             try:
@@ -90,9 +92,10 @@ class OutsideEddiFileHandler(FileHandler):
 
             except Exception, e:
                 logger.exception(e)
-                self.upload_file.message = "row " + str(row_num) + ": " + e.message
-                self.upload_file.save()
-                return 0, 1
+                # self.upload_file.message = "row " + str(row_num) + ": " + e.message
+                # self.upload_file.save()
+                errors.append("row " + str(row_num) + ": %s" %e)
+                return errors
 
 
 def validate_date(date_text):
