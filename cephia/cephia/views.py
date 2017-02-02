@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def cephia_login_required(login_url=None):
     return user_passes_test(
-        lambda u: u.is_authenticated() and not u.groups.filter(name='Outside Eddi Users').exists(),
+        lambda u: u.is_authenticated() and not u.groups.filter(name='Infection Dating Tool Users').exists(),
         login_url=login_url,
     )
 
