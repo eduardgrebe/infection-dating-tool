@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404, render_to_resp
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
 from forms import (
-    EddiUserCreationForm, TestHistoryFileUploadForm, StudyForm, TestPropertyMappingFormSet,
+    IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm
@@ -18,14 +18,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login, get_user_model
 from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
-from file_handlers.outside_eddi_test_history_file_handler import OutsideEddiFileHandler
-from file_handlers.outside_eddi_test_and_properties_file_handler import TestsAndPropertiesFileHandler
+from file_handlers.idt_test_history_file_handler import IDTFileHandler
+from file_handlers.idt_test_and_properties_file_handler import TestsAndPropertiesFileHandler
 from cephia.models import CephiaUser
 from user_management.forms import UserPasswordForm
 from models import (
-    Study, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate,
-    TestPropertyMapping, OutsideEddiFileInfo, OutsideEddiDiagnosticTestHistory,
-    OutsideEddiSubject
+    IDTDiagnosticTest, IDTTestPropertyEstimate,
+    TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
+    IDTSubject
     )
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
@@ -43,6 +43,21 @@ import os
 from django.core.mail import send_mail
 from collections import OrderedDict
 
+CATEGORIES = (
+    ('western_blot', 'Western blot'),
+    ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+    ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+    ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+    ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+    ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+    ('p24_antigen', 'p24 Antigen'),
+    ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+    ('4th_gen_rapid', '4th Gen Rapid Test'),
+    ('viral_load', 'Viral Load'),
+    ('dpp', 'DPP'),
+    ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+    ('No category', 'No category'),
+)
 
 def outside_eddi_login_required(login_url=None):
     return user_passes_test(
@@ -56,9 +71,7 @@ def home(request, file_id=None, template="outside_eddi/home.html"):
     context = {}
 
     user = request.user.id
-    studies = Study.objects.filter(user__id=request.user.id)
 
-    context['studies'] = studies
     context['outside_eddi'] = True
 
     return render(request, template, context)
@@ -101,14 +114,14 @@ def outside_eddi_logout(request, login_url=None, current_app=None, extra_context
 @csrf_exempt
 def outside_eddi_user_registration(request, template='outside_eddi/user_registration.html'):
     context = {}
-    form = EddiUserCreationForm(request.POST or None)
+    form = IDTUserCreationForm(request.POST or None)
     
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
             user.send_registration_notification()
 
-            # tests = OutsideEddiDiagnosticTest.objects.all()
+            # tests = IDTDiagnosticTest.objects.all()
 
             # if not tests:
             #     add_tests = _copy_diagnostic_tests()
@@ -146,7 +159,7 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
             uploaded_file.save()
 
             errors = []
-            errors = OutsideEddiFileHandler(uploaded_file).validate()
+            errors = IDTFileHandler(uploaded_file).validate()
             if not errors:
                 uploaded_file.user = user
                 uploaded_file.save()
@@ -179,50 +192,9 @@ def data_files(request, file_id=None, template="outside_eddi/data_files.html"):
 
     context['data_files_page'] = True
     context['form'] = form
-    context['file_info_data'] = OutsideEddiFileInfo.objects.filter(user=user, deleted=False).order_by("-created")
+    context['file_info_data'] = IDTFileInfo.objects.filter(user=user, deleted=False).order_by("-created")
 
     return render(request, template, context)
-
-
-@outside_eddi_login_required(login_url='outside_eddi:login')
-def edit_study(request, study_id=None, template="outside_eddi/manage_studies.html"):
-    context = {}
-
-    if study_id is not None:
-        study = get_object_or_404(Study, pk=study_id)
-        form = StudyForm(request.user, request.POST or None, instance=study)
-    else:
-        study = None
-        form = StudyForm(request.user, request.POST or None)
-
-    if request.method == 'POST' and form.is_valid():
-        study = form.save(request.user)
-        if study_id:
-            messages.info(request, u"Your study, %s was updated successfully" % study.name )
-        else:
-            messages.info(request, u"Your study, %s was created successfully" % study.name )
-        return redirect('outside_eddi:edit_study', study_id=study.pk)
-
-    context['form'] = form
-    context['study'] = study
-
-    return render(request, template, context)
-
-CATEGORIES = (
-    ('western_blot', 'Western blot'),
-    ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
-    ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
-    ('2nd_gen_rapid', '2nd Gen Rapid Test'),
-    ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
-    ('3rd_gen_rapid', '3rd Gen Rapid Test'),
-    ('p24_antigen', 'p24 Antigen'),
-    ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
-    ('4th_gen_rapid', '4th Gen Rapid Test'),
-    ('viral_load', 'Viral Load'),
-    ('dpp', 'DPP'),
-    ('immunofluorescence_assay', 'Immunofluorescence Assay'),
-    ('No category', 'No category'),
-)
 
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
@@ -230,8 +202,8 @@ def tests(request, file_id=None, template="outside_eddi/tests.html"):
     context = {}
     user = request.user
 
-    user_tests = OutsideEddiDiagnosticTest.objects.filter(user=user).order_by('name')
-    global_tests = OutsideEddiDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
+    user_tests = IDTDiagnosticTest.objects.filter(user=user).order_by('name')
+    global_tests = IDTDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
 
     global_tests_dict = OrderedDict()
 
@@ -287,7 +259,7 @@ def create_test(request, template='outside_eddi/create_test_form.html', context=
 def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', context=None):
     context = context or {}
     user = request.user
-    test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+    test = IDTDiagnosticTest.objects.get(pk=test_id)
     user_default_property_form = UserTestPropertyDefaultForm(request.POST or None)
 
     if test.user:
@@ -298,7 +270,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
     else:
         form = GlobalTestForm(request.POST or None, instance=test)
         form.fields['category'].initial = test.category
-        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['properties'] = properties
 
     user_estimates_formset = TestPropertyEstimateFormSet(
@@ -318,7 +290,7 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
             default_property_pk = request.POST['default_property']
             user_test_properties = test_instance.properties.all().is_default = False
             if default_property_pk:
-                default_property = OutsideEddiTestPropertyEstimate.objects.get(pk=default_property_pk)
+                default_property = IDTTestPropertyEstimate.objects.get(pk=default_property_pk)
             else:
                 default_property = test_instance.properties.all().order_by('-pk').first()
             default_property.is_default = True
@@ -342,11 +314,11 @@ def edit_test(request, test_id=None, template='outside_eddi/edit_test.html', con
 def results(request, file_id=None, template="outside_eddi/results.html"):
     context = {}
 
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+    data_file = IDTFileInfo.objects.get(pk=file_id)
+    test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file)
 
     test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
-    subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
+    subjects = IDTSubject.objects.filter(pk__in=test_history_subjects)
 
     context['file'] = data_file
     context['subjects'] = subjects
@@ -356,11 +328,11 @@ def results(request, file_id=None, template="outside_eddi/results.html"):
 
 @outside_eddi_login_required(login_url='outside_eddi:login')
 def download_results(request, file_id=None, context=None):
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+    data_file = IDTFileInfo.objects.get(pk=file_id)
+    test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file)
 
     test_history_subjects = list(test_history.all().values_list('subject', flat=True).distinct())
-    subjects = OutsideEddiSubject.objects.filter(pk__in=test_history_subjects)
+    subjects = IDTSubject.objects.filter(pk__in=test_history_subjects)
 
     download = ResultDownload(subjects)
 
@@ -383,7 +355,7 @@ def test_mapping(request, file_id=None, template="outside_eddi/test_mapping.html
     js_is_file = 'false'
 
     if file_id:
-        data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+        data_file = IDTFileInfo.objects.get(pk=file_id)
         is_file = True
         js_is_file = 'true'
         
@@ -420,14 +392,14 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
     map_code = request.GET.get('map_code')
     
     if test_id:
-        test_active_property = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.filter(is_default=True).first()
+        test_active_property = IDTDiagnosticTest.objects.get(pk=test_id).properties.filter(is_default=True).first()
         form = TestPropertyMappingForm(request.POST or None,
                                        initial={'test': test_id,
                                                 'code': map_code,
                                                 'test_property': test_active_property}
         )
-        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
-        test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        test = IDTDiagnosticTest.objects.get(pk=test_id)
 
         user_estimates_formset = TestPropertyEstimateFormSet(
             request.POST or None,
@@ -445,7 +417,7 @@ def create_test_mapping(request, map_code=None, test_id=None, template='outside_
 
     form.set_context_data({'user': request.user})
 
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+    choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
 
     form.fields['test'] = choices
 
@@ -492,7 +464,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
     mapping = TestPropertyMapping.objects.get(pk=map_id)
     if test_id:
         map_code = request.GET.get('map_code')
-        test = OutsideEddiDiagnosticTest.objects.get(pk=test_id)
+        test = IDTDiagnosticTest.objects.get(pk=test_id)
         if mapping.test == test and mapping.test_property:
             test_active_property = mapping.test_property
         else:
@@ -504,7 +476,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
                                                 'code': map_code,
                                                 'test_property': test_active_property}
         )
-        properties = OutsideEddiDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+        properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         
         context['test'] = test
 
@@ -526,11 +498,11 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='ou
             user_estimates_formset = TestPropertyEstimateFormSet(
                 request.POST or None
             )
-            properties = OutsideEddiTestPropertyEstimate.objects.none()
+            properties = IDTTestPropertyEstimate.objects.none()
 
     
     form.set_context_data({'user': request.user})
-    choices = GroupedModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+    choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
     form.fields['test'] = choices
     if is_file:
         form.fields['code'].widget.attrs['readonly'] = True
@@ -576,8 +548,8 @@ def help_page(request, file_id=None, template="outside_eddi/help.html"):
 def delete_data_file(request, file_id, context=None):
     context = context or {}
 
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    data_file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file).delete()
+    data_file = IDTFileInfo.objects.get(pk=file_id)
+    data_file_test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file).delete()
     data_file.deleted = True
     data_file.save()
     
@@ -594,15 +566,15 @@ def process_data_file(request, file_id, context=None):
 
     if data_file.state == 'mapped':
         subject_pks = list(data_file.test_history.all().values_list('subject', flat=True).distinct())
-        subjects = OutsideEddiSubject.objects.filter(pk__in=subject_pks)
+        subjects = IDTSubject.objects.filter(pk__in=subject_pks)
         update_adjusted_dates(user, data_file)
         
-        lp_ddis = OutsideEddiDiagnosticTestHistory.objects.filter(test_result='Positive')
+        lp_ddis = IDTDiagnosticTestHistory.objects.filter(test_result='Positive')
         lp_ddis = lp_ddis.values('subject')
         lp_ddis = lp_ddis.annotate(earliest_positive=Max('adjusted_date'))
         lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
 
-        ep_ddis = OutsideEddiDiagnosticTestHistory.objects.filter(test_result='Negative')
+        ep_ddis = IDTDiagnosticTestHistory.objects.filter(test_result='Negative')
         ep_ddis = ep_ddis.values('subject')
         ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
         ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
@@ -657,7 +629,7 @@ def _copy_diagnostic_tests():
     tests = DiagnosticTest.objects.all()
 
     for test in tests:
-        outside_eddi_test = OutsideEddiDiagnosticTest.objects.create(name = test.name,
+        outside_eddi_test = IDTDiagnosticTest.objects.create(name = test.name,
                                                                      description = test.description)
 
 def _copy_test_properties():
@@ -666,9 +638,9 @@ def _copy_test_properties():
 
     for prop in test_properties:
         test_name = prop.test.name
-        test = OutsideEddiDiagnosticTest.objects.filter(name=test_name).first()
+        test = IDTDiagnosticTest.objects.filter(name=test_name).first()
 
-        outside_eddi_test_property = OutsideEddiTestPropertyEstimate.objects.create(test = test,
+        outside_eddi_test_property = IDTTestPropertyEstimate.objects.create(test = test,
                                                                                     estimate_label=prop.estimate_label,
                                                                                     estimate_type=prop.estimate_type,
                                                                                     mean_diagnostic_delay_days=prop.mean_diagnostic_delay_days,
@@ -690,7 +662,7 @@ def test_properties_mapping(request, test):
 
     formset = TestPropertyEstimateFormSet(
         request.POST or None,
-        queryset=OutsideEddiTestPropertyEstimate.objects.filter(
+        queryset=IDTTestPropertyEstimate.objects.filter(
             Q(user=user) | Q(user=None),
             test__pk=test.pk
         ),
@@ -701,7 +673,7 @@ def test_properties_mapping(request, test):
 
 
 def set_active_property(test):
-    properties = OutsideEddiTestPropertyEstimate.objects.filter(test=test)
+    properties = IDTTestPropertyEstimate.objects.filter(test=test)
     for prop in properties:
         prop.active_property = False
         if prop.is_default == True:
@@ -731,8 +703,8 @@ def check_mapping_details(mapping, user, data_file):
 
 
 def save_file_data(file_id, user):
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
-    errors = OutsideEddiFileHandler(data_file).save_data(user)
+    data_file = IDTFileInfo.objects.get(pk=file_id)
+    errors = IDTFileHandler(data_file).save_data(user)
     if not errors:
         mapping = data_file.create_mapping(user)
         check_mapping_details(mapping, user, data_file)
@@ -741,7 +713,7 @@ def save_file_data(file_id, user):
 
 
 def validate_mapping(file_id, user):
-    data_file = OutsideEddiFileInfo.objects.get(pk=file_id)
+    data_file = IDTFileInfo.objects.get(pk=file_id)
     codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
     mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
@@ -763,7 +735,7 @@ def validate_mapping(file_id, user):
 
 def update_adjusted_dates(user, data_file):
     with transaction.atomic():
-        file_test_history = OutsideEddiDiagnosticTestHistory.objects.filter(data_file=data_file)
+        file_test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file)
         codes = list( file_test_history.all().values_list('test_code', flat=True).distinct() )
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
