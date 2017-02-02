@@ -451,17 +451,17 @@ class Subject(models.Model):
     subject_eddi = ProtectedForeignKey(SubjectEDDI, null=True, blank=True)
     subject_eddi_status = ProtectedForeignKey(SubjectEDDIStatus, null=True, blank=True)
     history = HistoricalRecords()
-    # subject_label_blinded = models.CharField(max_length=25, null=False, blank=True, default=blinded_label_generator, unique=True, db_index=True)
+    subject_label_blinded = models.CharField(max_length=25, null=True, blank=True, unique=True, db_index=True)
 
     def __unicode__(self):
         return self.subject_label
 
-    # def save(self):
-    #     if not self.subject_label_blinded:
-    #         self.subject_label_blinded = blinded_label_generator()
-    #         while Subject.objects.filter(subject_label_blinded=self.subject_label_blinded).exists():
-    #             self.subject_label_blinded = blinded_label_generator()
-    #     super(Subject, self).save()
+    def save(self):
+        if not self.subject_label_blinded:
+            self.subject_label_blinded = blinded_label_generator()
+            while Subject.objects.filter(subject_label_blinded=self.subject_label_blinded).exists():
+                self.subject_label_blinded = blinded_label_generator()
+        super(Subject, self).save()
 
     @property
     def earliest_visit_date(self):
