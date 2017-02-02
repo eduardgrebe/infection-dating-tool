@@ -20,7 +20,7 @@ class IDTDiagnosticTestHistory(models.Model):
     class Meta:
         db_table = "idt_diagnostic_test_history"
 
-    subject = ProtectedForeignKey('IDTSubject', null=True, blank=False, related_name='outside_eddi_test_history')
+    subject = ProtectedForeignKey('IDTSubject', null=True, blank=False, related_name='idt_test_history')
     data_file = ProtectedForeignKey('IDTFileInfo', null=False, blank=False, related_name='test_history')
     test_code = models.CharField(max_length=255, null=True, blank=True)
     test_date = models.DateField(null=True, blank=False)
