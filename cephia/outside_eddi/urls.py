@@ -38,9 +38,6 @@ urlpatterns = [
     
     url(r'^test_mapping/(?P<file_id>\d+)/$', views.test_mapping, name='test_mapping'),
     
-    url(r'^create_study/$', views.edit_study, name='create_study'),
-    url(r'^edit_study/(?P<study_id>\d+)/$', views.edit_study, name='edit_study'),
-    
     url('^data_files/(?P<file_id>\d+)/delete', views.delete_data_file, name='delete_data_file'),
     url('^data_files/(?P<file_id>\d+)/process_data', views.process_data_file, name='process_data_file'),
     
