@@ -15,6 +15,7 @@ class SpecimenDownload(object):
             "specimen_label",
             "parent_label",
             'subject.id',
+            'subject.subject_label_blinded',
             'subject.subject_label',
             'visit.id',
             "visit.visit_date",

@@ -69,6 +69,7 @@ class ResultDownload(object):
 
         elif filter_by_visit:
             self.common_columns = [ 'specimen.visit.subject.id',
+                                    'specimen.visit.subject.subject_label_blinded',
                                     'specimen.visit.id',
                                     "specimen.id",
                                     "specimen.specimen_label",
@@ -106,6 +107,7 @@ class ResultDownload(object):
             'specimen.visit.id',
             'specimen.visit.subject.subject_label',
             'specimen.visit.subject.id',
+            'specimen.visit.subject.subject_label_blinded',
             "specimen.source_study.name",
             "specimen.visit.visit_date",
             "specimen.reported_draw_date",
@@ -169,6 +171,7 @@ class ResultDownload(object):
         if filter_by_visit:
             self.clinical_columns.remove('specimen.visit.id')
             self.clinical_columns.remove('specimen.visit.subject.id')
+            self.clinical_columns.remove('specimen.visit.subject.subject_label_blinded',)
 
         self.prepare_headers()
         self.prepare_content()
