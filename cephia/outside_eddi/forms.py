@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory
-from models import Study, TestPropertyMapping, OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate, OutsideEddiFileInfo
+from models import TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate, IDTFileInfo
 from django.db.models import Q
 
 from itertools import groupby
@@ -24,7 +24,7 @@ class BaseModelForm(ModelForm):
     def get_context_data(self, context):
         return self.context
 
-class EddiUserCreationForm(UserCreationForm):
+class IDTUserCreationForm(UserCreationForm):
     fields = ['username', 'email']
 
     def save(self, commit=True):
@@ -39,41 +39,12 @@ class EddiUserCreationForm(UserCreationForm):
 
 class TestHistoryFileUploadForm(BaseModelForm):
     class Meta:
-        model = OutsideEddiFileInfo
+        model = IDTFileInfo
         fields = ['data_file']
 
         
-
-class StudyForm(BaseModelForm):
-    class Meta:
-        model = Study
-        fields = ['name']
-
-    def __init__(self, user, *args, **kwargs):
-        self.user = user
-        super(StudyForm, self).__init__(*args, **kwargs)
-
-    def clean_name(self):
-        name = self.cleaned_data['name']
-        studies = Study.objects.filter(user=self.user, name=name)
-
-        if self.instance and self.instance.pk:
-            studies = studies.exclude(pk=self.instance.pk)
-
-        if studies.exists():
-            raise forms.ValidationError(u"You already created a study with the name %s." % name)
-        return name
-        
-    def save(self, user, commit=True):
-        
-        study = super(StudyForm, self).save(False)
-        study.user = user
-        study.save()
-        
-        return study
-
 class TestPropertyMappingForm(BaseModelForm):
-    test = forms.ModelChoiceField(queryset=OutsideEddiDiagnosticTest.objects.all(), empty_label=("select test)"))
+    test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), empty_label=("select test)"))
     
     def clean_code(self):
         code = self.cleaned_data.get('code')
@@ -94,7 +65,7 @@ class TestPropertyMappingForm(BaseModelForm):
         existing = self.cleaned_data['test_property']
         user = self.context['user']
 
-        instance = OutsideEddiTestPropertyEstimate.objects.filter(Q(user__isnull=True) | Q(user=user))
+        instance = IDTTestPropertyEstimate.objects.filter(Q(user__isnull=True) | Q(user=user))
 
         if existing:
             return instance.filter(pk=existing.pk).first()
@@ -114,22 +85,22 @@ class TestPropertyMappingForm(BaseModelForm):
         
         
 
-class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
+class TestPropertyEstimateForm(BaseModelForm):
     active_property = forms.BooleanField(label="", required=False)
 
     class Meta:
         fields = (
-            'is_default', 'estimate_label',
+            'global_default', 'estimate_label',
             'diagnostic_delay',
             'comment'
         )
-        model = OutsideEddiTestPropertyEstimate
+        model = IDTTestPropertyEstimate
         widgets = {
-            'is_default': forms.HiddenInput()
+            'global_default': forms.HiddenInput()
         }
 
     def __init__(self, *args, **kwargs):
-        super(OutsideEddiTestPropertyEstimateForm, self).__init__(*args, **kwargs)
+        super(IDTTestPropertyEstimateForm, self).__init__(*args, **kwargs)
         if self.instance.pk and not self.instance.user:
             self.fields['estimate_label'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
@@ -144,7 +115,7 @@ class OutsideEddiTestPropertyEstimateForm(BaseModelForm):
 class GlobalTestForm(BaseModelForm):
 
     class Meta:
-        model = OutsideEddiDiagnosticTest
+        model = IDTDiagnosticTest
         fields = ['name', 'category']
 
     def __init__(self, *args, **kwargs):
@@ -158,7 +129,7 @@ class GlobalTestForm(BaseModelForm):
 class UserTestForm(BaseModelForm):
 
     class Meta:
-        model = OutsideEddiDiagnosticTest
+        model = IDTDiagnosticTest
         fields = ['name', 'category']
 
 
@@ -179,23 +150,23 @@ DataFileTestPropertyMappingFormSet = modelformset_factory(
 )
 
 TestPropertyEstimateFormSet = modelformset_factory(
-    OutsideEddiTestPropertyEstimate,
-    form=OutsideEddiTestPropertyEstimateForm
+    IDTTestPropertyEstimate,
+    form=TestPropertyEstimateForm
 )
 
 UserTestPropertyEstimateFormSet = modelformset_factory(
-    OutsideEddiTestPropertyEstimate,
-    form=OutsideEddiTestPropertyEstimateForm
+    IDTTestPropertyEstimate,
+    form=TestPropertyEstimateForm
 )
     
 GlobalTestFormSet = modelformset_factory(
-    OutsideEddiDiagnosticTest,
+    IDTDiagnosticTest,
     form=GlobalTestForm,
     extra=0
 )
 
 UserTestFormSet = modelformset_factory(
-    OutsideEddiDiagnosticTest,
+    IDTDiagnosticTest,
     form=UserTestForm
 )
 
