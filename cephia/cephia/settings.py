@@ -73,7 +73,7 @@ XS_SHARING_ALLOWED_ORIGINS = '*'
 XS_SHARING_ALLOWED_METHODS = ['GET','OPTIONS']
 
 # Application definition
-JS_REVERSE_INCLUDE_ONLY_NAMESPACES = ['outside_eddi']
+JS_REVERSE_INCLUDE_ONLY_NAMESPACES = ['infection_dating_tool']
 
 INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
@@ -93,7 +93,7 @@ INSTALLED_APPS = (
     'user_management',
     'diagnostics',
     'assay',
-    'outside_eddi',
+    'infection_dating_tool',
     'djcelery',
     'django_js_reverse',
     'mailqueue',

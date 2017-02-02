@@ -1,0 +1,63 @@
+{% load bootstrap3 %}
+
+<div class="modal-dialog modal-lg" role="document" >
+  <form method="post" action="{% url 'infection_dating_tool:edit_test' test.pk %}">{% csrf_token %}
+    {{ user_estimates_formset.management_form }}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title">Edit Test</h3>
+      </div>
+      <div class="modal-body">
+        <h4>Test</h4>
+        {% bootstrap_form form %}
+        {% bootstrap_form user_default_property_form show_label=False %}
+
+        <h4>Test property estimates</h4>
+        {% if not test.user %}
+          <p style="color:#990033;">System default estimates are shown in red</p>
+        {% endif %}
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              {% if test.user %}
+                <th>Default</th>
+              {% endif %}
+              <th>Estimate label</th>
+              <th>Diagnostic delay</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for property in properties %}
+              <tr {% if property.is_default %}style="color:#990033;"{% endif %}>
+                <td>{{ property.estimate_label }}</td>
+                <td>{{ property.diagnostic_delay }}</td>
+                <td>{{ property.comment }}</td>
+              </tr>
+            {% endfor %}
+
+            {% for formset_form in user_estimates_formset %}
+              {% with property=formset_form.instance %}
+                <tr>
+                  {{ formset_form.id }}
+                  {% if test.user %}
+                    <td><input {% ifequal property.pk default_property %}checked{% endifequal %} name="{{ user_default_property_form.default_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
+                  {% endif %}
+                  <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.diagnostic_delay show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
+                </tr>
+              {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary js-save-mapping" value="Save test" />
+      </div>
+    </div>
+  </form>
+</div>

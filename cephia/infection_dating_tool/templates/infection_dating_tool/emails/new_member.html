@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Untitled Document</title>
+    <style type="text/css">
+     body {
+         background-color: #f7f7f7;
+         margin-left: 20px;
+         margin-top: 20px;
+         margin-right: 20px;
+         margin-bottom: 20px;
+     }
+    </style>
+  </head>
+
+  <body>
+    <table width="700" border="0" align="center" cellpadding="0" cellspacing="0" style="border:1px solid #eaeaea;font-family:arial;font-size:11px;letter-spacing:1px;color:#333">
+      <tbody>
+        <tr>
+          <td bgcolor="#fff">
+            <table width="700" border="0" align="center" cellpadding="0" cellspacing="0">
+              <tbody>
+
+                {% include 'infection_dating_tool/emails/email_header.html' %}
+
+                <tr>
+                  <td bgcolor="#fff">
+                    <table width="500" border="0" align="center" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                          <td style="text-align:center;padding:15px 0 20px">
+                            <p style="font-size:22px;font-weight:bold">Welcome to the Cephia Infection Dating Tool</p>
+                            
+                            <p><a style="color: #9b9b9b; text-decoration: underline" href="{{ link_home }}"><font color="#9b9b9b">Follow this link to complete your registration</font></a></p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
+

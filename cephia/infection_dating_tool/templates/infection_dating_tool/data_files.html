@@ -1,0 +1,60 @@
+{% extends 'infection_dating_tool/base.html' %}
+{% load bootstrap3 %}
+
+{% block extrajs%}
+  <script src="http://malsup.github.com/jquery.form.js"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="container_nav">
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      {{ form }}
+      <button class="btn btn-primary" style="margin-top: 3px;">Upload</button>
+    </form>
+
+    <div>
+    <table class="table table-condensed table-striped">
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date Uploaded</th>
+          <th>File State</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for obj in file_info_data %}
+          <tr>
+            <td>{{obj.file_name}}</td>
+	          <td>{{obj.created}}</td>
+            <td>{{obj.state}}</td>
+            {% if obj.state == 'needs_mapping' or obj.state == 'mapped' or obj.state == 'processed' %}
+              <td><a href="{% url 'infection_dating_tool:test_mapping' obj.id %}" >Mapping</a></td>
+            {% else %}
+              <td></td>
+            {% endif %}
+            {% if obj.state == 'mapped' or obj.state == 'processed' %}
+              <td><a href="{% url 'infection_dating_tool:process_data_file' obj.id %}" >Process</a></td>
+            {% else %}
+              <td></td>
+            {% endif %}
+            {% if obj.state == 'processed' %}
+              <td><a href="{% url 'infection_dating_tool:results' obj.id %}" >View Results</a></td>
+            {% else %}
+              <td></td>
+            {% endif %}    
+            <td>
+		          <a href="{% url 'infection_dating_tool:delete_data_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file and all the related data?') ) { return false }" class="btn btn-danger" style="text-decoration:none;">Purge</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+{% endblock %}

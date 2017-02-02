@@ -1,0 +1,125 @@
+{% extends "infection_dating_tool/base.html" %}
+{% load bootstrap3 %}
+{% load js_reverse %}
+
+{% block extrajs%}
+  <script src="http://malsup.github.com/jquery.form.js"></script>
+  <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="container_nav">
+
+    <h2>Your tests</h2>
+    <button class="js-add-test btn btn-default" data-add-url="{% url 'infection_dating_tool:create_test' %}">Add a new test</button>
+    <table class="table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        {% for test in user_tests %}
+          <tr>
+            <td>
+              {{ test.name }}
+            </td>
+            <td>
+              {{ test.get_category_display }}
+            </td>
+            <td align="right">
+              <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
+                 data-edit-url="{% url 'infection_dating_tool:edit_test' test.pk %}">Edit</a>
+            </td>
+          </tr>
+        {% endfor %}
+        
+      </tbody>
+    </table>
+
+    <h2>Global tests</h2>
+    {% for category, tests in global_tests.items %}
+      {% if tests %}
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr>
+              <th><h3>{{ category }}</h3></th>
+              <th></th>
+            </tr>
+          </thead>
+          
+          <tbody>
+            {% for test in tests %}
+              <tr>
+                <td>
+                  {{ test.name }}
+                </td>
+                <td align="right">
+                  <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
+                     data-edit-url="{% url 'infection_dating_tool:edit_test' test.pk %}">Edit</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% endfor %}
+
+    <div class="modal fade" id="modal-add-test"></div>
+    <div class="modal fade" id="modal-edit-test"></div>
+
+    <script>
+     $('.js-edit-test').click(function(event) {
+         event.preventDefault();
+         var url = $(this).data('edit-url')
+         $.get(url).done(function(html) {
+             $('#modal-edit-test').html(html);
+             $('#modal-edit-test').modal();
+         });
+     })
+
+     $('#modal-edit-test').on('click', '.js-save-test', function(event) {
+         event.preventDefault();
+
+         var form = $(this).parents('form');
+         var post_data = form.serialize()
+         var modal = $(this).parents('.modal-dialog').parent()
+
+         $.post(form.attr('action'), post_data).done(function(html) {
+             if (html.success) {
+                 location.href = html.redirect_url
+             } else {
+                 modal.html(html)
+             }
+         });
+     });
+
+     $('.js-add-test').click(function() {
+         event.preventDefault();
+         var url = $(this).data('add-url')
+         $.get(url).done(function(html) {
+             $('#modal-add-test').html(html);
+             $('#modal-add-test').modal()
+         });
+     })
+
+     $('#modal-add-test').on('click', '.js-confirm-add-test', function(event) {
+         event.preventDefault();
+         var form = $('#modal-add-test').find('form');
+         post_data = form.serialize();
+         var that = this;
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.redirect_url) {
+                 location.href = resp.redirect_url
+             } else {
+                 $('#modal-add-test').html(resp)
+             }
+         })
+     })
+    </script>
+    
+  </div>
+{% endblock %}

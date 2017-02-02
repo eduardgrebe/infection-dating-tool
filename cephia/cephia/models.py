@@ -116,13 +116,13 @@ class CephiaUser(BaseUser):
         if not self.has_usable_password():
             CephiaUser.generate_password_reset_link(self)
             email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
-                                                    reverse('outside_eddi:finalise_user_account',
+                                                    reverse('infection_dating_tool:finalise_user_account',
                                                     kwargs={'token': self.password_reset_token}))
 
         queue_templated_email(request=None, context=email_context,
                               subject_template="Welcome to the Cephia Infection Dating Tool",
-                              text_template='outside_eddi/emails/signup.txt',
-                              html_template='outside_eddi/emails/new_member.html',
+                              text_template='infection_dating_tool/emails/signup.txt',
+                              html_template='infection_dating_tool/emails/new_member.html',
                               to_addresses=[self.email],
                               bcc_addresses=settings.BCC_EMAILS or [],
                               from_address=settings.FROM_EMAIL)

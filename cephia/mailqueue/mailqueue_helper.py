@@ -75,7 +75,7 @@ def queue_email(subject_content, text_content, html_content, to_addresses, from_
     #     to_address=",".join(to_addresses),
     #     bcc_address=",".join(bcc_addresses or []),
     #     from_address=from_address or settings.FROM_EMAIL,
-    #     app='outside_eddi',
+    #     app='infection_dating_tool',
     #     created=timezone.now()
     #     )
     # logger.debug(msg, msg.to_address)

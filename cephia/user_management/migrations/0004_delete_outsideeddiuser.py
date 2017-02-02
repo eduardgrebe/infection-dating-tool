@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_management', '0003_add_outside_eddi_group'),
+        ('user_management', '0003_add_infection_dating_tool_group'),
     ]
 
     operations = [

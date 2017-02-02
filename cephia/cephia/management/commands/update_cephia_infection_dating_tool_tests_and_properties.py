@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from outside_eddi.models import OutsideEddiDiagnosticTest, OutsideEddiTestPropertyEstimate
-from outside_eddi.file_handlers.outside_eddi_test_and_properties_file_handler import TestsAndPropertiesFileHandler
+from infection_dating_tool.models import IDTDiagnosticTest, IDTTestPropertyEstimate
+from infection_dating_tool.file_handlers.idt_test_and_properties_file_handler import TestsAndPropertiesFileHandler
 from django.db.models import F
 import logging
 from django.conf import settings
@@ -12,6 +12,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         base_dir = settings.BASE_DIR
-        uploaded_file = open("%s/outside_eddi/static/test_and_properties/Diagnostic Tests and Properties Public.csv" %base_dir, "rb")
+        uploaded_file = open("%s/infection_dating_tool/static/test_and_properties/Diagnostic Tests and Properties Public.csv" %base_dir, "rb")
         TestsAndPropertiesFileHandler(uploaded_file).import_data()
 

@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^reports/', include('reporting.urls', namespace='reporting')),
     url(r'^accounts/', include('user_management.urls', namespace='users')),
     url(r'^assay/', include('assay.urls', namespace='assay')),
-    url(r'^cephia_infection_dating_tool/', include('outside_eddi.urls', namespace='outside_eddi')),
+    url(r'^infection_dating_tool/', include('infection_dating_tool.urls', namespace='infection_dating_tool')),
     url(r'^diagnostics/', include('diagnostics.urls', namespace='diagnostics')),
     
     url(r'^countries/$', views.countries, name='countries'),

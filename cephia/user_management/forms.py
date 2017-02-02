@@ -196,8 +196,8 @@ class UserPasswordForm(ModelForm):
         user.is_active = True
         user.password_reset_token = None
         user.save()
-        outside_eddi_group = Group.objects.get(name='Outside Eddi Users')
-        outside_eddi_group.user_set.add(user)
+        infection_dating_tool_group = Group.objects.get(name='Infection Dating Tool Users')
+        infection_dating_tool_group.user_set.add(user)
         return user
 
     def get_user(self):
