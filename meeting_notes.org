@@ -547,9 +547,9 @@ possibly have a domain for all their tools to sit on. i.e. shiny, eddi tool
 
 get it to a point when it can be migrated to another server if needed.
 
-remove 'outside_eddi' from code and other out of date names.
-make naming (including db_table names) consistant
-remove/cleanup out of date code.
+# remove 'outside_eddi' from code and other out of date names.
+# make naming (including db_table names) consistant
+# remove/cleanup out of date code.
 
 start separating db tables so that this can be done more easily (separate user tables)
 and clean up table names
@@ -557,8 +557,8 @@ and clean up table names
 management command(s)
 
 ** eddi names
-url, etc change from cephia infection to just infection
-rename app - infection_dating_tool - idt for short
+# url, etc change from cephia infection to just infection
+# rename app - infection_dating_tool - idt for short
 
 # drop study
 

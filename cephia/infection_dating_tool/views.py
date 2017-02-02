@@ -20,13 +20,13 @@ from django.contrib.auth.views import logout as django_logout
 from django.contrib.auth.models import Group
 from file_handlers.idt_test_history_file_handler import IDTFileHandler
 from file_handlers.idt_test_and_properties_file_handler import TestsAndPropertiesFileHandler
-from cephia.models import CephiaUser
 from user_management.forms import UserPasswordForm
 from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
     IDTSubject
     )
+from cephia.models import CephiaUser
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 import os
 from django.conf import settings
-from cephia.models import CephiaUser
 from simple_history.models import HistoricalRecords
 from django.db import models
 from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
@@ -15,6 +14,8 @@ from django.contrib.auth.models import Group
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
+from user_management.models import BaseUser
+from cephia.models import CephiaUser
 
 class IDTDiagnosticTestHistory(models.Model):
     class Meta:
@@ -208,3 +209,42 @@ class IDTSubject(models.Model):
         self.edsc_days_difference=edsc_days_diff
         self.eddi = eddi
         self.save()
+
+
+# class IDTUser(BaseUser):
+#     class Meta:
+#         db_table = "idt_users"
+#         permissions = [
+#         ]
+    
+#     password_reset_token = models.CharField(max_length=200, blank=True, null=True, db_index=True)
+
+#     def __unicode__(self):
+#         return "%s" % (self.username)
+
+#     @classmethod
+#     def generate_password_reset_link(self, user):
+#         """ create an password authentication token for this user """
+#         token = str(uuid.uuid4()).replace("-","").replace("_","")
+#         user.password_reset_token = token
+#         user.save()
+
+#     def send_registration_notification(self):
+#         email_context = {}
+#         email_context['user'] = self.username
+#         email_context['link_home'] = settings.SITE_BASE_URL
+#         email_context = update_email_context(email_context)
+
+#         if not self.has_usable_password():
+#             IDTUser.generate_password_reset_link(self)
+#             email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
+#                                                     reverse('infection_dating_tool:finalise_user_account',
+#                                                     kwargs={'token': self.password_reset_token}))
+
+#         queue_templated_email(request=None, context=email_context,
+#                               subject_template="Welcome to the Cephia Infection Dating Tool",
+#                               text_template='infection_dating_tool/emails/signup.txt',
+#                               html_template='infection_dating_tool/emails/new_member.html',
+#                               to_addresses=[self.email],
+#                               bcc_addresses=settings.BCC_EMAILS or [],
+#                               from_address=settings.FROM_EMAIL)

@@ -909,8 +909,8 @@ class TransferOutRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_transfer_out_rows"
-        
-    specimen_label = models.CharField(max_length=255, null=True, blank=True) 
+
+    specimen_label = models.CharField(max_length=255, null=True, blank=True)
     number_of_containers = models.CharField(max_length=255, null=True, blank=True)
     specimen_type = models.CharField(max_length=255, null=True, blank=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
@@ -932,7 +932,7 @@ class AliquotRow(ImportedRow):
 
     class Meta:
         db_table = "cephia_aliquot_rows"
-        
+
     parent_label = models.CharField(max_length=255, null=True, blank=True, db_index=True) 
     aliquot_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     volume = models.CharField(max_length=255, null=True, blank=True)
