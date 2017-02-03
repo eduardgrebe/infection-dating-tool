@@ -51,7 +51,8 @@ SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
 SITE_BASE_URL = 'https://cephiadb.incidence-estimation.org/'
 BASE_URL = 'https://cephiadb.incidence-estimation.org'
-TOOLS_BASE_URL = 'https://tools.incidence-estimation.org/'
+TOOLS_SITE_BASE_URL = 'https://tools.incidence-estimation.org/'
+TOOLS_BASE_URL = 'https://tools.incidence-estimation.org'
 
 # used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
 URL_PREFIX = ''

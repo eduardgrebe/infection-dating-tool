@@ -121,12 +121,6 @@ def idt_user_registration(request, template='infection_dating_tool/user_registra
             user = form.save()
             user.send_registration_notification()
 
-            # tests = IDTDiagnosticTest.objects.all()
-
-            # if not tests:
-            #     add_tests = _copy_diagnostic_tests()
-            #     test_properties = _copy_test_properties()
-
             return redirect("registration_info")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
