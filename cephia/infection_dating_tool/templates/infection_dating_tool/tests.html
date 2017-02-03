@@ -11,7 +11,7 @@
   <div class="container_nav">
 
     <h2>Your tests</h2>
-    <button class="js-add-test btn btn-default" data-add-url="{% url 'infection_dating_tool:create_test' %}">Add a new test</button>
+    <button class="js-add-test btn btn-default" data-add-url="{% url 'create_test' %}">Add a new test</button>
     <table class="table table-condensed table-striped">
       <thead>
         <tr>
@@ -32,7 +32,7 @@
             </td>
             <td align="right">
               <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
-                 data-edit-url="{% url 'infection_dating_tool:edit_test' test.pk %}">Edit</a>
+                 data-edit-url="{% url 'edit_test' test.pk %}">Edit</a>
             </td>
           </tr>
         {% endfor %}
@@ -59,7 +59,7 @@
                 </td>
                 <td align="right">
                   <a data-toggle="modal" data-target="#modal-edit-test" class="btn btn-primary js-edit-test"
-                     data-edit-url="{% url 'infection_dating_tool:edit_test' test.pk %}">Edit</a>
+                     data-edit-url="{% url 'edit_test' test.pk %}">Edit</a>
                 </td>
               </tr>
             {% endfor %}

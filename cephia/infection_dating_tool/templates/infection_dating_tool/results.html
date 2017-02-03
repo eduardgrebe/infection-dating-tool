@@ -5,7 +5,7 @@
 {% block content %}
   <div class="container">
     <h3>These are your results for: {{ file.file_name }}</h3>
-    <a class="btn btn-primary" style="float:right;" href="{% url 'infection_dating_tool:download_results' file.pk %}">Download Results</a>
+    <a class="btn btn-primary" style="float:right;" href="{% url 'download_results' file.pk %}">Download Results</a>
 
     <table class="table table-condensed table-striped">
 

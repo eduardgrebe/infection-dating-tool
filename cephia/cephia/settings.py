@@ -51,6 +51,7 @@ SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
 SITE_BASE_URL = 'https://cephiadb.incidence-estimation.org/'
 BASE_URL = 'https://cephiadb.incidence-estimation.org'
+TOOLS_BASE_URL = 'https://tools.incidence-estimation.org/'
 
 # used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
 URL_PREFIX = ''
@@ -113,10 +114,15 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware'
+    'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
+    'multihost.MultiHostMiddleware'
 )
 
 ROOT_URLCONF = 'cephia.urls'
+HOST_MIDDLEWARE_URLCONF_MAP = {
+    "cephiadb.incidence-estimation.org": "cephia.urls",
+    "tools.incidence-estimation.org": "infection_dating_tool.urls",
+}
 
 TEMPLATES = [
     {

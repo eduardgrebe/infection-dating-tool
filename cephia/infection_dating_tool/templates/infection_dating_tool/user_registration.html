@@ -8,7 +8,7 @@
 
   <div id="content-main" class="login">
     {{app_path}}
-    <form action="{% url 'infection_dating_tool:registration' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
+    <form action="{% url 'registration' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
       
       <div class="row username" id="username">
 

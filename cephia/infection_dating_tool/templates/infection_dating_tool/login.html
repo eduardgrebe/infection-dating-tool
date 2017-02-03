@@ -43,7 +43,7 @@
 
   <div id="content-main" class="login">
     {{app_path}}
-    <form action="{% url 'infection_dating_tool:login' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
+    <form action="{% url 'login' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
       <div class="row username" id="username">
 
         {% if not form.this_is_the_login_form.errors %}{{ form.username.errors }}{% endif %}
@@ -71,14 +71,14 @@
     </form>
   </div>
   <div>
-    <a href="{% url 'infection_dating_tool:registration' %}">
+    <a href="{% url 'registration' %}">
       <button class="button login_button">
         Register
       </button>
     </a>
   </div><br>
   <div>
-    <a href="{% url 'infection_dating_tool:help_page' %}">
+    <a href="{% url 'help_page' %}">
       <button class="button login_button">
         Help/Guide
       </button>

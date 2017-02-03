@@ -66,7 +66,7 @@ def idt_login_required(login_url=None):
     )
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def home(request, file_id=None, template="infection_dating_tool/home.html"):
     context = {}
 
@@ -74,7 +74,7 @@ def home(request, file_id=None, template="infection_dating_tool/home.html"):
 
     context['infection_dating_tool'] = True
     
-    return redirect("infection_dating_tool:data_files")
+    return redirect("data_files")
 
 
 @csrf_exempt
@@ -93,7 +93,7 @@ def idt_login(request, template='infection_dating_tool/login.html'):
                     auth_login(request, user)
                     user.login_ok()
                     token = AuthenticationToken.create_token(user)
-                    return redirect("infection_dating_tool:data_files")
+                    return redirect("data_files")
                 else:
                     msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
                     messages.add_message(request, messages.WARNING, msg)
@@ -107,7 +107,7 @@ def idt_login(request, template='infection_dating_tool/login.html'):
 
 def idt_logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
-        login_url='infection_dating_tool:login'
+        login_url='login'
     return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
 
 
@@ -127,7 +127,7 @@ def idt_user_registration(request, template='infection_dating_tool/user_registra
             #     add_tests = _copy_diagnostic_tests()
             #     test_properties = _copy_test_properties()
 
-            return redirect("infection_dating_tool:registration_info")
+            return redirect("registration_info")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
@@ -144,7 +144,7 @@ def idt_user_registration_info(request, template='infection_dating_tool/user_reg
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def data_files(request, file_id=None, template="infection_dating_tool/data_files.html"):
     context = {}
 
@@ -185,7 +185,7 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
                     messages.info(request, error)
                 messages.info(request, 'Your file was not uploaded')
 
-            return redirect("infection_dating_tool:data_files")
+            return redirect("data_files")
 
     else:
         form = TestHistoryFileUploadForm()
@@ -197,7 +197,7 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     context = {}
     user = request.user
@@ -219,7 +219,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def create_test(request, template='infection_dating_tool/create_test_form.html', context=None):
     context = {}
     user = request.user
@@ -245,16 +245,16 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
 
         messages.info(request, 'Test added successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("infection_dating_tool:tests")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
         else:
-            return redirect("infection_dating_tool:tests")
+            return redirect("tests")
     
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.html', context=None):
     context = context or {}
     user = request.user
@@ -300,9 +300,9 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
 
         messages.info(request, 'Test edited successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("infection_dating_tool:tests")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
         else:
-            return redirect("infection_dating_tool:tests")
+            return redirect("tests")
 
     context['test'] = test
     context['form'] = form
@@ -312,7 +312,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def results(request, file_id=None, template="infection_dating_tool/results.html"):
     context = {}
 
@@ -328,7 +328,7 @@ def results(request, file_id=None, template="infection_dating_tool/results.html"
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def download_results(request, file_id=None, context=None):
     data_file = IDTFileInfo.objects.get(pk=file_id)
     test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file)
@@ -349,7 +349,7 @@ def download_results(request, file_id=None, context=None):
     return response
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def test_mapping(request, file_id=None, template="infection_dating_tool/test_mapping.html"):
     context = {}
     user = request.user
@@ -382,12 +382,12 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def create_test_mapping_properties(request, test_id=None, template='infection_dating_tool/create_mapping_form.html', context=None):
     return create_test_mapping(request, map_code, test_id, template)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def create_test_mapping(request, map_code=None, test_id=None, template='infection_dating_tool/create_mapping_form.html', context=None):
     context = {}
     user = request.user
@@ -440,25 +440,25 @@ def create_test_mapping(request, map_code=None, test_id=None, template='infectio
 
         messages.info(request, 'Mapping added successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("infection_dating_tool:test_mapping")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
         else:
-            return redirect("infection_dating_tool:test_mapping")
+            return redirect("test_mapping")
     
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def edit_test_mapping_properties(request, map_id=None, test_id=None, is_file=False, template='infection_dating_tool/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, is_file, template)
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_file=True, template='infection_dating_tool/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, is_file, template)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='infection_dating_tool/edit_mapping_form.html', context=None):
     context = context or {}
 
@@ -527,9 +527,9 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='in
                 
         messages.info(request, 'Mapping edited successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("infection_dating_tool:test_mapping")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
         else:
-            return redirect("infection_dating_tool:test_mapping")
+            return redirect("test_mapping")
 
     context['form'] = form
     context['properties'] = properties
@@ -546,7 +546,7 @@ def help_page(request, file_id=None, template="infection_dating_tool/help.html")
     return render(request, template, context)
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def delete_data_file(request, file_id, context=None):
     context = context or {}
 
@@ -556,10 +556,10 @@ def delete_data_file(request, file_id, context=None):
     data_file.save()
     
     messages.info(request, "Your file and all it's data has been deleted")
-    return redirect(reverse('infection_dating_tool:data_files'))
+    return redirect(reverse('data_files'))
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
@@ -590,10 +590,10 @@ def process_data_file(request, file_id, context=None):
     elif data_file.state == 'needs_mapping':
         messages.info(request, 'Incomplete Mapping. Cannot process data')
 
-    return redirect(reverse('infection_dating_tool:data_files'))
+    return redirect(reverse('data_files'))
 
 
-@idt_login_required(login_url='infection_dating_tool:login')
+@idt_login_required(login_url='login')
 def validate_mapping_from_page(request, file_id, context=None):
     context = context or {}
     user = request.user
@@ -618,7 +618,7 @@ def finalise_user_account(request, token, template='infection_dating_tool/comple
                 auth_login(request, auth_user)
                 auth_user.login_ok()
                 token = AuthenticationToken.create_token(auth_user)
-                return redirect("infection_dating_tool:data_files")
+                return redirect("data_files")
 
     context['token'] = token
     context['form'] = form
