@@ -17,7 +17,8 @@
           {% if not test.user %}
             <p style="color:#990033;">System default properties are shown in red</p>
           {% endif %}
-        {% elif map.test %}
+        {% elif map.test
+        %}
           <h4>Test property estimates for: {{ map.test.name }}</h4>
           {% if not map.test.user %}
             <p style="color:#990033;">System default properties are shown in red</p>
@@ -37,7 +38,7 @@
             
             <tbody>
               {% for property in properties %}
-                <tr {% if property.is_default %}style="color:#990033;"{% endif %}>
+                <tr {% if property.global_default %}style="color:#990033;"{% endif %}>
                   <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                   <td>{{ property.estimate_label }}</td>
                   <td>{{ property.diagnostic_delay }}</td>

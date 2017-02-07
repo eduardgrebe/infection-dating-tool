@@ -461,6 +461,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='in
     if test_id:
         map_code = request.GET.get('map_code')
         test = IDTDiagnosticTest.objects.get(pk=test_id)
+        
         if mapping.test == test and mapping.test_property:
             test_active_property = mapping.test_property
         else:

@@ -96,10 +96,11 @@
          var map_code = $("#id_code").val();
 
          if (js_is_file === true) {
-             url = Urls["edit_test_mapping_file_properties"](map_id, test_id)
+             url = Urls["infection_dating_tool:edit_test_mapping_file_properties"](map_id, test_id)
          } else if (js_is_file === false) {
-             url = Urls["edit_test_mapping_properties"](map_id, test_id)
-             }
+             url = Urls["infection_dating_tool:edit_test_mapping_properties"](map_id, test_id)
+             alert (url)
+         }
          $.get(url, {map_code: map_code }).done(function(html) {
              $('#modal-edit-mapping').html(html);
              $('#modal-edit-mapping').modal();
@@ -132,7 +133,7 @@
      $('#modal-add-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_code = $("#id_code").val();
-         url = Urls["create_test_mapping_properties"](test_id)
+         url = {% url '' %} Urls["create_test_mapping_properties"](test_id)
          $.get(url, {map_code: map_code }).done(function(html) {
              $('#modal-add-mapping').html(html);
              $('#modal-add-mapping').modal();

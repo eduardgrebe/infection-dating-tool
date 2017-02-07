@@ -60,7 +60,7 @@ class IDTDiagnosticTest(models.Model):
         return '%s' % (self.name)
 
     def get_default_property(self):
-        default_property = self.properties.get(is_default=True)
+        default_property = self.properties.get(global_default=True)
 
         return default_property
 

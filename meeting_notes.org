@@ -603,3 +603,14 @@ possibly add a delete option?
 ** volumes
 ** panel memberships
 ** server memory/file downloads
+* notes from meeting 07/02
+** calculation
+*** info field
+add a list of messages to the result field. we will report on some results which
+have unexpected LPDDI, EPDDI date ranges, etc
+
+if you only have positive or negative tests then you will not get an eddi.
+high level flag 'no eddi calculated'
+
+** tests
+

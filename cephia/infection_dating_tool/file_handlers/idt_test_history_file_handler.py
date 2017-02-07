@@ -29,14 +29,22 @@ class IDTFileHandler(FileHandler):
         headers = [u'Subject', u'Date', u'Test', u'Result']
         errors = []
         from infection_dating_tool.models import IDTSubject
-        
+
         if self.header != headers:
             errors.append("Incorrect headers used. It should be Subject, Date, Test, Result")
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
-                    
+
+                    row_contains_data = False
+                    for field in self.file_rows[row_num]:
+                        if field:
+                            row_contains_data = True
+                        
+                    if not row_contains_data:
+                        continue
+
                     if not row_dict:
                         continue
 
@@ -65,6 +73,15 @@ class IDTFileHandler(FileHandler):
             try:
                 if row_num >= 1:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
+
+                    row_contains_data = False
+                    for field in self.file_rows[row_num]:
+                        if field:
+                            row_contains_data = True
+
+                    if not row_contains_data:
+                        continue
+                    
                     if not row_dict:
                         continue
 
@@ -81,6 +98,7 @@ class IDTFileHandler(FileHandler):
                         subject.save()
 
                     test_history_row = IDTDiagnosticTestHistory.objects.create(subject=subject, data_file=self.upload_file)
+
                     test_history_row.test_date = row_dict['Date']
                     test_history_row.test_code = row_dict['Test']
 

@@ -48,5 +48,8 @@ urlpatterns = [
     url(r'^row_comment/$', views.row_comment, name='row_comment'),
     url(r'^release_notes/$', views.release_notes, name='release_notes'),
     # url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse'),
+
+
+    
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
