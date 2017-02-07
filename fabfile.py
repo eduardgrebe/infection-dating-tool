@@ -47,6 +47,7 @@ def deploy(branch_name="master"):
         run("git checkout origin/%s" % branch_name)
         run("git pull origin %s" % branch_name)
         run("./scripts/deploy_server.sh")
+        run("chmod +x ./scripts/update_idt_db.sh")
         run("./scripts/update_idt_db.sh")
 
     print("Deployed to: %s" % env.hosts[0])
