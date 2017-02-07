@@ -718,3 +718,10 @@ def update_adjusted_dates(user, data_file):
             diagnostic_delay = dict_values[1]
             test_history.adjusted_date = test_date - relativedelta(days=diagnostic_delay)
             test_history.save()
+
+
+
+def tools_home(request, template="tools_home.html"):
+    context = {}
+
+    return render(request, template, context)
