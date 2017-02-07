@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 
 app_name = 'infection_dating_tool'
 urlpatterns = [
-    url(r'^$', views.tools_home, name='tools_home'),
+    url(r'tools.incidence-estimation.org', views.tools_home, name='tools_home'),
     url(r'^idt/$', views.home, name='home'),
     url(r'^idt/register/$', views.idt_user_registration, name='registration'),
     url(r'^idt/register/info/$', views.idt_user_registration_info, name='registration_info'),
