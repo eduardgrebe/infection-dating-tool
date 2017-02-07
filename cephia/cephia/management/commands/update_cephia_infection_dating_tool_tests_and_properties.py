@@ -12,7 +12,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         base_dir = settings.BASE_DIR
-        print base_dir
-        uploaded_file = open("%s/infection_dating_tool/static/test_and_properties/Diagnostic Tests and Properties Public.csv" %base_dir, "rb")
+        try:
+            uploaded_file = open("%s/infection_dating_tool/static/test_and_properties/Diagnostic Tests and Properties Public.csv" %base_dir, "rb")
+        except IOError:
+            uploaded_file = open("%s/cephia/infection_dating_tool/static/test_and_properties/Diagnostic Tests and Properties Public.csv" %base_dir, "rb")
         TestsAndPropertiesFileHandler(uploaded_file).import_data()
 
