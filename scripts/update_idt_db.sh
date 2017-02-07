@@ -7,6 +7,7 @@ ROOT=`git rev-parse --show-toplevel`
 cd ${ROOT}
 SRC=${ROOT}/cephia
 SITE_PATH=${SRC}
+VENV=${ROOT}/venv
 
 echo "activate virtualenv"
 cd ${VENV}
