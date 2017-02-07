@@ -721,7 +721,7 @@ def update_adjusted_dates(user, data_file):
 
 
 
-def tools_home(request, template="tools_home.html"):
+def tools_home(request, template="index.html"):
     context = {}
 
     return render(request, template, context)
