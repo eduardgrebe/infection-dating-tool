@@ -7,10 +7,10 @@ ROOT=`git rev-parse --show-toplevel`
 cd ${ROOT}
 SRC=${ROOT}/cephia
 SITE_PATH=${SRC}
-VENV=${ROOT}/venv
 
 echo "Running management command update_cephia_infection_dating_tool_tests_and_properties"
 cd ${SITE_PATH}
+echo SITE_PATH
 
 python manage.py update_cephia_infection_dating_tool_tests_and_properties
 
