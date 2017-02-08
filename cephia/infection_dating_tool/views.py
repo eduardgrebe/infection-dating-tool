@@ -743,7 +743,7 @@ def update_adjusted_dates(user, data_file):
         map_property_means = list( mapping.values_list(
             'code', 'test_property__diagnostic_delay'
         ).distinct() )
-        import pdb;pdb.set_trace()
+
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
         test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
 
