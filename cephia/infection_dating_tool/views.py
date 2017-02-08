@@ -66,7 +66,7 @@ def idt_login_required(login_url=None):
     )
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def home(request, file_id=None, template="infection_dating_tool/home.html"):
     context = {}
 
@@ -107,7 +107,7 @@ def idt_login(request, template='infection_dating_tool/login.html'):
 
 def idt_logout(request, login_url=None, current_app=None, extra_context=None):
     if not login_url:
-        login_url='login'
+        login_url='idt:login'
     return django_logout(request, login_url, current_app=current_app, extra_context=extra_context)
 
 
@@ -138,7 +138,7 @@ def idt_user_registration_info(request, template='infection_dating_tool/user_reg
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def data_files(request, file_id=None, template="infection_dating_tool/data_files.html"):
     context = {}
 
@@ -191,7 +191,7 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     context = {}
     user = request.user
@@ -213,7 +213,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def create_test(request, template='infection_dating_tool/create_test_form.html', context=None):
     context = {}
     user = request.user
@@ -248,7 +248,7 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.html', context=None):
     context = context or {}
     user = request.user
@@ -306,7 +306,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def results(request, file_id=None, template="infection_dating_tool/results.html"):
     context = {}
 
@@ -322,7 +322,7 @@ def results(request, file_id=None, template="infection_dating_tool/results.html"
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def download_results(request, file_id=None, context=None):
     data_file = IDTFileInfo.objects.get(pk=file_id)
     test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file)
@@ -343,7 +343,7 @@ def download_results(request, file_id=None, context=None):
     return response
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def test_mapping(request, file_id=None, template="infection_dating_tool/test_mapping.html"):
     context = {}
     user = request.user
@@ -376,14 +376,14 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
     return render(request, template, context)
 
 
-# @idt_login_required(login_url='login')
+# @idt_login_required(login_url='idt:login')
 # def create_test_mapping_properties(request, template='infection_dating_tool/create_mapping_form.html', context=None):
 #     map_code = request.GET.get('map_code')
 #     test_id = request.GET.get('test_id')
 #     return create_test_mapping(request, map_code, test_id, template)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def create_test_mapping(request, template='infection_dating_tool/create_mapping_form.html', context=None):
     context = {}
     user = request.user
@@ -446,16 +446,16 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def edit_test_mapping_properties(request, map_id=None, test_id=None, is_file=False, template='infection_dating_tool/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, is_file, template)
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_file=True, template='infection_dating_tool/edit_mapping_form.html', context=None):
     return edit_test_mapping(request, map_id, test_id, is_file, template)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool/edit_mapping_form.html', context=None):
     context = context or {}
 
@@ -553,7 +553,7 @@ def help_page(request, file_id=None, template="infection_dating_tool/help.html")
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def delete_data_file(request, file_id, context=None):
     context = context or {}
 
@@ -566,7 +566,7 @@ def delete_data_file(request, file_id, context=None):
     return redirect(reverse('idt:data_files'))
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def process_data_file(request, file_id, context=None):
     context = context or {}
 
@@ -600,7 +600,7 @@ def process_data_file(request, file_id, context=None):
     return redirect(reverse('idt:data_files'))
 
 
-@idt_login_required(login_url='login')
+@idt_login_required(login_url='idt:login')
 def validate_mapping_from_page(request, file_id, context=None):
     context = context or {}
     user = request.user
