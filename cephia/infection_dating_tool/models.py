@@ -191,9 +191,26 @@ class IDTSubject(models.Model):
     def __unicode__(self):
         return self.subject_label
 
+    def check_for_identical_dates(self, data_file):
+        dates = data_file.test_history.filter(subject=self).values_list('test_date', flat=True)
+        if len(set(dates)) == 1:
+            return 'All tests reported are on same date\n'
+        else:
+            return ''
+
+    def check_for_discordant_dates(self, data_file):
+        pos_dates = data_file.test_history.filter(subject=self, test_result='Positive').values_list('test_date', flat=True).distinct()
+        neg_dates = data_file.test_history.filter(subject=self, test_result='Negative').values_list('test_date', flat=True).distinct()
+        duplicates = set(pos_dates).intersection(neg_dates)
+
+        if duplicates:
+            return 'Subject has a discordant test date\n'
+        else:
+            return ''
+
     def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
-        flag = ''
+        flag = self.check_for_identical_dates(data_file)
         
         if ep_ddi is None or lp_ddi is None:
             eddi = None
@@ -203,6 +220,7 @@ class IDTSubject(models.Model):
             if not ep_ddi:
                 flag += 'Only positive tests reported\n'
         else:
+            flag += self.check_for_discordant_dates(data_file)
             eddi = ep_ddi + timedelta(days=((lp_ddi - ep_ddi).days / 2))
             interval_size = (lp_ddi - ep_ddi).days
             absolute_interval_size = abs(interval_size)
