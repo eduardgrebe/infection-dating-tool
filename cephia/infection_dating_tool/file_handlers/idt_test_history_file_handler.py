@@ -29,9 +29,9 @@ class IDTFileHandler(FileHandler):
         headers = [u'Subject', u'Date', u'Test', u'Result']
         errors = []
         from infection_dating_tool.models import IDTSubject
-
-        if self.header != headers:
-            errors.append("Incorrect headers used. It should be Subject, Date, Test, Result")
+        
+        if not set(headers) < set(self.header):
+            errors.append("Your headers should contain Subject, Date, Test and Result")
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
