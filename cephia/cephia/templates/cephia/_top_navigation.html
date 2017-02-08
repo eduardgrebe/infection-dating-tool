@@ -4,7 +4,7 @@
     <li><a href="{% url 'home' %}">Home</a></li>
     {% if user.is_staff %}<li><a href="{% url 'table_management' %}">TMS</a></li>{% endif %}
     {% if user.is_superuser %}<li><a href="{% url 'users:user_list' %}">Accounts</a></li>{% endif %}
-    <li><a href="{% if not infection_dating_tool %}{% url 'users:logout' %}{% else %}{% url 'infection_dating_tool:logout' %}{% endif %}">Logout</a></li>
+    <li><a href="{% if not infection_dating_tool %}{% url 'users:logout' %}{% else %}{% url 'idt:logout' %}{% endif %}">Logout</a></li>
     {% endif %}
   </ul>
 </div>

@@ -15,7 +15,6 @@ urlpatterns = [
     url(r'^reports/', include('reporting.urls', namespace='reporting')),
     url(r'^accounts/', include('user_management.urls', namespace='users')),
     url(r'^assay/', include('assay.urls', namespace='assay')),
-    # url(r'^idt/', include('infection_dating_tool.urls', namespace='infection_dating_tool')),
     url(r'^diagnostics/', include('diagnostics.urls', namespace='diagnostics')),
     
     url(r'^countries/$', views.countries, name='countries'),
@@ -49,7 +48,7 @@ urlpatterns = [
     url(r'^release_notes/$', views.release_notes, name='release_notes'),
     # url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse'),
 
-
-    
+    # To be moved, keeping here for now to make url resolution easier.
+    url(r'^idt/', include('infection_dating_tool.urls', namespace='idt')),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

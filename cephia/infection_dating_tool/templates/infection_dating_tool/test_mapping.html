@@ -1,10 +1,8 @@
 {% extends 'infection_dating_tool/base.html' %}
 {% load bootstrap3 %}
-{% load js_reverse %}
 
 {% block extrajs%}
   <script src="http://malsup.github.com/jquery.form.js"></script>
-  <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +12,7 @@
       <h3>Mapping for {{ data_file.file_name }}</h3>
       Please complete any maps without all three values
     {% else %}
-      <button class="js-add-mapping btn btn-default" data-add-url="{% url 'create_test_mapping' %}">Add a new mapping</button>
+      <button class="js-add-mapping btn btn-default" data-add-url="{% url 'idt:create_test_mapping' %}">Add a new mapping</button>
     {% endif %}
 
     <table class="table table-condensed table-striped">
@@ -43,7 +41,7 @@
             </td>
             <td align="right">
               <a data-toggle="modal" data-target="#modal-edit-mapping" class="btn btn-primary js-edit-mapping"
-                 data-edit-url="{% if is_file %}{% url 'edit_test_mapping_file' map.pk %}{% else %}{% url 'edit_test_mapping' map.pk %}{% endif %}">Edit</a>
+                 data-map-id={{ map.pk }}>Edit</a>
             </td>
           </tr>
         {% endfor %}
@@ -53,11 +51,11 @@
 
     {% if completed_mapping %}
       <h3>Mapping completed</h3>
-      <a class="btn btn-primary" href="{% url 'validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
-      <a class="btn btn-primary" href="{% url 'data_files' %}">Return to data files</a>
+      <a class="btn btn-primary" href="{% url 'idt:validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
+      <a class="btn btn-primary" href="{% url 'idt:data_files' %}">Return to data files</a>
     {% endif %}
     {% if completed_mapping == False %}
-      <a class="btn btn-primary" href="{% url 'validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
+      <a class="btn btn-primary" href="{% url 'idt:validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
     {% endif %}
     <div class="modal fade" id="modal-add-mapping"></div>
     <div class="modal fade" id="modal-edit-mapping"></div>
@@ -65,8 +63,11 @@
     <script>
      $('.js-edit-mapping').click(function(event) {
          event.preventDefault();
-         var url = $(this).data('edit-url')
-         $.get(url).done(function(html) {
+         var js_is_file = {{ js_is_file }};
+         var map_id = $(this).data('map-id')
+         var url = "{% url 'idt:edit_test_mapping' %}";
+
+         $.get(url, {map_id: map_id, js_is_file: js_is_file }).done(function(html) {
              $('#modal-edit-mapping').html(html);
              $('#modal-edit-mapping').modal();
          });
@@ -92,16 +93,11 @@
      $('#modal-edit-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_id = $(this).parents('form').data('map')
-         var js_is_file = {{ js_is_file }};
          var map_code = $("#id_code").val();
+         var js_is_file = {{ js_is_file }};
+         var url = "{% url 'idt:edit_test_mapping' %}";
 
-         if (js_is_file === true) {
-             url = Urls["infection_dating_tool:edit_test_mapping_file_properties"](map_id, test_id)
-         } else if (js_is_file === false) {
-             url = Urls["infection_dating_tool:edit_test_mapping_properties"](map_id, test_id)
-             alert (url)
-         }
-         $.get(url, {map_code: map_code }).done(function(html) {
+         $.get(url, {test_id:test_id, map_id:map_id, map_code:map_code, js_is_file:js_is_file }).done(function(html) {
              $('#modal-edit-mapping').html(html);
              $('#modal-edit-mapping').modal();
          });
@@ -109,7 +105,7 @@
 
      $('.js-add-mapping').click(function() {
          event.preventDefault();
-         var url = $(this).data('add-url')
+         var url = "{% url 'idt:create_test_mapping' %}";
          $.get(url).done(function(html) {
              $('#modal-add-mapping').html(html);
              $('#modal-add-mapping').modal()
@@ -133,8 +129,9 @@
      $('#modal-add-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_code = $("#id_code").val();
-         url = {% url '' %} Urls["create_test_mapping_properties"](test_id)
-         $.get(url, {map_code: map_code }).done(function(html) {
+         var url = '{% url 'idt:create_test_mapping' %}';
+
+         $.get(url, {map_code: map_code, test_id: test_id }).done(function(html) {
              $('#modal-add-mapping').html(html);
              $('#modal-add-mapping').modal();
          });

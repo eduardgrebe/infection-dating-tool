@@ -34,22 +34,22 @@
 	          <td>{{obj.created}}</td>
             <td>{{obj.state}}</td>
             {% if obj.state == 'needs_mapping' or obj.state == 'mapped' or obj.state == 'processed' %}
-              <td><a href="{% url 'test_mapping' obj.id %}" >Mapping</a></td>
+              <td><a href="{% url 'idt:test_mapping' obj.id %}" >Mapping</a></td>
             {% else %}
               <td></td>
             {% endif %}
             {% if obj.state == 'mapped' or obj.state == 'processed' %}
-              <td><a href="{% url 'process_data_file' obj.id %}" >Process</a></td>
+              <td><a href="{% url 'idt:process_data_file' obj.id %}" >Process</a></td>
             {% else %}
               <td></td>
             {% endif %}
             {% if obj.state == 'processed' %}
-              <td><a href="{% url 'results' obj.id %}" >View Results</a></td>
+              <td><a href="{% url 'idt:results' obj.id %}" >View Results</a></td>
             {% else %}
               <td></td>
             {% endif %}    
             <td>
-		          <a href="{% url 'delete_data_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file and all the related data?') ) { return false }" class="btn btn-danger" style="text-decoration:none;">Purge</a>
+		          <a href="{% url 'idt:delete_data_file' obj.id %}" onclick="if ( ! confirm('Are you sure you want to delete this file and all the related data?') ) { return false }" class="btn btn-danger" style="text-decoration:none;">Purge</a>
             </td>
           </tr>
         {% endfor %}

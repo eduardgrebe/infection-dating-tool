@@ -116,14 +116,14 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
     'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
-    'multihost.MultiHostMiddleware'
+    #'multihost.MultiHostMiddleware'
 )
 
 ROOT_URLCONF = 'cephia.urls'
-HOST_MIDDLEWARE_URLCONF_MAP = {
-    "cephiadb.incidence-estimation.org": "cephia.urls",
-    "tools.incidence-estimation.org": "infection_dating_tool.urls",
-}
+# HOST_MIDDLEWARE_URLCONF_MAP = {
+#     "cephiadb.incidence-estimation.org": "cephia.urls",
+#     "tools.incidence-estimation.org": "infection_dating_tool.urls",
+# }
 
 TEMPLATES = [
     {

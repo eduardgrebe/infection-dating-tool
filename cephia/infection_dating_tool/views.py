@@ -74,7 +74,7 @@ def home(request, file_id=None, template="infection_dating_tool/home.html"):
 
     context['infection_dating_tool'] = True
     
-    return redirect("data_files")
+    return redirect("idt:data_files")
 
 
 @csrf_exempt
@@ -93,7 +93,7 @@ def idt_login(request, template='infection_dating_tool/login.html'):
                     auth_login(request, user)
                     user.login_ok()
                     token = AuthenticationToken.create_token(user)
-                    return redirect("data_files")
+                    return redirect("idt:data_files")
                 else:
                     msg = "User %s does not have the login credentials for this page so has not been allowed in. " % user.username
                     messages.add_message(request, messages.WARNING, msg)
@@ -121,7 +121,7 @@ def idt_user_registration(request, template='infection_dating_tool/user_registra
             user = form.save()
             user.send_registration_notification()
 
-            return redirect("registration_info")
+            return redirect("idt:registration_info")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)
@@ -179,7 +179,7 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
                     messages.info(request, error)
                 messages.info(request, 'Your file was not uploaded')
 
-            return redirect("data_files")
+            return redirect("idt:data_files")
 
     else:
         form = TestHistoryFileUploadForm()
@@ -239,9 +239,9 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
 
         messages.info(request, 'Test added successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("idt:tests")})
         else:
-            return redirect("tests")
+            return redirect("idt:tests")
     
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
@@ -294,9 +294,9 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
 
         messages.info(request, 'Test edited successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("idt:tests")})
         else:
-            return redirect("tests")
+            return redirect("idt:tests")
 
     context['test'] = test
     context['form'] = form
@@ -376,16 +376,19 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
     return render(request, template, context)
 
 
-@idt_login_required(login_url='login')
-def create_test_mapping_properties(request, test_id=None, template='infection_dating_tool/create_mapping_form.html', context=None):
-    return create_test_mapping(request, map_code, test_id, template)
+# @idt_login_required(login_url='login')
+# def create_test_mapping_properties(request, template='infection_dating_tool/create_mapping_form.html', context=None):
+#     map_code = request.GET.get('map_code')
+#     test_id = request.GET.get('test_id')
+#     return create_test_mapping(request, map_code, test_id, template)
 
 
 @idt_login_required(login_url='login')
-def create_test_mapping(request, map_code=None, test_id=None, template='infection_dating_tool/create_mapping_form.html', context=None):
+def create_test_mapping(request, template='infection_dating_tool/create_mapping_form.html', context=None):
     context = {}
     user = request.user
     map_code = request.GET.get('map_code')
+    test_id = request.GET.get('test_id')
     
     if test_id:
         test_active_property = IDTDiagnosticTest.objects.get(pk=test_id).properties.filter(global_default=True).first()
@@ -403,7 +406,7 @@ def create_test_mapping(request, map_code=None, test_id=None, template='infectio
         )
         context['test'] = test
         context['properties'] = properties
-        context['map_code'] = map_code
+        # context['map_code'] = map_code
     
     else:
         form = TestPropertyMappingForm(request.POST or None)
@@ -434,9 +437,9 @@ def create_test_mapping(request, map_code=None, test_id=None, template='infectio
 
         messages.info(request, 'Mapping added successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("idt:test_mapping")})
         else:
-            return redirect("test_mapping")
+            return redirect("idt:test_mapping")
     
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
@@ -453,11 +456,20 @@ def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_fil
 
 
 @idt_login_required(login_url='login')
-def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='infection_dating_tool/edit_mapping_form.html', context=None):
+def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool/edit_mapping_form.html', context=None):
     context = context or {}
+
+    test_id = request.GET.get('test_id')
+    if not test_id and request.POST:
+        test_id = request.POST.get('test')
+    map_id = request.GET.get('map_id')
+    if not map_id and save_map_id:
+        map_id = save_map_id
+    js_is_file = request.GET.get('js_is_file')
 
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
+    
     if test_id:
         map_code = request.GET.get('map_code')
         test = IDTDiagnosticTest.objects.get(pk=test_id)
@@ -501,7 +513,7 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='in
     form.set_context_data({'user': request.user})
     choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
     form.fields['test'] = choices
-    if is_file:
+    if js_is_file == 'true':
         form.fields['code'].widget.attrs['readonly'] = True
     
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
@@ -522,15 +534,15 @@ def edit_test_mapping(request, map_id, test_id=None, is_file=False, template='in
                 
         messages.info(request, 'Mapping edited successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
+            return JsonResponse({'success': True, 'redirect_url': reverse("idt:test_mapping")})
         else:
-            return redirect("test_mapping")
+            return redirect("idt:test_mapping")
 
     context['form'] = form
     context['properties'] = properties
     context['map'] = mapping
-    context['is_file'] = is_file
-    
+    context['js_is_file'] = js_is_file
+        
     return render(request, template, context)
 
 
@@ -551,7 +563,7 @@ def delete_data_file(request, file_id, context=None):
     data_file.save()
     
     messages.info(request, "Your file and all it's data has been deleted")
-    return redirect(reverse('data_files'))
+    return redirect(reverse('idt:data_files'))
 
 
 @idt_login_required(login_url='login')
@@ -585,7 +597,7 @@ def process_data_file(request, file_id, context=None):
     elif data_file.state == 'needs_mapping':
         messages.info(request, 'Incomplete Mapping. Cannot process data')
 
-    return redirect(reverse('data_files'))
+    return redirect(reverse('idt:data_files'))
 
 
 @idt_login_required(login_url='login')
@@ -613,7 +625,7 @@ def finalise_user_account(request, token, template='infection_dating_tool/comple
                 auth_login(request, auth_user)
                 auth_user.login_ok()
                 token = AuthenticationToken.create_token(auth_user)
-                return redirect("data_files")
+                return redirect("idt:data_files")
 
     context['token'] = token
     context['form'] = form
