@@ -198,7 +198,8 @@ class IDTSubject(models.Model):
             interval_size = None
         else:
             eddi = ep_ddi + timedelta(days=((lp_ddi - ep_ddi).days / 2))
-            interval_size = abs((lp_ddi - ep_ddi).days)
+            interval_size = (lp_ddi - ep_ddi).days
+            absolute_interval_size = abs(interval_size)
 
         if self.edsc_reported and eddi:
             edsc_days_diff = timedelta(days=(eddi - self.edsc_reported).days).days

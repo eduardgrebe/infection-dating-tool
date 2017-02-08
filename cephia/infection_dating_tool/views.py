@@ -36,7 +36,7 @@ from datetime import datetime
 import datetime
 from django.db import transaction
 from dateutil.relativedelta import relativedelta
-from django.db.models import Max
+from django.db.models import Max, Min
 from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
 import os
@@ -577,20 +577,45 @@ def process_data_file(request, file_id, context=None):
         subject_pks = list(data_file.test_history.all().values_list('subject', flat=True).distinct())
         subjects = IDTSubject.objects.filter(pk__in=subject_pks)
         update_adjusted_dates(user, data_file)
-        
-        lp_ddis = IDTDiagnosticTestHistory.objects.filter(test_result='Positive')
-        lp_ddis = lp_ddis.values('subject')
-        lp_ddis = lp_ddis.annotate(earliest_positive=Max('adjusted_date'))
-        lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
+        lp_ddis = IDTDiagnosticTestHistory.objects.filter(
+            data_file=data_file,
+            test_result='Positive'
+        )
+        lp_ddis_dict = {}
+        # lp_ddis = lp_ddis.values('subject')
+        for subject in subjects:
+            subject_rows = lp_ddis.filter(subject=subject)
+            if not subject_rows:
+                lp_ddis_dict[subject] = None
+            else:
+                subject_dates = subject_rows.values_list('adjusted_date', flat=True)
+                lp_ddis_dict[subject] = min(subject_dates)
+            
 
-        ep_ddis = IDTDiagnosticTestHistory.objects.filter(test_result='Negative')
-        ep_ddis = ep_ddis.values('subject')
-        ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
-        ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
-        
+        # lp_ddis = lp_ddis.annotate(earliest_positive=Min('adjusted_date'))
+        # lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
+
+        ep_ddis = IDTDiagnosticTestHistory.objects.filter(
+            data_file=data_file,
+            test_result='Negative'
+        )
+        ep_ddis_dict = {}
+        for subject in subjects:
+            subject_rows = ep_ddis.filter(subject=subject)
+            if not subject_rows:
+                ep_ddis_dict[subject] = None
+            else:
+                subject_dates = subject_rows.values_list('adjusted_date', flat=True)
+                ep_ddis_dict[subject] = max(subject_dates)
+            
+        # ep_ddis = ep_ddis.values('subject')
+        # ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
+        # ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
+
         with transaction.atomic():
             for subject in subjects:
-                subject.calculate_eddi(user, data_file, lp_ddis.get(subject.pk), ep_ddis.get(subject.pk))
+                subject.calculate_eddi(user, data_file, lp_ddis_dict[subject], ep_ddis_dict[subject])
+                # subject.calculate_eddi(user, data_file, lp_ddis.get(subject.pk), ep_ddis.get(subject.pk))
         data_file.state = 'processed'
         data_file.save()
         messages.info(request, 'Data Processed')
@@ -722,7 +747,7 @@ def update_adjusted_dates(user, data_file):
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
         test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
 
-        dates_means = dict( (v[2], (v[1], int(map_property_means[v[0]]))) for v in test_history_dates )
+        dates_means = dict( (v[2], (v[1], int(round(map_property_means[v[0]])))) for v in test_history_dates )
         
         for test_history in file_test_history:
             dict_values = dates_means[test_history.id]
