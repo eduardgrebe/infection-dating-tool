@@ -635,3 +635,11 @@ rename interval size as DDI Interval
 
 can we do a query which finds a non null overlap
 for a subject pos and neg test dates?
+
+** can we add an invite step to users registration?
+provide system with list of email addresses that are allowed to register.
+provide help text on register screen. if they want to register then email
+Alex and request that their email be added to the list. (Alex is providing better
+text)
+
+To register to use this tool, please send an email to alexwelte@sun.ac.za, and provide the email which you will use to register. Once you receive confirmation that your email has been added to the allowed list, you can return to this page and register.
