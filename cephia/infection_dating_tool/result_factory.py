@@ -5,7 +5,7 @@ class ResultDownload(object):
 
     def __init__(self, results):
 
-        self.headers = ['Subject', 'EP DDI', 'LP DDI', 'Interval Size', 'EDDI']
+        self.headers = ['Subject', 'EP DDI', 'LP DDI', 'Interval Size', 'EDDI', 'Flag']
         self.content = []
         self.results = results
         self.prepare_content()
@@ -23,7 +23,7 @@ class ResultDownload(object):
         return value
 
     def prepare_content(self):
-        columns = ['subject_label', 'ep_ddi', 'lp_ddi', 'interval_size', 'eddi']
+        columns = ['subject_label', 'ep_ddi', 'lp_ddi', 'interval_size', 'eddi', 'flag']
         for result in self.results:
             row = [ self.getattr_or_none(result, c) for c in columns ]
             self.content.append(row)
