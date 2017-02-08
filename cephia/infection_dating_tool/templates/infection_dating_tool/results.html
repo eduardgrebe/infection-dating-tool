@@ -16,6 +16,7 @@
           <th>LP DDI</th>
           <th>Interval Size</th>
           <th>EDDI</th>
+          <th>Flags</th>
         </tr>
       </thead>
 
@@ -27,6 +28,11 @@
             <td>{{ sub.lp_ddi }}</td>
             <td>{{ sub.interval_size }}</td>
             <td>{{ sub.eddi }}</td>
+            {% if sub.flag %}
+              <td><pre>{{ sub.flag }}</pre></td>
+            {% else %}
+              <td><pre></pre></td>
+            {% endif %}
           </tr>
         {% endfor %}
       </tbody>

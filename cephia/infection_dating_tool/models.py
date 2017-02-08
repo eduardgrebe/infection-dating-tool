@@ -186,20 +186,35 @@ class IDTSubject(models.Model):
     interval_size = models.IntegerField(null=True, blank=True)
     edsc_days_difference = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
+    flag = models.CharField(max_length=255, null=True, blank=False)
 
     def __unicode__(self):
         return self.subject_label
 
     def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
-
+        flag = ''
+        
         if ep_ddi is None or lp_ddi is None:
             eddi = None
             interval_size = None
+            if not lp_ddi:
+                flag += 'Only negative tests reported\n'
+            if not ep_ddi:
+                flag += 'Only positive tests reported\n'
         else:
             eddi = ep_ddi + timedelta(days=((lp_ddi - ep_ddi).days / 2))
             interval_size = (lp_ddi - ep_ddi).days
             absolute_interval_size = abs(interval_size)
+
+            if interval_size < 0:
+                flag += 'Unexpected ordering of EPDDI and LPDDI\n'
+            if absolute_interval_size < 10:
+                flag += 'EPDDI and LPDDI less than 10 days apart\n'
+
+
+        if flag:
+            self.flag = flag
 
         if self.edsc_reported and eddi:
             edsc_days_diff = timedelta(days=(eddi - self.edsc_reported).days).days
