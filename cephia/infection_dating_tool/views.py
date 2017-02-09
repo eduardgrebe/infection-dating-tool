@@ -115,13 +115,16 @@ def idt_logout(request, login_url=None, current_app=None, extra_context=None):
 def idt_user_registration(request, template='infection_dating_tool/user_registration.html'):
     context = {}
     form = IDTUserCreationForm(request.POST or None)
-    
+    emails = ['andrew@impd.co.za', 'andrew.powrie@gmail.com']
     if request.method == 'POST':
         if form.is_valid():
-            user = form.save()
-            user.send_registration_notification()
+            if form.cleaned_data['email'] not in emails:
+                messages.add_message(request, messages.WARNING, "To register to use this tool, please send an email to alexwelte@sun.ac.za, and provide the email which you will use to register. Once you receive confirmation that your email has been added to the allowed list, you can return to this page and register.")
+            else:
+                user = form.save()
+                user.send_registration_notification()
 
-            return redirect("idt:registration_info")
+                return redirect("idt:registration_info")
         else:
             messages.add_message(request, messages.WARNING, "Invalid credentials")
             _check_for_login_hack_attempt(request, context)

@@ -30,11 +30,20 @@
         </div>
       {% endif %}
       <br/>
+      
       <div>
         <button class="button login_button" onclick="$('.login_form').submit(); return false;">
           Register
         </button>
       </div>
+      <br/>
     </form>
+    <div>
+      <a href="{% url 'idt:login' %}">
+        <button class="button login_button">
+          Return to Login
+        </button>
+      </a>
+    </div>
   </div>
 {% endblock %}

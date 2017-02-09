@@ -620,21 +620,21 @@ for now tool.incidence is not being used and the index page is not loading.
 Gareth suggested that it would be possible to have Apache change the domain name in the url for all idt urls, this could be done until the app get's separated.
 make sure that the index page is loading correctly and the url to the eddi tool works
 ** file handler
-include funtionality for other headers, blank rows, but only deal with valid data paired with headers we are looking for
+# include funtionality for other headers, blank rows, but only deal with valid data paired with headers we are looking for
 
 ** result info field
-when there is a negative interval include this info message:
-Unexpected Ordering of EPDDI and LPDDI
+# when there is a negative interval include this info message:
+# Unexpected Ordering of EPDDI and LPDDI
 
-if absolute interval value is less than 20 days then we could report on the following:
-LPDDI and EPDDI are less than ten days appart - if overlap dates works out then use
-10 days for this.
+# if absolute interval value is less than 20 days then we could report on the following:
+# LPDDI and EPDDI are less than ten days appart - if overlap dates works out then use
+# 10 days for this.
 
 
-rename interval size as DDI Interval
+# rename interval size as DDI Interval
 
-can we do a query which finds a non null overlap
-for a subject pos and neg test dates?
+# can we do a query which finds a non null overlap
+# for a subject pos and neg test dates?
 
 ** can we add an invite step to users registration?
 provide system with list of email addresses that are allowed to register.

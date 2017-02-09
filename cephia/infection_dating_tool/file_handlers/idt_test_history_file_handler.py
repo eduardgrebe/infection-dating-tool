@@ -41,7 +41,7 @@ class IDTFileHandler(FileHandler):
                     for field in self.file_rows[row_num]:
                         if field:
                             row_contains_data = True
-                        
+
                     if not row_contains_data:
                         continue
 
