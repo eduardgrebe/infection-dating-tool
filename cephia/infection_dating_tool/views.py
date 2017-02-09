@@ -24,7 +24,7 @@ from user_management.forms import UserPasswordForm
 from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
-    IDTSubject
+    IDTSubject, IDTAllowedRegistrationEmails
     )
 from cephia.models import CephiaUser
 from diagnostics.models import DiagnosticTest, TestPropertyEstimate
@@ -115,7 +115,7 @@ def idt_logout(request, login_url=None, current_app=None, extra_context=None):
 def idt_user_registration(request, template='infection_dating_tool/user_registration.html'):
     context = {}
     form = IDTUserCreationForm(request.POST or None)
-    emails = ['andrew@impd.co.za', 'andrew.powrie@gmail.com']
+    emails = IDTAllowedRegistrationEmails.objects.all().values_list('email', flat=True)
     if request.method == 'POST':
         if form.is_valid():
             if form.cleaned_data['email'] not in emails:

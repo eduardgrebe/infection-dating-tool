@@ -642,4 +642,6 @@ provide help text on register screen. if they want to register then email
 Alex and request that their email be added to the list. (Alex is providing better
 text)
 
-To register to use this tool, please send an email to alexwelte@sun.ac.za, and provide the email which you will use to register. Once you receive confirmation that your email has been added to the allowed list, you can return to this page and register.
+# To register to use this tool, please send an email to alexwelte@sun.ac.za, and provide
+# the email which you will use to register. Once you receive confirmation that your email
+# has been added to the allowed list, you can return to this page and register.

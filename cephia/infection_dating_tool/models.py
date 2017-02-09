@@ -245,6 +245,13 @@ class IDTSubject(models.Model):
         self.save()
 
 
+class IDTAllowedRegistrationEmails(models.Model):
+    class Meta:
+        db_table = "idt_allowed_registration_emails"
+
+    email = models.CharField(max_length=200, blank=True, null=True, unique=True)
+
+
 # class IDTUser(BaseUser):
 #     class Meta:
 #         db_table = "idt_users"
