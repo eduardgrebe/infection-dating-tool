@@ -2,10 +2,6 @@
 {% load i18n admin_static %}
 {% load staticfiles %}
 {% block content %}
-  <p style="text-align: center">
-    Welcome to the Cephia Infection Dating Tool
-  </p>
-
   <div id="content-main" class="login">
     {{app_path}}
     <form action="{% url 'idt:registration' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
