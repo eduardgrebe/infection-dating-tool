@@ -456,12 +456,12 @@ class Subject(models.Model):
     def __unicode__(self):
         return self.subject_label
 
-    def save(self):
+    def save(self, *args, **kwargs):
         if not self.subject_label_blinded:
             self.subject_label_blinded = blinded_label_generator()
             while Subject.objects.filter(subject_label_blinded=self.subject_label_blinded).exists():
                 self.subject_label_blinded = blinded_label_generator()
-        super(Subject, self).save()
+        return super(Subject, self).save(*args, **kwargs)
 
     @property
     def earliest_visit_date(self):
