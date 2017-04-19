@@ -11,6 +11,7 @@ usage = """
 staging       : > fab host_impd deploy:<branch>
 cephia test   : > fab host_cephia_test deploy:<branch>
 cephia prod   : > fab host_cephia_prod deploy:<branch>
+idt prod   : > fab host_idt_prod deploy:<branch>
 
 shiny         : > fab host_shiny_prod deploy_shiny:<branch>
 shiny server  : > fab host_shiny_prod restart_shiny_server
@@ -36,6 +37,11 @@ def host_cephia_prod():
     env.user = 'cephia'
     env.hosts = ['cephiadb.incidence-estimation.org']
     env.code_dir = "/home/cephia/cephia_prod"
+
+def host_idt_prod():
+    env.user = 'cephia'
+    env.hosts = ['tools.incidence-estimation.org']
+    env.code_dir = "/home/cephia/idt_prod"
 
 # ===== top level commands ======
 
