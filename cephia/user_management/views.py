@@ -13,10 +13,15 @@ from django.shortcuts import resolve_url
 from forms import UserEditForm, UserCreationForm
 from user_management.models import AuthenticationToken
 from django.core.urlresolvers import reverse
-from cephia.views import cephia_login_required
 import logging
 
 logger = logging.getLogger(__name__)
+
+def cephia_login_required(login_url=None):
+    return user_passes_test(
+        lambda u: u.is_authenticated() and not u.groups.filter(name='Infection Dating Tool Users').exists(),
+        login_url=login_url,
+    )
 
 @csrf_exempt
 def login(request, template='admin/cephia_login.html'):

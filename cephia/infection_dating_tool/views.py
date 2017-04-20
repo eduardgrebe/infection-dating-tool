@@ -27,7 +27,6 @@ from models import (
     IDTSubject, IDTAllowedRegistrationEmails
     )
 from cephia.models import CephiaUser
-from diagnostics.models import DiagnosticTest, TestPropertyEstimate
 from django.forms import modelformset_factory
 import json
 from json import dumps
@@ -223,7 +222,7 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
 
     user_estimates_formset = TestPropertyEstimateFormSet(
         request.POST or None,
-        queryset=TestPropertyEstimate.objects.none()
+        queryset=IDTTestPropertyEstimate.objects.none()
     )
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
