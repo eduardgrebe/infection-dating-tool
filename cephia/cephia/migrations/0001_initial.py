@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('assay', '__first__'),
         ('auth', '0007_alter_validators_add_error_messages'),
     ]
 
