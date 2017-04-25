@@ -52,6 +52,37 @@ urlpatterns = [
     # To be moved, keeping here for now to make url resolution easier.
     # url(r'^', include('infection_dating_tool.urls', namespace='idt')),
 
+    url(r'^$', idt_views.home, name='home'),
+    url(r'^register/$', idt_views.idt_user_registration, name='registration'),
+    url(r'^register/info/$', idt_views.idt_user_registration_info, name='registration_info'),
+    url(r'^login/$', idt_views.idt_login, name='login'),
+    url(r'^logout/$', idt_views.idt_logout, name='logout'),
+    
+    url(r'^data_files/$', idt_views.data_files, name='data_files'),
+    url(r'^help/$', idt_views.help_page, name='help_page'),
+    
+    url(r'^tests/$', idt_views.tests, name='tests'),
+    url(r'^tests/(?P<test_id>\d+)/edit/$', idt_views.edit_test, name='edit_test'),
+    url(r'^tests/create/$', idt_views.create_test, name='create_test'),
+    
+    url(r'^test_mapping/$', idt_views.test_mapping, name='test_mapping'),
+    url(r'^test_mapping/(?P<file_id>\d+)/$', idt_views.test_mapping, name='test_mapping'),
+    url(r'^test_mapping/create/$', idt_views.create_test_mapping, name='create_test_mapping'),
+    url(r'^test_mapping/edit/$', idt_views.edit_test_mapping, name='edit_test_mapping'),
+    url(r'^test_mapping/edit/(?P<save_map_id>\d+)/$', idt_views.edit_test_mapping, name='edit_test_mapping_save'),
+    
+    url(r'^data_files/(?P<file_id>\d+)/delete', idt_views.delete_data_file, name='delete_data_file'),
+    url(r'^data_files/(?P<file_id>\d+)/process_data', idt_views.process_data_file, name='process_data_file'),
+    
+    url(r'^validate_mapping/(?P<file_id>\d+)/', idt_views.validate_mapping_from_page, name='validate_mapping_from_page'),
+
+    url(r'^results/(?P<file_id>\d+)/$', idt_views.results, name='results'),
+    url(r'^results/(?P<file_id>\d+)/download/$', idt_views.download_results, name='download_results'),
+
+    url(r'^user_registration/finalise/(?P<token>.*)/$', idt_views.finalise_user_account, name='finalise_user_account'),
+
+    ##
+
     url(r'^idt/$', idt_views.home, name='home'),
     url(r'^idt/register/$', idt_views.idt_user_registration, name='registration'),
     url(r'^idt/register/info/$', idt_views.idt_user_registration_info, name='registration_info'),
