@@ -54,6 +54,8 @@ BASE_URL = 'https://tools.incidence-estimation.org'
 TOOLS_SITE_BASE_URL = 'https://tools.incidence-estimation.org/'
 TOOLS_BASE_URL = 'https://tools.incidence-estimation.org'
 
+FORCE_SCRIPT_NAME = '/idt'
+
 # used in paranoidsessions/django-crossdomainxhr-middleware.py for Access-Control-Allow-Origin
 URL_PREFIX = ''
 
