@@ -146,7 +146,11 @@ class IDTFileInfo(models.Model):
             Q(user=user) | Q(user=None)
         ).values_list('name', flat=True))
         
-        map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
+        # map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
+        map_codes = []
+        for x in self.test_history.all().values_list('test_code', flat=True):
+            if x not in map_codes:
+                map_codes.append(x)
         file_maps = []
 
         for code in map_codes:

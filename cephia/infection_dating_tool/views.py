@@ -736,7 +736,11 @@ def validate_mapping(file_id, user):
 def update_adjusted_dates(user, data_file):
     with transaction.atomic():
         file_test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file)
-        codes = list( file_test_history.all().values_list('test_code', flat=True).distinct() )
+        codes = []
+        for x in file_test_history.all().values_list('test_code', flat=True):
+            if x not in codes:
+                codes.append(x)
+        # codes = list( file_test_history.all().values_list('test_code', flat=True).distinct() )
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
         map_property_means = list( mapping.values_list(
@@ -745,7 +749,7 @@ def update_adjusted_dates(user, data_file):
 
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
         test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
-
+        
         dates_means = dict( (v[2], (v[1], int(round(map_property_means[v[0]])))) for v in test_history_dates )
         
         for test_history in file_test_history:
