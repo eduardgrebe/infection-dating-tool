@@ -166,8 +166,6 @@ class UserCreationForm(ModelForm):
 
 
 class UserPasswordForm(ModelForm):
-    email = CharField(widget=TextInput(attrs={'placeholder': 'Email'}), label=None)
-    
     error_messages = {
         'password_mismatch': ("The two password fields didn't match."),
     }
@@ -179,7 +177,7 @@ class UserPasswordForm(ModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ["email", "is_active", 'user_permissions']
+        fields = ["is_active", 'user_permissions']
 
     def clean_verify_password(self):
         password = self.cleaned_data.get("password")
@@ -202,3 +200,4 @@ class UserPasswordForm(ModelForm):
 
     def get_user(self):
         return self.user_cache
+
