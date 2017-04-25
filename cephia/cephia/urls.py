@@ -49,6 +49,6 @@ urlpatterns = [
     # url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse'),
 
     # To be moved, keeping here for now to make url resolution easier.
-    url(r'^', include('infection_dating_tool.urls', namespace='idt')),
+    url(r'^idt/', include('infection_dating_tool.urls', namespace='idt')),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
