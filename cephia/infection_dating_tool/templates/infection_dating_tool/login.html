@@ -40,7 +40,7 @@
 
   <div id="content-main" class="login">
     {{app_path}}
-    <form action="{% url 'idt:login' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
+    <form action="{% url 'login' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
       <div class="row username" id="username">
 
         {% if not form.this_is_the_login_form.errors %}{{ form.username.errors }}{% endif %}
@@ -53,7 +53,7 @@
         {{form.password}}
 
       </div>
-      {% url 'idt:admin_password_reset' as password_reset_url %}
+      {% url 'admin_password_reset' as password_reset_url %}
       {% if password_reset_url %}
         <div class="password-reset-link">
           <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
@@ -68,14 +68,14 @@
     </form>
   </div>
   <div>
-    <a href="{% url 'idt:registration' %}">
+    <a href="{% url 'registration' %}">
       <button class="button login_button">
         Register
       </button>
     </a>
   </div><br>
   <div>
-    <a href="{% url 'idt:help_page' %}">
+    <a href="{% url 'help_page' %}">
       <button class="button login_button">
         Help/Guide
       </button>

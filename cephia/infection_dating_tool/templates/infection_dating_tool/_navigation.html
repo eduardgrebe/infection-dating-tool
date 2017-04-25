@@ -8,19 +8,19 @@
 
       {% if user.id %}
         <ul class="eddi-menu js-enabled">
-          <li><a class="{% nav_active request 'data_files' %}" href="{% url 'idt:data_files' %}">Data Files</a></li>
-          <li><a class="{% nav_active request 'test_mapping' %}" href="{% url 'idt:test_mapping' %}">Mapping</a></li>
-          <li><a class="{% nav_active request 'tests' %}" href="{% url 'idt:tests' %}">Tests</a></li>
-          <li><a class="{% nav_active request 'help_page' %}" href="{% url 'idt:help_page' %}">Help</a></li>
+          <li><a class="{% nav_active request 'data_files' %}" href="{% url 'data_files' %}">Data Files</a></li>
+          <li><a class="{% nav_active request 'test_mapping' %}" href="{% url 'test_mapping' %}">Mapping</a></li>
+          <li><a class="{% nav_active request 'tests' %}" href="{% url 'tests' %}">Tests</a></li>
+          <li><a class="{% nav_active request 'help_page' %}" href="{% url 'help_page' %}">Help</a></li>
         </ul>
         
         <ul class="eddi-menu js-enabled navbar-right">
-          <li><a href="{% url 'idt:logout' %}">Logout</a></li>
+          <li><a href="{% url 'logout' %}">Logout</a></li>
         </ul>
         
       {% elif not user.id %}
         <ul class="eddi-menu js-enabled navbar-right">
-          <li><a href="{% url 'idt:login' %}">Return to Login</a></li>
+          <li><a href="{% url 'login' %}">Return to Login</a></li>
         </ul>
       {% endif %}
 

@@ -4,7 +4,7 @@
 {% block content %}
   <div id="content-main" class="login">
     {{app_path}}
-    <form action="{% url 'idt:registration' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
+    <form action="{% url 'registration' %}" method="post" class="login_form" id="login-form">{% csrf_token %}
       
       <div class="row username" id="username">
 
@@ -19,7 +19,7 @@
 
       </div>
       
-      {% url 'idt:admin_password_reset' as password_reset_url %}
+      {% url 'admin_password_reset' as password_reset_url %}
       {% if password_reset_url %}
         <div class="password-reset-link">
           <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
@@ -35,7 +35,7 @@
       <br/>
     </form>
     <div>
-      <a href="{% url 'idt:login' %}">
+      <a href="{% url 'login' %}">
         <button class="button login_button">
           Return to Login
         </button>

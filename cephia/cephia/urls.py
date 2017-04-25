@@ -6,6 +6,7 @@ import reporting
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from infection_dating_tool import views as idt_views
 
 urlpatterns = [
     # url(r'^robots.txt', TemplateView.as_view(template_name="robots.txt", content_type='text/plain')),
@@ -49,6 +50,35 @@ urlpatterns = [
     # url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse'),
 
     # To be moved, keeping here for now to make url resolution easier.
-    url(r'^idt/', include('infection_dating_tool.urls', namespace='idt')),
+    # url(r'^', include('infection_dating_tool.urls', namespace='idt')),
+
+    url(r'^idt/$', idt_views.home, name='home'),
+    url(r'^idt/register/$', idt_views.idt_user_registration, name='registration'),
+    url(r'^idt/register/info/$', idt_views.idt_user_registration_info, name='registration_info'),
+    url(r'^idt/login/$', idt_views.idt_login, name='login'),
+    url(r'^idt/logout/$', idt_views.idt_logout, name='logout'),
+    
+    url(r'^idt/data_files/$', idt_views.data_files, name='data_files'),
+    url(r'^idt/help/$', idt_views.help_page, name='help_page'),
+    
+    url(r'^idt/tests/$', idt_views.tests, name='tests'),
+    url(r'^idt/tests/(?P<test_id>\d+)/edit/$', idt_views.edit_test, name='edit_test'),
+    url(r'^idt/tests/create/$', idt_views.create_test, name='create_test'),
+    
+    url(r'^idt/test_mapping/$', idt_views.test_mapping, name='test_mapping'),
+    url(r'^idt/test_mapping/(?P<file_id>\d+)/$', idt_views.test_mapping, name='test_mapping'),
+    url(r'^idt/test_mapping/create/$', idt_views.create_test_mapping, name='create_test_mapping'),
+    url(r'^idt/test_mapping/edit/$', idt_views.edit_test_mapping, name='edit_test_mapping'),
+    url(r'^idt/test_mapping/edit/(?P<save_map_id>\d+)/$', idt_views.edit_test_mapping, name='edit_test_mapping_save'),
+    
+    url(r'^idt/data_files/(?P<file_id>\d+)/delete', idt_views.delete_data_file, name='delete_data_file'),
+    url(r'^idt/data_files/(?P<file_id>\d+)/process_data', idt_views.process_data_file, name='process_data_file'),
+    
+    url(r'^idt/validate_mapping/(?P<file_id>\d+)/', idt_views.validate_mapping_from_page, name='validate_mapping_from_page'),
+
+    url(r'^idt/results/(?P<file_id>\d+)/$', idt_views.results, name='results'),
+    url(r'^idt/results/(?P<file_id>\d+)/download/$', idt_views.download_results, name='download_results'),
+
+    url(r'^idt/user_registration/finalise/(?P<token>.*)/$', idt_views.finalise_user_account, name='finalise_user_account'),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
