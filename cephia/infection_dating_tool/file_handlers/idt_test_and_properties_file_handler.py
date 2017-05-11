@@ -48,6 +48,8 @@ class TestsAndPropertiesFileHandler(FileHandler):
             'diagnostic_delay_iqr',
         ]
 
+        self.header = self.file_rows[1]
+
 
     def import_data(self):
         errors = []
@@ -55,7 +57,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
         from infection_dating_tool.models import IDTDiagnosticTest, IDTTestPropertyEstimate
         for row_num in range(self.num_rows):
             try:
-                if row_num >= 1:
+                if row_num >= 2:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 
                     if not row_dict:
@@ -71,12 +73,18 @@ class TestsAndPropertiesFileHandler(FileHandler):
                     test.save()
                     properties = test.properties.filter(user=None)
 
+                    diagnostic_delay = None
+                    if row_dict['diagnostic_delay']:
+                        diagnostic_delay=float(row_dict['diagnostic_delay'])
+
                     if properties:
                         test_property = properties.first()
-                        test_property.diagnostic_delay=float(row_dict['diagnostic_delay'])
-                        test_property.comment=row_dict['comment']
-                        test_property.test=test
-                        test_property.global_default=True
+                        test_property.diagnostic_delay = diagnostic_delay
+                        if not diagnostic_delay:
+                            test_property.detection_threshold = 0.35 #TODO this must be imported from the file
+                        test_property.comment = row_dict['comment']
+                        test_property.test = test
+                        test_property.global_default = True
                         test_property.save()
                     else:
                         test_property=IDTTestPropertyEstimate.objects.create(

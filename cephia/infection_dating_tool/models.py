@@ -80,10 +80,11 @@ class IDTTestPropertyEstimate(models.Model):
     test = models.ForeignKey(IDTDiagnosticTest, null=False, blank=True, related_name='properties')
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
 
-    estimate_label = models.CharField(max_length=255, null=False, blank=True)
+    estimate_label = models.CharField(max_length=255, null=False, blank=False)
     comment = models.CharField(max_length=255, null=False, blank=True)
 
-    diagnostic_delay = models.FloatField(null=True, blank=False)
+    diagnostic_delay = models.FloatField(null=True, blank=True)
+    detection_threshold = models.FloatField(null=True, blank=True)
     diagnostic_delay_mean = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_se = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_ci_lower = models.FloatField(null=True, blank=False)
@@ -256,40 +257,25 @@ class IDTAllowedRegistrationEmails(models.Model):
     email = models.CharField(max_length=200, blank=True, null=True, unique=True)
 
 
-# class IDTUser(BaseUser):
-#     class Meta:
-#         db_table = "idt_users"
-#         permissions = [
-#         ]
+class SelectedCategory(models.Model):
+    CATEGORIES = (
+        ('1st_gen_lab', '1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody)'),
+        ('2nd_gen_lab', '2nd Gen Lab Assay (Recombinant IgG sensitive Antibody)'),
+        ('2nd_gen_rapid', '2nd Gen Rapid Test'),
+        ('3rd_gen_lab', '3rd Gen Lab Assay (IgM sensitive Antibody)'),
+        ('3rd_gen_rapid', '3rd Gen Rapid Test'),
+        ('4th_gen_lab', '4th Gen Lab Assay (p24 Ag/Ab Combo)'),
+        ('4th_gen_rapid', '4th Gen Rapid Test'),
+        ('dpp', 'DPP'),
+        ('immunofluorescence_assay', 'Immunofluorescence Assay'),
+        ('p24_antigen', 'p24 Antigen'),
+        ('viral_load', 'Viral Load'),
+        ('western_blot', 'Western blot'),
+    )
     
-#     password_reset_token = models.CharField(max_length=200, blank=True, null=True, db_index=True)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=False)
+    test = models.ForeignKey(IDTDiagnosticTest, null=False)
+    category = models.CharField(choices=CATEGORIES, max_length=255, null=True)
 
-#     def __unicode__(self):
-#         return "%s" % (self.username)
-
-#     @classmethod
-#     def generate_password_reset_link(self, user):
-#         """ create an password authentication token for this user """
-#         token = str(uuid.uuid4()).replace("-","").replace("_","")
-#         user.password_reset_token = token
-#         user.save()
-
-#     def send_registration_notification(self):
-#         email_context = {}
-#         email_context['user'] = self.username
-#         email_context['link_home'] = settings.SITE_BASE_URL
-#         email_context = update_email_context(email_context)
-
-#         if not self.has_usable_password():
-#             IDTUser.generate_password_reset_link(self)
-#             email_context['link_home'] = u'%s%s' % (settings.BASE_URL,
-#                                                     reverse('finalise_user_account',
-#                                                     kwargs={'token': self.password_reset_token}))
-
-#         queue_templated_email(request=None, context=email_context,
-#                               subject_template="Welcome to the Cephia Infection Dating Tool",
-#                               text_template='infection_dating_tool/emails/signup.txt',
-#                               html_template='infection_dating_tool/emails/new_member.html',
-#                               to_addresses=[self.email],
-#                               bcc_addresses=settings.BCC_EMAILS or [],
-#                               from_address=settings.FROM_EMAIL)
+    class Meta:
+        unique_together = ('user', 'test')

@@ -24,7 +24,7 @@ from user_management.forms import UserPasswordForm
 from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
-    IDTSubject, IDTAllowedRegistrationEmails
+    IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory
     )
 from cephia.models import CephiaUser
 from django.forms import modelformset_factory
@@ -41,6 +41,7 @@ from cephia.csv_helper import get_csv_response
 import os
 from django.core.mail import send_mail
 from collections import OrderedDict
+from django import forms
 
 CATEGORIES = (
     ('western_blot', 'Western blot'),
@@ -220,21 +221,21 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
     form = GlobalTestForm(request.POST or None)
     form.set_context_data({'user': request.user})
 
-    user_estimates_formset = TestPropertyEstimateFormSet(
-        request.POST or None,
-        queryset=IDTTestPropertyEstimate.objects.none()
-    )
+    # user_estimates_formset = TestPropertyEstimateFormSet(
+    #     request.POST or None,
+    #     queryset=IDTTestPropertyEstimate.objects.none()
+    # )
 
-    if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
+    if request.method == 'POST' and form.is_valid():
         test_instance = form.save()
         test_instance.user = user
         test_instance.save()
 
-        for instance in user_estimates_formset.save(commit=False):
-            instance.user = request.user
-            instance.test = test_instance
-            instance.global_default = True
-            instance.save()
+        # for instance in user_estimates_formset.save(commit=False):
+        #     instance.user = request.user
+        #     instance.test = test_instance
+        #     instance.global_default = True
+        #     instance.save()
 
         messages.info(request, 'Test added successfully')
         if request.is_ajax():
@@ -243,7 +244,7 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
             return redirect("tests")
     
     context['form'] = form
-    context['user_estimates_formset'] = user_estimates_formset
+    # context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
 
@@ -252,6 +253,11 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
     context = context or {}
     user = request.user
     test = IDTDiagnosticTest.objects.get(pk=test_id)
+    if not request.POST:
+        sc, created = SelectedCategory.objects.get_or_create(user=user, test=test)
+        sc.category = test.category
+        sc.save()
+        
     user_default_property_form = UserTestPropertyDefaultForm(request.POST or None)
 
     if test.user:
@@ -266,9 +272,13 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         context['properties'] = properties
 
     user_estimates_formset = TestPropertyEstimateFormSet(
+        test.pk,
+        user,
         request.POST or None,
         queryset=test.properties.filter(user=request.user)
     )
+
+    user_estimates_formset[0].empty_permitted = False
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         if test.user:
@@ -291,7 +301,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
             default_property.global_default = True
             default_property.save()
 
-        messages.info(request, 'Test edited successfully')
+            messages.info(request, 'Test edited successfully')
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
         else:
@@ -304,6 +314,17 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
     
     return render(request, template, context)
 
+
+@idt_login_required(login_url='login')
+def set_selected_category(request):
+    user = request.user
+    test = IDTDiagnosticTest.objects.get(pk=request.GET['test_id'])
+    category = request.GET['category']
+    
+    sc, created = SelectedCategory.objects.get_or_create(user=user, test=test)
+    sc.category = category
+    sc.save()
+    return JsonResponse({'success': True, 'category':category})
 
 @idt_login_required(login_url='login')
 def results(request, file_id=None, template="infection_dating_tool/results.html"):

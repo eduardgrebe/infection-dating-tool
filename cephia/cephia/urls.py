@@ -71,5 +71,8 @@ urlpatterns = [
     
     url(r'^user_registration/finalise/(?P<token>.*)/$', idt_views.finalise_user_account, name='finalise_user_account'),
     url(r'^idt/user_registration/finalise/(?P<token>.*)/$', idt_views.finalise_user_account),
+
+    url(r'^tests/set_selected_category/$', idt_views.set_selected_category, name='set_selected_category'),
+    url(r'^idt/tests/set_selected_category/$', idt_views.set_selected_category),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

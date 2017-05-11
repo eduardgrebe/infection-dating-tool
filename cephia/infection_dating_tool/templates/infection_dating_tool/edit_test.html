@@ -25,6 +25,7 @@
               {% endif %}
               <th>Estimate label</th>
               <th>Diagnostic delay</th>
+              <th>Detection Threshold (c/ml)</th>
               <th>Comment</th>
             </tr>
           </thead>
@@ -32,7 +33,16 @@
             {% for property in properties %}
               <tr {% if property.global_default %}style="color:#990033;"{% endif %}>
                 <td>{{ property.estimate_label }}</td>
-                <td>{{ property.diagnostic_delay }}</td>
+                {% if property.diagnostic_delay %}
+                  <td>{{ property.diagnostic_delay }}</td>
+                {% else %}
+                  <td></td>
+                {% endif %}
+                {% if property.detection_threshold %}
+                  <td>{{ property.detection_threshold }}</td>
+                {% else %}
+                  <td></td>
+                {% endif %}
                 <td>{{ property.comment }}</td>
               </tr>
             {% endfor %}
@@ -46,6 +56,7 @@
                   {% endif %}
                   <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.diagnostic_delay show_label=False %}</td>
+                  <td>{% bootstrap_field formset_form.detection_threshold show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                 </tr>
               {% endwith %}
@@ -56,8 +67,32 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <input type="submit" class="btn btn-primary js-save-mapping" value="Save test" />
+        <input type="submit" class="btn btn-primary js-save-test" value="Save test" />
       </div>
     </div>
   </form>
 </div>
+
+<script>
+ $('#modal-edit-test').on('change', '#id_category', function(event) {
+     var test_id = '{{ test.pk }}';
+     var category = $(this).val()
+     var url = '{% url 'set_selected_category' %}';
+
+     $.get(url, {test_id: test_id, category: category }).done(function(resp) {
+         if (resp.category === 'viral_load') {
+             $("input[id$='diagnostic_delay']").attr('readonly', true);
+         } else {
+             $("input[id$='diagnostic_delay']").attr('readonly', false);
+         }
+     });
+ });
+ $('#modal-edit-test').on('show.bs.modal', function () {
+     var category = $('#id_category').val()
+     if (category === 'viral_load') {
+         $("input[id$='diagnostic_delay']").attr('readonly', true);
+     } else {
+         $("input[id$='diagnostic_delay']").attr('readonly', false);
+     }
+ })
+</script>

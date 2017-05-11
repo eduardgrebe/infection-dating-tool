@@ -5,8 +5,8 @@ from django.forms import ModelForm
 from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.forms import modelformset_factory
-from models import TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate, IDTFileInfo
+from django.forms import modelformset_factory, BaseModelFormSet
+from models import TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate, IDTFileInfo, SelectedCategory
 from django.db.models import Q
 
 from itertools import groupby
@@ -91,7 +91,7 @@ class TestPropertyEstimateForm(BaseModelForm):
     class Meta:
         fields = (
             'global_default', 'estimate_label',
-            'diagnostic_delay',
+            'diagnostic_delay', 'detection_threshold',
             'comment'
         )
         model = IDTTestPropertyEstimate
@@ -99,19 +99,42 @@ class TestPropertyEstimateForm(BaseModelForm):
             'global_default': forms.HiddenInput()
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, test_pk, user, *args, **kwargs):
         super(TestPropertyEstimateForm, self).__init__(*args, **kwargs)
+        self.test_pk = test_pk
+        test = IDTDiagnosticTest.objects.get(pk=self.test_pk)
+        self.user = user
         if self.instance.pk and not self.instance.user:
             self.fields['estimate_label'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
+            self.fields['detection_threshold'].widget.attrs['readonly'] = True
             self.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
             self.fields['comment'].widget.attrs['readonly'] = True
 
+        # if test.category == 'viral_load':
+        #     self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
+
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
         self.fields['diagnostic_delay'].widget.attrs['placeholder'] = ''
+        self.fields['detection_threshold'].widget.attrs['placeholder'] = ''
         self.fields['comment'].widget.attrs['placeholder'] = ''
-        
+
+    def clean_diagnostic_delay(self):
+        test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
+        diagnostic_delay = self.cleaned_data['diagnostic_delay']
+        if test_category != 'viral_load' and not diagnostic_delay:
+            raise forms.ValidationError('This field is required.')
+        return diagnostic_delay
+
+    def clean_detection_threshold(self):
+        test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
+        detection_threshold = self.cleaned_data['detection_threshold']
+        if test_category == 'viral_load' and not detection_threshold:
+            raise forms.ValidationError('Viral Load tests must have a detection threshold.')
+        return detection_threshold
+
+
 class GlobalTestForm(BaseModelForm):
 
     class Meta:
@@ -149,9 +172,21 @@ DataFileTestPropertyMappingFormSet = modelformset_factory(
     extra=0
 )
 
+class BaseTestPropertyEstimateFormSet(BaseModelFormSet):
+
+    def __init__(self, test_pk, user, *args, **kwargs):
+        self.test_pk = test_pk
+        self.user = user
+        super(BaseTestPropertyEstimateFormSet, self).__init__(*args, **kwargs)
+
+    def _construct_form(self, i, **kwargs):
+        return super(BaseTestPropertyEstimateFormSet, self)._construct_form(
+            i, test_pk=self.test_pk, user=self.user, **kwargs)
+    
 TestPropertyEstimateFormSet = modelformset_factory(
     IDTTestPropertyEstimate,
-    form=TestPropertyEstimateForm
+    form=TestPropertyEstimateForm,
+    formset=BaseTestPropertyEstimateFormSet
 )
 
 UserTestPropertyEstimateFormSet = modelformset_factory(
