@@ -82,17 +82,24 @@
      $.get(url, {test_id: test_id, category: category }).done(function(resp) {
          if (resp.category === 'viral_load') {
              $("input[id$='diagnostic_delay']").attr('readonly', true);
+             $("input[id$='detection_threshold']").attr('readonly', false);
          } else {
              $("input[id$='diagnostic_delay']").attr('readonly', false);
+             $("input[id$='detection_threshold']").attr('readonly', true);
          }
      });
  });
+ /* $('#modal-edit-test').load(function() {
+  *     debugger;
+  * });*/
  $('#modal-edit-test').on('show.bs.modal', function () {
      var category = $('#id_category').val()
      if (category === 'viral_load') {
          $("input[id$='diagnostic_delay']").attr('readonly', true);
+         $("input[id$='detection_threshold']").attr('readonly', false);
      } else {
          $("input[id$='diagnostic_delay']").attr('readonly', false);
+         $("input[id$='detection_threshold']").attr('readonly', true);
      }
  })
 </script>

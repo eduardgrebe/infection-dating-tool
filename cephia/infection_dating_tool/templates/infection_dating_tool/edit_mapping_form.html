@@ -31,6 +31,7 @@
                 <th>Active</th>
                 <th>Estimate label</th>
                 <th>Diagnostic delay</th>
+                <th>Detection Threshold (c/ml)</th>
                 <th>Comment</th>
               </tr>
             </thead>
@@ -40,7 +41,16 @@
                 <tr {% if property.global_default %}style="color:#990033;"{% endif %}>
                   <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                   <td>{{ property.estimate_label }}</td>
-                  <td>{{ property.diagnostic_delay }}</td>
+                  {% if property.diagnostic_delay %}
+                    <td>{{ property.diagnostic_delay }}</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  {% if property.detection_threshold %}
+                    <td>{{ property.detection_threshold }}</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
                   <td>{{ property.comment }}</td>
                 </tr>
               {% endfor %}
@@ -52,6 +62,7 @@
                     <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
                     <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.diagnostic_delay show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.detection_threshold show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                   </tr>
                 {% endwith %}

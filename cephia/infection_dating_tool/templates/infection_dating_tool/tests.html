@@ -5,6 +5,14 @@
 {% block content %}
   <div class="container_nav">
 
+    <form method="post">{% csrf_token %}
+      <h2>Viral load growth rate estimate</h2>
+      <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
+      {% bootstrap_form form %}
+      <input type="submit" class="btn btn-primary" value="Submit" />
+    </form>
+    <br>
+    
     <h2>Your tests</h2>
     <button class="js-add-test btn btn-default" data-add-url="{% url 'create_test' %}">Add a new test</button>
     <table class="table table-condensed table-striped">

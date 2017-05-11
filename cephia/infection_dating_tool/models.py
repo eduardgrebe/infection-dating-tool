@@ -279,3 +279,16 @@ class SelectedCategory(models.Model):
 
     class Meta:
         unique_together = ('user', 'test')
+
+
+class SelectedTest(models.Model):
+    user = ProtectedForeignKey('cephia.CephiaUser', null=False)
+    test = models.ForeignKey(IDTDiagnosticTest, null=False)
+
+    class Meta:
+        unique_together = ('user', 'test')
+
+
+class GrowthRateEstimate(models.Model):
+    growth_rate = models.FloatField(null=False, blank=False)
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)

@@ -5,7 +5,7 @@ from forms import (
     IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
-    TestPropertyMappingForm, UserTestPropertyDefaultForm
+    TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -24,7 +24,8 @@ from user_management.forms import UserPasswordForm
 from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
-    IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory
+    IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory,
+    GrowthRateEstimate
     )
 from cephia.models import CephiaUser
 from django.forms import modelformset_factory
@@ -200,15 +201,27 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     global_tests = IDTDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
     global_tests_dict = OrderedDict()
 
+    try:
+        gre = GrowthRateEstimate.objects.get(user=user)
+    except GrowthRateEstimate.DoesNotExist:
+        growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+        gre = GrowthRateEstimate.objects.create(user=user, growth_rate=growth_rate)
+        
+    form = GrowthRateEstimateForm(request.POST or None, instance=gre)
+
     for category in CATEGORIES:
         if category[0] != 'No category':
             tests = global_tests.filter(category=category[0])
         else:
             tests = global_tests.filter(category__isnull=True)
         global_tests_dict[category[1]] = tests
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
                 
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests_dict
+    context['form'] = form
 
     return render(request, template, context)
 
@@ -289,6 +302,10 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
             instance.test = test
+            if test.category == 'viral_load':
+                instance.diagnostic_delay = None
+            else:
+                instance.detection_threshold = None
             instance.save()
 
         if test.user:
@@ -325,6 +342,7 @@ def set_selected_category(request):
     sc.category = category
     sc.save()
     return JsonResponse({'success': True, 'category':category})
+
 
 @idt_login_required(login_url='login')
 def results(request, file_id=None, template="infection_dating_tool/results.html"):
@@ -421,18 +439,21 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
         test = IDTDiagnosticTest.objects.get(pk=test_id)
 
         user_estimates_formset = TestPropertyEstimateFormSet(
+            test_id,
+            user,
             request.POST or None,
             queryset=test.properties.filter(user=request.user)
         )
         context['test'] = test
         context['properties'] = properties
+        context['user_estimates_formset'] = user_estimates_formset
         # context['map_code'] = map_code
     
     else:
         form = TestPropertyMappingForm(request.POST or None)
-        user_estimates_formset = TestPropertyEstimateFormSet(
-            request.POST or None
-        )
+        # user_estimates_formset = TestPropertyEstimateFormSet(
+        #     request.POST or None
+        # )
 
     form.set_context_data({'user': request.user})
 
@@ -462,7 +483,7 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
             return redirect("test_mapping")
     
     context['form'] = form
-    context['user_estimates_formset'] = user_estimates_formset
+    
     return render(request, template, context)
 
 
@@ -478,7 +499,6 @@ def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_fil
 @idt_login_required(login_url='login')
 def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool/edit_mapping_form.html', context=None):
     context = context or {}
-
     test_id = request.GET.get('test_id')
     if not test_id and request.POST:
         test_id = request.POST.get('test')
@@ -510,6 +530,8 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
         context['test'] = test
 
         user_estimates_formset = TestPropertyEstimateFormSet(
+            test_id,
+            user,
             request.POST or None,
             queryset=test.properties.filter(user=request.user)
         )
@@ -519,6 +541,8 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
         if mapping.test:
             properties = mapping.test.properties.for_user(user=None)
             user_estimates_formset = TestPropertyEstimateFormSet(
+                mapping.test.pk,
+                user,
                 request.POST or None,
                 queryset=mapping.test.properties.filter(user=request.user)
             )

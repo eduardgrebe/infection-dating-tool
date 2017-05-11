@@ -6,7 +6,7 @@ from datetime import datetime
 import datetime
 from django.core.management import call_command
 
-from infection_dating_tool.models import IDTSubject, IDTDiagnosticTest, IDTTestPropertyEstimate, TestPropertyMapping, IDTDiagnosticTestHistory
+from infection_dating_tool.models import IDTSubject, IDTDiagnosticTest, IDTTestPropertyEstimate, TestPropertyMapping, IDTDiagnosticTestHistory, GrowthRateEstimate
 from django.db.models import Q
         
 logger = logging.getLogger(__name__)
@@ -57,6 +57,9 @@ class TestsAndPropertiesFileHandler(FileHandler):
         from infection_dating_tool.models import IDTDiagnosticTest, IDTTestPropertyEstimate
         for row_num in range(self.num_rows):
             try:
+                if row_num == 0:
+                    viral_load_growth_rate = self.file_rows[row_num][1]
+                    gre, created = GrowthRateEstimate.objects.get_or_create(user=None, growth_rate=viral_load_growth_rate)
                 if row_num >= 2:
                     row_dict = dict(zip(self.header, self.file_rows[row_num]))
 

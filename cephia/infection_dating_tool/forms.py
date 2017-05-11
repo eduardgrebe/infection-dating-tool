@@ -6,7 +6,10 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory, BaseModelFormSet
-from models import TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate, IDTFileInfo, SelectedCategory
+from models import (
+    TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate,
+    IDTFileInfo, SelectedCategory, GrowthRateEstimate
+    )
 from django.db.models import Q
 
 from itertools import groupby
@@ -111,9 +114,6 @@ class TestPropertyEstimateForm(BaseModelForm):
             self.fields['foursigma_diagnostic_delay_days'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay_median'].widget.attrs['readonly'] = True
             self.fields['comment'].widget.attrs['readonly'] = True
-
-        # if test.category == 'viral_load':
-        #     self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
 
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
         self.fields['diagnostic_delay'].widget.attrs['placeholder'] = ''
@@ -298,3 +298,13 @@ class GroupedModelChoiceField(Grouped, ModelChoiceField):
 
 class GroupedModelMultiChoiceField(Grouped, ModelMultipleChoiceField):
     choices = property(Grouped._get_choices, ModelMultipleChoiceField._set_choices)
+
+
+class GrowthRateEstimateForm(BaseModelForm):
+    class Meta:
+        model = GrowthRateEstimate
+        fields = ['growth_rate']
+
+    def __init__(self, *args, **kwargs):
+        super(GrowthRateEstimateForm, self).__init__(*args, **kwargs)
+        self.fields['growth_rate'].label = ''

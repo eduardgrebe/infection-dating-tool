@@ -74,5 +74,8 @@ urlpatterns = [
 
     url(r'^tests/set_selected_category/$', idt_views.set_selected_category, name='set_selected_category'),
     url(r'^idt/tests/set_selected_category/$', idt_views.set_selected_category),
+
+    url(r'^mapping/set_selected_test/$', idt_views.set_selected_category, name='set_selected_test'),
+    url(r'^idt/mapping/set_selected_test/$', idt_views.set_selected_test),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
