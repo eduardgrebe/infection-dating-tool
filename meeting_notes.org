@@ -645,3 +645,41 @@ text)
 # To register to use this tool, please send an email to alexwelte@sun.ac.za, and provide
 # the email which you will use to register. Once you receive confirmation that your email
 # has been added to the allowed list, you can return to this page and register.
+* notes from meeting 10/05 & 11/05
+** work on now
+viral load tests need detection threshold(c/ml)
+this replaces the diagnostic delay for these tests
+need a global variable to calculate the DD for these tests and must insert the logic to get the new value in the calculation.
+user can set their own global variable or use default.
+
+new landing home page (admin editable text) will need admin users
+
+reduce white space between header and tabs
+
+header is only way to landing page
+
+global variable = viral load growth rate estimate - growth rate in (log_10/day)
+Small, italics, above the field: Fiebig et al. (AIDS 2003): 0.35 log_{10} copies/ml/day
+
+Viral growth rate (log_10 copies/ml/day): text box
+
+math.log10( x ) (x = detection threshold provided) / growth rate
+
+** extra features for idt
+*** new landing page in place of data files
+only has overall tab options at the top. when you click on either you are given a new sub-row of menu tabs
+
+
+
+**** individual patient infection dating:
+all old idt pages
+rename data files - testing histories
+
+**** blood products residual risk
+tabs:
+primary tab: testing protocol
+tests tab again for easy access
+
+****** testing protocol
+
+
