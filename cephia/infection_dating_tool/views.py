@@ -424,9 +424,14 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
 @idt_login_required(login_url='login')
 def create_test_mapping(request, template='infection_dating_tool/create_mapping_form.html', context=None):
     context = {}
-    user = request.user
-    map_code = request.GET.get('map_code')
     test_id = request.GET.get('test_id')
+    if not test_id and request.POST:
+        test_id = request.POST.get('test')
+    map_code = request.GET.get('map_code')
+    if not map_code and request.POST:
+        map_code = request.POST.get('code')
+
+    user = request.user
     
     if test_id:
         test_active_property = IDTDiagnosticTest.objects.get(pk=test_id).properties.filter(global_default=True).first()

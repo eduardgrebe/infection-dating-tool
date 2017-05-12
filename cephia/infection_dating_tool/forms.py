@@ -121,14 +121,20 @@ class TestPropertyEstimateForm(BaseModelForm):
         self.fields['comment'].widget.attrs['placeholder'] = ''
 
     def clean_diagnostic_delay(self):
-        test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
+        try:
+            test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
+        except SelectedCategory.DoesNotExist:
+            test_category = IDTDiagnosticTest.objects.get(pk=self.test_pk).category
         diagnostic_delay = self.cleaned_data['diagnostic_delay']
         if test_category != 'viral_load' and not diagnostic_delay:
             raise forms.ValidationError('This field is required.')
         return diagnostic_delay
 
     def clean_detection_threshold(self):
-        test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
+        try:
+            test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
+        except SelectedCategory.DoesNotExist:
+            test_category = IDTDiagnosticTest.objects.get(pk=self.test_pk).category
         detection_threshold = self.cleaned_data['detection_threshold']
         if test_category == 'viral_load' and not detection_threshold:
             raise forms.ValidationError('Viral Load tests must have a detection threshold.')

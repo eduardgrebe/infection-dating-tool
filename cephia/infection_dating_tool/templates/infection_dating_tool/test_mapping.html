@@ -110,14 +110,20 @@
 
      $('#modal-add-mapping').on('click', '.js-confirm-add-mapping', function(event) {
          event.preventDefault();
-         var form = $('#modal-add-mapping').find('form');
-         post_data = form.serialize();
-         var that = this;
-         $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.redirect_url) {
-                 location.href = resp.redirect_url
+         
+         /* var form = $('#modal-add-mapping').find('form');*/
+         var form = $(this).parents('form');
+         var post_data = form.serialize();
+         var modal = $(this).parents('.modal-dialog').parent()
+         /* var that = this;*/
+         
+         $.post(form.attr('action'), post_data).done(function(html) {
+             if (html.success) {
+                 location.reload();
+                 /* location.href = resp.redirect_url*/
              } else {
-                 $('#modal-add-mapping').html(resp)
+                 modal.html(html)
+                 /* $('#modal-add-mapping').html(resp)*/
              }
          })
      })
