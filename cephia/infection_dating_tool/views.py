@@ -506,6 +506,10 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
             return redirect("test_mapping")
     
     context['form'] = form
+
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    context['growth_rate'] = growth_rate
     
     return render(request, template, context)
 
@@ -609,6 +613,10 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
         else:
             return redirect("test_mapping")
 
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    context['growth_rate'] = growth_rate
+    
     context['form'] = form
     context['properties'] = properties
     context['map'] = mapping
