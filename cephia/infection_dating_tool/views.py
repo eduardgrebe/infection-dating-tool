@@ -292,7 +292,8 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         queryset=test.properties.filter(user=request.user)
     )
 
-    user_estimates_formset[0].empty_permitted = False
+    if test.user:
+        user_estimates_formset[0].empty_permitted = False
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         if test.user:
