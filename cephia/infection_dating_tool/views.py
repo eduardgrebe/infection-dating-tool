@@ -274,6 +274,10 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         
     user_default_property_form = UserTestPropertyDefaultForm(request.POST or None)
 
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    context['growth_rate'] = growth_rate
+
     if test.user:
         form = UserTestForm(request.POST or None, instance=test)
         default_property = test.properties.filter(global_default=True).first()
@@ -284,6 +288,9 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         form.fields['category'].initial = test.category
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['properties'] = properties
+        if test.category == 'viral_load':
+            
+            context['global_vl_dd'] = math.log10(properties.first().detection_threshold) / growth_rate
 
     user_estimates_formset = TestPropertyEstimateFormSet(
         test.pk,

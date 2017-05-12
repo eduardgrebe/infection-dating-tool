@@ -25,7 +25,7 @@
               {% endif %}
               <th>Estimate label</th>
               <th>Diagnostic delay</th>
-              <th>Detection Threshold (c/ml)</th>
+              <th>Detection threshold (c/ml)</th>
               <th>Comment</th>
             </tr>
           </thead>
@@ -36,10 +36,12 @@
                 {% if property.diagnostic_delay %}
                   <td>{{ property.diagnostic_delay }}</td>
                 {% else %}
-                  <td></td>
+                  <td>{% if global_vl_dd %}({{ global_vl_dd }}){% endif %}</td>
                 {% endif %}
                 {% if property.detection_threshold %}
-                  <td>{{ property.detection_threshold }}</td>
+                  <td>
+                    {{ property.detection_threshold }}
+                  </td>
                 {% else %}
                   <td></td>
                 {% endif %}
@@ -55,8 +57,13 @@
                     <td><input {% ifequal property.pk default_property %}checked{% endifequal %} name="{{ user_default_property_form.default_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
                   {% endif %}
                   <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
-                  <td>{% bootstrap_field formset_form.diagnostic_delay show_label=False %}</td>
-                  <td>{% bootstrap_field formset_form.detection_threshold show_label=False %}</td>
+                  <td>
+                    {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
+                    <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;"></div>
+                  </td>
+                  <td>
+                    {% bootstrap_field formset_form.detection_threshold show_label=False %}
+                  </td>
                   <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                 </tr>
               {% endwith %}
@@ -82,10 +89,14 @@
      $.get(url, {test_id: test_id, category: category }).done(function(resp) {
          if (resp.category === 'viral_load') {
              $("input[id$='diagnostic_delay']").attr('readonly', true);
+             $("input[id$='diagnostic_delay']").hide();
              $("input[id$='detection_threshold']").attr('readonly', false);
+             $("div[id$='_vl_dd']").show();
          } else {
              $("input[id$='diagnostic_delay']").attr('readonly', false);
+             $("input[id$='diagnostic_delay']").show();
              $("input[id$='detection_threshold']").attr('readonly', true);
+             $("div[id$='_vl_dd']").hide();
          }
      });
  });
@@ -93,10 +104,27 @@
      var category = $('#id_category').val()
      if (category === 'viral_load') {
          $("input[id$='diagnostic_delay']").attr('readonly', true);
+         $("input[id$='diagnostic_delay']").hide();
          $("input[id$='detection_threshold']").attr('readonly', false);
+         $("div[id$='_vl_dd']").show();
      } else {
          $("input[id$='diagnostic_delay']").attr('readonly', false);
+         $("input[id$='diagnostic_delay']").show();
          $("input[id$='detection_threshold']").attr('readonly', true);
+         $("div[id$='_vl_dd']").hide();
      }
  })
+
+ $('#modal-edit-test').on('change', "input[id$='detection_threshold']", function(event) {
+     var name = $(this).attr('name');
+     var value = $(this).val();
+     var growth_rate = "{{ growth_rate }}";
+     var log10_value = log10(value);
+     function log10(val) {
+         return Math.log(val) / Math.LN10;
+     }
+     var vl_dd = log10_value / growth_rate;
+     var vl_dd_name = '#' + name + '_vl_dd';
+     $(vl_dd_name).text("(" + vl_dd + ")");
+ });
 </script>
