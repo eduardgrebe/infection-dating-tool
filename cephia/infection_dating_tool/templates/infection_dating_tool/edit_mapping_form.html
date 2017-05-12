@@ -79,3 +79,34 @@
     </div>
   </form>
 </div>
+
+<script>
+ $('#modal-edit-mapping').on('change', '#id_test', function(event) {
+     var test_id = $('#id_test').val();
+     var url = '{% url 'get_test_category' %}';
+
+     $.get(url, {test_id: test_id }).done(function(resp) {
+         if (resp.category === 'viral_load') {
+             $("input[id$='diagnostic_delay']").attr('readonly', true);
+             $("input[id$='detection_threshold']").attr('readonly', false);
+         } else {
+             $("input[id$='diagnostic_delay']").attr('readonly', false);
+             $("input[id$='detection_threshold']").attr('readonly', true);
+         }
+     });
+ });
+ $('#modal-edit-mapping').on('show.bs.modal', function () {
+     var test_id = $('#id_test').val();
+     var url = '{% url 'get_test_category' %}';
+
+     $.get(url, {test_id: test_id }).done(function(resp) {
+         if (resp.category === 'viral_load') {
+             $("input[id$='diagnostic_delay']").attr('readonly', true);
+             $("input[id$='detection_threshold']").attr('readonly', false);
+         } else {
+             $("input[id$='diagnostic_delay']").attr('readonly', false);
+             $("input[id$='detection_threshold']").attr('readonly', true);
+         }
+     });
+ })
+</script>

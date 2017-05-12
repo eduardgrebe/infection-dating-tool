@@ -40,6 +40,7 @@ from django.db.models import Max, Min
 from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
 import os
+import math
 from django.core.mail import send_mail
 from collections import OrderedDict
 from django import forms
@@ -343,6 +344,11 @@ def set_selected_category(request):
     sc.save()
     return JsonResponse({'success': True, 'category':category})
 
+@idt_login_required(login_url='login')
+def get_test_category(request):
+    test = IDTDiagnosticTest.objects.get(pk=request.GET['test_id'])
+    return JsonResponse({'success': True, 'category':test.category})
+
 
 @idt_login_required(login_url='login')
 def results(request, file_id=None, template="infection_dating_tool/results.html"):
@@ -475,6 +481,10 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
             instance.test = mapping_instance.test
             if instance.pk is None and mapping_instance.test_property is None:
                 selected_property = instance
+            if instance.test.category == 'viral_load':
+                instance.diagnostic_delay = None
+            else:
+                instance.detection_threshold = None
             instance.save()
 
         if mapping_instance.test_property is None:
@@ -574,6 +584,10 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             instance.test = mapping_instance.test
             if instance.pk is None and mapping_instance.test_property is None:
                 selected_property = instance
+            if instance.test.category == 'viral_load':
+                instance.diagnostic_delay = None
+            else:
+                instance.detection_threshold = None
             instance.save()
 
         if mapping_instance.test_property is None:
@@ -734,10 +748,14 @@ def set_active_property(test):
 def check_mapping_details(mapping, user, data_file):
     completed_mapping = True
     for m in mapping:
-        if not m.code or not  m.test or not m.test_property:
+        if not m.code or not m.test or not m.test_property:
             completed_mapping = False
         elif m.code and m.test and m.test_property:
             if m.test_property not in m.test.properties.all():
+                completed_mapping = False
+            if m.test.category == 'viral_load' and not m.test_property.detection_threshold:
+                completed_mapping = False
+            elif m.test.category != 'viral_load' and not m.test_property.diagnostic_delay:
                 completed_mapping = False
 
         if completed_mapping == False:
@@ -793,9 +811,23 @@ def update_adjusted_dates(user, data_file):
         # codes = list( file_test_history.all().values_list('test_code', flat=True).distinct() )
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user)
 
-        map_property_means = list( mapping.values_list(
+        vl_mapping = mapping.filter(test__category='viral_load')
+        other_mapping = mapping.exclude(test__category='viral_load')
+
+        vl_map_detection_thresholds = list( vl_mapping.values_list(
+            'code', 'test_property__detection_threshold'
+        ).distinct() )
+
+        map_property_means = list( other_mapping.values_list(
             'code', 'test_property__diagnostic_delay'
         ).distinct() )
+
+        try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+        except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+
+        for x in vl_map_detection_thresholds:
+            diagnostic_delay = math.log10(x[1]) / growth_rate
+            map_property_means.append((x[0], diagnostic_delay))
 
         map_property_means = dict( (v[0], v[1]) for v in map_property_means )
         test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
