@@ -101,12 +101,33 @@
      });
  });
  $('#modal-edit-test').on('show.bs.modal', function () {
+     /* function getElementsByIdStartsWith(container, selectorTag, prefix) {
+      *     var items = [];
+      *     var myPosts = document.getElementById(container).getElementsByTagName(selectorTag);
+      *     for (var i = 0; i < myPosts.length; i++) {
+      *         //omitting undefined null check for brevity
+      *         if (myPosts[i].id.lastIndexOf(prefix, 0) === 0) {
+      *             items.push(myPosts[i]);
+      *         }
+      *     }
+      *     return items;
+      * }*/
+     
      var category = $('#id_category').val()
      if (category === 'viral_load') {
          $("input[id$='diagnostic_delay']").attr('readonly', true);
          $("input[id$='diagnostic_delay']").hide();
          $("input[id$='detection_threshold']").attr('readonly', false);
          $("div[id$='_vl_dd']").show();
+
+         /* var postedOnes = getElementsByIdStartsWith("form-group", "input", "diagnostic_delay-");
+          * debugger;
+          * for(var i = 0; i < inputs.length; i++) {
+          *     debugger;
+          *     if(inputs[i].name.indexOf('q1_') == 0) {
+          *         eles.push(inputs[i]);
+          *     }
+          * }*/
      } else {
          $("input[id$='diagnostic_delay']").attr('readonly', false);
          $("input[id$='diagnostic_delay']").show();
@@ -125,6 +146,7 @@
      }
      var vl_dd = log10_value / growth_rate;
      var vl_dd_name = '#' + name + '_vl_dd';
-     $(vl_dd_name).text("(" + vl_dd + ")");
+     $(vl_dd_name).text("(" + vl_dd.toFixed(2) + ")");
  });
+ 
 </script>

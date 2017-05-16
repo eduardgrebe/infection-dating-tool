@@ -290,7 +290,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         context['properties'] = properties
         if test.category == 'viral_load':
             
-            context['global_vl_dd'] = math.log10(properties.first().detection_threshold) / growth_rate
+            context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
 
     user_estimates_formset = TestPropertyEstimateFormSet(
         test.pk,
