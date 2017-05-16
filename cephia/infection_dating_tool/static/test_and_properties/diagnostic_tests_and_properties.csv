@@ -1,5 +1,5 @@
 viral_load_growth_rate,0.35
-test_id,test_name,test_category,estimate_label,diagnostic_delay,VL_DT,comment,diagnostic_delay_mean,diagnostic_delay_median,diagnostic_delay_mean_se,diagnostic_delay_median_se,diagnostic_delay_mean_ci_lower,diagnostic_delay_mean_ci_upper,diagnostic_delay_median_ci_lower,diagnostic_delay_median_ci_upper,diagnostic_delay_range,diagnostic_delay_iqr
+test_id,test_name,test_category,estimate_label,diagnostic_delay,viral_load_detection_threshold,comment,diagnostic_delay_mean,diagnostic_delay_median,diagnostic_delay_mean_se,diagnostic_delay_median_se,diagnostic_delay_mean_ci_lower,diagnostic_delay_mean_ci_upper,diagnostic_delay_median_ci_lower,diagnostic_delay_median_ci_upper,diagnostic_delay_range,diagnostic_delay_iqr
 1,BioRad GenScreen HIV-1/HIV-2 +0 EIA,3rd Gen Lab Assay (IgM sensitive Antibody),CEPHIA Estimate,18.1,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,18.1,,1.58,,,15,21.2,,
 2,BioRad GS HIV-1 Western blot Indeterminate,Western blot,CEPHIA Estimate,14.8,,"Any band positive, per Owen, S.M. presentation at the AACC Annual Meeting Bio-Rad Industry Workshop, July 2015",,14.8,,,,,,,,
 3,BioRad GS HIV-1 Western blot Fully Reactive,Western blot,CEPHIA Estimate,29.6,,">= 2 reactive bands of (p24, gp41, gp120/160), per Delaney, K.P., et al. (2017) CID, 64(1): 53-59",,29.6,,3.38,,,22.9,36.2,,
