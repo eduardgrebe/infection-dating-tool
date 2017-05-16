@@ -575,9 +575,9 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             )
             context['user_estimates_formset'] = user_estimates_formset
         else:
-            user_estimates_formset = TestPropertyEstimateFormSet(
-                request.POST or None
-            )
+            # user_estimates_formset = TestPropertyEstimateFormSet(
+            #     request.POST or None
+            # )
             properties = IDTTestPropertyEstimate.objects.none()
 
     

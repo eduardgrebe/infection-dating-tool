@@ -84,7 +84,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
                         test_property = properties.first()
                         test_property.diagnostic_delay = diagnostic_delay
                         if not diagnostic_delay:
-                            test_property.detection_threshold = 0.35 #TODO this must be imported from the file
+                            test_property.detection_threshold = float(row_dict['viral_load_detection_threshold'])
                         test_property.comment = row_dict['comment']
                         test_property.test = test
                         test_property.global_default = True
