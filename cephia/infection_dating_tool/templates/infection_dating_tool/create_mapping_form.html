@@ -95,6 +95,25 @@
      });
  });
 
+ function calculate_nums() {
+     var inputs = document.querySelectorAll("input[id$='detection_threshold']");
+     for (var i = 0, len = inputs.length; i < len; i++) {
+         var name = inputs[i].name;
+         var value = inputs[i].value;
+         if (value) {
+             var growth_rate = "{{ growth_rate }}";
+             var log10_value = log10(value);
+             function log10(val) {
+                 return Math.log(val) / Math.LN10;
+             }
+             var vl_dd = log10_value / growth_rate;
+             var vl_dd_name = '#' + name + '_vl_dd';
+             $(vl_dd_name).text("(" + vl_dd.toFixed(2) + ")");
+         }
+     }
+ }
+ calculate_nums();
+
  $('#modal-add-mapping').on('change', "input[id$='detection_threshold']", function(event) {
      var name = $(this).attr('name');
      var value = $(this).val();
@@ -105,6 +124,6 @@
      }
      var vl_dd = log10_value / growth_rate;
      var vl_dd_name = '#' + name + '_vl_dd';
-     $(vl_dd_name).text("(" + vl_dd + ")");
+     $(vl_dd_name).text("(" + vl_dd.toFixed(2) + ")");
  });
 </script>

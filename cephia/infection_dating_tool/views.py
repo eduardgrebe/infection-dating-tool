@@ -289,7 +289,6 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['properties'] = properties
         if test.category == 'viral_load':
-            
             context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
 
     user_estimates_formset = TestPropertyEstimateFormSet(
@@ -536,6 +535,10 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
 
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
+
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    context['growth_rate'] = growth_rate
     
     if test_id:
         map_code = request.GET.get('map_code')
@@ -553,6 +556,9 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
                                                 'test_property': test_active_property}
         )
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
+
+        if test.category == 'viral_load':
+            context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
         
         context['test'] = test
 
@@ -574,6 +580,8 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
                 queryset=mapping.test.properties.filter(user=request.user)
             )
             context['user_estimates_formset'] = user_estimates_formset
+            if mapping.test.category == 'viral_load':
+                context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
         else:
             # user_estimates_formset = TestPropertyEstimateFormSet(
             #     request.POST or None
