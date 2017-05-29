@@ -445,6 +445,10 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
         map_code = request.POST.get('code')
 
     user = request.user
+
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    context['growth_rate'] = growth_rate
     
     if test_id:
         test_active_property = IDTDiagnosticTest.objects.get(pk=test_id).properties.filter(global_default=True).first()
@@ -455,6 +459,9 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
         )
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = IDTDiagnosticTest.objects.get(pk=test_id)
+
+        if test.category == 'viral_load':
+            context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
 
         user_estimates_formset = TestPropertyEstimateFormSet(
             test_id,

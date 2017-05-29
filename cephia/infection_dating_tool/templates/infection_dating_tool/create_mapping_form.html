@@ -36,7 +36,7 @@
                   {% if property.diagnostic_delay %}
                     <td>{{ property.diagnostic_delay }}</td>
                   {% else %}
-                    <td></td>
+                    <td>{% if global_vl_dd %}({{ global_vl_dd }}){% endif %}</td>
                   {% endif %}
                   {% if property.detection_threshold %}
                     <td>{{ property.detection_threshold }}</td>
