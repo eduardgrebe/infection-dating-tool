@@ -1,4 +1,4 @@
-viral_load_growth_rate,0.35
+viral_load_growth_rate,0.35,,,,,,,,,,,,,,,
 test_id,test_name,test_category,estimate_label,diagnostic_delay,viral_load_detection_threshold,comment,diagnostic_delay_mean,diagnostic_delay_median,diagnostic_delay_mean_se,diagnostic_delay_median_se,diagnostic_delay_mean_ci_lower,diagnostic_delay_mean_ci_upper,diagnostic_delay_median_ci_lower,diagnostic_delay_median_ci_upper,diagnostic_delay_range,diagnostic_delay_iqr
 1,BioRad GenScreen HIV-1/HIV-2 +0 EIA,3rd Gen Lab Assay (IgM sensitive Antibody),CEPHIA Estimate,18.1,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,18.1,,1.58,,,15,21.2,,
 2,BioRad GS HIV-1 Western blot Indeterminate,Western blot,CEPHIA Estimate,14.8,,"Any band positive, per Owen, S.M. presentation at the AACC Annual Meeting Bio-Rad Industry Workshop, July 2015",,14.8,,,,,,,,
@@ -12,7 +12,7 @@ test_id,test_name,test_category,estimate_label,diagnostic_delay,viral_load_detec
 11,Aptima HIV-1 RNA Qualitative Assay,Viral Load,CEPHIA Estimate,,30,assay detection threshold of 30 per well,,,,,,,,,,
 12,Abbott ARCHITECT HIV Ag/Ab Combo,4th Gen Lab Assay (p24 Ag/Ab Combo),CEPHIA Estimate,10.8,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,10.8,,1.14,,,8.6,13,,
 13,Ortho VITROS anti-HIV-1+2 Assay,3rd Gen Lab Assay (IgM sensitive Antibody),CEPHIA Estimate,16.8,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,16.8,,0.94,,,14.9,18.6,,
-14,Multispot HIV-1/HIV-2 Rapid Test (screening),2nd Gen Lab Assay (Recombinant IgG sensitive Antibody),CEPHIA Estimate,21.6,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,21.6,,1.53,,,18.6,24.6,,
+14,Multispot HIV-1/HIV-2 Rapid Test ,2nd Gen Lab Assay (Recombinant IgG sensitive Antibody),CEPHIA Estimate,21.6,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,21.6,,1.53,,,18.6,24.6,,
 15,Medmira Reveal G2,2nd Gen Rapid Test,CEPHIA Estimate,23.4,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,23.4,,1.31,,,20.8,26,,
 16,Medmira Reveal G3,2nd Gen Rapid Test,CEPHIA Estimate,24.8,,"Masciotra, S., et al. (2011) J Clin Virology, 52S: S17-S22",,24.8,,,,,,,,
 17,Trinity Biotech Unigold Rapid HIV Test,3rd Gen Rapid Test,CEPHIA Estimate,25.1,,"Delaney, K.P., et al. (2017) CID, 64(1):53-59",,25.1,,3.53,,,25.6,32.1,,

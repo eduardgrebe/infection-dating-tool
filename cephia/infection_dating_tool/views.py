@@ -271,7 +271,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         sc, created = SelectedCategory.objects.get_or_create(user=user, test=test)
         sc.category = test.category
         sc.save()
-        
+
     user_default_property_form = UserTestPropertyDefaultForm(request.POST or None)
 
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
@@ -302,21 +302,22 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         user_estimates_formset[0].empty_permitted = False
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
+        import pdb;pdb.set_trace()
         if test.user:
             test_instance = form.save()
         else:
-            test_instance = test
-
+            test_instance = IDTDiagnosticTest.objects.get(pk=test_id)
+        
         for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
-            instance.test = test
-            if test.category == 'viral_load':
+            instance.test = test_instance
+            if test_instance.category == 'viral_load':
                 instance.diagnostic_delay = None
             else:
                 instance.detection_threshold = None
             instance.save()
 
-        if test.user:
+        if test_instance.user:
             default_property_pk = request.POST['default_property']
             user_test_properties = test_instance.properties.all().global_default = False
             if default_property_pk:
