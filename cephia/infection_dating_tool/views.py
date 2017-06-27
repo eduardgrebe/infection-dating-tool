@@ -5,7 +5,8 @@ from forms import (
     IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
-    TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm
+    TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm,
+    TestPropertyEstimateCreateTestFormSet
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -228,7 +229,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
 
 
 @idt_login_required(login_url='login')
-def create_test(request, template='infection_dating_tool/create_test_form.html', context=None):
+def create_test(request, category=None, template='infection_dating_tool/create_test_form.html', context=None):
     context = {}
     user = request.user
 
@@ -239,6 +240,14 @@ def create_test(request, template='infection_dating_tool/create_test_form.html',
     #     request.POST or None,
     #     queryset=IDTTestPropertyEstimate.objects.none()
     # )
+
+    if category:
+        user_estimates_formset = TestPropertyEstimateCreateTestFormSet(
+            category,
+            user,
+            request.POST or None,
+            queryset=test.properties.filter(user=request.user)
+        )
 
     if request.method == 'POST' and form.is_valid():
         test_instance = form.save()
@@ -302,7 +311,6 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
         user_estimates_formset[0].empty_permitted = False
 
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
-        import pdb;pdb.set_trace()
         if test.user:
             test_instance = form.save()
         else:
