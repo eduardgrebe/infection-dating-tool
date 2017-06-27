@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template import RequestContext
+from django.template.loader import render_to_string
 from forms import (
     IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
@@ -735,6 +736,25 @@ def validate_mapping_from_page(request, file_id, context=None):
     validate_mapping(file_id, user)
 
     return test_mapping(request, file_id)
+
+
+@idt_login_required(login_url='login')
+def residual_risk(request, template="infection_dating_tool/residual_risk.html"):
+    context = {}
+
+    infectious_period = 1
+
+    if request.is_ajax():
+        form_selection = request.GET['form']
+        return render(request, "infection_dating_tool/infectious_period_form.html", {'form_selection': form_selection})
+
+    context['infectious_period'] = infectious_period
+    return render(request, template, context)
+
+def load_form(request, remplate="infection_dating_tool/infectious_period_form.html"):
+    form_selection = request.GET['form']
+    context['test'] = form_selection
+    return render(request, template, context)
 
 
 def finalise_user_account(request, token, template='infection_dating_tool/complete_signup.html', hide_error_message=None):

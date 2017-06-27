@@ -1,0 +1,41 @@
+{% extends 'infection_dating_tool/base.html' %}
+{% load bootstrap3 %}
+
+{% block content %}
+  <div class="container_nav">
+
+    <div class="panel panel-info">
+
+      <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
+        <h3 class="panel-title">
+          Start of Infectious Period:
+          {{ infectious_period }}
+        </h3>
+      </div>
+
+      <div id="panel" class="panel-collapse collapse">
+
+        <div class="panel-body infectious_period--radio_selection">
+          <p>
+            <input checked id="specify" name="form_select" type="radio" value="1"
+                   data-url="{% url 'residual_risk' %}" onclick="idt.specify_select();">
+            <label for="specify">Specify start of infectious period</label>
+          </p>
+          <p>
+            <input id="calculate" name="form_select" type="radio" value="2"
+                   data-url="{% url 'residual_risk' %}" onclick="idt.calculate_select();">
+            <label for="calculate">Calculate start of infectious period from viral load grwth</label>
+          </p>
+        </div>
+
+        <div id="form-panel" class="panel-body">
+          {% include 'infection_dating_tool/infectious_period_form.html' %}
+        </div>
+
+      </div>
+    </div>
+
+    <div class="col-md-8 hidden" id="preview_results"></div>
+
+  </div>
+{% endblock %}

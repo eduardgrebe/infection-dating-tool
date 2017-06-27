@@ -254,3 +254,14 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
 .nav_active {
     color: #fff;
 }
+
+.infectious_period--header {
+    cursor: pointer;
+    text-align: center;
+}
+
+.infectious_period--radio_selection {
+    border-bottom: 1px solid #bce8f1;
+    font-size: medium;
+}
+

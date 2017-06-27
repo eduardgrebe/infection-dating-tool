@@ -292,3 +292,15 @@ class SelectedTest(models.Model):
 class GrowthRateEstimate(models.Model):
     growth_rate = models.FloatField(null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
+
+
+class InfectiousPeriod(models.Model):
+    class Meta:
+        db_table = "idt_infectious_period"
+
+    user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
+    infectious_period = models.FloatField(null=False)
+    infectious_period_input = models.FloatField(null=True, blank=False)
+    viral_growth_rate = models.FloatField(null=True, blank=False)
+    origin_viral_load = models.FloatField(null=True, blank=False)
+    viral_load = models.FloatField(null=True, blank=False)
