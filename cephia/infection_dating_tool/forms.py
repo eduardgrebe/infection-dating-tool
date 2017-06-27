@@ -8,7 +8,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory, BaseModelFormSet
 from models import (
     TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate,
-    IDTFileInfo, SelectedCategory, GrowthRateEstimate
+    IDTFileInfo, SelectedCategory, GrowthRateEstimate, InfectiousPeriod
     )
 from django.db.models import Q
 
@@ -385,3 +385,20 @@ class GrowthRateEstimateForm(BaseModelForm):
     def __init__(self, *args, **kwargs):
         super(GrowthRateEstimateForm, self).__init__(*args, **kwargs)
         self.fields['growth_rate'].label = ''
+
+
+class SpecifyInfectiousPeriodForm(BaseModelForm):
+    class Meta:
+        model = InfectiousPeriod
+        fields = ['infectious_period_input']
+
+    def save(self, user, commit=True):
+        infectious_period = super(SpecifyInfectiousPeriodForm, self).save(commit=False)
+        infectious_period.infectious_period = infectious_period.infectious_period_input
+
+        if not infectious_period.user:
+            infectious_period.user = user
+        if commit:
+            infectious_period.save()
+
+        return infectious_period

@@ -1,1 +1,19 @@
-{{ form_selection }}
+{% load bootstrap3 %}
+
+<form method="POST">
+  {% csrf_token %}
+  {% if form_selection == 'specify' %}
+    <div class="infectious_period--form_label">
+      Start of infectious period relative to origin/zero of diagnostic scale
+    </div>
+    <div class="infectious_period--infect_form">
+      {% bootstrap_field infect_form.infectious_period_input show_label=False %}
+    </div>
+    <div class="infectious_period--form_text">
+      days
+    </div>
+    <input type="submit" class="btn btn-primary infectious_period--submit" value="Apply" />
+  {% elif form_selection == 'calculate' %}
+
+  {% endif %}
+</form>

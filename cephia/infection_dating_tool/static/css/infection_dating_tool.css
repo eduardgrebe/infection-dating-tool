@@ -265,3 +265,21 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     font-size: medium;
 }
 
+.infectious_period--infect_form {
+    width:300px;
+    float:left;
+}
+
+.infectious_period--form_label {
+    width:100%;
+    font-size:medium;
+}
+
+.infectious_period--form_text {
+    float:left;
+    margin-left:10px;
+}
+
+.infectious_period--submit {
+    float:right;
+}

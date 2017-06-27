@@ -300,7 +300,7 @@ class InfectiousPeriod(models.Model):
 
     user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
     infectious_period = models.FloatField(null=False)
-    infectious_period_input = models.FloatField(null=True, blank=False)
+    infectious_period_input = models.FloatField(null=True, blank=False, verbose_name='Start of infectious period')
     viral_growth_rate = models.FloatField(null=True, blank=False)
-    origin_viral_load = models.FloatField(null=True, blank=False)
-    viral_load = models.FloatField(null=True, blank=False)
+    origin_viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at origin/zero')
+    viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')

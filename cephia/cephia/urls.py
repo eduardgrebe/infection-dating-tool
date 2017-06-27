@@ -81,7 +81,4 @@ urlpatterns = [
     url(r'^residual_risk/$', idt_views.residual_risk, name='residual_risk'),
     url(r'^idt/residual_risk/$', idt_views.residual_risk),
     
-    url(r'^load_form/$', idt_views.load_form, name='load_form'),
-    url(r'^idt/load_form/$', idt_views.load_form ),
-    
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -7,7 +7,7 @@ from forms import (
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm,
-    TestPropertyEstimateCreateTestFormSet
+    TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -27,7 +27,7 @@ from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
     IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory,
-    GrowthRateEstimate
+    GrowthRateEstimate, InfectiousPeriod
     )
 from cephia.models import CephiaUser
 from django.forms import modelformset_factory
@@ -742,18 +742,30 @@ def validate_mapping_from_page(request, file_id, context=None):
 def residual_risk(request, template="infection_dating_tool/residual_risk.html"):
     context = {}
 
-    infectious_period = 1
+    user = request.user
+    infectious_period = InfectiousPeriod.objects.filter(user=user).first()
+    if not infectious_period:
+        infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
+
+    form_selection = 'specify'
+    infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
 
     if request.is_ajax():
         form_selection = request.GET['form']
-        return render(request, "infection_dating_tool/infectious_period_form.html", {'form_selection': form_selection})
+        if form_selection == 'specify':
+            infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
+        else:
+            infect_form = None
+        return render( request, "infection_dating_tool/infectious_period_form.html",
+                       {'form_selection': form_selection, 'infect_form': infect_form} )
+
+    if request.POST and infect_form.is_valid():
+        if form_selection == 'specify':
+            infectious_period = infect_form.save(user)
 
     context['infectious_period'] = infectious_period
-    return render(request, template, context)
-
-def load_form(request, remplate="infection_dating_tool/infectious_period_form.html"):
-    form_selection = request.GET['form']
-    context['test'] = form_selection
+    context['infect_form'] = infect_form
+    context['form_selection'] = form_selection
     return render(request, template, context)
 
 
