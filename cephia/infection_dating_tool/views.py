@@ -7,7 +7,7 @@ from forms import (
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm,
-    TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm
+    TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -746,22 +746,22 @@ def residual_risk(request, template="infection_dating_tool/residual_risk.html"):
     infectious_period = InfectiousPeriod.objects.filter(user=user).first()
     if not infectious_period:
         infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
-
-    form_selection = 'specify'
-    infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
+    import pdb;pdb.set_trace()
+    if request.GET:
+        form_selection = 'specify'
+        infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
 
     if request.is_ajax():
         form_selection = request.GET['form']
         if form_selection == 'specify':
             infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
         else:
-            infect_form = None
+            infect_form = CalculateInfectiousPeriodForm(request.POST or None, instance=infectious_period)
         return render( request, "infection_dating_tool/infectious_period_form.html",
                        {'form_selection': form_selection, 'infect_form': infect_form} )
 
     if request.POST and infect_form.is_valid():
-        if form_selection == 'specify':
-            infectious_period = infect_form.save(user)
+        infectious_period = infect_form.save(user)
 
     context['infectious_period'] = infectious_period
     context['infect_form'] = infect_form

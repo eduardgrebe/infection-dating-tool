@@ -273,6 +273,7 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
 .infectious_period--form_label {
     width:100%;
     font-size:medium;
+    clear:both;
 }
 
 .infectious_period--form_text {

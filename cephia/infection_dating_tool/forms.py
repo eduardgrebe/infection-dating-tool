@@ -402,3 +402,21 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
             infectious_period.save()
 
         return infectious_period
+
+
+class CalculateInfectiousPeriodForm(BaseModelForm):
+    class Meta:
+        model = InfectiousPeriod
+        fields = ['viral_growth_rate', 'origin_viral_load', 'viral_load']
+
+    def save(self, user, commit=True):
+        infectious_period = super(CalculateInfectiousPeriodForm, self).save(commit=False)
+        import pdb;pdb.set_trace()
+        # infectious_period.infectious_period = infectious_period.infectious_period_input
+
+        if not infectious_period.user:
+            infectious_period.user = user
+        if commit:
+            infectious_period.save()
+
+        return infectious_period

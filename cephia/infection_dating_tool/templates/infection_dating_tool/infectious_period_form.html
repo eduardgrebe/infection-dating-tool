@@ -14,6 +14,28 @@
     </div>
     <input type="submit" class="btn btn-primary infectious_period--submit" value="Apply" />
   {% elif form_selection == 'calculate' %}
-
+    
+    <div class="infectious_period--form_label">
+      Viral growth rate (log<sub>10</sub>/day)
+    </div>
+    <div class="infectious_period--infect_form">
+      {% bootstrap_field infect_form.viral_growth_rate show_label=False %}
+    </div>
+    
+    <div class="infectious_period--form_label">
+      Viral load at origin/zero of diagnostic delay scale
+    </div>
+    <div class="infectious_period--infect_form">
+      {% bootstrap_field infect_form.origin_viral_load show_label=False %}
+    </div>
+    
+    <div class="infectious_period--form_label">
+      Viral load at start of infectious period
+    </div>
+    <div class="infectious_period--infect_form">
+      {% bootstrap_field infect_form.viral_load show_label=False %}
+    </div>
+    
+    <input type="submit" class="btn btn-primary infectious_period--submit" value="Apply" />
   {% endif %}
 </form>
