@@ -11,7 +11,7 @@ from models import (
     IDTFileInfo, SelectedCategory, GrowthRateEstimate, InfectiousPeriod
     )
 from django.db.models import Q
-
+import math
 from itertools import groupby
 from django.forms.models import ModelChoiceIterator, ModelChoiceField, ModelMultipleChoiceField
 
@@ -158,7 +158,6 @@ class TestPropertyEstimateCreateTestForm(BaseModelForm):
     def __init__(self, category, user, *args, **kwargs):
         super(TestPropertyEstimateForm, self).__init__(*args, **kwargs)
         self.category = category
-        import pdb;pdb.set_trace()
         test = IDTDiagnosticTest.objects.get(pk=self.test_pk)
         self.user = user
         if self.instance.pk and not self.instance.user:
@@ -411,8 +410,11 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
 
     def save(self, user, commit=True):
         infectious_period = super(CalculateInfectiousPeriodForm, self).save(commit=False)
-        import pdb;pdb.set_trace()
-        # infectious_period.infectious_period = infectious_period.infectious_period_input
+
+        vlz = infectious_period.origin_viral_load
+        vli = infectious_period.viral_load
+        vgr = infectious_period.viral_growth_rate
+        infectious_period.infectious_period = math.log10(vlz/vli) / vgr
 
         if not infectious_period.user:
             infectious_period.user = user

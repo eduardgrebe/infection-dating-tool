@@ -78,7 +78,10 @@ urlpatterns = [
     url(r'^mapping/get_test_category/$', idt_views.get_test_category, name='get_test_category'),
     url(r'^idt/mapping/get_test_category/$', idt_views.get_test_category),
 
-    url(r'^residual_risk/$', idt_views.residual_risk, name='residual_risk'),
-    url(r'^idt/residual_risk/$', idt_views.residual_risk),
+    url(r'^idt/residual_risk/calculate/$', idt_views.residual_risk, {'form_selection': 'calculate'}),
+    url(r'^residual_risk/calculate/$', idt_views.residual_risk, {'form_selection': 'calculate'}, name='residual_risk_calculate'),
+
+    url(r'^idt/residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}),
+    url(r'^residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}, name='residual_risk'),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

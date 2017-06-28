@@ -739,24 +739,20 @@ def validate_mapping_from_page(request, file_id, context=None):
 
 
 @idt_login_required(login_url='login')
-def residual_risk(request, template="infection_dating_tool/residual_risk.html"):
+def residual_risk(request, form_selection, template="infection_dating_tool/residual_risk.html"):
     context = {}
 
     user = request.user
     infectious_period = InfectiousPeriod.objects.filter(user=user).first()
     if not infectious_period:
         infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
-    import pdb;pdb.set_trace()
-    if request.GET:
-        form_selection = 'specify'
+
+    if form_selection == 'specify':
         infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
+    else:
+        infect_form = CalculateInfectiousPeriodForm(request.POST or None, instance=infectious_period)
 
     if request.is_ajax():
-        form_selection = request.GET['form']
-        if form_selection == 'specify':
-            infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
-        else:
-            infect_form = CalculateInfectiousPeriodForm(request.POST or None, instance=infectious_period)
         return render( request, "infection_dating_tool/infectious_period_form.html",
                        {'form_selection': form_selection, 'infect_form': infect_form} )
 

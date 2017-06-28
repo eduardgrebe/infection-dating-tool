@@ -1,8 +1,8 @@
 {% load bootstrap3 %}
 
-<form method="POST">
-  {% csrf_token %}
-  {% if form_selection == 'specify' %}
+{% if form_selection == 'specify' %}
+  <form method="POST">
+    {% csrf_token %}
     <div class="infectious_period--form_label">
       Start of infectious period relative to origin/zero of diagnostic scale
     </div>
@@ -13,8 +13,11 @@
       days
     </div>
     <input type="submit" class="btn btn-primary infectious_period--submit" value="Apply" />
-  {% elif form_selection == 'calculate' %}
-    
+    <input type="hidden" name="specify" value="1"/>
+  </form>
+{% elif form_selection == 'calculate' %}
+  <form method="POST" action="{% url 'residual_risk_calculate' %}">
+    {% csrf_token %}  
     <div class="infectious_period--form_label">
       Viral growth rate (log<sub>10</sub>/day)
     </div>
@@ -37,5 +40,6 @@
     </div>
     
     <input type="submit" class="btn btn-primary infectious_period--submit" value="Apply" />
-  {% endif %}
-</form>
+  </form>
+{% endif %}
+
