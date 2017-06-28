@@ -326,14 +326,20 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
         queryset = self.queryset.all()
         if not queryset._prefetch_related_lookups:
             queryset = queryset.iterator()
-        for group, choices in groupby(self.queryset.filter(user__isnull=False).order_by('name'),
-                    key=lambda row: getattr(row, self.field.group_by_field)):
-            group = 'Your Tests'
-            if self.field.group_label(group):
-                yield (
-                    self.field.group_label(group),
-                    [self.choice(ch) for ch in choices]
-                )
+
+        yield (
+            self.field.group_label('Your Tests'),
+            [self.choice(ch) for ch in self.queryset.filter(user__isnull=False).order_by('name')]
+        )
+        # for group, choices in groupby(self.queryset.filter(user__isnull=False).order_by('name'),
+        #             key=lambda row: getattr(row, self.field.group_by_field)):
+        #     import pdb;pdb.set_trace()
+        #     group = 'Your Tests'
+        #     if self.field.group_label(group):
+        #         yield (
+        #             self.field.group_label(group),
+        #             [self.choice(ch) for ch in choices]
+        #         )
 
 
         for category in CATEGORIES:
@@ -422,3 +428,14 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
             infectious_period.save()
 
         return infectious_period
+
+
+class CalculateResidualRiskForm(forms.Form):
+    test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
+    incidence = forms.FloatField(required=True, label='Incidence in donar population')
+    donations = forms.FloatField(required=True, label='Number of donations per year')
+
+    def __init__(self, user, *args, **kwargs):
+        super(CalculateResidualRiskForm, self).__init__(*args, **kwargs)
+        choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+        self.fields['test'] = choices

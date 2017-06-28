@@ -7,7 +7,8 @@ from forms import (
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm,
-    TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm
+    TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
+    CalculateResidualRiskForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -574,7 +575,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
         )
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
 
-        if test.category == 'viral_load':
+        if test.category == 'viral_load' and test.user == None:
             context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
         
         context['test'] = test
@@ -752,6 +753,8 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
     else:
         infect_form = CalculateInfectiousPeriodForm(request.POST or None, instance=infectious_period)
 
+    form = CalculateResidualRiskForm(user, request.POST or None)
+
     if request.is_ajax():
         return render( request, "infection_dating_tool/infectious_period_form.html",
                        {'form_selection': form_selection, 'infect_form': infect_form} )
@@ -761,6 +764,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
 
     context['infectious_period'] = infectious_period
     context['infect_form'] = infect_form
+    context['form'] = form
     context['form_selection'] = form_selection
     return render(request, template, context)
 

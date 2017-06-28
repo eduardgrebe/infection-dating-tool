@@ -35,7 +35,10 @@
       </div>
     </div>
 
-    <div class="col-md-8 hidden" id="preview_results"></div>
+    <form method="POST">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+    </form>
 
   </div>
 {% endblock %}
