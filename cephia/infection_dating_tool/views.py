@@ -763,8 +763,11 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
     if request.POST and form.is_valid():
         window = calculate_window_of_residual_risk(user, form.cleaned_data['test'])
         residual_risk = form.calculate_residual_risk(window)
+        residual_risk = round_to_non_zero(residual_risk, 3)
+        infectious_donations = form.calculate_infectious_donations(residual_risk)
         context['residual_risk'] = residual_risk
-        context['infectious_donations'] = form.calculate_infectious_donations(residual_risk)
+        context['residual_risk_perc'] = residual_risk * 100
+        context['infectious_donations'] = round_to_non_zero(infectious_donations, 2)
 
     context['infectious_period'] = infectious_period
     context['infect_form'] = infect_form
@@ -958,3 +961,16 @@ def calculate_window_of_residual_risk(user, test):
     window = diagnostic_delay - infectious_period.infectious_period
 
     return window
+
+def round_to_non_zero(number, max_decimals):
+    number = str(number)
+    count = 0
+    for idx, val in enumerate(number):
+        if count == 0 and val != '0' and idx > 1:
+            count +=1
+        elif count > 0:
+            count +=1
+        if count == max_decimals:
+            break
+
+    return round(float(number), idx-1)

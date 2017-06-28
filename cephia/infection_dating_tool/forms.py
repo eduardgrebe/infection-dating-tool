@@ -331,16 +331,6 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
             self.field.group_label('Your Tests'),
             [self.choice(ch) for ch in self.queryset.filter(user__isnull=False).order_by('name')]
         )
-        # for group, choices in groupby(self.queryset.filter(user__isnull=False).order_by('name'),
-        #             key=lambda row: getattr(row, self.field.group_by_field)):
-        #     import pdb;pdb.set_trace()
-        #     group = 'Your Tests'
-        #     if self.field.group_label(group):
-        #         yield (
-        #             self.field.group_label(group),
-        #             [self.choice(ch) for ch in choices]
-        #         )
-
 
         for category in CATEGORIES:
             if category[0] != 'No category':
@@ -371,7 +361,6 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
                             self.field.group_label(group),
                             [self.choice(ch) for ch in choices]
                         )
-        
 
 
 class GroupedModelChoiceField(Grouped, ModelChoiceField):

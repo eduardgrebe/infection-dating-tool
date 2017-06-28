@@ -69,8 +69,15 @@
     </form>
 
     {% if residual_risk %}
-      {{ residual_risk }}
-      {{ infectious_donations }}
+      <div class="infectious_period--form_label">
+        Residual risk per donation
+      </div>
+      <div class="infectious_period--form_label">
+        Probability: {{ residual_risk }} ({{ residual_risk_perc }}%)
+      </div>
+      <div class="infectious_period--form_label">
+        Expected number of infectious donations per year: {{ infectious_donations }}
+      </div>
     {% endif %}
 
   </div>
