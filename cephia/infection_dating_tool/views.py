@@ -744,9 +744,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
     context = {}
 
     user = request.user
-    infectious_period = InfectiousPeriod.objects.filter(user=user).first()
-    if not infectious_period:
-        infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
+    infectious_period = get_user_infectious_period(user)
 
     if form_selection == 'specify':
         infect_form = SpecifyInfectiousPeriodForm(request.POST or None, instance=infectious_period)
@@ -762,11 +760,25 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
     if request.POST and infect_form.is_valid():
         infectious_period = infect_form.save(user)
 
+    if request.POST and form.is_valid():
+        window = calculate_window_of_residual_risk(user, form.cleaned_data['test'])
+        residual_risk = form.calculate_residual_risk(window)
+        context['residual_risk'] = residual_risk
+        context['infectious_donations'] = form.calculate_infectious_donations(residual_risk)
+
     context['infectious_period'] = infectious_period
     context['infect_form'] = infect_form
     context['form'] = form
     context['form_selection'] = form_selection
     return render(request, template, context)
+
+
+@idt_login_required(login_url='login')
+def residual_risk_window(request):
+    user = request.user
+    test = IDTDiagnosticTest.objects.get(pk=request.GET['test_id'])
+    window = calculate_window_of_residual_risk(user, test)
+    return JsonResponse({'success': True, 'window': window})
 
 
 def finalise_user_account(request, token, template='infection_dating_tool/complete_signup.html', hide_error_message=None):
@@ -920,3 +932,29 @@ def tools_home(request, template="index.html"):
     context = {}
 
     return render(request, template, context)
+
+
+def get_user_infectious_period(user):
+    infectious_period = InfectiousPeriod.objects.filter(user=user).first()
+    if not infectious_period:
+        infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
+    return infectious_period
+
+def get_user_growth_rate(user):
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    return growth_rate
+
+def calculate_window_of_residual_risk(user, test):
+    test_prop = test.properties.get(global_default=True)
+
+    if not test.category == 'viral_load':
+        diagnostic_delay = test_prop.diagnostic_delay
+    else:
+        growth_rate = get_user_growth_rate(user)
+        diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
+
+    infectious_period = get_user_infectious_period(user)
+    window = diagnostic_delay - infectious_period.infectious_period
+
+    return window

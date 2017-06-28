@@ -19,3 +19,23 @@ idt.calculate_select = function() {
         $('#form-panel').html(response);
     });
 };
+
+idt.calculate_window = function() {
+    var test = $("#id_test").val();
+    if (test) {
+        var params = { test_id : test };
+        var url = document.getElementById('test_window').dataset.url;
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: params
+        }).done(function(response) {
+            $("#window").removeClass("hidden");
+            $('#window').text('Window of residual risk value days: ' + response.window);
+        });
+    }
+    else {
+        $("#window").addClass("hidden");
+    }
+};

@@ -439,3 +439,9 @@ class CalculateResidualRiskForm(forms.Form):
         super(CalculateResidualRiskForm, self).__init__(*args, **kwargs)
         choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
         self.fields['test'] = choices
+
+    def calculate_residual_risk(self, window):
+        return (window/365)*(self.cleaned_data['incidence']/100)
+
+    def calculate_infectious_donations(self, residual_risk):
+        return residual_risk * self.cleaned_data['donations']

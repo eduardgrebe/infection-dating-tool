@@ -83,5 +83,8 @@ urlpatterns = [
 
     url(r'^idt/residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}),
     url(r'^residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}, name='residual_risk'),
+
+    url(r'^idt/residual_risk_window/$', idt_views.residual_risk_window),
+    url(r'^residual_risk_window/$', idt_views.residual_risk_window, name='residual_risk_window'),
     
 ]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
