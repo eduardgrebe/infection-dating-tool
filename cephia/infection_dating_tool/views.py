@@ -749,7 +749,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
         if 'specify' in request.POST:
             specify_form = SpecifyInfectiousPeriodForm(request.POST, instance=infectious_period)
             if specify_form.is_valid():
-                specify_period = specify_form.save(user)
+                specify_period = specify_form.save()
         else:
             specify_form = SpecifyInfectiousPeriodForm(instance=infectious_period)
         context['specify_form'] = specify_form
@@ -762,7 +762,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
         if 'calculate' in request.POST:
             calculate_form = CalculateInfectiousPeriodForm(request.POST, instance=infectious_period)
             if calculate_form.is_valid():
-                infectious_period = calculate_form.save(user)
+                infectious_period = calculate_form.save()
         else:
             calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
         context['calculate_form'] = calculate_form
@@ -957,6 +957,10 @@ def get_user_infectious_period(user):
     infectious_period = InfectiousPeriod.objects.filter(user=user).first()
     if not infectious_period:
         infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
+        infectious_period.pk = None
+        infectious_period.user = user
+        infectious_period.save()
+
     return infectious_period
 
 def get_user_growth_rate(user):

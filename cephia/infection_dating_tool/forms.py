@@ -386,12 +386,10 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
         model = InfectiousPeriod
         fields = ['infectious_period_input']
 
-    def save(self, user, commit=True):
+    def save(self, commit=True):
         infectious_period = super(SpecifyInfectiousPeriodForm, self).save(commit=False)
         infectious_period.infectious_period = infectious_period.infectious_period_input
 
-        if not infectious_period.user:
-            infectious_period.user = user
         if commit:
             infectious_period.save()
 
@@ -403,7 +401,7 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
         model = InfectiousPeriod
         fields = ['viral_growth_rate', 'origin_viral_load', 'viral_load']
 
-    def save(self, user, commit=True):
+    def save(self, commit=True):
         infectious_period = super(CalculateInfectiousPeriodForm, self).save(commit=False)
 
         vlz = infectious_period.origin_viral_load
@@ -411,8 +409,6 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
         vgr = infectious_period.viral_growth_rate
         infectious_period.infectious_period = math.log10(vli/vlz) / vgr
 
-        if not infectious_period.user:
-            infectious_period.user = user
         if commit:
             infectious_period.save()
 
