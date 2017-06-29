@@ -35,48 +35,19 @@
       </div>
     </div>
 
-    <form method="POST">
-      {% csrf_token %}
-      <div class="infectious_period--form_label">
-        Select most sensitive screening tests
-      </div>
-      <div id="test_window" data-url="{% url 'residual_risk_window' %}"
-           class="infectious_period--infect_form" onchange="idt.calculate_window();">
-        {% bootstrap_field form.test show_label=False %}
-      </div>
+    <div>
+      {% include 'infection_dating_tool/_residual_risk_form.html' %}
+    </div>
 
-      <div id="window" class="infectious_period--form_label hidden">
+    {% if residual_risk != None %}
+      <div class="residual_risk--result_header">
+        <h2>Residual risk per donation</h2>
       </div>
-
-      <div class="infectious_period--form_label">
-        Incidence in donor population
+      <div class="residual_risk--result_text">
+        <b>Probability:</b> {{ residual_risk }} ({{ residual_risk_perc }}%)
       </div>
-      <div class="infectious_period--infect_form">
-        {% bootstrap_field form.incidence show_label=False %}
-      </div>
-      <div class="infectious_period--form_text">
-        % p.a.
-      </div>
-
-      <div class="infectious_period--form_label">
-        Number of donations per year
-      </div>
-      <div class="infectious_period--infect_form">
-        {% bootstrap_field form.donations show_label=False %}
-      </div>
-
-      <input type="submit" class="btn btn-primary infectious_period--submit" value="Calculate" />
-    </form>
-
-    {% if residual_risk %}
-      <div class="infectious_period--form_label">
-        Residual risk per donation
-      </div>
-      <div class="infectious_period--form_label">
-        Probability: {{ residual_risk }} ({{ residual_risk_perc }}%)
-      </div>
-      <div class="infectious_period--form_label">
-        Expected number of infectious donations per year: {{ infectious_donations }}
+      <div class="residual_risk--result_text">
+        <b>Expected number of infectious donations per year:</b> {{ infectious_donations }}
       </div>
     {% endif %}
 

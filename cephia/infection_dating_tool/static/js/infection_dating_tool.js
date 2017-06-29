@@ -32,7 +32,7 @@ idt.calculate_window = function() {
             data: params
         }).done(function(response) {
             $("#window").removeClass("hidden");
-            $('#window').text('Window of residual risk value days: ' + response.window);
+            $('#window_value').text(response.window);
         });
     }
     else {

@@ -265,15 +265,39 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     font-size: medium;
 }
 
-.infectious_period--infect_form {
-    width:300px;
+/* .infectious_period--infect_form { */
+/*     width:300px; */
+/*     float:left; */
+/* } */
+
+/* .infectious_period--form_label { */
+/*     width:100%; */
+/*     font-size:medium; */
+/*     clear:both; */
+/* } */
+
+.infectious_period--form {
+    width:100%;
     float:left;
+}
+
+.infectious_period--form_field {
+    width:33.33%;
+    float:left;
+}
+
+.infectious_period--input {
+    width:100%;
+    float:left;
+    padding-right:2px;
+    padding-left:2px;
 }
 
 .infectious_period--form_label {
     width:100%;
     font-size:medium;
     clear:both;
+    padding-left:2px;
 }
 
 .infectious_period--form_text {
@@ -283,4 +307,59 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
 
 .infectious_period--submit {
     float:right;
+}
+
+.residual_risk--form {
+    width:100%;
+    float:left;
+}
+
+.residual_risk--form_field {
+    width:33.33%;
+    float:left;
+}
+
+.residual_risk--input {
+    width:100%;
+    float:left;
+    padding-right:2px;
+    padding-left:2px;
+}
+
+.residual_risk--form_label {
+    width:100%;
+    font-size:medium;
+    clear:both;
+    padding-left:2px;
+}
+
+.residual_risk--submit {
+    float:right;
+}
+
+.residual_risk--window {
+    float:left;
+    font-size:medium;
+    padding-left:2px;
+}
+
+.residual_risk--window_text {
+    float:left;
+}
+
+.residual_risk--window_value {
+    float:left;
+    padding-left:2px;
+}
+
+.residual_risk--result_header {
+    clear:both;
+    font-size:medium;
+    padding-top:40px;
+    padding-left:2px;
+}
+
+.residual_risk--result_text {
+    font-size:medium;
+    padding-left:2px;
 }
