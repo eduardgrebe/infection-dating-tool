@@ -409,7 +409,7 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
         vlz = infectious_period.origin_viral_load
         vli = infectious_period.viral_load
         vgr = infectious_period.viral_growth_rate
-        infectious_period.infectious_period = math.log10(vlz/vli) / vgr
+        infectious_period.infectious_period = math.log10(vli/vlz) / vgr
 
         if not infectious_period.user:
             infectious_period.user = user
