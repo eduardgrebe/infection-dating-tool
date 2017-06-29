@@ -9,7 +9,7 @@
       <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
         <h3 class="panel-title">
           Start of Infectious Period:
-          {{ infectious_period.infectious_period }}
+          {{ infectious_period }}
         </h3>
       </div>
 
@@ -24,7 +24,7 @@
           <p>
             <input {% ifequal form_selection 'calculate' %}checked{% endifequal %} id="calculate" name="form_select" type="radio" value="2"
                    data-url="{% url 'residual_risk_calculate' %}" onclick="idt.calculate_select();">
-            <label for="calculate">Calculate start of infectious period from viral load grwth</label>
+            <label for="calculate">Calculate start of infectious period from viral load growth</label>
           </p>
         </div>
 
