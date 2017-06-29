@@ -778,11 +778,22 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
             residual_risk = form.calculate_residual_risk(window)
             residual_risk = round_to_significant_digits(residual_risk, 3)
             infectious_donations = form.calculate_infectious_donations(residual_risk)
+            infectious_donations = round_to_significant_digits(infectious_donations, 3)
 
             context['window'] = window
-            context['residual_risk'] = residual_risk
-            context['residual_risk_perc'] = residual_risk * 100
-            context['infectious_donations'] = round_to_significant_digits(infectious_donations, 3)
+            smallest_num = 1e-10
+
+            if residual_risk >= smallest_num:
+                context['residual_risk'] = '{:.10f}'.format(residual_risk).rstrip("0")
+                context['residual_risk_perc'] = '{:.10f}'.format(residual_risk * 100).rstrip("0")
+            else:
+                context['residual_risk'] = '< {:.10f}'.format(smallest_num)
+
+            if infectious_donations >= smallest_num:
+                context['infectious_donations'] = '{:.10f}'.format(infectious_donations).rstrip("0")
+            else:
+                context['infectious_donations'] = '< {:.10f}'.format(smallest_num)
+
     else:
         form = CalculateResidualRiskForm(user)
 

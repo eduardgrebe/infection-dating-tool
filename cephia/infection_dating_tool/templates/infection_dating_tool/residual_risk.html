@@ -41,10 +41,10 @@
 
     {% if residual_risk != None %}
       <div class="residual_risk--result_header">
-        <h2>Residual risk per donation</h2>
+        <h2>Residual risk</h2>
       </div>
       <div class="residual_risk--result_text">
-        <b>Probability:</b> {{ residual_risk }} ({{ residual_risk_perc }}%)
+        <b>Probability per donation:</b> {{ residual_risk }} {% if residual_risk_perc %}({{ residual_risk_perc }}%){% endif %}
       </div>
       <div class="residual_risk--result_text">
         <b>Expected number of infectious donations per year:</b> {{ infectious_donations }}
