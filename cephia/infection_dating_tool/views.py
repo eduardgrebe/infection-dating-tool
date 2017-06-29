@@ -774,7 +774,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
     if 'res_risk' in request.POST:
         form = CalculateResidualRiskForm(user, request.POST or None)
         if form.is_valid():
-            window = round(calculate_window_of_residual_risk(user, form.cleaned_data['test']), 2)
+            window = round(calculate_window_of_residual_risk(user, form.cleaned_data['test']), 1)
             residual_risk = form.calculate_residual_risk(window)
             residual_risk = round_to_significant_digits(residual_risk, 3)
             infectious_donations = form.calculate_infectious_donations(residual_risk)
@@ -786,7 +786,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
     else:
         form = CalculateResidualRiskForm(user)
 
-    context['infectious_period'] = round(infectious_period.infectious_period, 2)
+    context['infectious_period'] = round(infectious_period.infectious_period, 1)
     context['form'] = form
     context['form_selection'] = form_selection
     return render(request, template, context)
@@ -796,7 +796,7 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
 def residual_risk_window(request):
     user = request.user
     test = IDTDiagnosticTest.objects.get(pk=request.GET['test_id'])
-    window = round(calculate_window_of_residual_risk(user, test), 2)
+    window = round(calculate_window_of_residual_risk(user, test), 1)
     return JsonResponse({'success': True, 'window': window})
 
 
