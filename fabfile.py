@@ -41,7 +41,7 @@ def host_cephia_prod():
 def host_idt_prod():
     env.user = 'cephia'
     env.hosts = ['tools.incidence-estimation.org']
-    env.code_dir = "/home/cephia/idt_prod"
+    env.code_dir = "/home/cephia/infection-dating-tool"
 
 # ===== top level commands ======
 
