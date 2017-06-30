@@ -31,3 +31,5 @@ django-world-regions==0.1.1
 supervisor==3.3.0
 unicodecsv==0.14.1
 django_js_reverse
+numpy==1.13.0
+matplotlib==1.5.1

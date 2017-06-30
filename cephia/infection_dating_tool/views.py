@@ -30,6 +30,7 @@ from models import (
     IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory,
     GrowthRateEstimate, InfectiousPeriod
     )
+from graph_image_generator import heat_map_graph
 from cephia.models import CephiaUser
 from django.forms import modelformset_factory
 import json
@@ -779,6 +780,8 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
             residual_risk = round_to_significant_digits(residual_risk, 3)
             infectious_donations = form.calculate_infectious_donations(residual_risk)
             infectious_donations = round_to_significant_digits(infectious_donations, 3)
+
+            graph = heat_map_graph(form.cleaned_data['incidence'], window)
 
             context['window'] = window
             smallest_num = 1e-10
