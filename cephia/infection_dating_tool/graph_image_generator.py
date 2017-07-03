@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.random
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def heat_map_graph(x_value, y_value):
@@ -19,9 +20,10 @@ def heat_map_graph(x_value, y_value):
     for x_count, x in enumerate(reversed(xedges)):
         for y_count, y in enumerate(reversed(yedges)):
             heatmap[y_count][x_count] = float(y)*x
-
+    
     heatmap = np.flipud(np.transpose(heatmap))
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    # extent = [-3, 3, -3, 3]
 
     # ax.clf()
     plt.title('Residual risk')
@@ -32,8 +34,8 @@ def heat_map_graph(x_value, y_value):
     ax.set_aspect('auto')
 
     divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="2.5%", pad=0.3)
-    cb = plt.colorbar(im,cax=cax)
+    # cax = divider.append_axes("right", size="2.5%", pad=0.3)
+    cb = plt.colorbar(im)
     # cb.set_label('')
 
     plt.show()
