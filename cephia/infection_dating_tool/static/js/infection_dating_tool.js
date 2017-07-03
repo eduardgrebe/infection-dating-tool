@@ -32,7 +32,7 @@ idt.calculate_window = function() {
             data: params
         }).done(function(response) {
             $("#window").removeClass("hidden");
-            $('#window_value').text(response.window);
+            $('#window_value').text(response.window + ' days');
         });
     }
     else {
