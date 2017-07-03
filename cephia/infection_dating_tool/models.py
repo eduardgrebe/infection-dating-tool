@@ -304,3 +304,5 @@ class InfectiousPeriod(models.Model):
     viral_growth_rate = models.FloatField(null=True, blank=False)
     origin_viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at origin/zero')
     viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')
+
+    graph_file = models.FileField(upload_to="graphs", max_length=255, null=True)

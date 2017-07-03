@@ -48,6 +48,8 @@ import math
 from django.core.mail import send_mail
 from collections import OrderedDict
 from django import forms
+from django.conf import settings
+from django.core.files import File
 
 CATEGORIES = (
     ('western_blot', 'Western blot'),
@@ -781,9 +783,18 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
             infectious_donations = form.calculate_infectious_donations(residual_risk)
             infectious_donations = round_to_significant_digits(infectious_donations, 3)
 
-            graph = heat_map_graph(form.cleaned_data['incidence'], window)
+            fig = heat_map_graph(form.cleaned_data['incidence'], window)
+            graph_name = "residual_risk_%s" % user.username
+            fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
+            with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
+                existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
+                if os.path.isfile(existing_file):
+                    os.remove(existing_file)
+                infectious_period.graph_file.save("%s.png" % graph_name, File(graph_file), save=True)
+            infectious_period.save()
 
             context['window'] = window
+            context['graph'] = infectious_period.graph_file
             smallest_num = 1e-10
 
             if residual_risk >= smallest_num:
