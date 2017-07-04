@@ -241,38 +241,40 @@ def create_test(request, category=None, template='infection_dating_tool/create_t
     form = GlobalTestForm(request.POST or None)
     form.set_context_data({'user': request.user})
 
-    # user_estimates_formset = TestPropertyEstimateFormSet(
-    #     request.POST or None,
-    #     queryset=IDTTestPropertyEstimate.objects.none()
-    # )
+    user_estimates_formset = TestPropertyEstimateCreateTestFormSet(
+        category,
+        request.POST or None,
+        queryset=IDTTestPropertyEstimate.objects.none()
+    )
 
-    if category:
+    if request.method == 'POST':
+        form.is_valid()
+        category = form.cleaned_data['category']
         user_estimates_formset = TestPropertyEstimateCreateTestFormSet(
             category,
-            user,
             request.POST or None,
-            queryset=test.properties.filter(user=request.user)
+            queryset=IDTTestPropertyEstimate.objects.none()
         )
 
-    if request.method == 'POST' and form.is_valid():
-        test_instance = form.save()
-        test_instance.user = user
-        test_instance.save()
+        if form.is_valid() and user_estimates_formset.is_valid():
+            test_instance = form.save()
+            test_instance.user = user
+            test_instance.save()
 
-        # for instance in user_estimates_formset.save(commit=False):
-        #     instance.user = request.user
-        #     instance.test = test_instance
-        #     instance.global_default = True
-        #     instance.save()
+            for instance in user_estimates_formset.save(commit=False):
+                instance.user = request.user
+                instance.test = test_instance
+                instance.global_default = True
+                instance.save()
 
-        messages.info(request, 'Test added successfully')
-        if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
-        else:
-            return redirect("tests")
+            messages.info(request, 'Test added successfully')
+            if request.is_ajax():
+                return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
+            else:
+                return redirect("tests")
     
     context['form'] = form
-    # context['user_estimates_formset'] = user_estimates_formset
+    context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
 
 
@@ -357,9 +359,13 @@ def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.h
 @idt_login_required(login_url='login')
 def set_selected_category(request):
     user = request.user
-    test = IDTDiagnosticTest.objects.get(pk=request.GET['test_id'])
+    try:
+        test = IDTDiagnosticTest.objects.get(pk=request.GET['test_id'])
+    except IDTDiagnosticTest.DoesNotExist:
+        test = None
+
     category = request.GET['category']
-    
+
     sc, created = SelectedCategory.objects.get_or_create(user=user, test=test)
     sc.category = category
     sc.save()

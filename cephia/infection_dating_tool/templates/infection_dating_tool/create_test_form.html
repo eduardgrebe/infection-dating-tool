@@ -12,13 +12,13 @@
         <h4>Test</h4>
         {% bootstrap_form form %}
 
-        {% comment %}
         <h4>Test property estimates</h4>
         <table class="table table-condensed table-striped">
           <thead>
             <tr>
               <th>Estimate label</th>
               <th>Diagnostic delay</th>
+              <th>Detection threshold (c/ml)</th>
               <th>Comment</th>
             </tr>
           </thead>
@@ -27,13 +27,18 @@
               <tr>
                 {{ formset_form.id }}
                 <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
-                <td>{% bootstrap_field formset_form.diagnostic_delay show_label=False %}</td>
+                <td>
+                  {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
+                  <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;"></div>
+                </td>
+                <td>
+                  {% bootstrap_field formset_form.detection_threshold show_label=False %}
+                </td>
                 <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
-        {% endcomment %}
         
       </div>
       <div class="modal-footer">
@@ -43,3 +48,35 @@
     </div>
   </form>
 </div>
+
+<script>
+ function update_form(category) {
+     if (category === 'viral_load') {
+         $("input[id$='diagnostic_delay']").attr('readonly', true);
+         $("input[id$='diagnostic_delay']").hide();
+         $("input[id$='detection_threshold']").attr('readonly', false);
+         $("div[id$='_vl_dd']").show();
+     } else if (category === '') {
+         $("input[id$='diagnostic_delay']").attr('readonly', true);
+         $("input[id$='diagnostic_delay']").show();
+         $("input[id$='detection_threshold']").attr('readonly', true);
+         $("div[id$='_vl_dd']").hide();
+     } else {
+         $("input[id$='diagnostic_delay']").attr('readonly', false);
+         $("input[id$='diagnostic_delay']").show();
+         $("input[id$='detection_threshold']").attr('readonly', true);
+         $("div[id$='_vl_dd']").hide();
+     }
+ }
+
+ function check_category() {
+     var category = $('#id_category').val()
+     update_form(category);
+ }
+ check_category();
+ 
+ $('#modal-add-test').on('change', '#id_category', function(event) {
+     var category = $(this).val()
+     update_form(category);
+ });
+</script>

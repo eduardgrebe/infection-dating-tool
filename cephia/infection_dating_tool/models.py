@@ -274,7 +274,7 @@ class SelectedCategory(models.Model):
     )
     
     user = ProtectedForeignKey('cephia.CephiaUser', null=False)
-    test = models.ForeignKey(IDTDiagnosticTest, null=False)
+    test = models.ForeignKey(IDTDiagnosticTest, null=True)
     category = models.CharField(choices=CATEGORIES, max_length=255, null=True)
 
     class Meta:

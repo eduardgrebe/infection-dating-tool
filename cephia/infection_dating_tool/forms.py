@@ -155,11 +155,9 @@ class TestPropertyEstimateCreateTestForm(BaseModelForm):
             'global_default': forms.HiddenInput()
         }
 
-    def __init__(self, category, user, *args, **kwargs):
-        super(TestPropertyEstimateForm, self).__init__(*args, **kwargs)
+    def __init__(self, category, *args, **kwargs):
+        super(TestPropertyEstimateCreateTestForm, self).__init__(*args, **kwargs)
         self.category = category
-        test = IDTDiagnosticTest.objects.get(pk=self.test_pk)
-        self.user = user
         if self.instance.pk and not self.instance.user:
             self.fields['estimate_label'].widget.attrs['readonly'] = True
             self.fields['diagnostic_delay'].widget.attrs['readonly'] = True
@@ -174,22 +172,14 @@ class TestPropertyEstimateCreateTestForm(BaseModelForm):
         self.fields['comment'].widget.attrs['placeholder'] = ''
 
     def clean_diagnostic_delay(self):
-        try:
-            test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
-        except SelectedCategory.DoesNotExist:
-            test_category = IDTDiagnosticTest.objects.get(pk=self.test_pk).category
         diagnostic_delay = self.cleaned_data['diagnostic_delay']
-        if test_category != 'viral_load' and not diagnostic_delay:
+        if self.category != 'viral_load' and not diagnostic_delay:
             raise forms.ValidationError('This field is required.')
         return diagnostic_delay
 
     def clean_detection_threshold(self):
-        try:
-            test_category = SelectedCategory.objects.get(test__pk=self.test_pk, user=self.user).category
-        except SelectedCategory.DoesNotExist:
-            test_category = IDTDiagnosticTest.objects.get(pk=self.test_pk).category
         detection_threshold = self.cleaned_data['detection_threshold']
-        if test_category == 'viral_load' and not detection_threshold:
+        if self.category == 'viral_load' and not detection_threshold:
             raise forms.ValidationError('Viral Load tests must have a detection threshold.')
         return detection_threshold
 
@@ -250,14 +240,13 @@ TestPropertyEstimateFormSet = modelformset_factory(
 
 class BaseTestPropertyEstimateCreateTestFormSet(BaseModelFormSet):
 
-    def __init__(self, category, user, *args, **kwargs):
+    def __init__(self, category, *args, **kwargs):
         self.category = category
-        self.user = user
         super(BaseTestPropertyEstimateCreateTestFormSet, self).__init__(*args, **kwargs)
 
     def _construct_form(self, i, **kwargs):
         return super(BaseTestPropertyEstimateCreateTestFormSet, self)._construct_form(
-            i, category=self.category, user=self.user, **kwargs)
+            i, category=self.category, **kwargs)
     
 TestPropertyEstimateCreateTestFormSet = modelformset_factory(
     IDTTestPropertyEstimate,
