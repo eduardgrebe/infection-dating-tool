@@ -15,22 +15,20 @@ def heat_map_graph(x_value, y_value):
     yedges = np.arange(y_value/2, y_value*2+y_step, y_step)
 
     heatmap = np.zeros(shape=(len(yedges),len(xedges)))
-    # for x_count, x in enumerate(xedges):
-    #     for y_count, y in enumerate(yedges):
-    #         heatmap[len(yedges)-y_count-1][len(xedges)-x_count-1] = float(y)*x
 
-    for x_count, x in enumerate(reversed(xedges)):
-        for y_count, y in enumerate(reversed(yedges)):
-            heatmap[y_count][x_count] = float(y)*x
+    for x_count, x in enumerate(xedges):
+        for y_count, y in enumerate(yedges):
+            # (window/365)*(incidence) # risk per donation in %
+            heatmap[y_count][x_count] = float(y/365)*x
     
     heatmap = np.flipud(np.transpose(heatmap))
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
     # extent = [-3, 3, -3, 3]
 
     # ax.clf()
-    plt.title('Residual risk')
-    plt.xlabel('Incidence in donar population')
-    plt.ylabel('Window of residual risk')
+    plt.title('Residual risk per donation (incidence vs infectious window)')
+    plt.xlabel('Incidence in donar population (% p.a.)')
+    plt.ylabel('Window of residual risk (days)')
     
     im = ax.imshow(heatmap, extent=extent)
     ax.set_aspect('auto')
@@ -38,7 +36,7 @@ def heat_map_graph(x_value, y_value):
     divider = make_axes_locatable(ax)
     # cax = divider.append_axes("right", size="2.5%", pad=0.3)
     cb = plt.colorbar(im)
-    # cb.set_label('')
+    cb.set_label('Probability per donation (%)')
 
     plt.show()
 

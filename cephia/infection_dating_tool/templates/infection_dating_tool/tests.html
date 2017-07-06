@@ -6,9 +6,11 @@
   <div class="container_nav">
 
     <form method="post">{% csrf_token %}
-      <h2>Viral load growth rate estimate</h2>
+      <h2>Calculation parameters</h2>
+      {% bootstrap_field form.growth_rate %}
       <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
-      {% bootstrap_form form %}
+      {% bootstrap_field form.adjustment_factor %}
+      <i>standard deviations</i>
       <input type="submit" class="btn btn-primary" value="Submit" />
     </form>
     <br>

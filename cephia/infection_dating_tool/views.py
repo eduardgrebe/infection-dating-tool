@@ -6,7 +6,7 @@ from forms import (
     IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyMappingFormSet,
     DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
-    TestPropertyMappingForm, UserTestPropertyDefaultForm, GrowthRateEstimateForm,
+    TestPropertyMappingForm, UserTestPropertyDefaultForm, GlobalParametersForm,
     TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
     CalculateResidualRiskForm
     )
@@ -28,7 +28,7 @@ from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
     IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory,
-    GrowthRateEstimate, InfectiousPeriod
+    GrowthRateEstimate, InfectiousPeriod, VariabilityAdjustment
     )
 from graph_image_generator import heat_map_graph
 from cephia.models import CephiaUser
@@ -213,8 +213,10 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     except GrowthRateEstimate.DoesNotExist:
         growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
         gre = GrowthRateEstimate.objects.create(user=user, growth_rate=growth_rate)
-        
-    form = GrowthRateEstimateForm(request.POST or None, instance=gre)
+
+    adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
+    
+    form = GlobalParametersForm(gre, adj_factor, request.POST or None)
 
     for category in CATEGORIES:
         if category[0] != 'No category':
@@ -224,7 +226,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
         global_tests_dict[category[1]] = tests
 
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        form.save(user)
                 
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests_dict
@@ -237,6 +239,10 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
 def create_test(request, category=None, template='infection_dating_tool/create_test_form.html', context=None):
     context = {}
     user = request.user
+
+    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    context['growth_rate'] = growth_rate
 
     form = GlobalTestForm(request.POST or None)
     form.set_context_data({'user': request.user})
@@ -949,11 +955,11 @@ def update_adjusted_dates(user, data_file):
         other_mapping = mapping.exclude(test__category='viral_load')
 
         vl_map_detection_thresholds = list( vl_mapping.values_list(
-            'code', 'test_property__detection_threshold'
+            'code', 'test_property__detection_threshold', 'test_property__diagnostic_delay_sigma'
         ).distinct() )
 
         map_property_means = list( other_mapping.values_list(
-            'code', 'test_property__diagnostic_delay'
+            'code', 'test_property__diagnostic_delay', 'test_property__diagnostic_delay_sigma'
         ).distinct() )
 
         try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
@@ -961,19 +967,31 @@ def update_adjusted_dates(user, data_file):
 
         for x in vl_map_detection_thresholds:
             diagnostic_delay = math.log10(x[1]) / growth_rate
-            map_property_means.append((x[0], diagnostic_delay))
+            map_property_means.append((x[0], diagnostic_delay, x[2]))
 
-        map_property_means = dict( (v[0], v[1]) for v in map_property_means )
+        
+        map_property_means = dict( (v[0], [v[1], v[2]]) for v in map_property_means )
         test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
         
-        dates_means = dict( (v[2], (v[1], int(round(map_property_means[v[0]])))) for v in test_history_dates )
+        dates_means = dict( (v[2], (v[1], map_property_means[v[0]])) for v in test_history_dates )
+
+        adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
+        adj_factor = adj_factor.adjustment_factor
         
         for test_history in file_test_history:
             dict_values = dates_means[test_history.id]
-            # test_code = test_history.test_code
             test_date = dict_values[0]
-            diagnostic_delay = dict_values[1]
-            test_history.adjusted_date = test_date - relativedelta(days=diagnostic_delay)
+            diagnostic_delay = dict_values[1][0]
+            sigma = dict_values[1][1]
+            if not sigma:
+                sigma = 0.2 * diagnostic_delay
+
+            if test_history.test_result.lower() == 'positive':
+                adj_diagnostic_delay = int(round(diagnostic_delay - (adj_factor * sigma)))
+            elif test_history.test_result.lower() == 'negative':
+                adj_diagnostic_delay = int(round(diagnostic_delay + (adj_factor * sigma)))
+            
+            test_history.adjusted_date = test_date - relativedelta(days=adj_diagnostic_delay)
             test_history.save()
 
 

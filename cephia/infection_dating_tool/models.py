@@ -84,6 +84,7 @@ class IDTTestPropertyEstimate(models.Model):
     comment = models.CharField(max_length=255, null=False, blank=True)
 
     diagnostic_delay = models.FloatField(null=True, blank=True)
+    diagnostic_delay_sigma = models.FloatField(null=True, blank=True)
     detection_threshold = models.FloatField(null=True, blank=True)
     diagnostic_delay_mean = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_se = models.FloatField(null=True, blank=False)
@@ -293,6 +294,9 @@ class GrowthRateEstimate(models.Model):
     growth_rate = models.FloatField(null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
 
+    class Meta:
+        unique_together = ('user', 'growth_rate')
+
 
 class InfectiousPeriod(models.Model):
     class Meta:
@@ -306,3 +310,11 @@ class InfectiousPeriod(models.Model):
     viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')
 
     graph_file = models.FileField(upload_to="graphs", max_length=255, null=True)
+
+
+class VariabilityAdjustment(models.Model):
+    adjustment_factor = models.FloatField(null=False, blank=False, default=1.0, verbose_name='Intersubject variability adjustment factor (SDs)')
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'adjustment_factor')

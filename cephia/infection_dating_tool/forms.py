@@ -8,7 +8,8 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory, BaseModelFormSet
 from models import (
     TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate,
-    IDTFileInfo, SelectedCategory, GrowthRateEstimate, InfectiousPeriod
+    IDTFileInfo, SelectedCategory, GrowthRateEstimate, InfectiousPeriod,
+    VariabilityAdjustment
     )
 from django.db.models import Q
 import math
@@ -360,14 +361,22 @@ class GroupedModelMultiChoiceField(Grouped, ModelMultipleChoiceField):
     choices = property(Grouped._get_choices, ModelMultipleChoiceField._set_choices)
 
 
-class GrowthRateEstimateForm(BaseModelForm):
-    class Meta:
-        model = GrowthRateEstimate
-        fields = ['growth_rate']
+class GlobalParametersForm(forms.Form):
+    growth_rate = forms.FloatField(required=True, label='Viral load growth rate estimate')
+    adjustment_factor = forms.FloatField(required=True, label='Intersubject variability adjustment factor')
 
-    def __init__(self, *args, **kwargs):
-        super(GrowthRateEstimateForm, self).__init__(*args, **kwargs)
-        self.fields['growth_rate'].label = ''
+    def __init__(self, growth_rate, adjustment_factor, *args, **kwargs):
+        super(GlobalParametersForm, self).__init__(*args, **kwargs)
+        self.fields['growth_rate'].initial = growth_rate.growth_rate
+        self.fields['adjustment_factor'].initial = adjustment_factor.adjustment_factor
+
+    def save(self, user):
+        gre = GrowthRateEstimate.objects.get(user=user)
+        gre.growth_rate = self.cleaned_data['growth_rate']
+        gre.save()
+        adj_factor = VariabilityAdjustment.objects.get(user=user)
+        adj_factor.adjustment_factor = self.cleaned_data['adjustment_factor']
+        adj_factor.save()
 
 
 class SpecifyInfectiousPeriodForm(BaseModelForm):
