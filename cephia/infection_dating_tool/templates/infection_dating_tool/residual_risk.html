@@ -50,7 +50,17 @@
         <b>Expected number of infectious donations per year:</b> {{ infectious_donations }}
       </div>
 
-      <img src="{{ graph.url }}" alt="" style='height: 100%; width: 100%; object-fit: contain'>
+      <div class="residual_risk--graphs">
+
+        <div class="residual_risk--graph--prob">
+          <img src="{{ graph_prob.url }}" alt="" style='height:100%; width:100%;'>
+        </div>
+
+        <div class="residual_risk--graph--donations">
+          <img src="{{ graph_donations.url }}" alt="" style='height:100%; width:100%;'>
+        </div>
+        
+      </div>
       
     {% endif %}
 

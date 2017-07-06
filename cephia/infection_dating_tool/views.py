@@ -796,17 +796,28 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
             infectious_donations = round_to_significant_digits(infectious_donations, 3)
 
             fig = heat_map_graph(form.cleaned_data['incidence'], window)
-            graph_name = "residual_risk_%s" % user.username
+            graph_name = "residual_risk_probability_%s" % user.username
             fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
             with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
                 existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
                 if os.path.isfile(existing_file):
                     os.remove(existing_file)
-                infectious_period.graph_file.save("%s.png" % graph_name, File(graph_file), save=True)
+                infectious_period.graph_file_probability.save("%s.png" % graph_name, File(graph_file), save=True)
+
+            fig = heat_map_graph(form.cleaned_data['incidence'], window, form.cleaned_data['donations'])
+            graph_name = "residual_risk_donations_%s" % user.username
+            fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
+            with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
+                existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
+                if os.path.isfile(existing_file):
+                    os.remove(existing_file)
+                infectious_period.graph_file_donations.save("%s.png" % graph_name, File(graph_file), save=True)
+
             infectious_period.save()
 
             context['window'] = window
-            context['graph'] = infectious_period.graph_file
+            context['graph_prob'] = infectious_period.graph_file_probability
+            context['graph_donations'] = infectious_period.graph_file_donations
             smallest_num = 1e-10
 
             if residual_risk >= smallest_num:
