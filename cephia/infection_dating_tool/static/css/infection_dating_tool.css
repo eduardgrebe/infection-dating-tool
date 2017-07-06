@@ -379,3 +379,40 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     width:50%;
     float:left;
 }
+
+
+.tests--form {
+    width:100%;
+    float:left;
+    margin-top:-10px;
+}
+
+.tests--form_field {
+    width:50%;
+    float:left;
+}
+
+.tests--input {
+    width:100%;
+    float:left;
+    padding-right:2px;
+    padding-left:2px;
+    margin-bottom: -15px;
+}
+
+.tests--form_label {
+    width:100%;
+    font-size:medium;
+    clear:both;
+    padding-left:2px;
+}
+
+.tests--form_text {
+    width:100%;
+    clear:both;
+    padding-left:2px;
+}
+
+.tests--submit {
+    float:right;
+}

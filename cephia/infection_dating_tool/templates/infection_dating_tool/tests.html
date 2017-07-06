@@ -5,14 +5,35 @@
 {% block content %}
   <div class="container_nav">
 
-    <form method="post">{% csrf_token %}
-      <h2>Calculation parameters</h2>
-      {% bootstrap_field form.growth_rate %}
-      <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
-      {% bootstrap_field form.adjustment_factor %}
-      <i>standard deviations</i>
-      <input type="submit" class="btn btn-primary" value="Submit" />
-    </form>
+    <h2>Calculation parameters</h2>
+    <div class="tests--form">
+      <form method="post">{% csrf_token %}
+        <div class="tests--form_field">
+          <div class="tests--form_label">
+            Viral load growth rate estimate
+          </div>
+          <div class="tests--input">
+            {% bootstrap_field form.growth_rate show_label=False %}
+          </div>
+          <div class="tests--form_text">
+            <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
+          </div>
+        </div>
+
+        <div class="tests--form_field">
+          <div class="tests--form_label">
+            Intersubject variability adjustment factor
+          </div>
+          <div class="tests--input">
+            {% bootstrap_field form.adjustment_factor show_label=False %}
+          </div>
+          <div class="tests--form_text">
+            <i>standard deviations</i>
+          </div>
+        </div>
+        <input type="submit" class="btn btn-primary tests--submit" value="Submit" />
+      </form>
+    </div>
     <br>
     
     <h2>Your tests</h2>
