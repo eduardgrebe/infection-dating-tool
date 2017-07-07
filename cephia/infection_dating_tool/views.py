@@ -310,7 +310,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/test_form.h
         form.fields['category'].initial = test.category
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         context['properties'] = properties
-        if test.category == 'viral_load':
+        if test.category == 'viral_load' and test.user == None:
             context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
 
     user_estimates_formset = TestPropertyEstimateFormSet(
@@ -461,7 +461,7 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
 
 
 @idt_login_required(login_url='login')
-def create_test_mapping(request, template='infection_dating_tool/create_mapping_form.html', context=None):
+def create_test_mapping(request, template='infection_dating_tool/mapping_form.html', context=None):
     context = {}
     test_id = request.GET.get('test_id')
     if not test_id and request.POST:
@@ -486,7 +486,7 @@ def create_test_mapping(request, template='infection_dating_tool/create_mapping_
         properties = IDTDiagnosticTest.objects.get(pk=test_id).properties.for_user(user=None)
         test = IDTDiagnosticTest.objects.get(pk=test_id)
 
-        if test.category == 'viral_load':
+        if test.category == 'viral_load' and test.user == None:
             context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
 
         user_estimates_formset = TestPropertyEstimateFormSet(
@@ -556,7 +556,7 @@ def edit_test_mapping_file_properties(request, map_id=None, test_id=None, is_fil
 
 
 @idt_login_required(login_url='login')
-def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool/edit_mapping_form.html', context=None):
+def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool/mapping_form.html', context=None):
     context = context or {}
     test_id = request.GET.get('test_id')
     if not test_id and request.POST:
@@ -568,6 +568,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
 
     user = request.user
     mapping = TestPropertyMapping.objects.get(pk=map_id)
+    original_tp = mapping.test_property
 
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
@@ -601,7 +602,6 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             request.POST or None,
             queryset=test.properties.filter(user=request.user)
         )
-        context['user_estimates_formset'] = user_estimates_formset
     else:
         form = TestPropertyMappingForm(request.POST or None, instance=mapping)
         if mapping.test:
@@ -612,8 +612,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
                 request.POST or None,
                 queryset=mapping.test.properties.filter(user=request.user)
             )
-            context['user_estimates_formset'] = user_estimates_formset
-            if mapping.test.category == 'viral_load':
+            if mapping.test.category == 'viral_load' and mapping.test.user == None:
                 context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
         else:
             # user_estimates_formset = TestPropertyEstimateFormSet(
@@ -627,7 +626,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
     form.fields['test'] = choices
     if js_is_file == 'true':
         form.fields['code'].widget.attrs['readonly'] = True
-    
+
     if request.method == 'POST' and form.is_valid() and user_estimates_formset.is_valid():
         mapping_instance = form.save()
 
@@ -644,7 +643,10 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             instance.save()
 
         if mapping_instance.test_property is None:
-            mapping_instance.test_property = selected_property
+            if selected_property:
+                mapping_instance.test_property = selected_property
+            else:
+                mapping_instance.test_property = original_tp
             mapping_instance.save()
         
                 
@@ -659,6 +661,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
     context['growth_rate'] = growth_rate
     
     context['form'] = form
+    context['user_estimates_formset'] = user_estimates_formset
     context['properties'] = properties
     context['map'] = mapping
     context['js_is_file'] = js_is_file

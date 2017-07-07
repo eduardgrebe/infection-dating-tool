@@ -119,7 +119,7 @@
          event.preventDefault();
          var form = $('#modal-test').find('form');
          post_data = form.serialize();
-         var that = this;
+         /* var that = this;*/
          $.post(form.attr('action'), post_data).done(function(resp) {
              if (resp.redirect_url) {
                  location.href = resp.redirect_url
