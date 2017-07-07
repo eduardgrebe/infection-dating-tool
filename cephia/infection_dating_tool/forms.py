@@ -96,7 +96,7 @@ class TestPropertyEstimateForm(BaseModelForm):
         fields = (
             'global_default', 'estimate_label',
             'diagnostic_delay', 'detection_threshold',
-            'comment'
+            'diagnostic_delay_sigma', 'comment'
         )
         model = IDTTestPropertyEstimate
         widgets = {
@@ -119,6 +119,7 @@ class TestPropertyEstimateForm(BaseModelForm):
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
         self.fields['diagnostic_delay'].widget.attrs['placeholder'] = ''
         self.fields['detection_threshold'].widget.attrs['placeholder'] = ''
+        self.fields['diagnostic_delay_sigma'].widget.attrs['placeholder'] = ''
         self.fields['comment'].widget.attrs['placeholder'] = ''
 
     def clean_diagnostic_delay(self):
@@ -149,7 +150,7 @@ class TestPropertyEstimateCreateTestForm(BaseModelForm):
         fields = (
             'global_default', 'estimate_label',
             'diagnostic_delay', 'detection_threshold',
-            'comment'
+            'diagnostic_delay_sigma', 'comment'
         )
         model = IDTTestPropertyEstimate
         widgets = {
@@ -170,6 +171,7 @@ class TestPropertyEstimateCreateTestForm(BaseModelForm):
         self.fields['estimate_label'].widget.attrs['placeholder'] = ''
         self.fields['diagnostic_delay'].widget.attrs['placeholder'] = ''
         self.fields['detection_threshold'].widget.attrs['placeholder'] = ''
+        self.fields['diagnostic_delay_sigma'].widget.attrs['placeholder'] = ''
         self.fields['comment'].widget.attrs['placeholder'] = ''
 
     def clean_diagnostic_delay(self):

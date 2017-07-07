@@ -40,6 +40,7 @@
                 <th>Estimate label</th>
                 <th>Diagnostic delay</th>
                 <th>Detection Threshold (c/ml)</th>
+                <th>Sigma</th>
                 <th>Comment</th>
               </tr>
             </thead>
@@ -59,6 +60,11 @@
                   {% else %}
                     <td></td>
                   {% endif %}
+                  {% if property.diagnostic_delay_sigma %}
+                    <td>{{ property.diagnostic_delay_sigma }}</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
                   <td>{{ property.comment }}</td>
                 </tr>
               {% endfor %}
@@ -74,6 +80,7 @@
                       <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;"></div>
                     </td>
                     <td>{% bootstrap_field formset_form.detection_threshold show_label=False %}</td>
+                    <td>{% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                   </tr>
                 {% endwith %}

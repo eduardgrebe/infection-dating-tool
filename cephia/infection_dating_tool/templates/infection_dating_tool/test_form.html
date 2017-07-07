@@ -30,6 +30,7 @@
                 <th>Estimate label</th>
                 <th>Diagnostic delay</th>
                 <th>Detection threshold (c/ml)</th>
+                <th>Sigma</th>
                 <th>Comment</th>
               </tr>
             </thead>
@@ -45,6 +46,7 @@
                   <td>
                     {% bootstrap_field formset_form.detection_threshold show_label=False %}
                   </td>
+                  <td>{% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                 </tr>
               {% endfor %}
@@ -63,6 +65,7 @@
                 <th>Estimate label</th>
                 <th>Diagnostic delay</th>
                 <th>Detection threshold (c/ml)</th>
+                <th>Sigma</th>
                 <th>Comment</th>
               </tr>
             </thead>
@@ -79,6 +82,11 @@
                     <td>
                       {{ property.detection_threshold }}
                     </td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  {% if property.diagnostic_delay_sigma %}
+                    <td>{{ property.diagnostic_delay_sigma }}</td>
                   {% else %}
                     <td></td>
                   {% endif %}
@@ -101,6 +109,7 @@
                     <td>
                       {% bootstrap_field formset_form.detection_threshold show_label=False %}
                     </td>
+                    <td>{% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                   </tr>
                 {% endwith %}
