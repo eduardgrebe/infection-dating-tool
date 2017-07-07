@@ -236,7 +236,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
 
 
 @idt_login_required(login_url='login')
-def create_test(request, category=None, template='infection_dating_tool/create_test_form.html', context=None):
+def create_test(request, category=None, template='infection_dating_tool/test_form.html', context=None):
     context = {}
     user = request.user
 
@@ -285,7 +285,7 @@ def create_test(request, category=None, template='infection_dating_tool/create_t
 
 
 @idt_login_required(login_url='login')
-def edit_test(request, test_id=None, template='infection_dating_tool/edit_test.html', context=None):
+def edit_test(request, test_id=None, template='infection_dating_tool/test_form.html', context=None):
     context = context or {}
     user = request.user
     test = IDTDiagnosticTest.objects.get(pk=test_id)
