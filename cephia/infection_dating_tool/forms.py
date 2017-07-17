@@ -20,7 +20,7 @@ class BaseModelForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(ModelForm, self).__init__(*args, **kwargs)
         self.context = {}
-    
+
     def set_context_data(self, context):
         self.context = context
         return context
@@ -32,7 +32,7 @@ class IDTUserCreationForm(UserCreationForm):
     fields = ['username', 'email']
 
     def save(self, commit=True):
-        
+
         user = super(IDTUserCreationForm, self).save(True)
         # user.set_password(self.cleaned_data['password'])
         user.is_active = False
@@ -46,10 +46,10 @@ class TestHistoryFileUploadForm(BaseModelForm):
         model = IDTFileInfo
         fields = ['data_file']
 
-        
+
 class TestPropertyMappingForm(BaseModelForm):
     test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), empty_label=("select test)"))
-    
+
     def clean_code(self):
         code = self.cleaned_data.get('code')
 
@@ -62,7 +62,7 @@ class TestPropertyMappingForm(BaseModelForm):
 
         if mappings.exists():
             raise forms.ValidationError('You already have a mapping with the code %s' % code)
-        
+
         return code
 
     def clean_test_property(self):
@@ -75,7 +75,7 @@ class TestPropertyMappingForm(BaseModelForm):
             return instance.filter(pk=existing.pk).first()
         else:
             return None
-    
+
     class Meta:
         model = TestPropertyMapping
         fields = ['code', 'test', 'test_property']
@@ -86,8 +86,8 @@ class TestPropertyMappingForm(BaseModelForm):
     def save(self, commit=True):
         self.instance.user = self.context['user']
         return super(TestPropertyMappingForm, self).save(commit)
-        
-        
+
+
 
 class TestPropertyEstimateForm(BaseModelForm):
     active_property = forms.BooleanField(label="", required=False)
@@ -211,7 +211,7 @@ class UserTestForm(BaseModelForm):
 class UserTestPropertyDefaultForm(forms.Form):
     default_property = forms.ChoiceField(widget=forms.RadioSelect())
 
-    
+
 TestPropertyMappingFormSet = modelformset_factory(
     TestPropertyMapping,
     form=TestPropertyMappingForm,
@@ -234,7 +234,7 @@ class BaseTestPropertyEstimateFormSet(BaseModelFormSet):
     def _construct_form(self, i, **kwargs):
         return super(BaseTestPropertyEstimateFormSet, self)._construct_form(
             i, test_pk=self.test_pk, user=self.user, **kwargs)
-    
+
 TestPropertyEstimateFormSet = modelformset_factory(
     IDTTestPropertyEstimate,
     form=TestPropertyEstimateForm,
@@ -250,7 +250,7 @@ class BaseTestPropertyEstimateCreateTestFormSet(BaseModelFormSet):
     def _construct_form(self, i, **kwargs):
         return super(BaseTestPropertyEstimateCreateTestFormSet, self)._construct_form(
             i, category=self.category, **kwargs)
-    
+
 TestPropertyEstimateCreateTestFormSet = modelformset_factory(
     IDTTestPropertyEstimate,
     form=TestPropertyEstimateCreateTestForm,
@@ -261,7 +261,7 @@ UserTestPropertyEstimateFormSet = modelformset_factory(
     IDTTestPropertyEstimate,
     form=TestPropertyEstimateForm
 )
-    
+
 GlobalTestFormSet = modelformset_factory(
     IDTDiagnosticTest,
     form=GlobalTestForm,
@@ -276,7 +276,7 @@ UserTestFormSet = modelformset_factory(
 class Grouped(object):
     def __init__(self, queryset, group_by_field,
                  group_label=None, *args, **kwargs):
-        """ 
+        """
         ``group_by_field`` is the name of a field on the model to use as
                            an optgroup.
         ``group_label`` is a function to return a label for each optgroup.
@@ -288,7 +288,7 @@ class Grouped(object):
             self.group_label = lambda group: group
         else:
             self.group_label = group_label
-   
+
     def _get_choices(self):
         if hasattr(self, '_choices'):
             return self._choices
@@ -310,7 +310,7 @@ CATEGORIES = (
     ('immunofluorescence_assay', 'Immunofluorescence Assay'),
     ('No category', 'No category'),
 )
-    
+
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
         if self.field.empty_label is not None:
@@ -417,7 +417,7 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
 
 class CalculateResidualRiskForm(forms.Form):
     test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
-    incidence = forms.FloatField(required=True, label='Incidence in donar population')
+    incidence = forms.FloatField(required=True, label='Incidence in donor population')
     donations = forms.FloatField(required=True, label='Number of donations per year')
 
     def __init__(self, user, *args, **kwargs):

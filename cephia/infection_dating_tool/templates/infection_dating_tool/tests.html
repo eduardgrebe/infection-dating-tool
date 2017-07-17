@@ -32,10 +32,13 @@
           </div>
         </div>
         <input type="submit" class="btn btn-primary tests--submit" value="Submit" />
+        <a href="{% url 'reset_defaults_calculation_params' %}" class="btn btn-danger tests--reset">
+          Reset to defaults
+        </a>
       </form>
     </div>
     <br>
-    
+
     <h2>Your tests</h2>
     <button class="js-add-test btn btn-default" data-add-url="{% url 'create_test' %}">Add a new test</button>
     <table class="table table-condensed table-striped">
@@ -47,7 +50,7 @@
         </tr>
       </thead>
       <tbody>
-        
+
         {% for test in user_tests %}
           <tr>
             <td>
@@ -62,7 +65,7 @@
             </td>
           </tr>
         {% endfor %}
-        
+
       </tbody>
     </table>
 
@@ -76,7 +79,7 @@
               <th></th>
             </tr>
           </thead>
-          
+
           <tbody>
             {% for test in tests %}
               <tr>
@@ -129,6 +132,6 @@
          })
      })
     </script>
-    
+
   </div>
 {% endblock %}

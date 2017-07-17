@@ -34,7 +34,7 @@ def heat_map_graph(x_value, y_value, number_of_donations=None):
     heatmap = np.flipud(np.transpose(heatmap))
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
 
-    plt.xlabel('Incidence in donar population (% p.a.)', fontsize=30)
+    plt.xlabel('Incidence in donor population (% p.a.)', fontsize=30)
     plt.ylabel('Window of residual risk (days)', fontsize=30)
 
     im = ax.imshow(heatmap, extent=extent, cmap='jet')

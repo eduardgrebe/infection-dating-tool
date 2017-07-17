@@ -81,7 +81,7 @@ def home(request, file_id=None, template="infection_dating_tool/home.html"):
     user = request.user.id
 
     context['infection_dating_tool'] = True
-    
+
     return redirect("data_files")
 
 
@@ -180,7 +180,7 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
                     if uploaded_file.state == 'needs_mapping':
                         messages.info(request, 'Please provide mapping for your file')
                     messages.info(request, u"Your file was uploaded successfully" )
-                
+
             else:
                 uploaded_file.delete()
                 for error in errors:
@@ -207,15 +207,9 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     user_tests = IDTDiagnosticTest.objects.filter(user=user).order_by('name')
     global_tests = IDTDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
     global_tests_dict = OrderedDict()
-
-    try:
-        gre = GrowthRateEstimate.objects.get(user=user)
-    except GrowthRateEstimate.DoesNotExist:
-        growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
-        gre = GrowthRateEstimate.objects.create(user=user, growth_rate=growth_rate)
-
+    gre = get_user_growth_rate(user)
     adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
-    
+
     form = GlobalParametersForm(gre, adj_factor, request.POST or None)
 
     for category in CATEGORIES:
@@ -227,7 +221,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
 
     if request.method == 'POST' and form.is_valid():
         form.save(user)
-                
+
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests_dict
     context['form'] = form
@@ -278,7 +272,7 @@ def create_test(request, category=None, template='infection_dating_tool/test_for
                 return JsonResponse({'success': True, 'redirect_url': reverse("tests")})
             else:
                 return redirect("tests")
-    
+
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
     return render(request, template, context)
@@ -328,7 +322,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/test_form.h
             test_instance = form.save()
         else:
             test_instance = IDTDiagnosticTest.objects.get(pk=test_id)
-        
+
         for instance in user_estimates_formset.save(commit=False):
             instance.user = request.user
             instance.test = test_instance
@@ -358,7 +352,7 @@ def edit_test(request, test_id=None, template='infection_dating_tool/test_form.h
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
     context['user_default_property_form'] = user_default_property_form
-    
+
     return render(request, template, context)
 
 
@@ -411,7 +405,7 @@ def download_results(request, file_id=None, context=None):
 
     response, writer = get_csv_response('infection_dates_%s_%s.csv' % (
         data_file.file_name, datetime.datetime.today().strftime('%d%b%Y_%H%M')))
-    
+
     writer.writerow(download.get_headers())
 
     for row in download.get_content():
@@ -431,7 +425,7 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
         data_file = IDTFileInfo.objects.get(pk=file_id)
         is_file = True
         js_is_file = 'true'
-        
+
         codes = list(data_file.test_history.all().values_list('test_code', flat=True).distinct())
         mapping = TestPropertyMapping.objects.filter(code__in=codes, user=user).order_by('-pk')
 
@@ -445,11 +439,11 @@ def test_mapping(request, file_id=None, template="infection_dating_tool/test_map
         context['file_name'] = os.path.basename(data_file.data_file.name)
     else:
         mapping = TestPropertyMapping.objects.filter(user=user).order_by('-pk')
-        
+
     context['mapping'] = mapping
     context['is_file'] = is_file
     context['js_is_file'] = js_is_file
-    
+
     return render(request, template, context)
 
 
@@ -475,7 +469,7 @@ def create_test_mapping(request, template='infection_dating_tool/mapping_form.ht
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
     context['growth_rate'] = growth_rate
-    
+
     if test_id:
         test_active_property = IDTDiagnosticTest.objects.get(pk=test_id).properties.filter(global_default=True).first()
         form = TestPropertyMappingForm(request.POST or None,
@@ -499,7 +493,7 @@ def create_test_mapping(request, template='infection_dating_tool/mapping_form.ht
         context['properties'] = properties
         context['user_estimates_formset'] = user_estimates_formset
         # context['map_code'] = map_code
-    
+
     else:
         form = TestPropertyMappingForm(request.POST or None)
         # user_estimates_formset = TestPropertyEstimateFormSet(
@@ -536,13 +530,13 @@ def create_test_mapping(request, template='infection_dating_tool/mapping_form.ht
             return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
         else:
             return redirect("test_mapping")
-    
+
     context['form'] = form
 
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
     context['growth_rate'] = growth_rate
-    
+
     return render(request, template, context)
 
 
@@ -573,11 +567,11 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
     context['growth_rate'] = growth_rate
-    
+
     if test_id:
         map_code = request.GET.get('map_code')
         test = IDTDiagnosticTest.objects.get(pk=test_id)
-        
+
         if mapping.test == test and mapping.test_property:
             test_active_property = mapping.test_property
         else:
@@ -593,7 +587,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
 
         if test.category == 'viral_load' and test.user == None:
             context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
-        
+
         context['test'] = test
 
         user_estimates_formset = TestPropertyEstimateFormSet(
@@ -620,7 +614,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             # )
             properties = IDTTestPropertyEstimate.objects.none()
 
-    
+
     form.set_context_data({'user': request.user})
     choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
     form.fields['test'] = choices
@@ -648,8 +642,8 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             else:
                 mapping_instance.test_property = original_tp
             mapping_instance.save()
-        
-                
+
+
         messages.info(request, 'Mapping edited successfully')
         if request.is_ajax():
             return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
@@ -659,13 +653,13 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
     context['growth_rate'] = growth_rate
-    
+
     context['form'] = form
     context['user_estimates_formset'] = user_estimates_formset
     context['properties'] = properties
     context['map'] = mapping
     context['js_is_file'] = js_is_file
-        
+
     return render(request, template, context)
 
 
@@ -684,7 +678,7 @@ def delete_data_file(request, file_id, context=None):
     data_file_test_history = IDTDiagnosticTestHistory.objects.filter(data_file=data_file).delete()
     data_file.deleted = True
     data_file.save()
-    
+
     messages.info(request, "Your file and all it's data has been deleted")
     return redirect(reverse('data_files'))
 
@@ -713,7 +707,7 @@ def process_data_file(request, file_id, context=None):
             else:
                 subject_dates = subject_rows.values_list('adjusted_date', flat=True)
                 lp_ddis_dict[subject] = min(subject_dates)
-            
+
 
         # lp_ddis = lp_ddis.annotate(earliest_positive=Min('adjusted_date'))
         # lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
@@ -730,7 +724,7 @@ def process_data_file(request, file_id, context=None):
             else:
                 subject_dates = subject_rows.values_list('adjusted_date', flat=True)
                 ep_ddis_dict[subject] = max(subject_dates)
-            
+
         # ep_ddis = ep_ddis.values('subject')
         # ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
         # ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
@@ -851,6 +845,32 @@ def residual_risk_window(request):
     return JsonResponse({'success': True, 'window': window})
 
 
+def reset_defaults_infectious_period(request):
+    user = request.user
+    infectious_period = get_user_infectious_period(user)
+    global_period = InfectiousPeriod.objects.get(user__isnull=True)
+    infectious_period.infectious_period = global_period.infectious_period
+    infectious_period.viral_growth_rate = global_period.viral_growth_rate
+    infectious_period.origin_viral_load = global_period.origin_viral_load
+    infectious_period.viral_load = global_period.viral_load
+    infectious_period.save()
+
+    return redirect("residual_risk_calculate")
+
+def reset_defaults_calculation_params(request):
+    user = request.user
+    growth_rate = get_user_growth_rate(user)
+    global_rate = GrowthRateEstimate.objects.get(user__isnull=True)
+    growth_rate.growth_rate = global_rate.growth_rate
+    growth_rate.save()
+
+    adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
+    adj_factor.adjustment_factor = 0.0
+    adj_factor.save()
+
+    return redirect("tests")
+
+
 def finalise_user_account(request, token, template='infection_dating_tool/complete_signup.html', hide_error_message=None):
     context = {}
 
@@ -862,7 +882,7 @@ def finalise_user_account(request, token, template='infection_dating_tool/comple
             user_instance = form.save(user)
             password = form.cleaned_data['password']
             auth_user = authenticate(username=user_instance.username, password=password)
-            
+
             if auth_user:
                 auth_login(request, auth_user)
                 auth_user.login_ok()
@@ -983,15 +1003,15 @@ def update_adjusted_dates(user, data_file):
             diagnostic_delay = math.log10(x[1]) / growth_rate
             map_property_means.append((x[0], diagnostic_delay, x[2]))
 
-        
+
         map_property_means = dict( (v[0], [v[1], v[2]]) for v in map_property_means )
         test_history_dates = list( file_test_history.values_list('test_code', 'test_date', 'id') )
-        
+
         dates_means = dict( (v[2], (v[1], map_property_means[v[0]])) for v in test_history_dates )
 
         adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
         adj_factor = adj_factor.adjustment_factor
-        
+
         for test_history in file_test_history:
             dict_values = dates_means[test_history.id]
             test_date = dict_values[0]
@@ -1004,7 +1024,7 @@ def update_adjusted_dates(user, data_file):
                 adj_diagnostic_delay = int(round(diagnostic_delay - (adj_factor * sigma)))
             elif test_history.test_result.lower() == 'negative':
                 adj_diagnostic_delay = int(round(diagnostic_delay + (adj_factor * sigma)))
-            
+
             test_history.adjusted_date = test_date - relativedelta(days=adj_diagnostic_delay)
             test_history.save()
 
@@ -1027,9 +1047,19 @@ def get_user_infectious_period(user):
     return infectious_period
 
 def get_user_growth_rate(user):
-    try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
-    except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+    growth_rate = GrowthRateEstimate.objects.filter(user=user).first()
+    if not growth_rate:
+        growth_rate = GrowthRateEstimate.objects.get(user__isnull=True)
+        growth_rate.pk = None
+        growth_rate.user = user
+        growth_rate.save()
+
     return growth_rate
+
+# def get_user_growth_rate(user):
+#     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
+#     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
+#     return growth_rate
 
 def calculate_window_of_residual_risk(user, test):
     test_prop = test.properties.get(global_default=True)
@@ -1037,7 +1067,7 @@ def calculate_window_of_residual_risk(user, test):
     if not test.category == 'viral_load':
         diagnostic_delay = test_prop.diagnostic_delay
     else:
-        growth_rate = get_user_growth_rate(user)
+        growth_rate = get_user_growth_rate(user).growth_rate
         diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
 
     infectious_period = get_user_infectious_period(user)

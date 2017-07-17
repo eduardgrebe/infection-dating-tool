@@ -72,9 +72,9 @@ class IDTTestPropertyEstimateQuerySet(QuerySet):
 class IDTTestPropertyEstimate(models.Model):
     class Meta:
         db_table = "idt_test_property_estimates"
-        
+
     objects = IDTTestPropertyEstimateQuerySet.as_manager()
-    
+
     user_default = models.BooleanField(blank=False, default=False)
     global_default = models.BooleanField(blank=False, default=False)
     test = models.ForeignKey(IDTDiagnosticTest, null=False, blank=True, related_name='properties')
@@ -111,7 +111,7 @@ class TestPropertyMapping(models.Model):
     test = ProtectedForeignKey('IDTDiagnosticTest', null=True, blank=True)
     test_property = ProtectedForeignKey('IDTTestPropertyEstimate', null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
-    
+
 
 class IDTFileInfo(models.Model):
     class Meta:
@@ -147,7 +147,7 @@ class IDTFileInfo(models.Model):
         test_names = list(IDTDiagnosticTest.objects.filter(
             Q(user=user) | Q(user=None)
         ).values_list('name', flat=True))
-        
+
         # map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
         map_codes = []
         for x in self.test_history.all().values_list('test_code', flat=True):
@@ -161,7 +161,7 @@ class IDTFileInfo(models.Model):
             elif code in test_names:
                 test = IDTDiagnosticTest.objects.get(name=code)
                 test_property = test.get_default_property()
-            
+
                 mapping = TestPropertyMapping.objects.create(
                     code=str(code),
                     test=test,
@@ -177,12 +177,12 @@ class IDTFileInfo(models.Model):
 
         return file_maps
 
-    
+
 class IDTSubject(models.Model):
     class Meta:
         db_table = "idt_subjects"
         unique_together = ("subject_label", "user")
-    
+
     subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
     edsc_reported  = models.DateField(null=True, blank=True, default=None)
@@ -217,7 +217,7 @@ class IDTSubject(models.Model):
     def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
         flag = self.check_for_identical_dates(data_file)
-        
+
         if ep_ddi is None or lp_ddi is None:
             eddi = None
             interval_size = None
@@ -273,7 +273,7 @@ class SelectedCategory(models.Model):
         ('viral_load', 'Viral Load'),
         ('western_blot', 'Western blot'),
     )
-    
+
     user = ProtectedForeignKey('cephia.CephiaUser', null=False)
     test = models.ForeignKey(IDTDiagnosticTest, null=True)
     category = models.CharField(choices=CATEGORIES, max_length=255, null=True)
@@ -314,7 +314,7 @@ class InfectiousPeriod(models.Model):
 
 
 class VariabilityAdjustment(models.Model):
-    adjustment_factor = models.FloatField(null=False, blank=False, default=1.0, verbose_name='Intersubject variability adjustment factor (SDs)')
+    adjustment_factor = models.FloatField(null=False, blank=False, default=0.0, verbose_name='Intersubject variability adjustment factor (SDs)')
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
 
     class Meta:

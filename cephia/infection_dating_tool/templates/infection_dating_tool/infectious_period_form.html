@@ -42,8 +42,12 @@
         </div>
       </div>
     </div>
-    
+
     <input type="submit" name="calculate" class="btn btn-primary infectious_period--submit" value="Apply" />
+    {% if form_selection == 'calculate' %}
+      <a href="{% url 'reset_defaults_infectious_period' %}" class="btn btn-danger infectious_period--reset">
+        Reset to defaults
+      </a>
+    {% endif %}
   </form>
 {% endif %}
-
