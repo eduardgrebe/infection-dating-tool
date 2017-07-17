@@ -17,7 +17,7 @@
         </h3>
       </div>
       <div class="modal-body">
-        
+
         {% bootstrap_form form %}
 
         {% if test %}
@@ -36,35 +36,41 @@
           <table class="table table-condensed table-striped">
             <thead>
               <tr>
-                <th>Active</th>
-                <th>Estimate label</th>
-                <th>Diagnostic delay</th>
-                <th>Detection Threshold (c/ml)</th>
-                <th>Sigma</th>
-                <th>Comment</th>
+                <th class="mapping--properties-headers" style="vertical-align:middle;">
+                  Active</th>
+                <th class="mapping--properties-headers" style="vertical-align:middle;">
+                  Estimate label</th>
+                <th class="mapping--properties-headers" style="vertical-align:middle;">
+                  VL threshold (copies/ml)</th>
+                <th class="mapping--properties-headers" style="vertical-align:middle;">
+                  Diagnostic delay p.e. (days)</th>
+                <th class="mapping--properties-headers" style="vertical-align:middle;">
+                  Diagnostic delay sigma (days)</th>
+                <th class="mapping--properties-headers-comment" style="vertical-align:middle;">
+                  Comment</th>
               </tr>
             </thead>
-            
+
             <tbody>
               {% for property in properties %}
                 <tr {% if property.global_default %}style="color:#990033;"{% endif %}>
                   <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk }}"></td>
                   <td>{{ property.estimate_label }}</td>
+                  <td class="mapping--value">
+                    {% if property.detection_threshold %}
+                      {{ property.detection_threshold }}
+                    {% endif %}
+                  </td>
                   {% if property.diagnostic_delay %}
-                    <td>{{ property.diagnostic_delay }}</td>
+                    <td class="mapping--value">{{ property.diagnostic_delay }}</td>
                   {% else %}
-                    <td>{% if global_vl_dd %}({{ global_vl_dd }}){% endif %}</td>
+                    <td class="mapping--value">{% if global_vl_dd %}({{ global_vl_dd }}){% endif %}</td>
                   {% endif %}
-                  {% if property.detection_threshold %}
-                    <td>{{ property.detection_threshold }}</td>
-                  {% else %}
-                    <td></td>
-                  {% endif %}
-                  {% if property.diagnostic_delay_sigma %}
-                    <td>{{ property.diagnostic_delay_sigma }}</td>
-                  {% else %}
-                    <td></td>
-                  {% endif %}
+                  <td class="mapping--value">
+                    {% if property.diagnostic_delay_sigma %}
+                      {{ property.diagnostic_delay_sigma }}
+                    {% endif %}
+                  </td>
                   <td>{{ property.comment }}</td>
                 </tr>
               {% endfor %}
@@ -75,11 +81,11 @@
                     {{ formset_form.id }}
                     <td><input {% ifequal property.pk form.test_property.value %}checked{% endifequal %} name="{{ form.test_property.html_name }}" type="radio" value="{{ property.pk|default:"" }}"></td>
                     <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
-                    <td>
+                    <td>{% bootstrap_field formset_form.detection_threshold show_label=False %}</td>
+                    <td class="tests--value">
                       {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
                       <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;"></div>
                     </td>
-                    <td>{% bootstrap_field formset_form.detection_threshold show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}</td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                   </tr>
@@ -88,7 +94,7 @@
             </tbody>
           </table>
         {% endif %}
-        
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

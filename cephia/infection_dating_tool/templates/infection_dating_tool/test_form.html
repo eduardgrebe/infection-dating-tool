@@ -27,11 +27,16 @@
           <table class="table table-condensed table-striped">
             <thead>
               <tr>
-                <th>Estimate label</th>
-                <th>Diagnostic delay</th>
-                <th>Detection threshold (c/ml)</th>
-                <th>Sigma</th>
-                <th>Comment</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  Estimate label</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  VL threshold (copies/ml)</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  Diagnostic delay p.e. (days)</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  Diagnostic delay sigma (days)</th>
+                <th class="tests--properties-headers-comment" style="vertical-align:middle;">
+                  Comment</th>
               </tr>
             </thead>
             <tbody>
@@ -40,11 +45,11 @@
                   {{ formset_form.id }}
                   <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                   <td>
-                    {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
-                    <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;"></div>
+                    {% bootstrap_field formset_form.detection_threshold show_label=False %}
                   </td>
                   <td>
-                    {% bootstrap_field formset_form.detection_threshold show_label=False %}
+                    {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
+                    <div class="tests--value" id="{{ formset_form.detection_threshold.html_name }}_vl_dd"></div>
                   </td>
                   <td>{% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}</td>
                   <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
@@ -62,34 +67,37 @@
                 {% if test.user %}
                   <th>Default</th>
                 {% endif %}
-                <th>Estimate label</th>
-                <th>Diagnostic delay</th>
-                <th>Detection threshold (c/ml)</th>
-                <th>Sigma</th>
-                <th>Comment</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  Estimate label</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  VL threshold (copies/ml)</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  Diagnostic delay p.e. (days)</th>
+                <th class="tests--properties-headers" style="vertical-align:middle;">
+                  Diagnostic delay sigma (days)</th>
+                <th class="tests--properties-headers-comment" style="vertical-align:middle;">
+                  Comment</th>
               </tr>
             </thead>
             <tbody>
               {% for property in properties %}
                 <tr {% if property.global_default %}style="color:#990033;"{% endif %}>
                   <td>{{ property.estimate_label }}</td>
-                  {% if property.diagnostic_delay %}
-                    <td>{{ property.diagnostic_delay }}</td>
-                  {% else %}
-                    <td>{% if global_vl_dd %}({{ global_vl_dd }}){% endif %}</td>
-                  {% endif %}
-                  {% if property.detection_threshold %}
-                    <td>
+                  <td class="tests--value">
+                    {% if property.detection_threshold %}
                       {{ property.detection_threshold }}
-                    </td>
+                    {% endif %}
+                  </td>
+                  {% if property.diagnostic_delay %}
+                    <td class="tests--value">{{ property.diagnostic_delay }}</td>
                   {% else %}
-                    <td></td>
+                    <td class="tests--value">{% if global_vl_dd %}({{ global_vl_dd }}){% endif %}</td>
                   {% endif %}
-                  {% if property.diagnostic_delay_sigma %}
-                    <td>{{ property.diagnostic_delay_sigma }}</td>
-                  {% else %}
-                    <td></td>
-                  {% endif %}
+                  <td class="tests--value">
+                    {% if property.diagnostic_delay_sigma %}
+                      {{ property.diagnostic_delay_sigma }}
+                    {% endif %}
+                  </td>
                   <td>{{ property.comment }}</td>
                 </tr>
               {% endfor %}
@@ -103,13 +111,16 @@
                     {% endif %}
                     <td>{% bootstrap_field formset_form.estimate_label show_label=False %}</td>
                     <td>
-                      {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
-                      <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;"></div>
-                    </td>
-                    <td>
                       {% bootstrap_field formset_form.detection_threshold show_label=False %}
                     </td>
-                    <td>{% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}</td>
+                    <td class="tests--value">
+                      {% bootstrap_field formset_form.diagnostic_delay show_label=False %}
+                      <div id="{{ formset_form.detection_threshold.html_name }}_vl_dd" style="margin-top: -10px;">
+                      </div>
+                    </td>
+                    <td>
+                      {% bootstrap_field formset_form.diagnostic_delay_sigma show_label=False %}
+                    </td>
                     <td>{% bootstrap_field formset_form.comment show_label=False %}</td>
                   </tr>
                 {% endwith %}
@@ -117,7 +128,7 @@
             </tbody>
           </table>
         {% endif %}
-        
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

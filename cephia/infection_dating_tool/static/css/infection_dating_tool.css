@@ -145,7 +145,7 @@ ul.sf-menu li li li.sfHover ul { left:10em; top:0; }
   font-family:arial;
   font-size: 70%;
   margin-left: 10px;
-} 
+}
 
 
 dl {
@@ -415,4 +415,34 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
 
 .tests--submit {
     float:right;
+}
+
+.tests--properties-headers {
+    text-align:center;
+    vertical-align:middle;
+}
+
+.tests--properties-headers-comment {
+    text-align:center;
+    vertical-align:middle;
+    width:25%;
+}
+
+.tests--value {
+    text-align:center;
+}
+
+.mapping--properties-headers {
+    text-align:center;
+    vertical-align:middle;
+}
+
+.mapping--properties-headers-comment {
+    text-align:center;
+    vertical-align:middle;
+    width:25%;
+}
+
+.mapping--value {
+    text-align:center;
 }
