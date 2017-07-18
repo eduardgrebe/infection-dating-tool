@@ -282,6 +282,7 @@ def create_test(request, category=None, template='infection_dating_tool/test_for
 def edit_test(request, test_id=None, template='infection_dating_tool/test_form.html', context=None):
     context = context or {}
     user = request.user
+
     test = IDTDiagnosticTest.objects.get(pk=test_id)
     if not request.POST:
         sc, created = SelectedCategory.objects.get_or_create(user=user, test=test)
@@ -596,6 +597,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             request.POST or None,
             queryset=test.properties.filter(user=request.user)
         )
+        context['user_estimates_formset'] = user_estimates_formset
     else:
         form = TestPropertyMappingForm(request.POST or None, instance=mapping)
         if mapping.test:
@@ -608,6 +610,7 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
             )
             if mapping.test.category == 'viral_load' and mapping.test.user == None:
                 context['global_vl_dd'] = round((math.log10(properties.first().detection_threshold) / growth_rate),2)
+            context['user_estimates_formset'] = user_estimates_formset
         else:
             # user_estimates_formset = TestPropertyEstimateFormSet(
             #     request.POST or None
@@ -646,16 +649,14 @@ def edit_test_mapping(request, save_map_id=None, template='infection_dating_tool
 
         messages.info(request, 'Mapping edited successfully')
         if request.is_ajax():
-            return JsonResponse({'success': True, 'redirect_url': reverse("test_mapping")})
+            return JsonResponse({'success': True})
         else:
             return redirect("test_mapping")
 
     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
     context['growth_rate'] = growth_rate
-
     context['form'] = form
-    context['user_estimates_formset'] = user_estimates_formset
     context['properties'] = properties
     context['map'] = mapping
     context['js_is_file'] = js_is_file

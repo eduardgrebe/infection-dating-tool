@@ -21,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        
+
         {% for map in mapping %}
           <tr>
             <td>
@@ -41,7 +41,7 @@
             </td>
           </tr>
         {% endfor %}
-        
+
       </tbody>
     </table>
 
@@ -53,7 +53,7 @@
     {% if completed_mapping == False %}
       <a class="btn btn-primary" href="{% url 'validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
     {% endif %}
-    
+
     <div class="modal fade" id="modal-mapping"></div>
 
     <script>
@@ -104,8 +104,8 @@
          var form = $('#modal-mapping').find('form');
          var post_data = form.serialize();
          $.post(form.attr('action'), post_data).done(function(resp) {
-             if (resp.redirect_url) {
-                 location.href = resp.redirect_url
+             if (resp.success) {
+                 location.reload();
              } else {
                  $('#modal-mapping').html(resp)
              }
