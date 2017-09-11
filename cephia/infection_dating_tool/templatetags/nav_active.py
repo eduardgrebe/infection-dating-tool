@@ -9,6 +9,9 @@ def nav_active(request, url):
     In template: {% nav_active request "url_name_here" %}
     """
     url_name = resolve(request.path).url_name
+    if url_name == 'residual_risk_calculate':
+        url_name = 'residual_risk'
+
     if url_name == url:
         return "active"
     return "nav-eddi"
