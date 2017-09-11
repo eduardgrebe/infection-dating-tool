@@ -78,11 +78,29 @@ urlpatterns = [
     url(r'^mapping/get_test_category/$', idt_views.get_test_category, name='get_test_category'),
     url(r'^idt/mapping/get_test_category/$', idt_views.get_test_category),
 
-    url(r'^idt/residual_risk/calculate/$', idt_views.residual_risk, {'form_selection': 'calculate'}),
-    url(r'^residual_risk/calculate/$', idt_views.residual_risk, {'form_selection': 'calculate'}, name='residual_risk_calculate'),
+    url(r'^idt/residual_risk/$', idt_views.residual_risk),
+    url(r'^residual_risk/$', idt_views.residual_risk, name='residual_risk'),
 
-    url(r'^idt/residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}),
-    url(r'^residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}, name='residual_risk'),
+    url(r'^idt/residual_risk/estimates/$', idt_views.residual_risk_estimates),
+    url(r'^residual_risk/estimates/$', idt_views.residual_risk_estimates, name='residual_risk_estimates'),
+
+    url(r'^idt/residual_risk/estimates/specify/$', idt_views.residual_risk_estimates_specify, {'form_selection': 'specify'}),
+    url(r'^residual_risk/estimates/specify/$', idt_views.residual_risk_estimates_specify, {'form_selection': 'specify'}, name='residual_risk_estimates_specify'),
+
+    url(r'^idt/residual_risk/estimates/calculate/$', idt_views.residual_risk_estimates_calculate, {'form_selection': 'calculate'}),
+    url(r'^residual_risk/estimates/calculate/$', idt_views.residual_risk_estimates_calculate, {'form_selection': 'calculate'}, name='residual_risk_estimates_calculate'),
+
+    url(r'^idt/residual_risk/calculate/data/$', idt_views.residual_risk_data),
+    url(r'^residual_risk/calculate/data/$', idt_views.residual_risk_data, name='residual_risk_data'),
+
+    url(r'^idt/residual_risk/calculate/supply/$', idt_views.residual_risk_supply),
+    url(r'^residual_risk/calculate/supply/$', idt_views.residual_risk_supply, name='residual_risk_supply'),
+
+    # url(r'^idt/residual_risk/calculate/$', idt_views.residual_risk, {'form_selection': 'calculate'}),
+    # url(r'^residual_risk/calculate/$', idt_views.residual_risk, {'form_selection': 'calculate'}, name='residual_risk_calculate'),
+
+    # url(r'^idt/residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}),
+    # url(r'^residual_risk/$', idt_views.residual_risk, {'form_selection': 'specify'}, name='residual_risk'),
 
     url(r'^idt/residual_risk_window/$', idt_views.residual_risk_window),
     url(r'^residual_risk_window/$', idt_views.residual_risk_window, name='residual_risk_window'),

@@ -2,7 +2,7 @@
 {% load nav_active %}
 
 {% block nav %}
-  
+
   <nav class="navbar navbar-default">
     <div id="nav-eddi" class="nav_top container_nav">
 
@@ -11,14 +11,14 @@
           <li><a class="{% nav_active request 'data_files' %}" href="{% url 'data_files' %}">Testing Histories</a></li>
           <li><a class="{% nav_active request 'test_mapping' %}" href="{% url 'test_mapping' %}">Mapping</a></li>
           <li><a class="{% nav_active request 'tests' %}" href="{% url 'tests' %}">Tests</a></li>
-          <li><a class="{% nav_active request 'residual_risk' %}" href="{% url 'residual_risk_calculate' %}">Residual Risk</a></li>
+          <li><a class="{% nav_active request 'residual_risk' %}" href="{% url 'residual_risk' %}">Residual Risk</a></li>
           <li><a class="{% nav_active request 'help_page' %}" href="{% url 'help_page' %}">Help</a></li>
         </ul>
-        
+
         <ul class="eddi-menu js-enabled navbar-right">
           <li><a href="{% url 'logout' %}">Logout</a></li>
         </ul>
-        
+
       {% elif not user.id %}
         <ul class="eddi-menu js-enabled navbar-right">
           <li><a href="{% url 'login' %}">Return to Login</a></li>
@@ -27,5 +27,5 @@
 
     </div>
   </nav>
-  
+
 {% endblock %}

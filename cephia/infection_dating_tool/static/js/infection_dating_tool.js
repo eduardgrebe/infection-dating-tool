@@ -6,12 +6,42 @@ idt.specify_select = function() {
         type: "GET",
         url: url
     }).done(function(response) {
-        $('#form-panel').html(response);
+        $('#form-estimates-panel').html(response);
     });
 };
 
 idt.calculate_select = function() {
     var url = document.getElementById('calculate').dataset.url;
+    $.ajax({
+        type: "GET",
+        url: url
+    }).done(function(response) {
+        $('#form-estimates-panel').html(response);
+    });
+};
+
+idt.estimates_select = function() {
+    var url = document.getElementById('estimates').dataset.url;
+    $.ajax({
+        type: "GET",
+        url: url
+    }).done(function(response) {
+        $('#form-panel').html(response);
+    });
+};
+
+idt.data_select = function() {
+    var url = document.getElementById('data').dataset.url;
+    $.ajax({
+        type: "GET",
+        url: url
+    }).done(function(response) {
+        $('#form-panel').html(response);
+    });
+};
+
+idt.supply_select = function() {
+    var url = document.getElementById('supply').dataset.url;
     $.ajax({
         type: "GET",
         url: url

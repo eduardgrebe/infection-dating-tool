@@ -753,36 +753,10 @@ def validate_mapping_from_page(request, file_id, context=None):
 
 
 @idt_login_required(login_url='login')
-def residual_risk(request, form_selection, template="infection_dating_tool/residual_risk.html"):
+def residual_risk(request, choice_selection='estimates', template="infection_dating_tool/residual_risk.html"):
     context = {}
     user = request.user
     infectious_period = get_user_infectious_period(user)
-
-    if form_selection == 'specify':
-        if 'specify' in request.POST:
-            specify_form = SpecifyInfectiousPeriodForm(request.POST, instance=infectious_period)
-            if specify_form.is_valid():
-                specify_period = specify_form.save()
-        else:
-            specify_form = SpecifyInfectiousPeriodForm(instance=infectious_period)
-        context['specify_form'] = specify_form
-
-        if request.is_ajax():
-            return render( request, "infection_dating_tool/infectious_period_form.html",
-                           {'form_selection': form_selection, 'specify_form': specify_form} )
-
-    elif form_selection == 'calculate':
-        if 'calculate' in request.POST:
-            calculate_form = CalculateInfectiousPeriodForm(request.POST, instance=infectious_period)
-            if calculate_form.is_valid():
-                infectious_period = calculate_form.save()
-        else:
-            calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
-        context['calculate_form'] = calculate_form
-
-        if request.is_ajax():
-            return render( request, "infection_dating_tool/infectious_period_form.html",
-                           {'form_selection': form_selection, 'calculate_form': calculate_form} )
 
     if 'res_risk' in request.POST:
         form = CalculateResidualRiskForm(user, request.POST or None)
@@ -834,8 +808,86 @@ def residual_risk(request, form_selection, template="infection_dating_tool/resid
 
     context['infectious_period'] = round(infectious_period.infectious_period, 1)
     context['form'] = form
-    context['form_selection'] = form_selection
+    context['choice_selection'] = choice_selection
     return render(request, template, context)
+
+
+@idt_login_required(login_url='login')
+def residual_risk_estimates(request, form_selection="calculate", template="infection_dating_tool/_residual_risk_estimates_form.html"):
+    context = {}
+    choice_selection = 'estimates'
+    user = request.user
+    infectious_period = get_user_infectious_period(user)
+
+    context['infectious_period'] = round(infectious_period.infectious_period, 1)
+    context['choice_selection'] = choice_selection
+    context['form_selection'] = form_selection
+
+    calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
+    context['calculate_form'] = calculate_form
+
+    specify_form = SpecifyInfectiousPeriodForm(instance=infectious_period)
+    context['specify_form'] = specify_form
+
+    if request.is_ajax():
+        return render(request, template, context)
+    return residual_risk(request, choice_selection)
+
+@idt_login_required(login_url='login')
+def residual_risk_estimates_calculate(request, form_selection, template="infection_dating_tool/_residual_risk_estimates_calculate_form.html"):
+    context = {}
+    user = request.user
+    infectious_period = get_user_infectious_period(user)
+
+    if 'calculate' in request.POST:
+        calculate_form = CalculateInfectiousPeriodForm(request.POST, instance=infectious_period)
+        if calculate_form.is_valid():
+            calculate_form.save()
+    else:
+        calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
+    context['calculate_form'] = calculate_form
+
+    if request.is_ajax():
+        return render(request, template, {'form_selection': form_selection, 'calculate_form': calculate_form})
+
+    return residual_risk_estimates(request, form_selection)
+
+@idt_login_required(login_url='login')
+def residual_risk_estimates_specify(request, form_selection, template="infection_dating_tool/_residual_risk_estimates_specify_form.html"):
+    context = {}
+    user = request.user
+    infectious_period = get_user_infectious_period(user)
+
+    if 'specify' in request.POST:
+        specify_form = SpecifyInfectiousPeriodForm(request.POST, instance=infectious_period)
+        if specify_form.is_valid():
+            specify_form.save()
+    else:
+        specify_form = SpecifyInfectiousPeriodForm(instance=infectious_period)
+    context['specify_form'] = specify_form
+
+    if request.is_ajax():
+        return render(request, template, {'form_selection': form_selection, 'specify_form': specify_form})
+
+    return residual_risk_estimates(request, form_selection)
+
+@idt_login_required(login_url='login')
+def residual_risk_data(request, template="infection_dating_tool/_residual_risk_data_form.html"):
+    context = {}
+    choice_selection = 'data'
+    context['choice_selection'] = choice_selection
+    if request.is_ajax():
+        return render(request, template, context)
+    return residual_risk(request, choice_selection)
+
+@idt_login_required(login_url='login')
+def residual_risk_supply(request, template="infection_dating_tool/_residual_risk_supply_form.html"):
+    context = {}
+    choice_selection = 'supply'
+    context['choice_selection'] = choice_selection
+    if request.is_ajax():
+        return render(request, template, context)
+    return residual_risk(request, choice_selection)
 
 
 @idt_login_required(login_url='login')

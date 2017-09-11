@@ -8,7 +8,7 @@
 
       <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
         <h3 class="panel-title">
-          Start of Infectious Period:
+          Window of Residual Risk:
           {{ infectious_period }}
         </h3>
       </div>
@@ -17,19 +17,33 @@
 
         <div class="panel-body infectious_period--radio_selection">
           <p>
-            <input {% ifequal form_selection 'calculate' %}checked{% endifequal %} id="calculate" name="form_select" type="radio" value="2"
-                                                           data-url="{% url 'residual_risk_calculate' %}" onclick="idt.calculate_select();">
-            <label for="calculate">Calculate start of infectious period from viral load growth</label>
+            <input id="estimates" name="choice_select" type="radio" value="1"
+                   data-url="{% url 'residual_risk_estimates' %}" onclick="idt.estimates_select();"
+                   {% ifequal choice_selection "estimates" %}checked{% endifequal %}>
+            <label for="estimates">Calculate residual risk from infectious-dose and diagnostic-delay estimates</label>
           </p>
           <p>
-            <input {% ifequal form_selection 'specify' %}checked{% endifequal %} id="specify" name="form_select" type="radio" value="1"
-                   data-url="{% url 'residual_risk' %}" onclick="idt.specify_select();">
-            <label for="specify">Specify start of infectious period</label>
+            <input id="data" name="choice_select" type="radio" value="2"
+                   data-url="{% url 'residual_risk_data' %}" onclick="idt.data_select();"
+                   {% ifequal choice_selection "data" %}checked{% endifequal %}>
+            <label for="data">Calculate residual risk from operational transmission data</label>
+          </p>
+          <p>
+            <input id="supply" name="choice_select" type="radio" value="3"
+                   data-url="{% url 'residual_risk_supply' %}" onclick="idt.supply_select();"
+                   {% ifequal choice_selection "supply" %}checked{% endifequal %}>
+            <label for="supply">Supply an estimate of the ‘window of residual risk’</label>
           </p>
         </div>
 
         <div id="form-panel" class="panel-body">
-          {% include 'infection_dating_tool/infectious_period_form.html' %}
+          {% if choice_selection == 'estimates' %}
+            {% include 'infection_dating_tool/_residual_risk_estimates_form.html' %}
+          {% elif choice_selection == 'data' %}
+            {% include 'infection_dating_tool/_residual_risk_data_form.html' %}
+          {% elif choice_selection == 'supply' %}
+            {% include 'infection_dating_tool/_residual_risk_supply_form.html' %}
+          {% endif %}
         </div>
 
       </div>
@@ -59,9 +73,9 @@
         <div class="residual_risk--graph--donations">
           <img src="{{ graph_donations.url }}" alt="" style='height:100%; width:100%;'>
         </div>
-        
+
       </div>
-      
+
     {% endif %}
 
   </div>
