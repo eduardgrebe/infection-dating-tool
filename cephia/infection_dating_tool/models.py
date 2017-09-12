@@ -302,6 +302,14 @@ class ResidualRisk(models.Model):
     class Meta:
         db_table = "idt_residual_risk"
 
+    CHOICES = (
+        ('estimates', 'Estimates'),
+        ('data', 'Data'),
+        ('supply', 'Supply'),
+    )
+
+    choice = models.CharField(choices=CHOICES, max_length=255, null=False, default='estimates')
+
     user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
     residual_risk = models.FloatField(null=False)
     residual_risk_input = models.FloatField(null=False)
@@ -317,6 +325,7 @@ class ResidualRisk(models.Model):
 
     graph_file_probability = models.FileField(upload_to="graphs", max_length=255, null=True)
     graph_file_donations = models.FileField(upload_to="graphs", max_length=255, null=True)
+    upper_limit = models.FloatField(null=True)
 
 
 class VariabilityAdjustment(models.Model):

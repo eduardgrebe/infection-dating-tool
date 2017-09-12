@@ -1,18 +1,23 @@
 import numpy as np
-import numpy.random
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+matplotlib.use('Agg')
 
-def heat_map_graph(x_value, y_value, number_of_donations=None):
-    fig = plt.figure(figsize=(15,15))
+def heat_map_graph(x_value, y_value, upper_limit, number_of_donations=None):
+    fig = plt.figure(figsize=(15, 15))
     ax = fig.add_subplot(111)
-    x_step = x_value*2.0/64
-    xedges = np.arange(0, x_value*2+x_step, x_step)
-    y_step = y_value*2.0/64
-    yedges = np.arange(0, y_value*2+y_step, y_step)
+
+    if not upper_limit:
+        x_step = x_value*2.0/64
+        xedges = np.arange(0, x_value*2+x_step, x_step)
+        y_step = y_value*2.0/64
+        yedges = np.arange(0, y_value*2+y_step, y_step)
+    else:
+        x_step = x_value*upper_limit/64
+        xedges = np.arange(0, x_value*upper_limit+x_step, x_step)
+        y_step = y_value*upper_limit/64
+        yedges = np.arange(0, y_value*upper_limit+y_step, y_step)
 
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(20)
@@ -20,7 +25,7 @@ def heat_map_graph(x_value, y_value, number_of_donations=None):
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(20)
 
-    heatmap = np.zeros(shape=(len(yedges),len(xedges)))
+    heatmap = np.zeros(shape=(len(yedges), len(xedges)))
 
     for x_count, x in enumerate(xedges):
         for y_count, y in enumerate(yedges):

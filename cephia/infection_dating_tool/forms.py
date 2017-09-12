@@ -11,6 +11,9 @@ from django.db.models import Q
 import math
 from itertools import groupby
 from django.forms.models import ModelChoiceIterator, ModelChoiceField, ModelMultipleChoiceField
+from cephia.excel_helper import ExcelHelper
+import unicodecsv as csv
+import os
 
 class BaseModelForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -393,6 +396,7 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
     def save(self, commit=True):
         infectious_period = super(SpecifyInfectiousPeriodForm, self).save(commit=False)
         infectious_period.infectious_period = infectious_period.infectious_period_input
+        infectious_period.choice = 'estimates'
 
         if commit:
             infectious_period.save()
@@ -409,7 +413,66 @@ class SupplyResidualRiskForm(BaseModelForm):
     def save(self, commit=True):
         infectious_period = super(SupplyResidualRiskForm, self).save(commit=False)
         infectious_period.residual_risk = infectious_period.residual_risk_input
+        infectious_period.choice = 'supply'
 
+        if commit:
+            infectious_period.save()
+
+        return infectious_period
+
+
+class DataResidualRiskForm(BaseModelForm):
+    number_list = forms.CharField(required=False, widget=forms.Textarea())
+    number_file = forms.FileField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(DataResidualRiskForm, self).__init__(*args, **kwargs)
+        user = self.instance.user
+        choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+        self.fields['positive_test'] = choices
+        self.fields['negative_test'] = choices
+
+    class Meta:
+        model = ResidualRisk
+        fields = ['positive_test', 'negative_test', 'upper_limit']
+
+    def clean_number_file(self):
+        number_file = self.cleaned_data.get('number_file')
+        if not number_file:
+            return number_file
+        filename = number_file.name
+        extension = os.path.splitext(filename)[1][1:].lower()
+        if extension == 'csv':
+            rows = (float(z[0]) for z in csv.reader(number_file) if z)
+        elif extension in ['xls', 'xlsx']:
+            rows = (float(z[0]) for z in ExcelHelper(number_file).rows() if z)
+        else:
+            raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
+        self.cleaned_data['imported_numbers'] = [r for r in rows if r]
+        return number_file
+
+    def clean_number_list(self):
+        value = self.cleaned_data.get('number_list')
+        if not value:
+            return value
+        rows = [float(z.strip()) for z in value.split(u'\n') if z and z != '\r']
+        self.cleaned_data['imported_numbers'] = rows
+        return value
+
+    # def clean(self):
+    #     if self.cleaned_data.get('number_file') and self.cleaned_data.get('number_list'):
+    #         raise forms.ValidationError('You must upload either a file or a list of numbers, not both.')
+    #     if not self.cleaned_data.get('number_file') and not self.cleaned_data.get('number_list'):
+    #         raise forms.ValidationError('You must upload either a file or list of numbers.')
+
+    #     return self.cleaned_data
+
+    def save(self, commit=True):
+        infectious_period = super(DataResidualRiskForm, self).save(commit=False)
+        numbers = self.cleaned_data['imported_numbers']
+        number = sum(numbers)
+        infectious_period.residual_risk = number
+        infectious_period.choice = 'data'
         if commit:
             infectious_period.save()
 
@@ -436,6 +499,7 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
         vli = infectious_period.viral_load
         vgr = infectious_period.viral_growth_rate
         infectious_period.infectious_period = math.log10(vli/vlz) / vgr
+        infectious_period.choice = 'estimates'
 
         if commit:
             infectious_period.save()

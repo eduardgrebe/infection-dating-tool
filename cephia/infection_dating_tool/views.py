@@ -8,7 +8,7 @@ from forms import (
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GlobalParametersForm,
     TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
-    CalculateResidualRiskForm, SupplyResidualRiskForm
+    CalculateResidualRiskForm, SupplyResidualRiskForm, DataResidualRiskForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -761,13 +761,17 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
     if 'res_risk' in request.POST:
         form = CalculateResidualRiskForm(request.POST or None)
         if form.is_valid():
-            window = round(calculate_window_of_residual_risk(user), 1)
+            window = round(residual_risk.residual_risk, 1)
             _residual_risk = form.calculate_residual_risk(window)
             _residual_risk = round_to_significant_digits(_residual_risk, 3)
             infectious_donations = form.calculate_infectious_donations(_residual_risk)
             infectious_donations = round_to_significant_digits(infectious_donations, 3)
 
-            fig = heat_map_graph(form.cleaned_data['incidence'], window)
+            upper_limit = None
+            if residual_risk.choice == 'data':
+                upper_limit = residual_risk.upper_limit
+
+            fig = heat_map_graph(form.cleaned_data['incidence'], window, upper_limit)
             graph_name = "residual_risk_probability_%s" % user.username
             fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
             with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
@@ -776,7 +780,7 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
                     os.remove(existing_file)
                 residual_risk.graph_file_probability.save("%s.png" % graph_name, File(graph_file), save=True)
 
-            fig = heat_map_graph(form.cleaned_data['incidence'], window, form.cleaned_data['donations'])
+            fig = heat_map_graph(form.cleaned_data['incidence'], window, upper_limit, form.cleaned_data['donations'])
             graph_name = "residual_risk_donations_%s" % user.username
             fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
             with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
@@ -812,6 +816,8 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
         context['form_selection'] = "calculate"
     elif choice_selection == 'supply':
         context['supply_form'] = SupplyResidualRiskForm(instance=residual_risk)
+    elif choice_selection == 'data':
+        context['data_form'] = DataResidualRiskForm(instance=residual_risk)
 
     context['infectious_period'] = round(residual_risk.infectious_period, 1)
     context['residual_risk'] = round(residual_risk.residual_risk, 1)
@@ -885,9 +891,20 @@ def residual_risk_estimates_specify(request, form_selection, template="infection
 def residual_risk_data(request, template="infection_dating_tool/_residual_risk_data_form.html"):
     context = {}
     choice_selection = 'data'
+    user = request.user
+    user_residual_risk = get_user_residual_risk(user)
+
+    if 'data' in request.POST:
+        data_form = DataResidualRiskForm(request.POST, request.FILES, instance=user_residual_risk)
+        if data_form.is_valid():
+            data_form.save()
+    else:
+        data_form = DataResidualRiskForm(instance=user_residual_risk)
+    context['data_form'] = data_form
     context['choice_selection'] = choice_selection
+
     if request.is_ajax():
-        return render(request, template, context)
+        return render(request, template, {'choice_selection': choice_selection, 'data_form': data_form})
     return residual_risk(request, choice_selection)
 
 
@@ -929,6 +946,7 @@ def reset_defaults_infectious_period(request):
     user_residual_risk.viral_growth_rate = global_period.viral_growth_rate
     user_residual_risk.origin_viral_load = global_period.origin_viral_load
     user_residual_risk.viral_load = global_period.viral_load
+    user_residual_risk.choice = 'estimates'
     user_residual_risk.save()
 
     calculate_window_of_residual_risk(user)

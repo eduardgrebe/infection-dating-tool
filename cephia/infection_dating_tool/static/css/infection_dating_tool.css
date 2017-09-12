@@ -320,6 +320,11 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     margin-right:5px;
 }
 
+.residual_risk_data--form_field {
+    width:33.3%;
+    float:left;
+}
+
 .residual_risk--form {
     width:100%;
     float:left;

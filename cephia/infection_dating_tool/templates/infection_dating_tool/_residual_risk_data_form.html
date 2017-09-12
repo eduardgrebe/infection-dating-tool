@@ -1,5 +1,55 @@
 {% load bootstrap3 %}
 
 <div id="form-panel" class="panel-body">
-  {{ choice_selection }}
+  <form method="POST" action="{% url 'residual_risk_data' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="infectious_period--form">
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Select least sensitive test that was positive at t_2
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.positive_test show_label=False %}
+        </div>
+      </div>
+
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Select most sensitive test that was negative at t_1
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.negative_test show_label=False %}
+        </div>
+      </div>
+
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Provide the upper limit for the graph
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.upper_limit show_label=False %}
+        </div>
+      </div>
+    </div>
+
+    <div class="infectious_period--form">
+      <div class="infectious_period--form_label">
+        Upload a list of numbers
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field data_form.number_file show_label=False %}
+      </div>
+    </div>
+
+    <div class="infectious_period--form">
+      <div class="infectious_period--form_label">
+        Or enter a newline-separated list of numbers
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field data_form.number_list show_label=False %}
+      </div>
+    </div>
+
+    <input type="submit" name="data" class="btn btn-primary infectious_period--submit" value="Apply" />
+  </form>
 </div>
