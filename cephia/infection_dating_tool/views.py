@@ -8,7 +8,7 @@ from forms import (
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GlobalParametersForm,
     TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
-    CalculateResidualRiskForm
+    CalculateResidualRiskForm, EstimateWindowResidualRiskForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -28,7 +28,7 @@ from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate,
     TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
     IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory,
-    GrowthRateEstimate, InfectiousPeriod, VariabilityAdjustment
+    GrowthRateEstimate, ResidualRisk, VariabilityAdjustment
     )
 from graph_image_generator import heat_map_graph
 from cephia.models import CephiaUser
@@ -806,6 +806,10 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
     else:
         form = CalculateResidualRiskForm(user)
 
+    if choice_selection == 'estimates':
+        context['calculate_form'] = CalculateInfectiousPeriodForm(instance=infectious_period)
+        context['form_selection'] = "calculate"
+
     context['infectious_period'] = round(infectious_period.infectious_period, 1)
     context['form'] = form
     context['choice_selection'] = choice_selection
@@ -822,6 +826,8 @@ def residual_risk_estimates(request, form_selection="calculate", template="infec
     context['infectious_period'] = round(infectious_period.infectious_period, 1)
     context['choice_selection'] = choice_selection
     context['form_selection'] = form_selection
+
+    test_form = EstimateWindowResidualRiskForm(request.POST, initial=infectious_period)
 
     calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
     context['calculate_form'] = calculate_form
@@ -901,14 +907,15 @@ def residual_risk_window(request):
 def reset_defaults_infectious_period(request):
     user = request.user
     infectious_period = get_user_infectious_period(user)
-    global_period = InfectiousPeriod.objects.get(user__isnull=True)
+    global_period = ResidualRisk.objects.get(user__isnull=True)
     infectious_period.infectious_period = global_period.infectious_period
     infectious_period.viral_growth_rate = global_period.viral_growth_rate
     infectious_period.origin_viral_load = global_period.origin_viral_load
     infectious_period.viral_load = global_period.viral_load
     infectious_period.save()
 
-    return redirect("residual_risk_calculate")
+    choice_selection = 'estimates'
+    return residual_risk(request, choice_selection)
 
 def reset_defaults_calculation_params(request):
     user = request.user
@@ -1090,9 +1097,9 @@ def tools_home(request, template="index.html"):
 
 
 def get_user_infectious_period(user):
-    infectious_period = InfectiousPeriod.objects.filter(user=user).first()
+    infectious_period = ResidualRisk.objects.filter(user=user).first()
     if not infectious_period:
-        infectious_period = InfectiousPeriod.objects.get(user__isnull=True)
+        infectious_period = ResidualRisk.objects.get(user__isnull=True)
         infectious_period.pk = None
         infectious_period.user = user
         infectious_period.save()

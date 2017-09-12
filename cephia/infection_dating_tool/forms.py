@@ -1,16 +1,12 @@
 from user_management.forms import UserCreationForm
 from django import forms
-from django.forms import formset_factory
 from django.forms import ModelForm
 from django.contrib.auth.models import Group
-from django.conf import settings
-from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import modelformset_factory, BaseModelFormSet
 from models import (
     TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate,
-    IDTFileInfo, SelectedCategory, GrowthRateEstimate, InfectiousPeriod,
-    VariabilityAdjustment
-    )
+    IDTFileInfo, SelectedCategory, GrowthRateEstimate, ResidualRisk,
+    VariabilityAdjustment)
 from django.db.models import Q
 import math
 from itertools import groupby
@@ -383,7 +379,7 @@ class GlobalParametersForm(forms.Form):
 
 class SpecifyInfectiousPeriodForm(BaseModelForm):
     class Meta:
-        model = InfectiousPeriod
+        model = ResidualRisk
         fields = ['infectious_period_input']
 
     def save(self, commit=True):
@@ -398,7 +394,7 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
 
 class CalculateInfectiousPeriodForm(BaseModelForm):
     class Meta:
-        model = InfectiousPeriod
+        model = ResidualRisk
         fields = ['viral_growth_rate', 'origin_viral_load', 'viral_load']
 
     def save(self, commit=True):
@@ -414,16 +410,17 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
 
         return infectious_period
 
-
-class CalculateResidualRiskForm(forms.Form):
+class EstimateWindowResidualRiskForm(forms.Form):
     test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
-    incidence = forms.FloatField(required=True, label='Incidence in donor population')
-    donations = forms.FloatField(required=True, label='Number of donations per year')
 
     def __init__(self, user, *args, **kwargs):
-        super(CalculateResidualRiskForm, self).__init__(*args, **kwargs)
+        super(EstimateWindowResidualRiskForm, self).__init__(*args, **kwargs)
         choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
         self.fields['test'] = choices
+
+class CalculateResidualRiskForm(forms.Form):
+    incidence = forms.FloatField(required=True, label='Incidence in donor population')
+    donations = forms.FloatField(required=True, label='Number of donations per year')
 
     def calculate_residual_risk(self, window):
         return (window/365)*(self.cleaned_data['incidence']/100)

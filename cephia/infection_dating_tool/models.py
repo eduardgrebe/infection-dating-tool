@@ -298,11 +298,12 @@ class GrowthRateEstimate(models.Model):
         unique_together = ('user', 'growth_rate')
 
 
-class InfectiousPeriod(models.Model):
+class ResidualRisk(models.Model):
     class Meta:
-        db_table = "idt_infectious_period"
+        db_table = "idt_residual_risk"
 
     user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
+    residual_risk = models.FloatField(null=False)
     infectious_period = models.FloatField(null=False)
     infectious_period_input = models.FloatField(null=True, blank=False, verbose_name='Start of infectious period')
     viral_growth_rate = models.FloatField(null=True, blank=False)
