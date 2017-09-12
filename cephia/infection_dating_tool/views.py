@@ -8,7 +8,7 @@ from forms import (
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GlobalParametersForm,
     TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
-    CalculateResidualRiskForm, EstimateWindowResidualRiskForm
+    CalculateResidualRiskForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -756,15 +756,15 @@ def validate_mapping_from_page(request, file_id, context=None):
 def residual_risk(request, choice_selection='estimates', template="infection_dating_tool/residual_risk.html"):
     context = {}
     user = request.user
-    infectious_period = get_user_infectious_period(user)
+    residual_risk = get_user_residual_risk(user)
 
     if 'res_risk' in request.POST:
-        form = CalculateResidualRiskForm(user, request.POST or None)
+        form = CalculateResidualRiskForm(request.POST or None)
         if form.is_valid():
-            window = round(calculate_window_of_residual_risk(user, form.cleaned_data['test']), 1)
-            residual_risk = form.calculate_residual_risk(window)
-            residual_risk = round_to_significant_digits(residual_risk, 3)
-            infectious_donations = form.calculate_infectious_donations(residual_risk)
+            window = round(calculate_window_of_residual_risk(user), 1)
+            _residual_risk = form.calculate_residual_risk(window)
+            _residual_risk = round_to_significant_digits(_residual_risk, 3)
+            infectious_donations = form.calculate_infectious_donations(_residual_risk)
             infectious_donations = round_to_significant_digits(infectious_donations, 3)
 
             fig = heat_map_graph(form.cleaned_data['incidence'], window)
@@ -774,7 +774,7 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
                 existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
                 if os.path.isfile(existing_file):
                     os.remove(existing_file)
-                infectious_period.graph_file_probability.save("%s.png" % graph_name, File(graph_file), save=True)
+                residual_risk.graph_file_probability.save("%s.png" % graph_name, File(graph_file), save=True)
 
             fig = heat_map_graph(form.cleaned_data['incidence'], window, form.cleaned_data['donations'])
             graph_name = "residual_risk_donations_%s" % user.username
@@ -783,18 +783,18 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
                 existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
                 if os.path.isfile(existing_file):
                     os.remove(existing_file)
-                infectious_period.graph_file_donations.save("%s.png" % graph_name, File(graph_file), save=True)
+                residual_risk.graph_file_donations.save("%s.png" % graph_name, File(graph_file), save=True)
 
-            infectious_period.save()
+            residual_risk.save()
 
             context['window'] = window
-            context['graph_prob'] = infectious_period.graph_file_probability
-            context['graph_donations'] = infectious_period.graph_file_donations
+            context['graph_prob'] = residual_risk.graph_file_probability
+            context['graph_donations'] = residual_risk.graph_file_donations
             smallest_num = 1e-10
 
             if residual_risk >= smallest_num:
-                context['residual_risk'] = '{:.10f}'.format(residual_risk).rstrip("0")
-                context['residual_risk_perc'] = '{:.10f}'.format(residual_risk * 100).rstrip("0")
+                context['residual_risk'] = '{:.10f}'.format(_residual_risk).rstrip("0")
+                context['residual_risk_perc'] = '{:.10f}'.format(_residual_risk * 100).rstrip("0")
             else:
                 context['residual_risk'] = '< {:.10f}'.format(smallest_num)
 
@@ -804,13 +804,14 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
                 context['infectious_donations'] = '< {:.10f}'.format(smallest_num)
 
     else:
-        form = CalculateResidualRiskForm(user)
+        form = CalculateResidualRiskForm()
 
     if choice_selection == 'estimates':
-        context['calculate_form'] = CalculateInfectiousPeriodForm(instance=infectious_period)
+        context['calculate_form'] = CalculateInfectiousPeriodForm(instance=residual_risk)
         context['form_selection'] = "calculate"
 
-    context['infectious_period'] = round(infectious_period.infectious_period, 1)
+    context['infectious_period'] = round(residual_risk.infectious_period, 1)
+    context['residual_risk'] = round(residual_risk.residual_risk, 1)
     context['form'] = form
     context['choice_selection'] = choice_selection
     return render(request, template, context)
@@ -821,18 +822,16 @@ def residual_risk_estimates(request, form_selection="calculate", template="infec
     context = {}
     choice_selection = 'estimates'
     user = request.user
-    infectious_period = get_user_infectious_period(user)
+    user_residual_risk = get_user_residual_risk(user)
 
-    context['infectious_period'] = round(infectious_period.infectious_period, 1)
+    context['infectious_period'] = round(user_residual_risk.infectious_period, 1)
     context['choice_selection'] = choice_selection
     context['form_selection'] = form_selection
 
-    test_form = EstimateWindowResidualRiskForm(request.POST, initial=infectious_period)
-
-    calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
+    calculate_form = CalculateInfectiousPeriodForm(instance=user_residual_risk)
     context['calculate_form'] = calculate_form
 
-    specify_form = SpecifyInfectiousPeriodForm(instance=infectious_period)
+    specify_form = SpecifyInfectiousPeriodForm(instance=user_residual_risk)
     context['specify_form'] = specify_form
 
     if request.is_ajax():
@@ -843,14 +842,15 @@ def residual_risk_estimates(request, form_selection="calculate", template="infec
 def residual_risk_estimates_calculate(request, form_selection, template="infection_dating_tool/_residual_risk_estimates_calculate_form.html"):
     context = {}
     user = request.user
-    infectious_period = get_user_infectious_period(user)
+    residual_risk = get_user_residual_risk(user)
 
     if 'calculate' in request.POST:
-        calculate_form = CalculateInfectiousPeriodForm(request.POST, instance=infectious_period)
+        calculate_form = CalculateInfectiousPeriodForm(request.POST, instance=residual_risk)
         if calculate_form.is_valid():
             calculate_form.save()
+            calculate_window_of_residual_risk(user)
     else:
-        calculate_form = CalculateInfectiousPeriodForm(instance=infectious_period)
+        calculate_form = CalculateInfectiousPeriodForm(instance=residual_risk)
     context['calculate_form'] = calculate_form
 
     if request.is_ajax():
@@ -862,14 +862,15 @@ def residual_risk_estimates_calculate(request, form_selection, template="infecti
 def residual_risk_estimates_specify(request, form_selection, template="infection_dating_tool/_residual_risk_estimates_specify_form.html"):
     context = {}
     user = request.user
-    infectious_period = get_user_infectious_period(user)
+    residual_risk = get_user_residual_risk(user)
 
     if 'specify' in request.POST:
-        specify_form = SpecifyInfectiousPeriodForm(request.POST, instance=infectious_period)
+        specify_form = SpecifyInfectiousPeriodForm(request.POST, instance=residual_risk)
         if specify_form.is_valid():
             specify_form.save()
+            calculate_window_of_residual_risk(user)
     else:
-        specify_form = SpecifyInfectiousPeriodForm(instance=infectious_period)
+        specify_form = SpecifyInfectiousPeriodForm(instance=residual_risk)
     context['specify_form'] = specify_form
 
     if request.is_ajax():
@@ -906,13 +907,15 @@ def residual_risk_window(request):
 
 def reset_defaults_infectious_period(request):
     user = request.user
-    infectious_period = get_user_infectious_period(user)
+    user_residual_risk = get_user_residual_risk(user)
     global_period = ResidualRisk.objects.get(user__isnull=True)
-    infectious_period.infectious_period = global_period.infectious_period
-    infectious_period.viral_growth_rate = global_period.viral_growth_rate
-    infectious_period.origin_viral_load = global_period.origin_viral_load
-    infectious_period.viral_load = global_period.viral_load
-    infectious_period.save()
+    user_residual_risk.infectious_period = global_period.infectious_period
+    user_residual_risk.viral_growth_rate = global_period.viral_growth_rate
+    user_residual_risk.origin_viral_load = global_period.origin_viral_load
+    user_residual_risk.viral_load = global_period.viral_load
+    user_residual_risk.save()
+
+    calculate_window_of_residual_risk(user)
 
     choice_selection = 'estimates'
     return residual_risk(request, choice_selection)
@@ -1096,15 +1099,15 @@ def tools_home(request, template="index.html"):
     return render(request, template, context)
 
 
-def get_user_infectious_period(user):
-    infectious_period = ResidualRisk.objects.filter(user=user).first()
-    if not infectious_period:
-        infectious_period = ResidualRisk.objects.get(user__isnull=True)
-        infectious_period.pk = None
-        infectious_period.user = user
-        infectious_period.save()
+def get_user_residual_risk(user):
+    residual_risk = ResidualRisk.objects.filter(user=user).first()
+    if not residual_risk:
+        residual_risk = ResidualRisk.objects.get(user__isnull=True)
+        residual_risk.pk = None
+        residual_risk.user = user
+        residual_risk.save()
 
-    return infectious_period
+    return residual_risk
 
 def get_user_growth_rate(user):
     growth_rate = GrowthRateEstimate.objects.filter(user=user).first()
@@ -1121,19 +1124,25 @@ def get_user_growth_rate(user):
 #     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
 #     return growth_rate
 
-def calculate_window_of_residual_risk(user, test):
-    test_prop = test.properties.get(global_default=True)
+def calculate_window_of_residual_risk(user, test=None):
+    residual_risk = get_user_residual_risk(user)
+    if not test:
+        test = residual_risk.screening_test
 
-    if not test.category == 'viral_load':
-        diagnostic_delay = test_prop.diagnostic_delay
-    else:
-        growth_rate = get_user_growth_rate(user).growth_rate
-        diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
+    if test:
+        test_prop = test.properties.get(global_default=True)
 
-    infectious_period = get_user_infectious_period(user)
-    window = diagnostic_delay - infectious_period.infectious_period
+        if not test.category == 'viral_load':
+            diagnostic_delay = test_prop.diagnostic_delay
+        else:
+            growth_rate = get_user_growth_rate(user).growth_rate
+            diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
 
-    return window
+        residual_risk.residual_risk = diagnostic_delay - residual_risk.infectious_period
+        residual_risk.screening_test = test
+        residual_risk.save()
+
+    return residual_risk.residual_risk
 
 def round_to_significant_digits(x, num):
     return round(x, (int(-math.floor((math.log10(x)))+num-1) ))

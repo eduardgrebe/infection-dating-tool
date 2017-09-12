@@ -9,7 +9,7 @@
       <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
         <h3 class="panel-title">
           Window of Residual Risk:
-          {{ infectious_period }}
+          {{ residual_risk }}
         </h3>
       </div>
 
@@ -36,7 +36,7 @@
           </p>
         </div>
 
-        <div id="form-panel" class="panel-body">
+        <div id="form-panel">
           {% if choice_selection == 'estimates' %}
             {% include 'infection_dating_tool/_residual_risk_estimates_form.html' %}
           {% elif choice_selection == 'data' %}

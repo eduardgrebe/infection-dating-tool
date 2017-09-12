@@ -310,6 +310,10 @@ class ResidualRisk(models.Model):
     origin_viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at origin/zero')
     viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')
 
+    screening_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='screening')
+    positive_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='positive')
+    negative_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='negative')
+
     graph_file_probability = models.FileField(upload_to="graphs", max_length=255, null=True)
     graph_file_donations = models.FileField(upload_to="graphs", max_length=255, null=True)
 

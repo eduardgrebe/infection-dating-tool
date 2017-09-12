@@ -5,16 +5,6 @@
   <div class="residual_risk--form">
     <div class="residual_risk--form_field">
       <div class="residual_risk--form_label">
-        Select most sensitive screening test
-      </div>
-      <div id="test_window" data-url="{% url 'residual_risk_window' %}"
-           class="residual_risk--input" onchange="idt.calculate_window();">
-        {% bootstrap_field form.test show_label=False %}
-      </div>
-    </div>
-
-    <div class="residual_risk--form_field">
-      <div class="residual_risk--form_label">
         Incidence in donor population (% p.a.)
       </div>
       <div class="residual_risk--input">

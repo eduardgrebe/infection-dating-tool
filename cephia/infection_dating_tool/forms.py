@@ -378,9 +378,17 @@ class GlobalParametersForm(forms.Form):
 
 
 class SpecifyInfectiousPeriodForm(BaseModelForm):
+    screening_test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(SpecifyInfectiousPeriodForm, self).__init__(*args, **kwargs)
+        user = self.instance.user
+        choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+        self.fields['screening_test'] = choices
+
     class Meta:
         model = ResidualRisk
-        fields = ['infectious_period_input']
+        fields = ['infectious_period_input', 'screening_test']
 
     def save(self, commit=True):
         infectious_period = super(SpecifyInfectiousPeriodForm, self).save(commit=False)
@@ -393,9 +401,17 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
 
 
 class CalculateInfectiousPeriodForm(BaseModelForm):
+    screening_test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(CalculateInfectiousPeriodForm, self).__init__(*args, **kwargs)
+        user = self.instance.user
+        choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
+        self.fields['screening_test'] = choices
+
     class Meta:
         model = ResidualRisk
-        fields = ['viral_growth_rate', 'origin_viral_load', 'viral_load']
+        fields = ['viral_growth_rate', 'origin_viral_load', 'viral_load', 'screening_test']
 
     def save(self, commit=True):
         infectious_period = super(CalculateInfectiousPeriodForm, self).save(commit=False)
@@ -410,13 +426,6 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
 
         return infectious_period
 
-class EstimateWindowResidualRiskForm(forms.Form):
-    test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
-
-    def __init__(self, user, *args, **kwargs):
-        super(EstimateWindowResidualRiskForm, self).__init__(*args, **kwargs)
-        choices = GroupedModelChoiceField(queryset=IDTDiagnosticTest.objects.filter(Q(user=user) | Q(user=None)), group_by_field='category')
-        self.fields['test'] = choices
 
 class CalculateResidualRiskForm(forms.Form):
     incidence = forms.FloatField(required=True, label='Incidence in donor population')

@@ -29,6 +29,15 @@
         {% bootstrap_field calculate_form.viral_load show_label=False %}
       </div>
     </div>
+
+    <div class="residual_risk--form_field">
+      <div class="residual_risk--form_label">
+        Select most sensitive screening test
+      </div>
+      <div id="test_window" class="residual_risk--input">
+        {% bootstrap_field calculate_form.screening_test show_label=False %}
+      </div>
+    </div>
   </div>
 
   <input type="submit" name="calculate" class="btn btn-primary infectious_period--submit" value="Apply" />
