@@ -2,18 +2,23 @@
 
 <form method="POST" action="{% url 'residual_risk_estimates_specify' %}">
   {% csrf_token %}
-  <div class="infectious_period--form_label">
-    Start of infectious period relative to origin/zero of diagnostic scale (days)
-  </div>
-  <div class="infectious_period--input">
-    {% bootstrap_field specify_form.infectious_period_input show_label=False %}
-  </div>
-  <div class="residual_risk--form_field">
-    <div class="residual_risk--form_label">
-      Select most sensitive screening test
+  <div class="infectious_period--form">
+    <div class="infectious_period--form_field">
+      <div class="infectious_period--form_label">
+        Start of infectious period relative to origin/zero of diagnostic scale (days)
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field specify_form.infectious_period_input show_label=False %}
+      </div>
     </div>
-    <div id="test_window" class="residual_risk--input">
-      {% bootstrap_field specify_form.screening_test show_label=False %}
+
+    <div class="infectious_period--form_field">
+      <div class="infectious_period--form_label">
+        Select most sensitive screening test
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field specify_form.screening_test show_label=False %}
+      </div>
     </div>
   </div>
   <input type="submit" name="specify" class="btn btn-primary infectious_period--submit" value="Apply" />

@@ -20,7 +20,9 @@
         {% bootstrap_field calculate_form.origin_viral_load show_label=False %}
       </div>
     </div>
+  </div>
 
+  <div class="infectious_period--form">
     <div class="infectious_period--form_field">
       <div class="infectious_period--form_label">
         Viral load at start of infectious period
@@ -30,11 +32,11 @@
       </div>
     </div>
 
-    <div class="residual_risk--form_field">
-      <div class="residual_risk--form_label">
+    <div class="infectious_period--form_field">
+      <div class="infectious_period--form_label">
         Select most sensitive screening test
       </div>
-      <div id="test_window" class="residual_risk--input">
+      <div class="infectious_period--input">
         {% bootstrap_field calculate_form.screening_test show_label=False %}
       </div>
     </div>

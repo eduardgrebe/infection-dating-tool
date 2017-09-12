@@ -22,14 +22,5 @@
     </div>
   </div>
 
-  <div id="window" class="residual_risk--window {% if not window %}hidden{% endif %}">
-    <div class="residual_risk--window_text">
-      <b>Window of residual risk: </b>
-    </div>
-    <div id="window_value" class="residual_risk--window_value">
-      {% if window %}{{ window }} days{% endif %}
-    </div>
-  </div>
-
   <input type="submit" name="res_risk" class="btn btn-primary residual_risk--submit" value="Calculate" />
 </form>

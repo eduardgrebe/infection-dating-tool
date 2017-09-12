@@ -790,6 +790,7 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
             context['window'] = window
             context['graph_prob'] = residual_risk.graph_file_probability
             context['graph_donations'] = residual_risk.graph_file_donations
+            context['show_graphs'] = True
             smallest_num = 1e-10
 
             if residual_risk >= smallest_num:
