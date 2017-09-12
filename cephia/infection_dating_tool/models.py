@@ -304,6 +304,7 @@ class ResidualRisk(models.Model):
 
     user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
     residual_risk = models.FloatField(null=False)
+    residual_risk_input = models.FloatField(null=False)
     infectious_period = models.FloatField(null=False)
     infectious_period_input = models.FloatField(null=True, blank=False, verbose_name='Start of infectious period')
     viral_growth_rate = models.FloatField(null=True, blank=False)

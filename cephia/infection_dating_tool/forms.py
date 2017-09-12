@@ -400,6 +400,22 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
         return infectious_period
 
 
+class SupplyResidualRiskForm(BaseModelForm):
+
+    class Meta:
+        model = ResidualRisk
+        fields = ['residual_risk_input']
+
+    def save(self, commit=True):
+        infectious_period = super(SupplyResidualRiskForm, self).save(commit=False)
+        infectious_period.residual_risk = infectious_period.residual_risk_input
+
+        if commit:
+            infectious_period.save()
+
+        return infectious_period
+
+
 class CalculateInfectiousPeriodForm(BaseModelForm):
     screening_test = forms.ModelChoiceField(queryset=IDTDiagnosticTest.objects.all(), label=("select test)"), required=True)
 

@@ -8,7 +8,7 @@ from forms import (
     GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GlobalParametersForm,
     TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
-    CalculateResidualRiskForm
+    CalculateResidualRiskForm, SupplyResidualRiskForm
     )
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -810,6 +810,8 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
     if choice_selection == 'estimates':
         context['calculate_form'] = CalculateInfectiousPeriodForm(instance=residual_risk)
         context['form_selection'] = "calculate"
+    elif choice_selection == 'supply':
+        context['supply_form'] = SupplyResidualRiskForm(instance=residual_risk)
 
     context['infectious_period'] = round(residual_risk.infectious_period, 1)
     context['residual_risk'] = round(residual_risk.residual_risk, 1)
@@ -888,13 +890,26 @@ def residual_risk_data(request, template="infection_dating_tool/_residual_risk_d
         return render(request, template, context)
     return residual_risk(request, choice_selection)
 
+
 @idt_login_required(login_url='login')
 def residual_risk_supply(request, template="infection_dating_tool/_residual_risk_supply_form.html"):
     context = {}
     choice_selection = 'supply'
+    user = request.user
+    user_residual_risk = get_user_residual_risk(user)
+
+    if 'supply' in request.POST:
+        supply_form = SupplyResidualRiskForm(request.POST, instance=user_residual_risk)
+        if supply_form.is_valid():
+            supply_form.save()
+    else:
+        supply_form = SupplyResidualRiskForm(instance=user_residual_risk)
+    context['supply_form'] = supply_form
     context['choice_selection'] = choice_selection
+
     if request.is_ajax():
-        return render(request, template, context)
+        return render(request, template, {'choice_selection': choice_selection, 'supply_form': supply_form})
+
     return residual_risk(request, choice_selection)
 
 
