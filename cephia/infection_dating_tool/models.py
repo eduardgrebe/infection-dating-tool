@@ -334,7 +334,7 @@ class ResidualRisk(models.Model):
 
     graph_file_probability = models.FileField(upload_to="graphs", max_length=255, null=True)
     graph_file_donations = models.FileField(upload_to="graphs", max_length=255, null=True)
-    upper_limit = models.FloatField(null=True)
+    upper_limit = models.FloatField(null=False, default=0)
 
 
 class VariabilityAdjustment(models.Model):
