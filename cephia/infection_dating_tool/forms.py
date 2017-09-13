@@ -459,13 +459,13 @@ class DataResidualRiskForm(BaseModelForm):
         self.cleaned_data['imported_numbers'] = rows
         return value
 
-    # def clean(self):
-    #     if self.cleaned_data.get('number_file') and self.cleaned_data.get('number_list'):
-    #         raise forms.ValidationError('You must upload either a file or a list of numbers, not both.')
-    #     if not self.cleaned_data.get('number_file') and not self.cleaned_data.get('number_list'):
-    #         raise forms.ValidationError('You must upload either a file or list of numbers.')
+    def clean(self):
+        if self.cleaned_data.get('number_file') and self.cleaned_data.get('number_list'):
+            raise forms.ValidationError('You must upload either a file or a list of numbers, not both.')
+        if not self.cleaned_data.get('number_file') and not self.cleaned_data.get('number_list'):
+            raise forms.ValidationError('You must upload either a file or list of numbers.')
 
-    #     return self.cleaned_data
+        return self.cleaned_data
 
     def save(self, commit=True):
         infectious_period = super(DataResidualRiskForm, self).save(commit=False)

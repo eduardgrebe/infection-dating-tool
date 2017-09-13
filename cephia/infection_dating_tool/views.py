@@ -753,7 +753,7 @@ def validate_mapping_from_page(request, file_id, context=None):
 
 
 @idt_login_required(login_url='login')
-def residual_risk(request, choice_selection='estimates', template="infection_dating_tool/residual_risk.html"):
+def residual_risk(request, choice_selection='estimates', data_form=None, template="infection_dating_tool/residual_risk.html"):
     context = {}
     user = request.user
     residual_risk = get_user_residual_risk(user)
@@ -817,7 +817,11 @@ def residual_risk(request, choice_selection='estimates', template="infection_dat
     elif choice_selection == 'supply':
         context['supply_form'] = SupplyResidualRiskForm(instance=residual_risk)
     elif choice_selection == 'data':
-        context['data_form'] = DataResidualRiskForm(instance=residual_risk)
+        if data_form:
+            context['data_form'] = data_form
+            context['data_form_error'] = not data_form.is_valid()
+        else:
+            context['data_form'] = DataResidualRiskForm(instance=residual_risk)
 
     context['infectious_period'] = round(residual_risk.infectious_period, 1)
     context['residual_risk'] = round(residual_risk.residual_risk, 1)
@@ -898,6 +902,8 @@ def residual_risk_data(request, template="infection_dating_tool/_residual_risk_d
         data_form = DataResidualRiskForm(request.POST, request.FILES, instance=user_residual_risk)
         if data_form.is_valid():
             data_form.save()
+        else:
+            return residual_risk(request, choice_selection, data_form)
     else:
         data_form = DataResidualRiskForm(instance=user_residual_risk)
     context['data_form'] = data_form
