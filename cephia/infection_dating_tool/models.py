@@ -313,21 +313,24 @@ class ResidualRisk(models.Model):
     choice = models.CharField(choices=CHOICES, max_length=255, null=False, default='estimates')
 
     user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
-    residual_risk = models.FloatField(null=False)
-    residual_risk_input = models.FloatField(null=False)
+    residual_risk = models.FloatField(null=False, default=0)
+    residual_risk_input = models.FloatField(null=False, default=0)
+
     infectious_period = models.FloatField(null=False)
-    infectious_period_input = models.FloatField(null=True, blank=False, verbose_name='Start of infectious period')
+    infectious_period_input = models.FloatField(
+        null=False, blank=False, default=0, verbose_name='Start of infectious period')
+
     viral_growth_rate = models.FloatField(null=True, blank=False)
     origin_viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at origin/zero')
     viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')
-    confirmed_transmissions = models.IntegerField(null=True, blank=False)
 
+    confirmed_transmissions = models.IntegerField(null=True, blank=False)
     screening_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='screening')
     positive_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='positive')
     negative_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='negative')
 
-    ci_lower_bound = models.FloatField(null=True, default=0)
-    ci_upper_bound = models.FloatField(null=True, default=0)
+    ci_lower_bound = models.FloatField(null=True)
+    ci_upper_bound = models.FloatField(null=True)
 
     graph_file_probability = models.FileField(upload_to="graphs", max_length=255, null=True)
     graph_file_donations = models.FileField(upload_to="graphs", max_length=255, null=True)
