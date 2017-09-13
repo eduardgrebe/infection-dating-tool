@@ -472,15 +472,23 @@ class DataResidualRiskForm(BaseModelForm):
     def save(self, user, commit=True):
         residual_risk = super(DataResidualRiskForm, self).save(commit=False)
         intervals = self.cleaned_data['imported_intervals']
+
         d1 = self.cleaned_data['negative_test'].get_diagnostic_delay_for_residual_risk(user)
         d2 = self.cleaned_data['positive_test'].get_diagnostic_delay_for_residual_risk(user)
         calculated_intervals = [1/(x + d1 - d2) for x in intervals]
+
         total_exposure = sum(calculated_intervals)
         n_i = self.cleaned_data['confirmed_transmissions']
 
-        ci_upper_bound = chi2.ppf(0.975, df=2*n_i)*2*total_exposure
-        residual_risk.ci_lower_bound = chi2.ppf(0.025, df=2*n_i)*2*total_exposure
+        ci_upper_bound = chi2.ppf(0.975, df=2*(n_i+1))/2/total_exposure
+        ci_lower_bound = 0
+        if n_i > 0:
+            ci_lower_bound = chi2.ppf(0.025, df=2*n_i)/2/total_exposure
+
         residual_risk.ci_upper_bound = ci_upper_bound
+        residual_risk.ci_lower_bound = ci_lower_bound
+
+        # residual_risk is poisson rate (lambdahat)
         residual_risk.residual_risk = n_i / total_exposure
         residual_risk.choice = 'data'
         residual_risk.upper_limit = ci_upper_bound
