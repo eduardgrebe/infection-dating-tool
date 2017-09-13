@@ -1179,4 +1179,7 @@ def calculate_window_of_residual_risk(user, test=None):
     return residual_risk.residual_risk
 
 def round_to_significant_digits(x, num):
-    return round(x, (int(-math.floor((math.log10(x)))+num-1)))
+    if x > 0:
+        return round(x, (int(-math.floor((math.log10(x)))+num-1)))
+    else:
+        return x
