@@ -760,7 +760,7 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
     residual_risk = get_user_residual_risk(user)
 
     if 'res_risk' in request.POST:
-        form = CalculateResidualRiskForm(round(float(residual_risk.upper_limit), 1), request.POST or None)
+        form = CalculateResidualRiskForm(round(residual_risk.upper_limit, 1), request.POST or None)
         if form.is_valid():
             window = round(residual_risk.residual_risk, 1)
             _residual_risk = form.calculate_residual_risk(window)
@@ -807,7 +807,7 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
                 context['infectious_donations'] = '< {:.10f}'.format(smallest_num)
 
     else:
-        form = CalculateResidualRiskForm(round(float(residual_risk.upper_limit), 1))
+        form = CalculateResidualRiskForm(round(residual_risk.upper_limit, 1))
 
     if choice_selection == 'estimates':
         context['calculate_form'] = CalculateInfectiousPeriodForm(instance=residual_risk)
