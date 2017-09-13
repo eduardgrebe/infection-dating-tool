@@ -335,6 +335,11 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     float:left;
 }
 
+.residual_risk--calculate_form_field {
+    width:33.3%;
+    float:left;
+}
+
 .residual_risk--input {
     width:100%;
     float:left;

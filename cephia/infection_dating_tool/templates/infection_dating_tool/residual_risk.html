@@ -7,8 +7,9 @@
 
       <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
         <h3 class="panel-title">
-          Window of Residual Risk:
+          Window of Residual Risk{% if upper_bound %} (95% CI){% endif %}:
           {{ residual_risk }} days
+          {% if upper_bound %}({{ lower_bound }} - {{ upper_bound }}){% endif %}
         </h3>
       </div>
 
@@ -57,7 +58,7 @@
         <h2>Residual risk</h2>
       </div>
       <div class="residual_risk--result_text">
-        <b>Probability per donation:</b> {{ residual_risk }} {% if residual_risk_perc %}({{ residual_risk_perc }}%){% endif %}
+        <b>Probability per donation:</b> {{ residual_risk_num }} {% if residual_risk_perc %}({{ residual_risk_perc }}%){% endif %}
       </div>
       <div class="residual_risk--result_text">
         <b>Expected number of infectious donations per year:</b> {{ infectious_donations }}

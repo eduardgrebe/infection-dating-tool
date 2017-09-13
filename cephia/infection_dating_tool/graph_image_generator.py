@@ -14,10 +14,10 @@ def heat_map_graph(x_value, y_value, upper_limit, number_of_donations=None):
         y_step = y_value*2.0/64
         yedges = np.arange(0, y_value*2+y_step, y_step)
     else:
-        x_step = x_value*upper_limit/64
-        xedges = np.arange(0, x_value*upper_limit+x_step, x_step)
+        x_step = upper_limit/64
+        xedges = np.arange(0, upper_limit+x_step, x_step)
         y_step = y_value*upper_limit/64
-        yedges = np.arange(0, y_value*upper_limit+y_step, y_step)
+        yedges = np.arange(0, y_value*2+y_step, y_step)
 
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(20)

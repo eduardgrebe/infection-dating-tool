@@ -50,6 +50,7 @@ from collections import OrderedDict
 from django import forms
 from django.conf import settings
 from django.core.files import File
+from models import get_user_growth_rate
 
 CATEGORIES = (
     ('western_blot', 'Western blot'),
@@ -759,7 +760,7 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
     residual_risk = get_user_residual_risk(user)
 
     if 'res_risk' in request.POST:
-        form = CalculateResidualRiskForm(request.POST or None)
+        form = CalculateResidualRiskForm(residual_risk.upper_limit, request.POST or None)
         if form.is_valid():
             window = round(residual_risk.residual_risk, 1)
             _residual_risk = form.calculate_residual_risk(window)
@@ -767,10 +768,7 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
             infectious_donations = form.calculate_infectious_donations(_residual_risk)
             infectious_donations = round_to_significant_digits(infectious_donations, 3)
 
-            upper_limit = None
-            if residual_risk.choice == 'data':
-                upper_limit = residual_risk.upper_limit
-
+            upper_limit = form.cleaned_data['upper_limit']
             fig = heat_map_graph(form.cleaned_data['incidence'], window, upper_limit)
             graph_name = "residual_risk_probability_%s" % user.username
             fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
@@ -797,11 +795,11 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
             context['show_graphs'] = True
             smallest_num = 1e-10
 
-            if residual_risk >= smallest_num:
-                context['residual_risk'] = '{:.10f}'.format(_residual_risk).rstrip("0")
+            if _residual_risk >= smallest_num:
+                context['residual_risk_num'] = '{:.10f}'.format(_residual_risk).rstrip("0")
                 context['residual_risk_perc'] = '{:.10f}'.format(_residual_risk * 100).rstrip("0")
             else:
-                context['residual_risk'] = '< {:.10f}'.format(smallest_num)
+                context['residual_risk_num'] = '< {:.10f}'.format(smallest_num)
 
             if infectious_donations >= smallest_num:
                 context['infectious_donations'] = '{:.10f}'.format(infectious_donations).rstrip("0")
@@ -809,7 +807,7 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
                 context['infectious_donations'] = '< {:.10f}'.format(smallest_num)
 
     else:
-        form = CalculateResidualRiskForm()
+        form = CalculateResidualRiskForm(residual_risk.upper_limit)
 
     if choice_selection == 'estimates':
         context['calculate_form'] = CalculateInfectiousPeriodForm(instance=residual_risk)
@@ -817,6 +815,8 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
     elif choice_selection == 'supply':
         context['supply_form'] = SupplyResidualRiskForm(instance=residual_risk)
     elif choice_selection == 'data':
+        context['upper_bound'] = round(residual_risk.ci_upper_bound, 1)
+        context['lower_bound'] = round(residual_risk.ci_lower_bound, 1)
         if data_form:
             context['data_form'] = data_form
             context['data_form_error'] = not data_form.is_valid()
@@ -901,7 +901,7 @@ def residual_risk_data(request, template="infection_dating_tool/_residual_risk_d
     if 'data' in request.POST:
         data_form = DataResidualRiskForm(request.POST, request.FILES, instance=user_residual_risk)
         if data_form.is_valid():
-            data_form.save()
+            data_form.save(user)
         else:
             return residual_risk(request, choice_selection, data_form)
     else:
@@ -947,11 +947,12 @@ def residual_risk_window(request):
 def reset_defaults_infectious_period(request):
     user = request.user
     user_residual_risk = get_user_residual_risk(user)
-    global_period = ResidualRisk.objects.get(user__isnull=True)
-    user_residual_risk.infectious_period = global_period.infectious_period
-    user_residual_risk.viral_growth_rate = global_period.viral_growth_rate
-    user_residual_risk.origin_viral_load = global_period.origin_viral_load
-    user_residual_risk.viral_load = global_period.viral_load
+    global_residual_risk = ResidualRisk.objects.get(user__isnull=True)
+
+    user_residual_risk.infectious_period = global_residual_risk.infectious_period
+    user_residual_risk.viral_growth_rate = global_residual_risk.viral_growth_rate
+    user_residual_risk.origin_viral_load = global_residual_risk.origin_viral_load
+    user_residual_risk.viral_load = global_residual_risk.viral_load
     user_residual_risk.choice = 'estimates'
     user_residual_risk.save()
 
@@ -1149,20 +1150,6 @@ def get_user_residual_risk(user):
 
     return residual_risk
 
-def get_user_growth_rate(user):
-    growth_rate = GrowthRateEstimate.objects.filter(user=user).first()
-    if not growth_rate:
-        growth_rate = GrowthRateEstimate.objects.get(user__isnull=True)
-        growth_rate.pk = None
-        growth_rate.user = user
-        growth_rate.save()
-
-    return growth_rate
-
-# def get_user_growth_rate(user):
-#     try: growth_rate = GrowthRateEstimate.objects.get(user=user).growth_rate
-#     except GrowthRateEstimate.DoesNotExist: growth_rate = GrowthRateEstimate.objects.get(user=None).growth_rate
-#     return growth_rate
 
 def calculate_window_of_residual_risk(user, test=None):
     residual_risk = get_user_residual_risk(user)
@@ -1170,19 +1157,26 @@ def calculate_window_of_residual_risk(user, test=None):
         test = residual_risk.screening_test
 
     if test:
-        test_prop = test.properties.get(global_default=True)
+        diagnostic_delay = test.get_diagnostic_delay_for_residual_risk(user)
+        # test_prop = test.properties.get(global_default=True)
 
-        if not test.category == 'viral_load':
-            diagnostic_delay = test_prop.diagnostic_delay
-        else:
-            growth_rate = get_user_growth_rate(user).growth_rate
-            diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
+        # if not test.category == 'viral_load':
+        #     diagnostic_delay = test_prop.diagnostic_delay
+        # else:
+        #     growth_rate = get_user_growth_rate(user).growth_rate
+        #     diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
 
-        residual_risk.residual_risk = diagnostic_delay - residual_risk.infectious_period
+        _residual_risk = diagnostic_delay - residual_risk.infectious_period
+        upper_limit = _residual_risk * 2
+        if residual_risk.choice == 'data':
+            upper_limit = residual_risk.ci_upper_bound
+
+        residual_risk.upper_limit = upper_limit
+        residual_risk.residual_risk = _residual_risk
         residual_risk.screening_test = test
         residual_risk.save()
 
     return residual_risk.residual_risk
 
 def round_to_significant_digits(x, num):
-    return round(x, (int(-math.floor((math.log10(x)))+num-1) ))
+    return round(x, (int(-math.floor((math.log10(x)))+num-1)))

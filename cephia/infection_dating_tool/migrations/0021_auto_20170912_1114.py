@@ -7,7 +7,7 @@ from django.db import migrations
 def create_global_residual_risk(apps, schema):
     ResidualRiskModel = apps.get_model("infection_dating_tool", "ResidualRisk")
     ResidualRiskModel.objects.create(
-        residual_risk=-7.7113428695314825,
+        residual_risk=0,
         residual_risk_input=-7.7113428695314825,
         infectious_period=-7.7113428695314825,
         infectious_period_input=-7.7,

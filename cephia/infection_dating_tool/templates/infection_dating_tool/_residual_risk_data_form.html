@@ -6,16 +6,7 @@
     <div class="infectious_period--form">
       <div class="residual_risk_data--form_field">
         <div class="infectious_period--form_label">
-          Select least sensitive test that was positive at t_2
-        </div>
-        <div class="infectious_period--input">
-          {% bootstrap_field data_form.positive_test show_label=False %}
-        </div>
-      </div>
-
-      <div class="residual_risk_data--form_field">
-        <div class="infectious_period--form_label">
-          Select most sensitive test that was negative at t_1
+          Most sensitive test at last negative date
         </div>
         <div class="infectious_period--input">
           {% bootstrap_field data_form.negative_test show_label=False %}
@@ -24,33 +15,42 @@
 
       <div class="residual_risk_data--form_field">
         <div class="infectious_period--form_label">
-          Provide the upper limit for the graph
+          Least sensitive test at first positive date
         </div>
         <div class="infectious_period--input">
-          {% bootstrap_field data_form.upper_limit show_label=False %}
+          {% bootstrap_field data_form.positive_test show_label=False %}
+        </div>
+      </div>
+
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Number of confirmed transmissions
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.confirmed_transmissions show_label=False %}
         </div>
       </div>
     </div>
 
     <div class="infectious_period--form">
       <div class="infectious_period--form_label">
-        Upload a list of numbers
+        Upload a list of inter donation intervals
       </div>
       <div class="infectious_period--input">
-        {% bootstrap_field data_form.number_file show_label=False %}
+        {% bootstrap_field data_form.interval_file show_label=False %}
         {{ data_form.non_field_errors }}
       </div>
     </div>
 
     <div class="infectious_period--form">
       <div class="infectious_period--form_label">
-        Or enter a newline-separated list of numbers
+        Or enter a newline-separated list of inter donation intervals
       </div>
       <div class="infectious_period--input">
-        {% bootstrap_field data_form.number_list show_label=False %}
+        {% bootstrap_field data_form.interval_list show_label=False %}
       </div>
     </div>
 
-    <input type="submit" name="data" class="btn btn-primary infectious_period--submit" value="Apply" />
+    <input type="submit" name="data" class="btn btn-primary infectious_period--submit" value="Calculate" />
   </form>
 </div>

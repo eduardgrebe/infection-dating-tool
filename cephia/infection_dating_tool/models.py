@@ -1,21 +1,12 @@
 from __future__ import unicode_literals
 import os
 from django.conf import settings
-from simple_history.models import HistoricalRecords
 from django.db import models
 from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
-from django.db import transaction
 from django.db.models import QuerySet
-from django.forms.models import model_to_dict
-import collections
-from world_regions import models as wr_models
-from django.db.models.functions import Length, Substr, Lower
-from django.contrib.auth.models import Group
 from datetime import timedelta
-from dateutil.relativedelta import relativedelta
 from django.db.models import Q
-from user_management.models import BaseUser
-from cephia.models import CephiaUser
+import math
 
 class IDTDiagnosticTestHistory(models.Model):
     class Meta:
@@ -63,6 +54,17 @@ class IDTDiagnosticTest(models.Model):
         default_property = self.properties.get(global_default=True)
 
         return default_property
+
+    def get_diagnostic_delay_for_residual_risk(self, user):
+        test_prop = self.properties.get(global_default=True)
+
+        if not self.category == 'viral_load':
+            diagnostic_delay = test_prop.diagnostic_delay
+        else:
+            growth_rate = get_user_growth_rate(user).growth_rate
+            diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
+
+        return diagnostic_delay
 
 
 class IDTTestPropertyEstimateQuerySet(QuerySet):
@@ -318,10 +320,14 @@ class ResidualRisk(models.Model):
     viral_growth_rate = models.FloatField(null=True, blank=False)
     origin_viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at origin/zero')
     viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')
+    confirmed_transmissions = models.IntegerField(null=True, blank=False)
 
     screening_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='screening')
     positive_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='positive')
     negative_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='negative')
+
+    ci_lower_bound = models.FloatField(null=True, default=0)
+    ci_upper_bound = models.FloatField(null=True, default=0)
 
     graph_file_probability = models.FileField(upload_to="graphs", max_length=255, null=True)
     graph_file_donations = models.FileField(upload_to="graphs", max_length=255, null=True)
@@ -334,3 +340,14 @@ class VariabilityAdjustment(models.Model):
 
     class Meta:
         unique_together = ('user', 'adjustment_factor')
+
+
+def get_user_growth_rate(user):
+    growth_rate = GrowthRateEstimate.objects.filter(user=user).first()
+    if not growth_rate:
+        growth_rate = GrowthRateEstimate.objects.get(user__isnull=True)
+        growth_rate.pk = None
+        growth_rate.user = user
+        growth_rate.save()
+
+    return growth_rate

@@ -14,6 +14,7 @@ from django.forms.models import ModelChoiceIterator, ModelChoiceField, ModelMult
 from cephia.excel_helper import ExcelHelper
 import unicodecsv as csv
 import os
+from scipy.stats import chi2
 
 class BaseModelForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -394,14 +395,14 @@ class SpecifyInfectiousPeriodForm(BaseModelForm):
         fields = ['infectious_period_input', 'screening_test']
 
     def save(self, commit=True):
-        infectious_period = super(SpecifyInfectiousPeriodForm, self).save(commit=False)
-        infectious_period.infectious_period = infectious_period.infectious_period_input
-        infectious_period.choice = 'estimates'
+        residual_risk = super(SpecifyInfectiousPeriodForm, self).save(commit=False)
+        residual_risk.infectious_period = residual_risk.infectious_period_input
+        residual_risk.choice = 'estimates'
 
         if commit:
-            infectious_period.save()
+            residual_risk.save()
 
-        return infectious_period
+        return residual_risk
 
 
 class SupplyResidualRiskForm(BaseModelForm):
@@ -411,19 +412,20 @@ class SupplyResidualRiskForm(BaseModelForm):
         fields = ['residual_risk_input']
 
     def save(self, commit=True):
-        infectious_period = super(SupplyResidualRiskForm, self).save(commit=False)
-        infectious_period.residual_risk = infectious_period.residual_risk_input
-        infectious_period.choice = 'supply'
+        residual_risk = super(SupplyResidualRiskForm, self).save(commit=False)
+        residual_risk.residual_risk = residual_risk.residual_risk_input
+        residual_risk.choice = 'supply'
+        residual_risk.upper_limit = residual_risk.residual_risk_input * 2
 
         if commit:
-            infectious_period.save()
+            residual_risk.save()
 
-        return infectious_period
+        return residual_risk
 
 
 class DataResidualRiskForm(BaseModelForm):
-    number_list = forms.CharField(required=False, widget=forms.Textarea())
-    number_file = forms.FileField(required=False)
+    interval_list = forms.CharField(required=False, widget=forms.Textarea())
+    interval_file = forms.FileField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(DataResidualRiskForm, self).__init__(*args, **kwargs)
@@ -434,49 +436,58 @@ class DataResidualRiskForm(BaseModelForm):
 
     class Meta:
         model = ResidualRisk
-        fields = ['positive_test', 'negative_test', 'upper_limit']
+        fields = ['positive_test', 'negative_test', 'confirmed_transmissions']
 
-    def clean_number_file(self):
-        number_file = self.cleaned_data.get('number_file')
-        if not number_file:
-            return number_file
-        filename = number_file.name
+    def clean_interval_file(self):
+        interval_file = self.cleaned_data.get('interval_file')
+        if not interval_file:
+            return interval_file
+        filename = interval_file.name
         extension = os.path.splitext(filename)[1][1:].lower()
         if extension == 'csv':
-            rows = (float(z[0]) for z in csv.reader(number_file) if z)
+            rows = (float(z[0]) for z in csv.reader(interval_file) if z)
         elif extension in ['xls', 'xlsx']:
-            rows = (float(z[0]) for z in ExcelHelper(number_file).rows() if z)
+            rows = (float(z[0]) for z in ExcelHelper(interval_file).rows() if z)
         else:
             raise forms.ValidationError('Unsupported file uploaded: Only CSV and Excel are allowed.')
-        self.cleaned_data['imported_numbers'] = [r for r in rows if r]
-        return number_file
+        self.cleaned_data['imported_intervals'] = [r for r in rows if r]
+        return interval_file
 
-    def clean_number_list(self):
-        value = self.cleaned_data.get('number_list')
+    def clean_interval_list(self):
+        value = self.cleaned_data.get('interval_list')
         if not value:
             return value
         rows = [float(z.strip()) for z in value.split(u'\n') if z and z != '\r']
-        self.cleaned_data['imported_numbers'] = rows
+        self.cleaned_data['imported_intervals'] = rows
         return value
 
     def clean(self):
-        if self.cleaned_data.get('number_file') and self.cleaned_data.get('number_list'):
-            raise forms.ValidationError('You must upload either a file or a list of numbers, not both.')
-        if not self.cleaned_data.get('number_file') and not self.cleaned_data.get('number_list'):
-            raise forms.ValidationError('You must upload either a file or list of numbers.')
+        if self.cleaned_data.get('interval_file') and self.cleaned_data.get('interval_list'):
+            raise forms.ValidationError('You must upload either a file or a list of inter donation intervals, not both.')
+        if not self.cleaned_data.get('interval_file') and not self.cleaned_data.get('interval_list'):
+            raise forms.ValidationError('You must upload either a file or list of inter donation intervals.')
 
         return self.cleaned_data
 
-    def save(self, commit=True):
-        infectious_period = super(DataResidualRiskForm, self).save(commit=False)
-        numbers = self.cleaned_data['imported_numbers']
-        number = sum(numbers)
-        infectious_period.residual_risk = number
-        infectious_period.choice = 'data'
-        if commit:
-            infectious_period.save()
+    def save(self, user, commit=True):
+        residual_risk = super(DataResidualRiskForm, self).save(commit=False)
+        intervals = self.cleaned_data['imported_intervals']
+        d1 = self.cleaned_data['negative_test'].get_diagnostic_delay_for_residual_risk(user)
+        d2 = self.cleaned_data['positive_test'].get_diagnostic_delay_for_residual_risk(user)
+        calculated_intervals = [1/(x + d1 - d2) for x in intervals]
+        total_exposure = sum(calculated_intervals)
+        n_i = self.cleaned_data['confirmed_transmissions']
 
-        return infectious_period
+        ci_upper_bound = chi2.ppf(0.975, df=2*n_i)*2*total_exposure
+        residual_risk.ci_lower_bound = chi2.ppf(0.025, df=2*n_i)*2*total_exposure
+        residual_risk.ci_upper_bound = ci_upper_bound
+        residual_risk.residual_risk = n_i / total_exposure
+        residual_risk.choice = 'data'
+        residual_risk.upper_limit = ci_upper_bound
+        if commit:
+            residual_risk.save()
+
+        return residual_risk
 
 
 class CalculateInfectiousPeriodForm(BaseModelForm):
@@ -493,23 +504,29 @@ class CalculateInfectiousPeriodForm(BaseModelForm):
         fields = ['viral_growth_rate', 'origin_viral_load', 'viral_load', 'screening_test']
 
     def save(self, commit=True):
-        infectious_period = super(CalculateInfectiousPeriodForm, self).save(commit=False)
+        residual_risk = super(CalculateInfectiousPeriodForm, self).save(commit=False)
 
-        vlz = infectious_period.origin_viral_load
-        vli = infectious_period.viral_load
-        vgr = infectious_period.viral_growth_rate
-        infectious_period.infectious_period = math.log10(vli/vlz) / vgr
-        infectious_period.choice = 'estimates'
+        vlz = residual_risk.origin_viral_load
+        vli = residual_risk.viral_load
+        vgr = residual_risk.viral_growth_rate
+        residual_risk.infectious_period = math.log10(vli/vlz) / vgr
+        residual_risk.choice = 'estimates'
 
         if commit:
-            infectious_period.save()
+            residual_risk.save()
 
-        return infectious_period
+        return residual_risk
 
 
 class CalculateResidualRiskForm(forms.Form):
     incidence = forms.FloatField(required=True, label='Incidence in donor population')
     donations = forms.FloatField(required=True, label='Number of donations per year')
+    upper_limit = forms.FloatField(required=True)
+
+    def __init__(self, upper_limit, *args, **kwargs):
+        super(CalculateResidualRiskForm, self).__init__(*args, **kwargs)
+        if upper_limit > 0:
+            self.fields['upper_limit'].initial = upper_limit
 
     def calculate_residual_risk(self, window):
         return (window/365)*(self.cleaned_data['incidence']/100)
