@@ -175,10 +175,10 @@ USE_L10N = True
 USE_TZ = True
 
 
-STATICFILES_DIRS = (                                                                 
+STATICFILES_DIRS = (
   os.path.join(BASE_DIR, 'cephia/static/'),
-  BASE_DIR                                                                          
-) 
+  BASE_DIR
+)
 STATIC_URL = '/static/'+REVISION+'/'
 STATIC_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'static_collected', REVISION)
 
@@ -226,7 +226,7 @@ LOGGING = {
             'class':'logging.handlers.RotatingFileHandler',
             'filename':os.path.join(LOG_FOLDER, LOG_FILENAME),
             'formatter': 'verbose',
-            'maxBytes':604800, 
+            'maxBytes':604800,
             'backupCount':50
         },
         'sentry': {
@@ -263,7 +263,7 @@ if os.path.exists(os.path.join(PROJECT_HOME,"local_settings.py")):
 # DON'T PUT ANY MORE SETTINGS AFTER THIS POINT, OTHERWISE local_settings.py CAN'T OVERRIDE THEM
 #
 #
-    
+
 if 'test' in sys.argv:
     DATABASES = {
         'default': {
@@ -273,7 +273,7 @@ if 'test' in sys.argv:
     }
     PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
     TEST_FILES_ROOT = os.path.join(PROJECT_HOME, "tests/test_files/")
-        
+
 #check that required settings are set
 if DATABASES['default']['ENGINE'] == 'django.db.backends.':
     raise Exception("Unconfigured databases setting, please correct in local_settings.py")
