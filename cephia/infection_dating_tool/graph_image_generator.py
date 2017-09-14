@@ -1,8 +1,8 @@
-import numpy as np
 import matplotlib
+matplotlib.use('Agg')
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-matplotlib.use('Agg')
 
 def heat_map_graph(x_value, y_value, upper_limit, number_of_donations=None):
     fig = plt.figure(figsize=(15, 15))
