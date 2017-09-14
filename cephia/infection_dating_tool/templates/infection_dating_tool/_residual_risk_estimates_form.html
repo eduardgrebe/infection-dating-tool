@@ -7,7 +7,7 @@
   </h3>
 </div>
 
-<div id="estimates-panel" class="panel-collapse collapse">
+<div id="estimates-panel" class="panel-collapse">
 
   <div class="panel-body infectious_period--radio_selection">
     <p>
@@ -24,7 +24,7 @@
     </p>
   </div>
 
-  <div id="form-estimates-panel" class="panel-body">
+  <div id="form-estimates-panel">
     {% if form_selection == 'calculate' %}
       {% include 'infection_dating_tool/_residual_risk_estimates_calculate_form.html' %}
     {% elif form_selection == 'spefify' %}

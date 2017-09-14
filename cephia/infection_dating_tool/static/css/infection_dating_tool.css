@@ -270,6 +270,10 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     font-size: medium;
 }
 
+.infectious_period--panel_body {
+    border-bottom: 1px solid #bce8f1;
+}
+
 /* .infectious_period--infect_form { */
 /*     width:300px; */
 /*     float:left; */
