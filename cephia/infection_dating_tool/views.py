@@ -771,21 +771,21 @@ def residual_risk(request, choice_selection='estimates', data_form=None, templat
             upper_limit = form.cleaned_data['upper_limit']
             fig = heat_map_graph(form.cleaned_data['incidence'], window, upper_limit)
             graph_name = "residual_risk_probability_%s" % user.username
-            fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
-            with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
-                existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
+            fig.savefig("%s/graphs/%s.svg" % (settings.MEDIA_ROOT, graph_name), format='svg')
+            with open("%s/graphs/%s.svg" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
+                existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.svg' % graph_name)
                 if os.path.isfile(existing_file):
                     os.remove(existing_file)
-                residual_risk.graph_file_probability.save("%s.png" % graph_name, File(graph_file), save=True)
+                residual_risk.graph_file_probability.save("%s.svg" % graph_name, File(graph_file), save=True)
 
             fig = heat_map_graph(form.cleaned_data['incidence'], window, upper_limit, form.cleaned_data['donations'])
             graph_name = "residual_risk_donations_%s" % user.username
-            fig.savefig("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), format='png')
-            with open("%s/graphs/%s.png" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
-                existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.png' % graph_name)
+            fig.savefig("%s/graphs/%s.svg" % (settings.MEDIA_ROOT, graph_name), format='svg')
+            with open("%s/graphs/%s.svg" % (settings.MEDIA_ROOT, graph_name), 'rb') as graph_file:
+                existing_file = os.path.join(settings.MEDIA_ROOT, 'graphs', '%s.svg' % graph_name)
                 if os.path.isfile(existing_file):
                     os.remove(existing_file)
-                residual_risk.graph_file_donations.save("%s.png" % graph_name, File(graph_file), save=True)
+                residual_risk.graph_file_donations.save("%s.svg" % graph_name, File(graph_file), save=True)
 
             residual_risk.save()
 
