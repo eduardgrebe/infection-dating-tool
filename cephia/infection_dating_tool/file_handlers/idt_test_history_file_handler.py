@@ -8,7 +8,7 @@ from django.core.management import call_command
 
 from infection_dating_tool.models import IDTSubject, IDTDiagnosticTest, IDTTestPropertyEstimate, TestPropertyMapping, IDTDiagnosticTestHistory
 from django.db.models import Q
-        
+
 logger = logging.getLogger(__name__)
 
 class IDTFileHandler(FileHandler):
@@ -29,7 +29,7 @@ class IDTFileHandler(FileHandler):
         headers = [u'Subject', u'Date', u'Test', u'Result']
         errors = []
         from infection_dating_tool.models import IDTSubject
-        
+
         if not set(headers) < set(self.header) and not set(headers) == set(self.header):
             errors.append("Your headers should contain Subject, Date, Test and Result")
         for row_num in range(self.num_rows):
@@ -68,7 +68,7 @@ class IDTFileHandler(FileHandler):
         pos_results = ('positive', 'pos', '+')
         neg_results = ('negative', 'neg', '-')
         errors = []
-        
+
         for row_num in range(self.num_rows):
             try:
                 if row_num >= 1:
@@ -81,7 +81,7 @@ class IDTFileHandler(FileHandler):
 
                     if not row_contains_data:
                         continue
-                    
+
                     if not row_dict:
                         continue
 
@@ -132,7 +132,7 @@ def check_mapping(test_code, tests, user):
         else:
             test = IDTDiagnosticTest.objects.get(name=test_code)
             test_property = test.get_default_property()
-            
+
             mapping = TestPropertyMapping.objects.create(
                 code=str(test_code),
                 test=test,
@@ -160,7 +160,7 @@ def create_mapping(test_code, tests, user):
         else:
             test = IDTDiagnosticTest.objects.get(name=test_code)
             test_property = test.get_default_property()
-            
+
             mapping = TestPropertyMapping.objects.create(
                 code=str(test_code),
                 test=test,

@@ -1,53 +1,41 @@
-from django.shortcuts import render, redirect, get_object_or_404, render_to_response
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.shortcuts import render, redirect, render_to_response
+from django.http import JsonResponse
 from django.template import RequestContext
-from django.template.loader import render_to_string
 from forms import (
-    IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyMappingFormSet,
-    DataFileTestPropertyMappingFormSet, TestPropertyEstimateFormSet,
-    GlobalTestForm, UserTestForm, GroupedModelChoiceField, GroupedModelMultiChoiceField,
+    IDTUserCreationForm, TestHistoryFileUploadForm, TestPropertyEstimateFormSet,
+    GlobalTestForm, UserTestForm, GroupedModelChoiceField,
     TestPropertyMappingForm, UserTestPropertyDefaultForm, GlobalParametersForm,
     TestPropertyEstimateCreateTestFormSet, SpecifyInfectiousPeriodForm, CalculateInfectiousPeriodForm,
     CalculateResidualRiskForm, SupplyResidualRiskForm, DataResidualRiskForm
-    )
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from user_management.views import _check_for_login_hack_attempt
 from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from user_management.models import AuthenticationToken
 from django.contrib.auth import authenticate
-from django.contrib.auth import login as auth_login, get_user_model
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.views import logout as django_logout
-from django.contrib.auth.models import Group
 from file_handlers.idt_test_history_file_handler import IDTFileHandler
-from file_handlers.idt_test_and_properties_file_handler import TestsAndPropertiesFileHandler
 from user_management.forms import UserPasswordForm
 from models import (
-    IDTDiagnosticTest, IDTTestPropertyEstimate,
-    TestPropertyMapping, IDTFileInfo, IDTDiagnosticTestHistory,
-    IDTSubject, IDTAllowedRegistrationEmails, SelectedCategory,
+    IDTDiagnosticTest, IDTTestPropertyEstimate, TestPropertyMapping,
+    IDTFileInfo, IDTDiagnosticTestHistory, IDTSubject, SelectedCategory,
     GrowthRateEstimate, ResidualRisk, VariabilityAdjustment
-    )
+)
 from graph_image_generator import heat_map_graph
 from cephia.models import CephiaUser
-from django.forms import modelformset_factory
-import json
-from json import dumps
 from django.db.models import Q
 from datetime import datetime
-import datetime
 from django.db import transaction
 from dateutil.relativedelta import relativedelta
-from django.db.models import Max, Min
 from result_factory import ResultDownload
 from cephia.csv_helper import get_csv_response
 import os
 import math
-from django.core.mail import send_mail
 from collections import OrderedDict
-from django import forms
 from django.conf import settings
 from django.core.files import File
 from models import get_user_growth_rate
