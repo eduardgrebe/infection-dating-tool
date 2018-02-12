@@ -12,8 +12,8 @@ ind_test_sensitivity <- function(t,scale,shape, position) {
 
 plotdata <- data_frame(t = seq(0,25,0.1), 
                        p1 = ind_test_sensitivity(t = seq(0,25,0.1), scale = 3, shape = 4, position = 5),
-                       p2 = ind_test_sensitivity(t = seq(0,25,0.1), scale = 3, shape = 4, position = 6),
-                       p3 = ind_test_sensitivity(t = seq(0,25,0.1), scale = 3, shape = 4, position = 7))
+                       p2 = ind_test_sensitivity(t = seq(0,25,0.1), scale = 4, shape = 4, position = 5),
+                       p3 = ind_test_sensitivity(t = seq(0,25,0.1), scale = 5, shape = 4, position = 5))
 
 plotdata %>%
   ggplot(data = .) + 
