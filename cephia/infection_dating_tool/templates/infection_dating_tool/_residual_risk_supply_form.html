@@ -1,0 +1,16 @@
+{% load bootstrap3 %}
+
+<div id="form-panel" class="panel-body">
+  <form method="POST" action="{% url 'residual_risk_supply' %}">
+    {% csrf_token %}
+    <div class="infectious_period--form">
+      <div class="infectious_period--form_label">
+        Provide a point estimate
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field supply_form.residual_risk_input show_label=False %}
+      </div>
+    </div>
+    <input type="submit" name="supply" class="btn btn-primary infectious_period--submit" value="Apply" />
+  </form>
+</div>

@@ -1,0 +1,56 @@
+{% load bootstrap3 %}
+
+<div id="form-panel" class="panel-body">
+  <form method="POST" action="{% url 'residual_risk_data' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="infectious_period--form">
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Most sensitive test at last negative date
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.negative_test show_label=False %}
+        </div>
+      </div>
+
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Least sensitive test at first positive date
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.positive_test show_label=False %}
+        </div>
+      </div>
+
+      <div class="residual_risk_data--form_field">
+        <div class="infectious_period--form_label">
+          Number of confirmed transmissions
+        </div>
+        <div class="infectious_period--input">
+          {% bootstrap_field data_form.confirmed_transmissions show_label=False %}
+        </div>
+      </div>
+    </div>
+
+    <div class="infectious_period--form">
+      <div class="infectious_period--form_label">
+        Upload a list of inter donation intervals
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field data_form.interval_file show_label=False %}
+        {{ data_form.non_field_errors }}
+      </div>
+    </div>
+
+    <div class="infectious_period--form">
+      <div class="infectious_period--form_label">
+        Or enter a newline-separated list of inter donation intervals
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field data_form.interval_list show_label=False %}
+      </div>
+    </div>
+
+    <input type="submit" name="data" class="btn btn-primary infectious_period--submit" value="Calculate" />
+  </form>
+</div>

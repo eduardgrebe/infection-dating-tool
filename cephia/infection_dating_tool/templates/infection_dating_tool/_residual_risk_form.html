@@ -3,17 +3,7 @@
 <form method="POST">
   {% csrf_token %}
   <div class="residual_risk--form">
-    <div class="residual_risk--form_field">
-      <div class="residual_risk--form_label">
-        Select most sensitive screening test
-      </div>
-      <div id="test_window" data-url="{% url 'residual_risk_window' %}"
-           class="residual_risk--input" onchange="idt.calculate_window();">
-        {% bootstrap_field form.test show_label=False %}
-      </div>
-    </div>
-
-    <div class="residual_risk--form_field">
+    <div class="residual_risk--calculate_form_field">
       <div class="residual_risk--form_label">
         Incidence in donor population (% p.a.)
       </div>
@@ -22,7 +12,7 @@
       </div>
     </div>
 
-    <div class="residual_risk--form_field">
+    <div class="residual_risk--calculate_form_field">
       <div class="residual_risk--form_label">
         Number of donations per year
       </div>
@@ -30,14 +20,14 @@
         {% bootstrap_field form.donations show_label=False %}
       </div>
     </div>
-  </div>
 
-  <div id="window" class="residual_risk--window {% if not window %}hidden{% endif %}">
-    <div class="residual_risk--window_text">
-      <b>Window of residual risk value days:</b>
-    </div>
-    <div id="window_value" class="residual_risk--window_value">
-      {% if window %}{{ window }}{% endif %}
+    <div class="residual_risk--calculate_form_field">
+      <div class="residual_risk--form_label">
+        Max residual risk window for plots
+      </div>
+      <div class="residual_risk--input">
+        {% bootstrap_field form.upper_limit show_label=False %}
+      </div>
     </div>
   </div>
 

@@ -3,33 +3,47 @@
 
 {% block content %}
   <div class="container_nav">
-
     <div class="panel panel-info">
 
       <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
         <h3 class="panel-title">
-          Start of Infectious Period:
-          {{ infectious_period }}
+          Window of Residual Risk{% if upper_bound %} (95% CI){% endif %}:
+          {{ residual_risk }} days
+          {% if upper_bound %}({{ lower_bound }} - {{ upper_bound }}){% endif %}
         </h3>
       </div>
 
-      <div id="panel" class="panel-collapse collapse">
+      <div id="panel" class="panel-collapse {% if not data_form_error %}collapse{% endif %}">
 
         <div class="panel-body infectious_period--radio_selection">
           <p>
-            <input {% ifequal form_selection 'calculate' %}checked{% endifequal %} id="calculate" name="form_select" type="radio" value="2"
-                                                           data-url="{% url 'residual_risk_calculate' %}" onclick="idt.calculate_select();">
-            <label for="calculate">Calculate start of infectious period from viral load growth</label>
+            <input id="estimates" name="choice_select" type="radio" value="1"
+                   data-url="{% url 'residual_risk_estimates' %}" onclick="idt.estimates_select();"
+                   {% ifequal choice_selection "estimates" %}checked{% endifequal %}>
+            <label for="estimates">Calculate ‘window of residual risk’ from infectious-dose and diagnostic-delay estimates</label>
           </p>
           <p>
-            <input {% ifequal form_selection 'specify' %}checked{% endifequal %} id="specify" name="form_select" type="radio" value="1"
-                   data-url="{% url 'residual_risk' %}" onclick="idt.specify_select();">
-            <label for="specify">Specify start of infectious period</label>
+            <input id="data" name="choice_select" type="radio" value="2"
+                   data-url="{% url 'residual_risk_data' %}" onclick="idt.data_select();"
+                   {% ifequal choice_selection "data" %}checked{% endifequal %}>
+            <label for="data">Calculate ‘window of residual risk’ from operational transmission data</label>
+          </p>
+          <p>
+            <input id="supply" name="choice_select" type="radio" value="3"
+                   data-url="{% url 'residual_risk_supply' %}" onclick="idt.supply_select();"
+                   {% ifequal choice_selection "supply" %}checked{% endifequal %}>
+            <label for="supply">Supply an estimate of the ‘window of residual risk’</label>
           </p>
         </div>
 
-        <div id="form-panel" class="panel-body">
-          {% include 'infection_dating_tool/infectious_period_form.html' %}
+        <div id="form-panel">
+          {% if choice_selection == 'estimates' %}
+            {% include 'infection_dating_tool/_residual_risk_estimates_form.html' %}
+          {% elif choice_selection == 'data' %}
+            {% include 'infection_dating_tool/_residual_risk_data_form.html' %}
+          {% elif choice_selection == 'supply' %}
+            {% include 'infection_dating_tool/_residual_risk_supply_form.html' %}
+          {% endif %}
         </div>
 
       </div>
@@ -39,16 +53,29 @@
       {% include 'infection_dating_tool/_residual_risk_form.html' %}
     </div>
 
-    {% if residual_risk != None %}
+    {% if show_graphs %}
       <div class="residual_risk--result_header">
         <h2>Residual risk</h2>
       </div>
       <div class="residual_risk--result_text">
-        <b>Probability per donation:</b> {{ residual_risk }} {% if residual_risk_perc %}({{ residual_risk_perc }}%){% endif %}
+        <b>Probability per donation:</b> {{ residual_risk_num }} {% if residual_risk_perc %}({{ residual_risk_perc }}%){% endif %}
       </div>
       <div class="residual_risk--result_text">
         <b>Expected number of infectious donations per year:</b> {{ infectious_donations }}
       </div>
+
+      <div class="residual_risk--graphs">
+
+        <div class="residual_risk--graph--prob">
+          <img src="{{ graph_prob.url }}" alt="" style='height:100%; width:100%;'>
+        </div>
+
+        <div class="residual_risk--graph--donations">
+          <img src="{{ graph_donations.url }}" alt="" style='height:100%; width:100%;'>
+        </div>
+
+      </div>
+
     {% endif %}
 
   </div>

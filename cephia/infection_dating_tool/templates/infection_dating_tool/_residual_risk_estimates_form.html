@@ -1,0 +1,34 @@
+{% load bootstrap3 %}
+
+<div data-toggle="collapse" href="#estimates-panel" class="panel-heading infectious_period--header">
+  <h3 class="panel-title">
+    Start of Infectious Period:
+    {{ infectious_period }}
+  </h3>
+</div>
+
+<div id="estimates-panel" class="panel-collapse">
+
+  <div class="panel-body infectious_period--radio_selection">
+    <p>
+      <input id="calculate" name="form_select" type="radio" value="1"
+             data-url="{% url 'residual_risk_estimates_calculate' %}" onclick="idt.calculate_select();"
+             {% ifequal form_selection 'calculate' %}checked{% endifequal %}>
+      <label for="calculate">Calculate start of infectious period from viral load growth</label>
+    </p>
+    <p>
+      <input id="specify" name="form_select" type="radio" value="2"
+             data-url="{% url 'residual_risk_estimates_specify' %}" onclick="idt.specify_select();"
+             {% ifequal form_selection 'specify' %}checked{% endifequal %}>
+      <label for="specify">Specify start of infectious period</label>
+    </p>
+  </div>
+
+  <div id="form-estimates-panel">
+    {% if form_selection == 'calculate' %}
+      {% include 'infection_dating_tool/_residual_risk_estimates_calculate_form.html' %}
+    {% elif form_selection == 'spefify' %}
+      {% include 'infection_dating_tool/_residual_risk_estimates_specify_form.html' %}
+    {% endif %}
+  </div>
+</div>

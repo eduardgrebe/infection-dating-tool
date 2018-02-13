@@ -1,21 +1,12 @@
 from __future__ import unicode_literals
 import os
 from django.conf import settings
-from simple_history.models import HistoricalRecords
 from django.db import models
 from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
-from django.db import transaction
 from django.db.models import QuerySet
-from django.forms.models import model_to_dict
-import collections
-from world_regions import models as wr_models
-from django.db.models.functions import Length, Substr, Lower
-from django.contrib.auth.models import Group
 from datetime import timedelta
-from dateutil.relativedelta import relativedelta
 from django.db.models import Q
-from user_management.models import BaseUser
-from cephia.models import CephiaUser
+import math
 
 class IDTDiagnosticTestHistory(models.Model):
     class Meta:
@@ -64,6 +55,17 @@ class IDTDiagnosticTest(models.Model):
 
         return default_property
 
+    def get_diagnostic_delay_for_residual_risk(self, user):
+        test_prop = self.properties.get(global_default=True)
+
+        if not self.category == 'viral_load':
+            diagnostic_delay = test_prop.diagnostic_delay
+        else:
+            growth_rate = get_user_growth_rate(user).growth_rate
+            diagnostic_delay = math.log10(test_prop.detection_threshold) / growth_rate
+
+        return diagnostic_delay
+
 
 class IDTTestPropertyEstimateQuerySet(QuerySet):
     def for_user(self, user):
@@ -72,9 +74,9 @@ class IDTTestPropertyEstimateQuerySet(QuerySet):
 class IDTTestPropertyEstimate(models.Model):
     class Meta:
         db_table = "idt_test_property_estimates"
-        
+
     objects = IDTTestPropertyEstimateQuerySet.as_manager()
-    
+
     user_default = models.BooleanField(blank=False, default=False)
     global_default = models.BooleanField(blank=False, default=False)
     test = models.ForeignKey(IDTDiagnosticTest, null=False, blank=True, related_name='properties')
@@ -84,6 +86,7 @@ class IDTTestPropertyEstimate(models.Model):
     comment = models.CharField(max_length=255, null=False, blank=True)
 
     diagnostic_delay = models.FloatField(null=True, blank=True)
+    diagnostic_delay_sigma = models.FloatField(null=True, blank=True)
     detection_threshold = models.FloatField(null=True, blank=True)
     diagnostic_delay_mean = models.FloatField(null=True, blank=False)
     diagnostic_delay_mean_se = models.FloatField(null=True, blank=False)
@@ -110,7 +113,7 @@ class TestPropertyMapping(models.Model):
     test = ProtectedForeignKey('IDTDiagnosticTest', null=True, blank=True)
     test_property = ProtectedForeignKey('IDTTestPropertyEstimate', null=True, blank=True)
     user = ProtectedForeignKey('cephia.CephiaUser')
-    
+
 
 class IDTFileInfo(models.Model):
     class Meta:
@@ -146,7 +149,7 @@ class IDTFileInfo(models.Model):
         test_names = list(IDTDiagnosticTest.objects.filter(
             Q(user=user) | Q(user=None)
         ).values_list('name', flat=True))
-        
+
         # map_codes = list(self.test_history.all().values_list('test_code', flat=True).distinct())
         map_codes = []
         for x in self.test_history.all().values_list('test_code', flat=True):
@@ -160,7 +163,7 @@ class IDTFileInfo(models.Model):
             elif code in test_names:
                 test = IDTDiagnosticTest.objects.get(name=code)
                 test_property = test.get_default_property()
-            
+
                 mapping = TestPropertyMapping.objects.create(
                     code=str(code),
                     test=test,
@@ -176,12 +179,12 @@ class IDTFileInfo(models.Model):
 
         return file_maps
 
-    
+
 class IDTSubject(models.Model):
     class Meta:
         db_table = "idt_subjects"
         unique_together = ("subject_label", "user")
-    
+
     subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
     edsc_reported  = models.DateField(null=True, blank=True, default=None)
@@ -216,7 +219,7 @@ class IDTSubject(models.Model):
     def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
         edsc_days_diff = None
         flag = self.check_for_identical_dates(data_file)
-        
+
         if ep_ddi is None or lp_ddi is None:
             eddi = None
             interval_size = None
@@ -272,9 +275,9 @@ class SelectedCategory(models.Model):
         ('viral_load', 'Viral Load'),
         ('western_blot', 'Western blot'),
     )
-    
+
     user = ProtectedForeignKey('cephia.CephiaUser', null=False)
-    test = models.ForeignKey(IDTDiagnosticTest, null=False)
+    test = models.ForeignKey(IDTDiagnosticTest, null=True)
     category = models.CharField(choices=CATEGORIES, max_length=255, null=True)
 
     class Meta:
@@ -293,14 +296,61 @@ class GrowthRateEstimate(models.Model):
     growth_rate = models.FloatField(null=False, blank=False)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
 
-
-class InfectiousPeriod(models.Model):
     class Meta:
-        db_table = "idt_infectious_period"
+        unique_together = ('user', 'growth_rate')
+
+
+class ResidualRisk(models.Model):
+    class Meta:
+        db_table = "idt_residual_risk"
+
+    CHOICES = (
+        ('estimates', 'Estimates'),
+        ('data', 'Data'),
+        ('supply', 'Supply'),
+    )
+
+    choice = models.CharField(choices=CHOICES, max_length=255, null=False, default='estimates')
 
     user = OneToOneOrNoneField('cephia.CephiaUser', null=True, blank=True)
+    residual_risk = models.FloatField(null=False, default=0)
+    residual_risk_input = models.FloatField(null=False, default=0)
+
     infectious_period = models.FloatField(null=False)
-    infectious_period_input = models.FloatField(null=True, blank=False, verbose_name='Start of infectious period')
+    infectious_period_input = models.FloatField(
+        null=False, blank=False, default=0, verbose_name='Start of infectious period')
+
     viral_growth_rate = models.FloatField(null=True, blank=False)
     origin_viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at origin/zero')
     viral_load = models.FloatField(null=True, blank=False, verbose_name='Viral load at start of infectious period')
+
+    confirmed_transmissions = models.IntegerField(null=True, blank=False)
+    screening_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='screening')
+    positive_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='positive')
+    negative_test = ProtectedForeignKey('IDTDiagnosticTest', null=True, related_name='negative')
+
+    ci_lower_bound = models.FloatField(null=True)
+    ci_upper_bound = models.FloatField(null=True)
+
+    graph_file_probability = models.FileField(upload_to="graphs", max_length=255, null=True)
+    graph_file_donations = models.FileField(upload_to="graphs", max_length=255, null=True)
+    upper_limit = models.FloatField(null=False, default=0)
+
+
+class VariabilityAdjustment(models.Model):
+    adjustment_factor = models.FloatField(null=False, blank=False, default=0.0, verbose_name='Intersubject variability adjustment factor (SDs)')
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'adjustment_factor')
+
+
+def get_user_growth_rate(user):
+    growth_rate = GrowthRateEstimate.objects.filter(user=user).first()
+    if not growth_rate:
+        growth_rate = GrowthRateEstimate.objects.get(user__isnull=True)
+        growth_rate.pk = None
+        growth_rate.user = user
+        growth_rate.save()
+
+    return growth_rate

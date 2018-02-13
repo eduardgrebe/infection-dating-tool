@@ -38,6 +38,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
             'test_category',
             'estimate_label',
             'diagnostic_delay',
+            'diagnostic_delay_sigma',
             'comment',
             'diagnostic_delay_mean',
             'diagnostic_delay_median',
@@ -83,8 +84,6 @@ class TestsAndPropertiesFileHandler(FileHandler):
                     if properties:
                         test_property = properties.first()
                         test_property.diagnostic_delay = diagnostic_delay
-                        if not diagnostic_delay:
-                            test_property.detection_threshold = float(row_dict['viral_load_detection_threshold'])
                         test_property.comment = row_dict['comment']
                         test_property.test = test
                         test_property.global_default = True
@@ -98,12 +97,16 @@ class TestsAndPropertiesFileHandler(FileHandler):
                             global_default=True
                         )
 
-                    test_property.diagnostic_delay_median=row_dict['diagnostic_delay_median'] or None
-                    test_property.diagnostic_delay_mean_se=row_dict['diagnostic_delay_mean_se'] or None
-                    test_property.diagnostic_delay_mean_ci_lower=row_dict['diagnostic_delay_mean_ci_lower'] or None
-                    test_property.diagnostic_delay_mean_ci_upper=row_dict['diagnostic_delay_mean_ci_upper'] or None
-                    test_property.diagnostic_delay_range=row_dict['diagnostic_delay_range'] or None
-                    test_property.diagnostic_delay_iqr=row_dict['diagnostic_delay_iqr'] or None
+                    if not diagnostic_delay:
+                        test_property.detection_threshold = float_or_none(row_dict['viral_load_detection_threshold'])
+
+                    test_property.diagnostic_delay_sigma = float_or_none(row_dict['diagnostic_delay_sigma'])
+                    test_property.diagnostic_delay_median = float_or_none(row_dict['diagnostic_delay_median'])
+                    test_property.diagnostic_delay_mean_se = float_or_none(row_dict['diagnostic_delay_mean_se'])
+                    test_property.diagnostic_delay_mean_ci_lower = float_or_none(row_dict['diagnostic_delay_mean_ci_lower'])
+                    test_property.diagnostic_delay_mean_ci_upper = float_or_none(row_dict['diagnostic_delay_mean_ci_upper'])
+                    test_property.diagnostic_delay_range = row_dict['diagnostic_delay_range'] or None
+                    test_property.diagnostic_delay_iqr = row_dict['diagnostic_delay_iqr'] or None
                     test_property.save()
 
 
@@ -112,3 +115,10 @@ class TestsAndPropertiesFileHandler(FileHandler):
                 return e
 
         return errors
+
+
+def float_or_none(s):
+    if not s and s != 0:
+        return None
+    else:
+        return float(s)

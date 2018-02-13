@@ -81,60 +81,40 @@
 </div>
 
 <script>
- $('#modal-edit-test').on('change', '#id_category', function(event) {
-     var test_id = '{{ test.pk }}';
-     var category = $(this).val()
-     var url = '{% url 'set_selected_category' %}';
-
-     $.get(url, {test_id: test_id, category: category }).done(function(resp) {
-         if (resp.category === 'viral_load') {
-             $("input[id$='diagnostic_delay']").attr('readonly', true);
-             $("input[id$='diagnostic_delay']").hide();
-             $("input[id$='detection_threshold']").attr('readonly', false);
-             $("div[id$='_vl_dd']").show();
-         } else {
-             $("input[id$='diagnostic_delay']").attr('readonly', false);
-             $("input[id$='diagnostic_delay']").show();
-             $("input[id$='detection_threshold']").attr('readonly', true);
-             $("div[id$='_vl_dd']").hide();
-         }
-     });
- });
- $('#modal-edit-test').on('show.bs.modal', function () {
-     /* function getElementsByIdStartsWith(container, selectorTag, prefix) {
-      *     var items = [];
-      *     var myPosts = document.getElementById(container).getElementsByTagName(selectorTag);
-      *     for (var i = 0; i < myPosts.length; i++) {
-      *         //omitting undefined null check for brevity
-      *         if (myPosts[i].id.lastIndexOf(prefix, 0) === 0) {
-      *             items.push(myPosts[i]);
-      *         }
-      *     }
-      *     return items;
-      * }*/
-     
-     var category = $('#id_category').val()
+ function update_form(category) {
      if (category === 'viral_load') {
          $("input[id$='diagnostic_delay']").attr('readonly', true);
          $("input[id$='diagnostic_delay']").hide();
          $("input[id$='detection_threshold']").attr('readonly', false);
          $("div[id$='_vl_dd']").show();
-
-         /* var postedOnes = getElementsByIdStartsWith("form-group", "input", "diagnostic_delay-");
-          * debugger;
-          * for(var i = 0; i < inputs.length; i++) {
-          *     debugger;
-          *     if(inputs[i].name.indexOf('q1_') == 0) {
-          *         eles.push(inputs[i]);
-          *     }
-          * }*/
+     } else if (category === '') {
+         $("input[id$='diagnostic_delay']").attr('readonly', true);
+         $("input[id$='diagnostic_delay']").show();
+         $("input[id$='detection_threshold']").attr('readonly', true);
+         $("div[id$='_vl_dd']").hide();
      } else {
          $("input[id$='diagnostic_delay']").attr('readonly', false);
          $("input[id$='diagnostic_delay']").show();
          $("input[id$='detection_threshold']").attr('readonly', true);
          $("div[id$='_vl_dd']").hide();
      }
- })
+ }
+
+ function check_category() {     
+     var category = $('#id_category').val()
+     update_form(category);
+ }
+ check_category();
+
+ $('#modal-edit-test').on('change', '#id_category', function(event) {
+     var test_id = '{{ test.pk }}';
+     var category = $(this).val()
+     var url = '{% url 'set_selected_category' %}';
+
+     $.get(url, {test_id: test_id, category: category }).done(function(resp) {
+         update_form(resp.category);
+     });
+ });
 
  function calculate_nums() {
      var inputs = document.querySelectorAll("input[id$='detection_threshold']");

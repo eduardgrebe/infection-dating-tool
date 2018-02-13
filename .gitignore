@@ -16,3 +16,4 @@ db_backups/
 *.swp
 \.#*
 volume_log.csv
+.tern-port

@@ -1,21 +1,10 @@
 {% load bootstrap3 %}
 
-{% if form_selection == 'specify' %}
-  <form method="POST" action="{% url 'residual_risk' %}">
-    {% csrf_token %}
-    <div class="infectious_period--form_label">
-      Start of infectious period relative to origin/zero of diagnostic scale (days)
-    </div>
-    <div class="infectious_period--input">
-      {% bootstrap_field specify_form.infectious_period_input show_label=False %}
-    </div>
-    <input type="submit" name="specify" class="btn btn-primary infectious_period--submit" value="Apply" />
-  </form>
-{% elif form_selection == 'calculate' %}
-  <form method="POST" action="{% url 'residual_risk_calculate' %}">
-    {% csrf_token %}
+<form method="POST" action="{% url 'residual_risk_estimates_calculate' %}">
+  {% csrf_token %}
+  <div class="panel-body infectious_period--panel_body">
     <div class="infectious_period--form">
-      <div class="infectious_period--form_field">
+      <div class="residual_risk--calculate_form_field">
         <div class="infectious_period--form_label">
           Viral growth rate (log<sub>10</sub>/day)
         </div>
@@ -24,7 +13,7 @@
         </div>
       </div>
 
-      <div class="infectious_period--form_field">
+      <div class="residual_risk--calculate_form_field">
         <div class="infectious_period--form_label">
           Viral load at origin/zero of diagnostic delay scale
         </div>
@@ -33,7 +22,7 @@
         </div>
       </div>
 
-      <div class="infectious_period--form_field">
+      <div class="residual_risk--calculate_form_field">
         <div class="infectious_period--form_label">
           Viral load at start of infectious period
         </div>
@@ -41,13 +30,23 @@
           {% bootstrap_field calculate_form.viral_load show_label=False %}
         </div>
       </div>
-    </div>
 
-    <input type="submit" name="calculate" class="btn btn-primary infectious_period--submit" value="Apply" />
-    {% if form_selection == 'calculate' %}
       <a href="{% url 'reset_defaults_infectious_period' %}" class="btn btn-danger infectious_period--reset">
         Reset to defaults
       </a>
-    {% endif %}
-  </form>
-{% endif %}
+    </div>
+  </div>
+
+  <div class="panel-body">
+    <div class="infectious_period--form">
+      <div class="infectious_period--form_label">
+        Select most sensitive screening test
+      </div>
+      <div class="infectious_period--input">
+        {% bootstrap_field calculate_form.screening_test show_label=False %}
+      </div>
+    </div>
+
+    <input type="submit" name="calculate" class="btn btn-primary infectious_period--submit" value="Calculate" />
+  </div>
+</form>

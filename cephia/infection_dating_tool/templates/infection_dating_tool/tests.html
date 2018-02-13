@@ -5,14 +5,40 @@
 {% block content %}
   <div class="container_nav">
 
-    <form method="post">{% csrf_token %}
-      <h2>Viral load growth rate estimate</h2>
-      <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
-      {% bootstrap_form form %}
-      <input type="submit" class="btn btn-primary" value="Submit" />
-    </form>
+    <h2>Calculation parameters</h2>
+    <div class="tests--form">
+      <form method="post">{% csrf_token %}
+        <div class="tests--form_field">
+          <div class="tests--form_label">
+            Viral load growth rate estimate
+          </div>
+          <div class="tests--input">
+            {% bootstrap_field form.growth_rate show_label=False %}
+          </div>
+          <div class="tests--form_text">
+            <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
+          </div>
+        </div>
+
+        <div class="tests--form_field">
+          <div class="tests--form_label">
+            Intersubject variability adjustment factor
+          </div>
+          <div class="tests--input">
+            {% bootstrap_field form.adjustment_factor show_label=False %}
+          </div>
+          <div class="tests--form_text">
+            <i>standard deviations</i>
+          </div>
+        </div>
+        <input type="submit" class="btn btn-primary tests--submit" value="Submit" />
+        <a href="{% url 'reset_defaults_calculation_params' %}" class="btn btn-danger tests--reset">
+          Reset to defaults
+        </a>
+      </form>
+    </div>
     <br>
-    
+
     <h2>Your tests</h2>
     <button class="js-add-test btn btn-default" data-add-url="{% url 'create_test' %}">Add a new test</button>
     <table class="table table-condensed table-striped">
@@ -24,7 +50,7 @@
         </tr>
       </thead>
       <tbody>
-        
+
         {% for test in user_tests %}
           <tr>
             <td>
@@ -39,7 +65,7 @@
             </td>
           </tr>
         {% endfor %}
-        
+
       </tbody>
     </table>
 
@@ -53,7 +79,7 @@
               <th></th>
             </tr>
           </thead>
-          
+
           <tbody>
             {% for test in tests %}
               <tr>
@@ -71,58 +97,41 @@
       {% endif %}
     {% endfor %}
 
-    <div class="modal fade" id="modal-add-test"></div>
-    <div class="modal fade" id="modal-edit-test"></div>
+    <div class="modal fade" id="modal-test"></div>
 
     <script>
      $('.js-edit-test').click(function(event) {
          event.preventDefault();
          var url = $(this).data('edit-url')
          $.get(url).done(function(html) {
-             $('#modal-edit-test').html(html);
-             $('#modal-edit-test').modal();
+             $('#modal-test').html(html);
+             $('#modal-test').modal();
          });
      })
-
-     $('#modal-edit-test').on('click', '.js-save-test', function(event) {
-         event.preventDefault();
-
-         var form = $(this).parents('form');
-         var post_data = form.serialize()
-         var modal = $(this).parents('.modal-dialog').parent()
-
-         $.post(form.attr('action'), post_data).done(function(html) {
-             if (html.success) {
-                 location.href = html.redirect_url
-             } else {
-                 modal.html(html)
-             }
-         });
-     });
 
      $('.js-add-test').click(function() {
          event.preventDefault();
          var url = $(this).data('add-url')
          $.get(url).done(function(html) {
-             $('#modal-add-test').html(html);
-             $('#modal-add-test').modal()
+             $('#modal-test').html(html);
+             $('#modal-test').modal()
          });
      })
 
-     $('#modal-add-test').on('click', '.js-confirm-add-test', function(event) {
+     $('#modal-test').on('click', '.js-confirm-test', function(event) {
          event.preventDefault();
-         var form = $('#modal-add-test').find('form');
+         var form = $('#modal-test').find('form');
          post_data = form.serialize();
-         var that = this;
+         /* var that = this;*/
          $.post(form.attr('action'), post_data).done(function(resp) {
              if (resp.redirect_url) {
                  location.href = resp.redirect_url
              } else {
-                 $('#modal-add-test').html(resp)
+                 $('#modal-test').html(resp)
              }
          })
      })
     </script>
-    
+
   </div>
 {% endblock %}

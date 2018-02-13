@@ -21,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        
+
         {% for map in mapping %}
           <tr>
             <td>
@@ -41,7 +41,7 @@
             </td>
           </tr>
         {% endfor %}
-        
+
       </tbody>
     </table>
 
@@ -53,8 +53,8 @@
     {% if completed_mapping == False %}
       <a class="btn btn-primary" href="{% url 'validate_mapping_from_page' data_file.pk %}">Validate Mapping</a>
     {% endif %}
-    <div class="modal fade" id="modal-add-mapping"></div>
-    <div class="modal fade" id="modal-edit-mapping"></div>
+
+    <div class="modal fade" id="modal-mapping"></div>
 
     <script>
      $('.js-edit-mapping').click(function(event) {
@@ -64,78 +64,51 @@
          var url = "{% url 'edit_test_mapping' %}";
 
          $.get(url, {map_id: map_id, js_is_file: js_is_file }).done(function(html) {
-             $('#modal-edit-mapping').html(html);
-             $('#modal-edit-mapping').modal();
+             $('#modal-mapping').html(html);
+             $('#modal-mapping').modal();
          });
      })
-
-     $('#modal-edit-mapping').on('click', '.js-save-mapping', function(event) {
-         event.preventDefault();
-
-         var form = $(this).parents('form');
-         var post_data = form.serialize()
-         var modal = $(this).parents('.modal-dialog').parent()
-
-         $.post(form.attr('action'), post_data).done(function(html) {
-             if (html.success) {
-                 location.reload();
-                 /* location.href = html.redirect_url*/
-             } else {
-                 modal.html(html)
-             }
-         });
-     });
-
-     $('#modal-edit-mapping').on('change', '#id_test', function(event) {
-         var test_id = $(this).val()
-         var map_id = $(this).parents('form').data('map')
-         var map_code = $("#id_code").val();
-         var js_is_file = {{ js_is_file }};
-         var url = "{% url 'edit_test_mapping' %}";
-
-         $.get(url, {test_id:test_id, map_id:map_id, map_code:map_code, js_is_file:js_is_file }).done(function(html) {
-             $('#modal-edit-mapping').html(html);
-             $('#modal-edit-mapping').modal();
-         });
-     });
 
      $('.js-add-mapping').click(function() {
          event.preventDefault();
          var url = "{% url 'create_test_mapping' %}";
          $.get(url).done(function(html) {
-             $('#modal-add-mapping').html(html);
-             $('#modal-add-mapping').modal()
+             $('#modal-mapping').html(html);
+             $('#modal-mapping').modal()
          });
      })
 
-     $('#modal-add-mapping').on('click', '.js-confirm-add-mapping', function(event) {
-         event.preventDefault();
-         
-         /* var form = $('#modal-add-mapping').find('form');*/
-         var form = $(this).parents('form');
-         var post_data = form.serialize();
-         var modal = $(this).parents('.modal-dialog').parent()
-         /* var that = this;*/
-         
-         $.post(form.attr('action'), post_data).done(function(html) {
-             if (html.success) {
-                 location.reload();
-                 /* location.href = resp.redirect_url*/
-             } else {
-                 modal.html(html)
-                 /* $('#modal-add-mapping').html(resp)*/
-             }
-         })
-     })
-
-     $('#modal-add-mapping').on('change', '#id_test', function(event) {
+     $('#modal-mapping').on('change', '#id_test', function(event) {
          var test_id = $(this).val()
          var map_code = $("#id_code").val();
-         var url = '{% url 'create_test_mapping' %}';
+         var map_id = $(this).parents('form').data('map')
 
-         $.get(url, {map_code: map_code, test_id: test_id }).done(function(html) {
-             $('#modal-add-mapping').html(html);
-             $('#modal-add-mapping').modal();
+         if (map_id) {
+             var js_is_file = {{ js_is_file }};
+             var url = "{% url 'edit_test_mapping' %}";
+             $.get(url, {test_id:test_id, map_id:map_id, map_code:map_code, js_is_file:js_is_file }).done(function(html) {
+                 $('#modal-mapping').html(html);
+                 $('#modal-mapping').modal();
+             });
+         } else {
+             var url = '{% url 'create_test_mapping' %}';
+             $.get(url, {map_code: map_code, test_id: test_id }).done(function(html) {
+                 $('#modal-mapping').html(html);
+                 $('#modal-mapping').modal();
+             });
+         }
+     });
+
+     $('#modal-mapping').on('click', '.js-save-mapping', function(event) {
+         event.preventDefault();
+         var form = $('#modal-mapping').find('form');
+         var post_data = form.serialize();
+         $.post(form.attr('action'), post_data).done(function(resp) {
+             if (resp.success) {
+                 location.reload();
+             } else {
+                 $('#modal-mapping').html(resp)
+             }
          });
      });
     </script>
