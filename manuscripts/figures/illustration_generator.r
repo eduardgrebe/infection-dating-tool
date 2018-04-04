@@ -162,7 +162,7 @@ likelihood_by_DDI = function(set_of_positive_curves,set_of_negative_curves,times
 # Okay, I think that may just make it moree difficult than it needs to be....
 
 
-plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of_negative_curves,time,cuttoff=-1){ #times is all times, ie timeaxis, time is particular time of interest
+plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of_negative_curves,time, test_of_interest){ #times is all times, ie timeaxis, time is particular time of interest
   #calculate means
   positive_mean_naive = rowMeans(set_of_positive_curves)
   negative_mean_naive = rowMeans(set_of_negative_curves)
@@ -177,48 +177,50 @@ plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of
     likelihood_backward = "The same thing unless I don't actually understand this task"
     cumu_likely <- cumu_likely + likelihood_forward
   }
-  likelihood_DDI_at_time_given_both_test_results = 1/n *cumu_likely
+  likelihood_DDI_at_time_given_both_test_results = 1/ncol(set_of_negative_curves) *cumu_likely
   #plot the curves
-  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(0,1),xlab="t",ylab="Likelihood",col='green')
+  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(0,1),xlab="Hypothetical DDI (days)",ylab="Likelihood of observed test results",col='green')
   #points(plotdata[,1],plotdata[,3])
-  for (i in seq(1:n)){
-    if (n-i<cuttoff){
-      lines(times,plotdata_positive[,i],col='red') #what color should the positive curves be 
-      lines(times,plotdata_negative[,i],col='green') 
+  if(test_of_interest=="negative"){
+  for (curve in seq(1:ncol(set_of_negative_curves))){
+    if (set_of_negative_curves[time_position,curve]>0.5){
+      lines(times,set_of_positive_curves[,curve],col='red', lwd=1.2) #what color should the positive curves be 
+      lines(times,set_of_negative_curves[,curve],col='green', lwd=1.2) 
     }else{
-      
-      lines(times,plotdata_positive[,i],col='blue',lty=2) #what color should the positive curves be 
-      lines(times,plotdata_negative[,i],col='blue',lty=2)
+      lines(times,set_of_positive_curves[,curve],col='red',lty=2,lwd=1.2) #what color should the positive curves be 
+      lines(times,set_of_negative_curves[,curve],col='green',lty=2,lwd=1.2)
+    }
+  }}
+  else if(test_of_interest=="positive"){
+    for (curve in seq(1:ncol(set_of_negative_curves))){
+      if (set_of_positive_curves[time_position,curve]>0.5){
+        lines(times,set_of_positive_curves[,curve],col='red',lwd=1.2) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col='green',lwd=1.2) 
+      }else{
+        lines(times,set_of_positive_curves[,curve],col='red',lty=2,lwd=1.2) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col='green',lty=2,lwd=1.2)
+      }
     }
   }
   
-  # # #points(plotdata[,1],plotdata[,3])
-  # for (i in seq(1:n)){
-  #   if(i<cuttoff){
-  #   lines(times,plotdata_negative[,i],col='green') #what color should the negative curves be
-  #   }
-  #   else{
-  #     lines(times,plotdata_negative[,i],col='green',lty=2)
-  #   }
-  # }
   lines(times,positive_mean_naive,lwd=2,col='red')
   lines(times,negative_mean_naive,lwd=2,col='green')
-  lines(times,likelihood_naive, lwd=4,col='grey')
+  lines(times,likelihood_naive, lwd=4,col='grey') ### todo: transparency? or thin/thick lines? some way to clarify
   points(time,likelihood_DDI_at_time_given_both_test_results)
 }
 
 #
-
-calculate_cuttoff_from_negative_curves <- function(time,timeaxis,set_of_negative_curves){
- # given a hypothetical DDI returns the index of the first curve in the set  
-  # for which the likelihood of a negative test is smaller than 1/2
-   step <- which.min(abs(timeaxis-time))
-  nearest_curve <- which.min(abs(set_of_negative_curves[step,]-0.5))
-  if(set_of_negative_curves[step,nearest_curve]<0.5){
-    return(nearest_curve+1)}
-  else{return (nearest_curve)
-  }
-} 
+# 
+# calculate_cuttoff_from_negative_curves <- function(time,timeaxis,set_of_negative_curves){
+#  # given a hypothetical DDI returns the index of the first curve in the set  
+#   # for which the likelihood of a negative test is smaller than 1/2
+#    step <- which.min(abs(timeaxis-time))
+#   nearest_curve <- which.min(abs(set_of_negative_curves[step,]-0.5))
+#   if(set_of_negative_curves[step,nearest_curve]<0.5){
+#     return(nearest_curve+1)}
+#   else{return (nearest_curve)
+#   }
+# } 
 
 # gotoscript
 ##                    SCRIPT
@@ -344,12 +346,11 @@ for (time in seq(illustration_timestart,illustration_timestart + illustration_nu
 }
 dev.off()
 
-plot_individual_time_likelihood(n=n, times=timeaxis,time=38,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative,cuttoff=1)
+# plot_individual_time_likelihood(n=n, times=timeaxis,time=38,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative,cuttoff=1)
 
-DDI_hypothetical=20
+DDI_hypothetical=80
 
-
-plot_individual_time_likelihood(n=n, times=timeaxis,time=DDI_hypothetical,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative,cuttoff = calculate_cuttoff_from_negative_curves(time=DDI_hypothetical,timeaxis = timeaxis,set_of_negative_curves=plotdata_negative))
+plot_individual_time_likelihood(test_of_interest = "positive",n=n, times=timeaxis,time=DDI_hypothetical,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative)
 
 #   at some point:
 #   	- calculate/plot mean curve for a set of curves DONE
