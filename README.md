@@ -14,6 +14,7 @@ The tool is maintained by the South African Centre for Epidemiological Modelling
 * Eduard Grebe
 * Shelley Facente
 * Andrew Powrie
+* Jeremy Bingham
 * Jarryd Gerber
 * Trust Chibawara
 * Chris Pilcher
