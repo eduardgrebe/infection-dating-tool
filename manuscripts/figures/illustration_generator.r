@@ -53,7 +53,7 @@ generate_positions_cumulative_normal = function(n,mean_center_position,sd_size){
 
 # if you have any questions don't hesistate to email us at jeremyb@sun.ac.za
 
-
+#questions I'm wondering about: legends instead of long y-axis labels?
 
 # SECTION ONE: THE SENSITIVITY CURVES
 
@@ -158,6 +158,49 @@ likelihood_by_DDI = function(set_of_positive_curves,set_of_negative_curves,times
 # instead, I'll calculate a cutoff curve-number. Ie plot dotted from the cuttoff-th curve
 # Okay, I think that may just make it moree difficult than it needs to be....
 
+simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curves,set_of_negative_curves,time,test_of_interest,col_negative,col_positive,lwd_ind){
+  positive_mean_naive = rowMeans(set_of_positive_curves)
+  negative_mean_naive = rowMeans(set_of_negative_curves)
+  likelihood_naive <- negative_mean_naive*positive_mean_naive
+  #position in timeaxis
+  time_position <- which(times==time)
+  #calculate_likelihood
+  cumu_likely=0
+  for (person in seq(1:ncol(set_of_negative_curves))){ #chronological order makes a trivial difference - there is 
+    #just a product per person
+    likelihood_forward = set_of_positive_curves[time_position,person]*set_of_negative_curves[time_position,person]
+    likelihood_backward = "The same thing unless I don't actually understand this task"
+    cumu_likely <- cumu_likely + likelihood_forward
+  }
+  likelihood_DDI_at_time_given_both_test_results = 1/ncol(set_of_negative_curves) *cumu_likely
+  #plot the curves
+  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(0,1),xlab='',ylab="",col='green',xaxt='n',yaxt='n')
+  # Time of Hypothetical DDI
+  # Likelihood of observed test results
+  #points(plotdata[,1],plotdata[,3])
+  if(test_of_interest=="negative"){
+    for (curve in seq(1:ncol(set_of_negative_curves))){
+      if (set_of_negative_curves[time_position,curve]>0.5){
+        lines(times,set_of_positive_curves[,curve],col=col_positive, lwd=lwd_ind) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col=col_negative, lwd=lwd_ind) 
+      }else{
+        lines(times,set_of_positive_curves[,curve],col=col_positive,lty=2,lwd=lwd_ind) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col=col_negative,lty=2,lwd=lwd_ind)
+      }
+    }}
+  else if(test_of_interest=="positive"){
+    for (curve in seq(1:ncol(set_of_negative_curves))){
+      if (set_of_positive_curves[time_position,curve]>0.5){
+        lines(times,set_of_positive_curves[,curve],col=col_positive,lwd=lwd_ind) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col=col_negative,lwd=lwd_ind) 
+      }else{
+        lines(times,set_of_positive_curves[,curve],col=col_positive,lty=2,lwd=lwd_ind) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col=col_negative,lty=2,lwd=lwd_ind)
+      }
+    }
+  }
+}
+
 
 plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of_negative_curves,time, test_of_interest){ #times is all times, ie timeaxis, time is particular time of interest
   #calculate means
@@ -205,6 +248,8 @@ plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of
   lines(times,likelihood_naive, lwd=4,col='grey') ### todo: transparency? or thin/thick lines? some way to clarify
   points(time,likelihood_DDI_at_time_given_both_test_results)
 }
+
+
 
 #
 # 
@@ -298,8 +343,8 @@ timeaxis=seq(0,70,1/detail)
 
 ## Visuals
 
-linewidth_means <- 2
-linewidth_ind <- 1.37
+lwd_means <- 2
+lwd_ind <- 1.37
 col_negative <- 'green'
 col_positive <- 'red'
 
@@ -358,26 +403,135 @@ axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
 
 #points(plotdata[,1],plotdata[,3])
 for (i in seq(1:n)){
-  lines(timeaxis,plotdata_negative[,i],col=col_negative,lwd=linewidth_ind)
+  lines(timeaxis,plotdata_negative[,i],col=col_negative,lwd=lwd_ind)
 }
 #points(plotdata[,1],plotdata[,3])
 for (i in seq(1:n)){
-  lines(timeaxis,plotdata_positive[,i],col=col_positive,lwd=linewidth_ind)
+  lines(timeaxis,plotdata_positive[,i],col=col_positive,lwd=lwd_ind)
 }
 
 positive_mean_background <- rowMeans(plotdata_positive_background)
 negative_mean_background <- rowMeans(plotdata_negative_background)
 
-lines(timeaxis,negative_mean_background, lwd=linewidth_means, col=col_negative)
-lines(timeaxis,positive_mean_background, lwd=linewidth_means, col=col_positive)
+lines(timeaxis,negative_mean_background, lwd=lwd_means, col=col_negative)
+lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
 segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
 segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+
+segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+
+#arrows(x0=test_time_1-mean_delay_t1,y0=0.5,x1=test_time_1,y1=0.5,lty=1,code=3,length=.1,angle=10)
 
 #TO DO: REMOVE AXIS LABELS FOR x-axis && give title && write comment
     ### IDEA: I could calculate the mean using a large number of individual curves, but plot just a few of the individual curves...
       ## Question: Why and precicely how is it valid to use the cumulative normal distribution to approximate the population-level distribution of delays? (even if the population-level delays are normally distributed, which I think we just thumbsuck like a linear fit. Initially I thought the normal distribution was natural since the disease progression is random on each day and for a particular test the total delay is a sum of the daily (or whichver discrete timestep) delays. However this means an individual's actual delay is drawn from a normal distribution, but we only ever see one data point from that exact distribution. Different population members may have delays drawn from different normal distributions - there's no particular reason to believe that the means (nevermind the standard deviations) of individual normal distributions will be normally distributed across the population. There could for example be a particular genetic marker which just protects 20% of people really well, leading to a two-spike distribution of means for the individual normal distributions, and a two-peak less-spiked distribution of realised delays.)
+      ## another IDEA: make the mean lines slightly transparent - needs rgb color specification: good excuse to choose better colors
 
-positive_mean_naive <- rowMeans(plotdata_positive)
+
+
+#########
+
+# Figure 2b
+
+# We now illuminate the conditional probabilities by portraying the "less-likely individuals [section of the population]" using
+# individual dashed instead of solid lines
+# We copy the same situation and use the code from the individual_time_likelihood function to get dotted lines
+#   goto_2b
+
+n<-10
+
+detail<-10
+timeaxis<-seq(0,70,1/detail)
+
+focus_2b <- 15
+
+#                       TEST 1 (negative)
+
+#     Describe individual (person) test sensitivity form with population mean-delay and standard deviation of delay
+# delay is the variable we distribute across the population - it could in principle be anything else of course
+#so each individual has the same SHAPE of sensitivity, but different delays
+
+## Visuals
+
+lwd_means <- 2
+lwd_ind <- 1.37
+col_negative <- 'green'
+col_positive <- 'red'
+
+
+scale_t1 = 5    #High scale causes slower swap
+shape_t1 = 5    #high shape causes quicker and steeper swap
+
+mean_delay_t1 = 12
+sd_size_t1 = 3
+#   Time of negative test (relative to arbitrary t=0)
+
+test_time_1 = 28
+
+##                      TEST 2 (positive)
+
+scale_t2 = scale_t1
+shape_t2 = shape_t1
+
+mean_delay_t2 = mean_delay_t1
+sd_size_t2 = sd_size_t1
+
+#   Time of positive test
+test_time_2 = timeaxis[length(timeaxis)]-10
+
+
+## Generate the individual likelihood curves for the first (negative) and second (positive) test
+#Test 1
+plotdata_negative = family_negative_likelihood_weibul(n=n, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#for generating mean curve
+plotdata_negative_background <- family_negative_likelihood_weibul(n=n+50, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#Test 2
+plotdata_positive = family_positive_likelihood_weibul(n=n, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+#for generating mean curve
+plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+
+
+##        COMMUNICATE
+
+simple_plot_individual_time_likelihood(n=n, times=timeaxis, test_of_interest = 'negative', set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative,time = focus_2b, col_negative=col_negative ,col_positive=col_positive, lwd_ind = lwd_ind)
+
+
+
+
+# plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
+title(xlab="t", line=1.5, cex.lab=1.2)
+title(ylab=expression('P(-/+ at t'['1/2']*' | DDI = t)'), line=2, cex.lab=1.05)
+
+
+yaxis_pos <- c(0,0.5,1)
+yaxis_names <- c('0',"0.5",'1')
+
+xaxis_pos <- c(focus_2b,test_time_1,test_time_2)
+xaxis_names <- c(expression('t'['DDI']),expression('t'['1']),expression('t'['2']))
+
+zero_pos <- c(0)
+zero_name <- c(expression('0'['']))
+
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.17)
+axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.037)
+axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+
+
+positive_mean_background <- rowMeans(plotdata_positive_background)
+negative_mean_background <- rowMeans(plotdata_negative_background)
+
+lines(timeaxis,negative_mean_background, lwd=lwd_means, col=col_negative)
+lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
+segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+
+segments(x0=focus_2b, y0=0, x1=focus_2b,y1=1,lty=3,col=4)
+
+segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+
+# Arrows(x0=focus_2b+.25,y0=0.5,x1=test_time_1-.3,y1=0.5,code=3,arr.length=.2, arr.width = .1,arr.adj=0.5,arr.type='triangle',segment=TRUE,col=1,lty=2,lwd=1.1,arr.lwd=1.1)
+
+positive_mean_naive <- rowMeans(plotdata_positive)                              
 negative_mean_naive <- rowMeans(plotdata_negative)
 product_of_means_naive <- positive_mean_naive*negative_mean_naive # naive product of individual likelihoods
 
