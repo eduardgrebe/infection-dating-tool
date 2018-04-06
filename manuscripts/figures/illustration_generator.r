@@ -427,6 +427,8 @@ segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
       ## Question: Why and precicely how is it valid to use the cumulative normal distribution to approximate the population-level distribution of delays? (even if the population-level delays are normally distributed, which I think we just thumbsuck like a linear fit. Initially I thought the normal distribution was natural since the disease progression is random on each day and for a particular test the total delay is a sum of the daily (or whichver discrete timestep) delays. However this means an individual's actual delay is drawn from a normal distribution, but we only ever see one data point from that exact distribution. Different population members may have delays drawn from different normal distributions - there's no particular reason to believe that the means (nevermind the standard deviations) of individual normal distributions will be normally distributed across the population. There could for example be a particular genetic marker which just protects 20% of people really well, leading to a two-spike distribution of means for the individual normal distributions, and a two-peak less-spiked distribution of realised delays.)
       ## another IDEA: make the mean lines slightly transparent - needs rgb color specification: good excuse to choose better colors
       ## another question: axes need labels?
+        ##another QUESTION: in figure 3a (more/less sensitive tests on same day w/ discordant results)
+      ## Figure 3b ?
 
 
 #########
@@ -655,28 +657,381 @@ segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
 
 ####
 
-positive_mean_naive <- rowMeans(plotdata_positive)                              
-negative_mean_naive <- rowMeans(plotdata_negative)
-product_of_means_naive <- positive_mean_naive*negative_mean_naive # naive product of individual likelihoods
+# Figure 3a
 
-real_likelihood <- likelihood_by_DDI(times = timeaxis, set_of_positive_curves = plotdata_positive, set_of_negative_curves = plotdata_negative)
+# goto_3a
+# Here we have two tests, on the same day, where the less sensitive test yields a negative result while the more sensitive test yields 
+# a positive result.
+n=10
+detail=10
+timeaxis=seq(0,70,1/detail)
+
+#                       TEST 1 (negative)
+
+#     Describe individual (person) test sensitivity form with population mean-delay and standard deviation of delay
+# delay is the variable we distribute across the population - it could in principle be anything else of course
+#so each individual has the same SHAPE of sensitivity, but different delays
+
+## Visuals
+
+lwd_means <- 2.7
+lwd_ind <- 2
+col_negative <- rgb(27/255,158/255,119/255)
+col_positive <- rgb(217/255,95/255,2/255)
+col_mean <- rgb(231/255,41/255,138/255)
+col_truth <- rgb(117/255,112/255,179/255)
+
+
+scale_t1 = 5    #High scale causes slower swap
+shape_t1 = 5    #high shape causes quicker and steeper swap
+
+mean_delay_t1 = 24
+sd_size_t1 = 5
+#   Time of negative test (relative to arbitrary t=0)
+
+test_time_1 =45
+
+##                      TEST 2 (positive)
+
+scale_t2 = scale_t1
+shape_t2 = shape_t1
+
+mean_delay_t2 = mean_delay_t1/2
+sd_size_t2 = sd_size_t1*.7
+
+#   Time of positive test
+test_time_2 = test_time_1
+
+
+## Generate the individual likelihood curves for the first (negative) and second (positive) test
+#Test 1
+plotdata_negative = family_negative_likelihood_weibul(n=n, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#for generating mean curve
+plotdata_negative_background <- family_negative_likelihood_weibul(n=n+50, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#Test 2
+plotdata_positive = family_positive_likelihood_weibul(n=n, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+#for generating mean curve
+plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+
+likelihood_discordant_3a <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
+
+
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
+title(xlab="t", line=1.5, cex.lab=1.2)
+title(ylab=expression('P(-/+ at t'['1/2']*' | DDI=t)'), line=1.4, cex.lab=1.05)
+
+
+yaxis_pos <- c(0,1)
+yaxis_names <- c('0','1')
+
+xaxis_pos <- c(test_time_1)
+xaxis_names <- c(expression('t'['+/-']))
+
+zero_pos <- c(0)
+zero_name <- c(expression('0'['']))
+
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.437)
+axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.137)
+axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+
+#points(plotdata[,1],plotdata[,3])
+for (i in seq(1:n)){
+  lines(timeaxis,plotdata_negative[,i],col=col_negative,lwd=lwd_ind)
+}
+#points(plotdata[,1],plotdata[,3])
+for (i in seq(1:n)){
+  lines(timeaxis,plotdata_positive[,i],col=col_positive,lwd=lwd_ind)
+}
+
+
+
+positive_mean_naive <- rowMeans(plotdata_positive)                              #not _naive
+negative_mean_naive <- rowMeans(plotdata_negative)
+positive_mean_background <- rowMeans(plotdata_positive_background)
+negative_mean_background <- rowMeans(plotdata_negative_background)
+product_of_means_naive <- positive_mean_background*negative_mean_background # naive product of individual likelihoods
+
+
+real_likelihood <- likelihood_by_DDI(times = timeaxis, set_of_positive_curves = plotdata_positive_background, set_of_negative_curves = plotdata_negative_background)
 difference <- product_of_means_naive - real_likelihood
+
+
+lines(timeaxis,negative_mean_background, lwd=lwd_means, col=col_negative)
+lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
+segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+
+segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+
 
 print("The maximum difference for this scenario between the true likelihood and the totally naive approximation is on the next line:")
 print(max(difference))
-lines(timeaxis,difference,lwd=1,col="blue")
-lines(timeaxis,positive_mean_naive,lwd=2,col='red')
-lines(timeaxis,negative_mean_naive,lwd=2,col='green')
-lines(timeaxis,product_of_means_naive,lwd=4,col='grey')
+#lines(timeaxis,difference,lwd=1,col="blue")
+# lines(timeaxis,positive_mean_naive,lwd=2,col='red')
+# lines(timeaxis,negative_mean_naive,lwd=2,col='green')
+lines(timeaxis,product_of_means_naive,lwd=2,col="grey")
+lines(timeaxis,real_likelihood,lwd=2,col=col_truth)
+
+
+######
+
+
+# Figure 3c
+############
+
+
+# goto_3c
+# Here we have two tests, on the same day, where the less sensitive test yields a negative result while the more sensitive test yields 
+# a positive result.
+n=7
+detail=10
+timeaxis=seq(0,50,1/detail)
+
+#                       TEST 1 (negative)
+
+#     Describe individual (person) test sensitivity form with population mean-delay and standard deviation of delay
+# delay is the variable we distribute across the population - it could in principle be anything else of course
+#so each individual has the same SHAPE of sensitivity, but different delays
+
+## Visuals
+
+lwd_means <- 2
+lwd_ind <- 1.7
+col_negative <- rgb(102/255,194/255,165/255)
+col_positive <- rgb(252/255,141/255,98/255)
+col_mean <- rgb(141/255,160/255,203/255)
+col_truth <- rgb(51/255,160/255,44/255)
+
+scale_t1 = 5    #High scale causes slower swap
+shape_t1 = 5    #high shape causes quicker and steeper swap
+
+mean_delay_t1 = 24
+sd_size_t1 = 5
+#   Time of negative test (relative to arbitrary t=0)
+
+test_time_1 =45
+
+##                      TEST 2 (positive)
+
+scale_t2 = scale_t1
+shape_t2 = shape_t1
+
+mean_delay_t2 = mean_delay_t1
+sd_size_t2 = sd_size_t1
+
+#   Time of positive test
+test_time_2 = test_time_1
+
+
+## Generate the individual likelihood curves for the first (negative) and second (positive) test
+#Test 1
+plotdata_negative = family_negative_likelihood_weibul(n=n, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#for generating mean curve
+plotdata_negative_background <- family_negative_likelihood_weibul(n=n+50, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#Test 2
+plotdata_positive = family_positive_likelihood_weibul(n=n, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+#for generating mean curve
+plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+
+likelihood_discordant_3a <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
+
+
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col=col_negative) #clarify label in comment
+title(xlab="t", line=1.5, cex.lab=1.2)
+title(ylab=expression('P(-/+ at t'['1/2']*' | DDI=t)'), line=1.4, cex.lab=1.05)
+
+
+yaxis_pos <- c(0,1)
+yaxis_names <- c('0','1')
+
+xaxis_pos <- c(test_time_1)
+xaxis_names <- c(expression('t'['+/-']))
+
+zero_pos <- c(0)
+zero_name <- c(expression('0'['']))
+
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.023, padj=.437)
+axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.137)
+axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+
+#points(plotdata[,1],plotdata[,3])
+for (i in seq(1:n)){
+  lines(timeaxis,plotdata_negative[,i],col=col_negative,lwd=lwd_ind)
+}
+#points(plotdata[,1],plotdata[,3])
+for (i in seq(1:n)){
+  lines(timeaxis,plotdata_positive[,i],col=col_positive,lwd=lwd_ind)
+}
+
+
+
+positive_mean_naive <- rowMeans(plotdata_positive)                              #not _naive
+negative_mean_naive <- rowMeans(plotdata_negative)
+positive_mean_background <- rowMeans(plotdata_positive_background)
+negative_mean_background <- rowMeans(plotdata_negative_background)
+product_of_means_naive <- positive_mean_background*negative_mean_background # naive product of individual likelihoods
+
+
+real_likelihood <- likelihood_by_DDI(times = timeaxis, set_of_positive_curves = plotdata_positive_background, set_of_negative_curves = plotdata_negative_background)
+difference <- product_of_means_naive - real_likelihood
+
+
+lines(timeaxis,negative_mean_background, lwd=lwd_means, col=col_negative)
+lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
+segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4,col=col_mean)
+
+segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+
+
+print("The maximum difference for this scenario between the true likelihood and the totally naive approximation is on the next line:")
+print(max(difference))
+#lines(timeaxis,difference,lwd=1,col="blue")
+# lines(timeaxis,positive_mean_naive,lwd=2,col='red')
+# lines(timeaxis,negative_mean_naive,lwd=2,col='green')
+lines(timeaxis,product_of_means_naive,lwd=2,col=col_truth)
+lines(timeaxis,real_likelihood,lwd=2.5,col=col_mean)
+
+legend()
+
+######
+
+
+# Figure 3d
+############
+
+# This figure shows the less-likely (same-day discordant) scenario of the more sensitive testing negative while the less sensitive testing positive
+
+# goto_3c
+# Here we have two tests, on the same day, where the less sensitive test yields a negative result while the more sensitive test yields 
+# a positive result.
+n=10
+detail=10
+timeaxis=seq(0,70,1/detail)
+
+#                       TEST 1 (negative)
+
+#     Describe individual (person) test sensitivity form with population mean-delay and standard deviation of delay
+# delay is the variable we distribute across the population - it could in principle be anything else of course
+#so each individual has the same SHAPE of sensitivity, but different delays
+
+## Visuals
+
+lwd_means <- 2
+lwd_ind <- 1.37
+col_negative <- 'green'
+col_positive <- 'red'
+
+
+scale_t1 = 5    #High scale causes slower swap
+shape_t1 = 5    #high shape causes quicker and steeper swap
+
+mean_delay_t1 = 24
+sd_size_t1 = 5
+#   Time of negative test (relative to arbitrary t=0)
+
+test_time_1 =67
+
+##                      TEST 2 (positive)
+
+scale_t2 = scale_t1
+shape_t2 = shape_t1
+
+mean_delay_t2 = mean_delay_t1*1.2
+sd_size_t2 = sd_size_t1*1.37
+
+#   Time of positive test
+test_time_2 = test_time_1
+
+
+## Generate the individual likelihood curves for the first (negative) and second (positive) test
+#Test 1
+plotdata_negative = family_negative_likelihood_weibul(n=n, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#for generating mean curve
+plotdata_negative_background <- family_negative_likelihood_weibul(n=n+500, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#Test 2
+plotdata_positive = family_positive_likelihood_weibul(n=n, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+#for generating mean curve
+plotdata_positive_background <- family_positive_likelihood_weibul(n=n+500, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+
+likelihood_discordant_3a <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
+
+
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
+title(xlab="t", line=1.5, cex.lab=1.2)
+title(ylab=expression('P(-/+ at t'['1/2']*' | DDI=t)'), line=1.4, cex.lab=1.05)
+
+
+yaxis_pos <- c(0,1)
+yaxis_names <- c('0','1')
+
+xaxis_pos <- c(test_time_1)
+xaxis_names <- c(expression('t'['+/-']))
+
+zero_pos <- c(0)
+zero_name <- c(expression('0'['']))
+
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.023, padj=.437)
+axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.137)
+axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+
+#points(plotdata[,1],plotdata[,3])
+for (i in seq(1:n)){
+  lines(timeaxis,plotdata_negative[,i],col=col_negative,lwd=lwd_ind)
+}
+#points(plotdata[,1],plotdata[,3])
+for (i in seq(1:n)){
+  lines(timeaxis,plotdata_positive[,i],col=col_positive,lwd=lwd_ind)
+}
+
+
+
+positive_mean_naive <- rowMeans(plotdata_positive)                              #not _naive
+negative_mean_naive <- rowMeans(plotdata_negative)
+positive_mean_background <- rowMeans(plotdata_positive_background)
+negative_mean_background <- rowMeans(plotdata_negative_background)
+product_of_means_naive <- positive_mean_background*negative_mean_background # naive product of individual likelihoods
+
+
+real_likelihood <- likelihood_by_DDI(times = timeaxis, set_of_positive_curves = plotdata_positive_background, set_of_negative_curves = plotdata_negative_background)
+difference <- product_of_means_naive - real_likelihood
+
+
+lines(timeaxis,negative_mean_background, lwd=lwd_means, col='grey')
+lines(timeaxis,positive_mean_background, lwd=lwd_means, col='grey')
+segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+
+segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+
+
+print("The maximum difference for this scenario between the true likelihood and the totally naive approximation is on the next line:")
+print(max(difference))
+#lines(timeaxis,difference,lwd=1,col="blue")
+# lines(timeaxis,positive_mean_naive,lwd=2,col='red')
+# lines(timeaxis,negative_mean_naive,lwd=2,col='green')
+lines(timeaxis,product_of_means_naive,lwd=2,col='grey')
 lines(timeaxis,real_likelihood,lwd=1,col='purple')
 
-plot_individual_time_likelihood(n=n,times=timeaxis,time=illustration_timestart,set_of_positive_curves=plotdata_positive,set_of_negative_curves=plotdata_negative)
+Arrows(x0=1,y0=.75,x1=20,y1=.75,code=3, arr.type='triangle')
 
-jpeg("frame_time_%03d.jpg")
-for (time in seq(illustration_timestart,illustration_timestart + illustration_number_timesteps*illustration_timestep_size,illustration_timestep_size)){
-  plot_individual_time_likelihood(n=n, times=timeaxis,time=time,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative)
-}
-dev.off()
+#####
+
+
+# Figure 3d
+##################
+
+
+####
+# 
+# 
+# plot_individual_time_likelihood(n=n,times=timeaxis,time=illustration_timestart,set_of_positive_curves=plotdata_positive,set_of_negative_curves=plotdata_negative)
+# 
+# jpeg("frame_time_%03d.jpg")
+# for (time in seq(illustration_timestart,illustration_timestart + illustration_number_timesteps*illustration_timestep_size,illustration_timestep_size)){
+#   plot_individual_time_likelihood(n=n, times=timeaxis,time=time,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative)
+# }
+# dev.off()
 
 # plot_individual_time_likelihood(n=n, times=timeaxis,time=38,set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative,cuttoff=1)
 
