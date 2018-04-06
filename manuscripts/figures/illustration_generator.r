@@ -16,7 +16,7 @@ if(Sys.info()['login']=='eduardgrebe') {
 # The next section of code defines functions that are used to:
 # choose a set of values for one parameter (usually position), with spacing defined using an inverse cumulative normal distribution.
 # define and generate individual curves - a sensitivity curve for each type of test, and a description of how to include the population variability to generate a set of curves
-# Generate families of n curves for sensitivity
+# Generate families of n curves for sensitivity   
 # Generate families of n curves for likelihood of a certain test result. These functions take a 'test' object which specifies the parameter values
 #   (including the set of values for the varying parameter(s) that represent the population-level variability) and the test result ('negative' or 'positive')
 #   and a set of times. They return a matrix, each column of which contains the likelihood values for one of the `individual` curves; each curve specifies 
@@ -291,11 +291,13 @@ illustration_timestep_size = 5
 illustration_timestart = 30
 illustration_number_timesteps = 10
 
-#  Figure 1: produce a family of sensitivity curves and their average
+#  Figure 1
+################
+# : produce a family of sensitivity curves and their average
 #goto_1
 
 
-n=17
+n=7
 
 # test_details
 mean_delay_1=25
@@ -306,24 +308,54 @@ sd_size_2 = sd_size_1
 detail = 10
 timeaxis = seq(0,100,1/detail)
 
-scale = 5
-shape = 5
+scale_1= 5
+shape_1 = 5
+
+
+#visuals
+col_negative <- rgb(27/255,158/255,119/255)
+col_positive <- rgb(217/255,95/255,2/255)
+col_mean <- rgb(231/255,41/255,138/255)
+col_truth <- rgb(117/255,112/255,179/255)
+
 
 sensitivity_family_1 <-  family_sensitivity_weibul(n=n, scale=scale,shape=shape,mean_delay = mean_delay_1 , sd_size=sd_size_1,times=timeaxis)
+sensitivity_family_background <- family_sensitivity_weibul(n=n+150,scale=scale_1,shape=shape_1,mean_delay=mean_delay_1,sd_size=sd_size_1,times=timeaxis)
 
-sensitivity_average <- generate_mean_of_family(sensitivity_family_1) 
 
-plot(timeaxis,sensitivity_family_1[,1],type='l',xlim=c(mean_delay_1-4*sd_size_1,mean_delay_1+shift_to_half_likelihood_weibul(shape=shape_1,scale=scale_t1)+2*sd_size_1),ylim=c(0,1.2),xlab="time (days)",ylab="Probability of positive result",col='green')
+sensitivity_average <- generate_mean_of_family(sensitivity_family_background) 
+
+plot(timeaxis,sensitivity_family_1[,1],type='l',xaxt='n',xlim=c(mean_delay_1-4*sd_size_1,mean_delay_1+shift_to_half_likelihood_weibul(shape=shape_1,scale=scale_t1)+2*sd_size_1),ylim=c(0,1.2),xlab="",ylab="",col='green',yaxt='n')
 # todo:   title
         # label sizes
         # colors
         # line widths
         # scale
 
+title(xlab="t", line=1.5, cex.lab=1.2)
+title(ylab=expression('Probability of positive result'), line=1.7, cex.lab=1.05)
+
+
+yaxis_pos <- c(0,.5,1)
+yaxis_names <- c('0','0.5','1')
+
+
+zero_pos <- c(0)
+zero_name <- c(expression('0'['']))
+
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.437)
+#axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.137)
+axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+
+
+
+
 for (i in seq(1:n)){
-  lines(timeaxis,sensitivity_family_1[,i],col="blue",lwd=1.5)
+  lines(timeaxis,sensitivity_family_1[,i],col=col_negative,lwd=1.5)
 }
-lines(timeaxis,sensitivity_average,col="red",lwd=2.5)
+lines(timeaxis,sensitivity_average,col=col_truth,lwd=2.5)
+
+segments()
 
 
 #######
