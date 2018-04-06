@@ -20,3 +20,7 @@ volume_log.csv
 
 # Mac cruft
 .DS_Store
+
+# R cruft
+*.RData
+*.Rhistory

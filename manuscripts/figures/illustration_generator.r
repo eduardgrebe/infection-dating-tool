@@ -303,13 +303,13 @@ n=7
 mean_delay_1=25
 mean_delay_2=35       #we have a second test listed so that we can easily swap between them when generating the sensitivity curves
 
-sd_size_1 = 3
+sd_size_1 = 5
 sd_size_2 = sd_size_1
-detail = 10
+detail = 10 # 1/Step size
 timeaxis = seq(0,100,1/detail)
 
-scale_1= 5
-shape_1 = 5
+scale_t1= 5
+shape_t1 = 5
 
 
 #visuals
@@ -332,10 +332,11 @@ plot(timeaxis,sensitivity_family_1[,1],type='l',xaxt='n',xlim=c(mean_delay_1-4*s
         # line widths
         # scale
 
-title(xlab="t", line=1.5, cex.lab=1.2)
-title(ylab=expression('Probability of positive result'), line=1.7, cex.lab=1.05)
+title(xlab="Time since infection", line=1.5, cex.lab=1.2)
+title(ylab=expression('Probability of positive test result'), line=1.7, cex.lab=1.05)
 
-
+## goto_fix
+# axis ticks, remove box, bring lower axis up to zero or thereabout
 yaxis_pos <- c(0,.5,1)
 yaxis_names <- c('0','0.5','1')
 
@@ -375,8 +376,8 @@ timeaxis=seq(0,70,1/detail)
 
 ## Visuals
 
-lwd_means <- 2
-lwd_ind <- 1.37
+lwd_means <- 2.8
+lwd_ind <- 1.95
 col_negative <- 'green'
 col_positive <- 'red'
 
@@ -416,8 +417,8 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=
 ##        COMMUNICATE
 
 plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
-title(xlab="t", line=1.5, cex.lab=1.2)
-title(ylab=expression('P(-/+ at t'['1/2']*' | DDI=t)'), line=1.4, cex.lab=1.05)
+title(xlab="Time", line=1.5, cex.lab=1.2)
+title(ylab=expression('Likelihood of result'), line=1.4, cex.lab=1.05)
 
 
 yaxis_pos <- c(0,1)
@@ -428,10 +429,10 @@ xaxis_names <- c(expression('t'['1']),expression('t'['2']))
 
 zero_pos <- c(0)
 zero_name <- c(expression('0'['']))
-
+ #shift axes
 axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.437)
 axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.137)
-axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+#axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
 
 #points(plotdata[,1],plotdata[,3])
 for (i in seq(1:n)){
@@ -450,7 +451,7 @@ lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
 segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
 segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
 
-segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+# segments(x0=0,y0=1.0004,x1=timeaxis[length(timeaxis)],y1=1.0004,lty=8,lwd=1.2)
 
 #arrows(x0=test_time_1-mean_delay_t1,y0=0.5,x1=test_time_1,y1=0.5,lty=1,code=3,length=.1,angle=10)
 
@@ -461,12 +462,13 @@ segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
       ## another question: axes need labels?
         ##another QUESTION: in figure 3a (more/less sensitive tests on same day w/ discordant results)
       ## Figure 3b ?
+## remove frames
 
 
 #########
 
 # Figure 2b
-
+# goto_do gif this
 # We now illuminate the conditional probabilities by portraying the "less-likely individuals [section of the population]" using
 # individual dashed instead of solid lines
 # We copy the same situation and use the code from the individual_time_likelihood function to get dotted lines
@@ -477,13 +479,21 @@ n<-10
 detail<-10
 timeaxis<-seq(0,70,1/detail)
 
-focus_2b <- 15
+focus_2b <- 20  #the focal hypothetical 'DDI' for this figure
 
 #                       TEST 1 (negative)
 
 #     Describe individual (person) test sensitivity form with population mean-delay and standard deviation of delay
 # delay is the variable we distribute across the population - it could in principle be anything else of course
 #so each individual has the same SHAPE of sensitivity, but different delays
+ 
+
+# goto_do spell our correlation
+# we are completely ignorant of which curve 'you' are on -> Prior
+# The hypothetical assumption that tDDI is the tDDI
+
+# q1 hypothetical, probablitiy of value (A: mean curve)
+# q2 given ddi and test(-), what is the probability attached to each curve.
 
 ## Visuals
 
@@ -491,7 +501,9 @@ lwd_means <- 2
 lwd_ind <- 1.37
 col_negative <- 'green'
 col_positive <- 'red'
-
+#goto_do
+## frame the dottedness as posteriors
+## OR frame is as a direct probability statment
 
 scale_t1 = 5    #High scale causes slower swap
 shape_t1 = 5    #high shape causes quicker and steeper swap
@@ -530,11 +542,11 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=
 simple_plot_individual_time_likelihood(n=n, times=timeaxis, test_of_interest = 'negative', set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative,time = focus_2b, col_negative=col_negative ,col_positive=col_positive, lwd_ind = lwd_ind)
 
 
-
+#goto_do dot at real likelihood
 
 # plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
-title(xlab="t", line=1.5, cex.lab=1.2)
-title(ylab=expression('P(-/+ at t'['1/2']*' | DDI = t)'), line=2, cex.lab=1.05)
+title(xlab="Time", line=1.5, cex.lab=1.2)
+title(ylab=expression('Probability of test result'), line=2, cex.lab=1.05)
 
 
 yaxis_pos <- c(0,0.5,1)
@@ -548,7 +560,7 @@ zero_name <- c(expression('0'['']))
 
 axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.17)
 axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.037)
-axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+# axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
 
 
 positive_mean_background <- rowMeans(plotdata_positive_background)
@@ -628,7 +640,10 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=
 
 ##
 
-find_L_or_E_PDDI <- function(likelihood,times,cutoff){
+find_L_or_E_PDDI <- function(likelihood,times,cutoff){ 
+  # get true cutoff not naive threshold. normalise this joint curve (integrate or can I just divide somehow?)
+  # 'cutoff' probablity doesn't belong on the y-axis (not based on height based on area under normalised-likelihood pdf)
+  
   #returns the indices of the EPDDI and LPDDI
   EandL_indices <- c(0,times[length(times)])
   holder <- 'pos'
@@ -674,7 +689,7 @@ zero_name <- c(expression('0'['']))
 axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.17)
 axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.037)
 axis(side=1, at=p_pos, labels = p_labels, padj = -.35, hadj=.37)
-axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+# axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
 
 
 
@@ -921,8 +936,8 @@ print(max(difference))
 #lines(timeaxis,difference,lwd=1,col="blue")
 # lines(timeaxis,positive_mean_naive,lwd=2,col='red')
 # lines(timeaxis,negative_mean_naive,lwd=2,col='green')
-lines(timeaxis,product_of_means_naive,lwd=2,col=col_truth)
-lines(timeaxis,real_likelihood,lwd=2.5,col=col_mean)
+lines(timeaxis,product_of_means_naive,lwd=2,col='grey',lty=3)
+lines(timeaxis,real_likelihood,lwd=4,col=col_mean)
 
 legend()
 
