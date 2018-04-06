@@ -426,7 +426,7 @@ segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
     ### IDEA: I could calculate the mean using a large number of individual curves, but plot just a few of the individual curves...
       ## Question: Why and precicely how is it valid to use the cumulative normal distribution to approximate the population-level distribution of delays? (even if the population-level delays are normally distributed, which I think we just thumbsuck like a linear fit. Initially I thought the normal distribution was natural since the disease progression is random on each day and for a particular test the total delay is a sum of the daily (or whichver discrete timestep) delays. However this means an individual's actual delay is drawn from a normal distribution, but we only ever see one data point from that exact distribution. Different population members may have delays drawn from different normal distributions - there's no particular reason to believe that the means (nevermind the standard deviations) of individual normal distributions will be normally distributed across the population. There could for example be a particular genetic marker which just protects 20% of people really well, leading to a two-spike distribution of means for the individual normal distributions, and a two-peak less-spiked distribution of realised delays.)
       ## another IDEA: make the mean lines slightly transparent - needs rgb color specification: good excuse to choose better colors
-
+      ## another question: axes need labels?
 
 
 #########
@@ -530,6 +530,130 @@ segments(x0=focus_2b, y0=0, x1=focus_2b,y1=1,lty=3,col=4)
 segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
 
 # Arrows(x0=focus_2b+.25,y0=0.5,x1=test_time_1-.3,y1=0.5,code=3,arr.length=.2, arr.width = .1,arr.adj=0.5,arr.type='triangle',segment=TRUE,col=1,lty=2,lwd=1.1,arr.lwd=1.1)
+
+
+#####
+
+
+###          Figure 2c
+# Let's see what the more-careful likelihood function looks like. Let's illustrate how we could define a cuttoff window for quite "sure the infection happened hereabouts"
+
+#   goto_2c
+
+n<-10
+
+detail<-10
+timeaxis<-seq(0,70,1/detail)
+
+cutoff_likelihood <- 0.2
+
+#                       TEST 1 (negative)
+
+#     Describe individual (person) test sensitivity form with population mean-delay and standard deviation of delay
+# delay is the variable we distribute across the population - it could in principle be anything else of course
+#so each individual has the same SHAPE of sensitivity, but different delays
+
+## Visuals
+
+lwd_means <- 2
+lwd_ind <- 1.37
+col_negative <- 'green'
+col_positive <- 'red'
+
+
+scale_t1 = 5    #High scale causes slower swap
+shape_t1 = 5    #high shape causes quicker and steeper swap
+
+mean_delay_t1 = 12
+sd_size_t1 = 3
+#   Time of negative test (relative to arbitrary t=0)
+
+test_time_1 = 28
+
+##                      TEST 2 (positive)
+
+scale_t2 = scale_t1
+shape_t2 = shape_t1
+
+mean_delay_t2 = mean_delay_t1
+sd_size_t2 = sd_size_t1
+
+#   Time of positive test
+test_time_2 = timeaxis[length(timeaxis)]-10
+
+
+## Generate the individual likelihood curves for the first (negative) and second (positive) test
+#Test 1
+plotdata_negative = family_negative_likelihood_weibul(n=n, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#for generating mean curve
+plotdata_negative_background <- family_negative_likelihood_weibul(n=n+50, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
+#Test 2
+plotdata_positive = family_positive_likelihood_weibul(n=n, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+#for generating mean curve
+plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
+
+##
+
+find_L_or_E_PDDI <- function(likelihood,times,cutoff){
+  #returns the indices of the EPDDI and LPDDI
+  EandL_indices <- c(0,times[length(times)])
+  holder <- 'pos'
+  for (i in seq(1:length(times))){
+    if (holder=='pos' & (likelihood[i]-cutoff >0)){
+      holder <- 'neg'
+      EandL_indices[1] <- i
+    }
+    else if(holder=='neg' & (likelihood[i]-cutoff < 0)){
+      holder <- 'pos'
+      EandL_indices[2] <-i
+    }
+  }
+  return(EandL_indices)
+}
+
+
+likelihood_discordant_results_2c <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
+window_infection_time <- find_L_or_E_PDDI(likelihood=likelihood_discordant_results_2c, times=timeaxis, cutoff = cutoff_likelihood)
+EPDDI <- timeaxis[window_infection_time[1]]
+LPDDI <- timeaxis[window_infection_time[2]]
+
+
+
+plot(timeaxis,likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis),type='l',lwd='3.7',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
+
+title(xlab="t", line=1.5, cex.lab=1.2)
+title(ylab=expression('P(-/+ at t'['1/2']*' | DDI = t)'), line=2, cex.lab=1.05)
+
+
+yaxis_pos <- c(0,cutoff_likelihood,0.5,1)
+yaxis_names <- c('0','Cutoff','0.5','1')
+
+xaxis_pos <- c(test_time_1,test_time_2)
+xaxis_names <- c(expression('t'['1']),expression('t'['2']))
+
+p_pos <- c(EPDDI,LPDDI)
+p_labels <- c(expression('EPDDI'[]),expression('LPDDI'[]))
+
+zero_pos <- c(0)
+zero_name <- c(expression('0'['']))
+
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.17)
+axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.037)
+axis(side=1, at=p_pos, labels = p_labels, padj = -.35, hadj=.37)
+axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
+
+
+
+segments(x0=0,y0=cutoff_likelihood,x1=timeaxis[length(timeaxis)],y1=cutoff_likelihood,lty=3,col='grey')
+segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+
+segments(x0=EPDDI, y0=0, x1=EPDDI,y1=1,lty=3,col=4)
+segments(x0=LPDDI, y0=0, x1=LPDDI,y1=1,lty=3,col=4)
+
+segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
+
+####
 
 positive_mean_naive <- rowMeans(plotdata_positive)                              
 negative_mean_naive <- rowMeans(plotdata_negative)
