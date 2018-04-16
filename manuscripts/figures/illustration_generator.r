@@ -5,7 +5,7 @@ if(Sys.info()['login']=='eduardgrebe') {
 } else {
   setwd(".") #what does this do?
 }
-
+library("DescTools")
 #Tool for generating plots that illustrate the value of the knowing the details of individual HIV detectability
 #Initiated February 2018
 #Code by Jeremy Bingham with Eduard Grebe and Alex Welte
@@ -492,8 +492,13 @@ focus_2b <- 20  #the focal hypothetical 'DDI' for this figure
 # we are completely ignorant of which curve 'you' are on -> Prior
 # The hypothetical assumption that tDDI is the tDDI
 
-# q1 hypothetical, probablitiy of value (A: mean curve)
-# q2 given ddi and test(-), what is the probability attached to each curve.
+# q1 hypothetical DDI, probablity of test result (A: mean curve)
+# q2 given ddi and test(-), what is the probability attached to each individual likelihood curve. i.e.
+# what is the probability that a subject is on a particular curve?
+# to get this, we should probably
+# Well a particular curve represents the probability that a particular subject will test positive => P(test result | subject)
+# we want P(subject|test result) for the same set of DDI's. of course the Sum_{subjects} P(subject|test result) = 1, so we can
+# just normalise according to the cutoff
 
 ## Visuals
 
@@ -643,62 +648,64 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=
 find_L_or_E_PDDI <- function(likelihood,times,cutoff){ 
   # get true cutoff not naive threshold. normalise this joint curve (integrate or can I just divide somehow?)
   # 'cutoff' probablity doesn't belong on the y-axis (not based on height based on area under normalised-likelihood pdf)
-  
-  #returns the indices of the EPDDI and LPDDI
-  EandL_indices <- c(0,times[length(times)])
-  holder <- 'pos'
-  for (i in seq(1:length(times))){
-    if (holder=='pos' & (likelihood[i]-cutoff >0)){
-      holder <- 'neg'
-      EandL_indices[1] <- i
+  total_area <- AUC(times,likelihood,method="spline")
+  likelihood_as_probability <- likelihood / total_area
+  print(AUC(times,likelihood_as_probability,method="spline"))
+  #returns the indices of the EPToi and LPToi
+  infection_window <- c(0,times[length(times)])
+  found<-0
+  for (time in  seq(1,length(times))){
+    if(AUC(times[1:time],likelihood_as_probability[1:time],method="spline")>cutoff && found==0){
+      infection_window[1] <- time #need to avoid this check once it's been found
+      found <- 1
     }
-    else if(holder=='neg' & (likelihood[i]-cutoff < 0)){
-      holder <- 'pos'
-      EandL_indices[2] <-i
+    else if(AUC(times[1:time],likelihood_as_probability[1:time],method="spline")>1-cutoff && found==1){
+      infection_window[2] <- time
+      found <- 2
     }
   }
-  return(EandL_indices)
+  return(infection_window)
 }
 
 
 likelihood_discordant_results_2c <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
 window_infection_time <- find_L_or_E_PDDI(likelihood=likelihood_discordant_results_2c, times=timeaxis, cutoff = cutoff_likelihood)
-EPDDI <- timeaxis[window_infection_time[1]]
-LPDDI <- timeaxis[window_infection_time[2]]
+EPToi <- timeaxis[window_infection_time[1]]
+LPToi <- timeaxis[window_infection_time[2]]
+
+
+plot(timeaxis,likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis),type='l',lwd='3.7',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxs='i',yaxs='i',xaxt='n',yaxt='n',xlab='',ylab='',col='green',bty="L") #clarify label in comment
+
+title(xlab="Time", line=2, cex.lab=1.2)
+title(ylab=expression('Likelihood'), line=2, cex.lab=1.05)
 
 
 
-plot(timeaxis,likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis),type='l',lwd='3.7',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
+yaxis_pos <- c(0,0.5,1)
+yaxis_names <- c('0','0.5','1')
 
-title(xlab="t", line=1.5, cex.lab=1.2)
-title(ylab=expression('P(-/+ at t'['1/2']*' | DDI = t)'), line=2, cex.lab=1.05)
-
-
-yaxis_pos <- c(0,cutoff_likelihood,0.5,1)
-yaxis_names <- c('0','Cutoff','0.5','1')
+polygon(c(timeaxis[timeaxis<=EPToi],EPToi), c(likelihood_discordant_results_2c[timeaxis<=EPToi],0), col=rgb(.2,.2,.2,1/4),border=NA)
+polygon(c(timeaxis[timeaxis>=LPToi],LPToi), c(likelihood_discordant_results_2c[timeaxis>=LPToi],0), col=rgb(.2,.2,.2,1/4),border=NA)
 
 xaxis_pos <- c(test_time_1,test_time_2)
-xaxis_names <- c(expression('t'['1']),expression('t'['2']))
+xaxis_names <- c(expression('Test'['1(-)']),expression('Test'['2(+)']))
 
-p_pos <- c(EPDDI,LPDDI)
-p_labels <- c(expression('EPDDI'[]),expression('LPDDI'[]))
+p_pos <- c(EPToi,LPToi)
+p_labels <- c(expression('EPt'[" i"]),expression('LPt'[" i"]))
 
 zero_pos <- c(0)
 zero_name <- c(expression('0'['']))
 
-axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.17)
-axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.037)
+axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.0237, padj=-.017)
+axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.037,hadj=0)
 axis(side=1, at=p_pos, labels = p_labels, padj = -.35, hadj=.37)
 # axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
 
-
-
-segments(x0=0,y0=cutoff_likelihood,x1=timeaxis[length(timeaxis)],y1=cutoff_likelihood,lty=3,col='grey')
 segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
 segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
 
-segments(x0=EPDDI, y0=0, x1=EPDDI,y1=1,lty=3,col=4)
-segments(x0=LPDDI, y0=0, x1=LPDDI,y1=1,lty=3,col=4)
+segments(x0=EPToi, y0=0, x1=EPToi,y1=1,lty=3,col=4)
+segments(x0=LPToi, y0=0, x1=LPToi,y1=1,lty=3,col=4)
 
 segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
 
