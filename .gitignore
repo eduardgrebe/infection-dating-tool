@@ -24,3 +24,6 @@ volume_log.csv
 # R cruft
 *.RData
 *.Rhistory
+
+# Office cruft
+~$*
