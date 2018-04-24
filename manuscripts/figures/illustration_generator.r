@@ -6,6 +6,7 @@ if(Sys.info()['login']=='eduardgrebe') {
   setwd(".") #what does this do?
 }
 library("DescTools")
+library("shape")
 #Tool for generating plots that illustrate the value of the knowing the details of individual HIV detectability
 #Initiated February 2018
 #Code by Jeremy Bingham with Eduard Grebe and Alex Welte
@@ -486,6 +487,17 @@ for (i in seq(1:n)){
 }
 lines(timeaxis,sensitivity_average,col=col_truth,lwd=2.5)
 
+
+# Average delay arrows
+
+Arrows(x0 = mean_delay_t1-4*sd_size_t1, y0 = 0.501 ,x1= timeaxis[which.min(abs(sensitivity_average-0.5))], y1 = 0.5,code=3 ,arr.adj=1)
+
+#Standard deviation arrows
+
+Arrows(x1=timeaxis[which.min(abs(sensitivity_average-0.5))],y0=0.5, x0= timeaxis[which.min(abs(sensitivity_average-0.5))]-sd_size_1,y1=0.5,code=3,arr.adj=1)
+
+# Arrows(c(0,1.7),c(1.3,-1.8),c(0.8,1.1),c(1.2,-1), lwd=2
+
 dev.off()
 #######
 
@@ -587,6 +599,15 @@ lines(timeaxis,negative_mean_background, lwd=lwd_means, col=col_negative)
 lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
 segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
 segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+
+#mean delay arrows (shape package)
+
+Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))],y0=0.5,x1=test_time_1,y1=0.5,code=3 ,arr.adj=1)
+Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))],y0=0.5,x1=test_time_2,y1=0.5,code=3 ,arr.adj=1)
+
+#Standard deviation arrows
+
+
 
 dev.off()
 # segments(x0=0,y0=1.0004,x1=timeaxis[length(timeaxis)],y1=1.0004,lty=8,lwd=1.2)
