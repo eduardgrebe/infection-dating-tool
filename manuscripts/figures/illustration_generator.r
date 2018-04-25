@@ -607,7 +607,8 @@ Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))],y0=0.5,x1=tes
 
 #Standard deviation arrows
 
-
+Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_1,y0=0.5,x1= timeaxis[which.min(abs(negative_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .3,arr.width = .3/2)
+Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_2,y0=0.5,x1= timeaxis[which.min(abs(positive_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .3,arr.width = .3/2)
 
 dev.off()
 # segments(x0=0,y0=1.0004,x1=timeaxis[length(timeaxis)],y1=1.0004,lty=8,lwd=1.2)
@@ -980,6 +981,8 @@ segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
 segments(x0=EPToi, y0=0, x1=EPToi,y1=1,lty=3,col='grey')
 segments(x0=LPToi, y0=0, x1=LPToi,y1=1,lty=3,col='grey')
 
+
+
 #segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
 
 dev.off()
@@ -1218,6 +1221,8 @@ print(max(difference))
 # lines(timeaxis,negative_mean_naive,lwd=2,col='green')
 lines(timeaxis,product_of_means_naive,lwd=2,col='grey55',lty=1)
 lines(timeaxis,real_likelihood,lwd=4,col=col_likelihood)
+
+
 dev.off()
 legend()
 
