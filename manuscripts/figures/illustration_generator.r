@@ -464,7 +464,7 @@ plot(timeaxis,sensitivity_family_1[,1],type='l',xaxt='n',xaxs='i',yaxs='i',xlim=
         # scale
 
 title(xlab="Time since infection", line=1.5, cex.lab=1.2)
-title(ylab='Probability of test result', line=2, cex.lab=1.05)
+title(ylab='Probability', line=2, cex.lab=1.05)
 
 ## goto_fix
 # axis ticks, remove box, bring lower axis up to zero or thereabout
@@ -492,11 +492,13 @@ lines(timeaxis,sensitivity_average,col=col_truth,lwd=2.5)
 
 Arrows(x0 = mean_delay_t1-4*sd_size_t1, y0 = 0.501 ,x1= timeaxis[which.min(abs(sensitivity_average-0.5))], y1 = 0.5,code=3 ,arr.adj=1)
 
+text(x=(mean_delay_t1-4*sd_size_t1+timeaxis[which.min(abs(sensitivity_average-0.5))])/2, y=c(0.53), pos=4, labels=c('d'))
+
 #Standard deviation arrows
 
-Arrows(x1=timeaxis[which.min(abs(sensitivity_average-0.5))],y0=0.5, x0= timeaxis[which.min(abs(sensitivity_average-0.5))]-sd_size_1,y1=0.5,code=3,arr.adj=1)
-
-# Arrows(c(0,1.7),c(1.3,-1.8),c(0.8,1.1),c(1.2,-1), lwd=2
+Arrows(x1=timeaxis[which.min(abs(sensitivity_average-0.5))],y0=0.5, x0= timeaxis[which.min(abs(sensitivity_average-0.5))]+sd_size_1,y1=0.5,code=3,arr.adj=1)
+text(x=  timeaxis[which.min(abs(sensitivity_average-0.5))]+sd_size_1/2-.5,y=0.53,pos=4,labels=expression(sigma))
+ # Arrows(c(0,1.7),c(1.3,-1.8),c(0.8,1.1),c(1.2,-1), lwd=2
 
 dev.off()
 #######
@@ -600,15 +602,21 @@ lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
 segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
 segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
 
-#mean delay arrows (shape package)
+# mean delay arrows (shape package)
 
 Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))],y0=0.5,x1=test_time_1,y1=0.5,code=3 ,arr.adj=1)
-Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))],y0=0.5,x1=test_time_2,y1=0.5,code=3 ,arr.adj=1)
+text(x=(timeaxis[which.min(abs(negative_mean_background-0.5))]+test_time_1)/2-1,y=0.53,pos=4,labels='d')
 
-#Standard deviation arrows
+Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))],y0=0.5,x1=test_time_2,y1=0.5,code=3 ,arr.adj=1)
+text(x=(timeaxis[which.min(abs(positive_mean_background-0.5))]+test_time_2)/2-1,y=0.53,pos=4,labels='d')
+
+# Standard deviation arrows
 
 Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_1,y0=0.5,x1= timeaxis[which.min(abs(negative_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .3,arr.width = .3/2)
+text(x=timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_1/2-1,y=0.53,pos=4,labels=expression(sigma))
+
 Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_2,y0=0.5,x1= timeaxis[which.min(abs(positive_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .3,arr.width = .3/2)
+text(x=timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_2/2-1,y=0.53,pos=4,labels=expression(sigma))
 
 dev.off()
 # segments(x0=0,y0=1.0004,x1=timeaxis[length(timeaxis)],y1=1.0004,lty=8,lwd=1.2)
@@ -1193,8 +1201,6 @@ for (i in seq(1:n)){
   lines(timeaxis,plotdata_positive[,i],col=col_positive,lwd=lwd_ind)
 }
 
-
-
 positive_mean_naive <- rowMeans(plotdata_positive)                              #not _naive
 negative_mean_naive <- rowMeans(plotdata_negative)
 positive_mean_background <- rowMeans(plotdata_positive_background)
@@ -1397,7 +1403,7 @@ dev.off()
 
 
 
-
+  
 
 
 
