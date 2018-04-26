@@ -2,7 +2,9 @@ if(Sys.info()['login']=='eduardgrebe') {
   setwd("~/dev/infection-dating-tool/manuscripts/figures/")
 } else if(Sys.info()['login']=='JumpCo Vostro3700') {
   setwd("C:/Users/JumpCo Vostro3700/desktop/infection-dating-tool/manuscripts/figures")
-} else {
+}else if(Sys.info()['login']=='jeremyb'){
+  setwd("H:\\infection-dating-tool\\manuscripts\\figures")
+}else{
   setwd(".") #what does this do?
 }
 library("DescTools")
