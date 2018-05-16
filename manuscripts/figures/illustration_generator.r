@@ -1,7 +1,7 @@
 if(Sys.info()['login']=='eduardgrebe') {
   setwd("~/dev/infection-dating-tool/manuscripts/figures/")
 } else if(Sys.info()['login']=='JumpCo Vostro3700') {
-  setwd("C:/Users/JumpCo Vostro3700/desktop/infection-dating-tool/manuscripts/figures")
+  setwd("C:/Users/JumpCo Vostro3700/infection-dating-tool/manuscripts/figures")
 }else if(Sys.info()['login']=='jeremyb'){
   setwd("H:\\infection-dating-tool\\manuscripts\\figures")
 }else{
@@ -160,7 +160,7 @@ likelihood_by_DDI = function(set_of_positive_curves,set_of_negative_curves,times
 # let's try the same functiont again but generating the curves from scratch each time, or at least input the delay and test_time - is this a good idea or should I just calculate which lines should be dotted based on the actual value (> or < 1/2 at considered time). using the actual value is MUCH less efficient...
 # instead, I'll calculate a cutoff curve-number. Ie plot dotted from the cuttoff-th curve
 # Okay, I think that may just make it moree difficult than it needs to be....
-
+#goto_now
 simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curves,set_of_negative_curves,set_of_positive_curves_background,set_of_negative_curves_background,time,test_of_interest,col_negative,col_positive,col_likelihood,lwd_ind,lwd_means,lwd_likelihood,curve_level_cutoff_probability,plot_full_likelihood = FALSE){
   positive_mean_naive = rowMeans(set_of_positive_curves_background)
   negative_mean_naive = rowMeans(set_of_negative_curves_background)
@@ -177,7 +177,7 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
   }
   likelihood_DDI_at_time_given_both_test_results = 1/ncol(set_of_negative_curves_background) *cumu_likely
   #plot the curves
-  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(0,1),xlab='',ylab="",col='green',xaxt='n',yaxt='n',xaxs='i',yaxs='i',bty='l')
+  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(-0.002,1.002),xlab='',ylab="",col='green',xaxt='n',yaxt='n',xaxs='i',yaxs='i',bty='l')
  
   # Time of Hypothetical DDI
   # Likelihood of observed test results
@@ -195,18 +195,20 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
   # print(normalise_negative_test)
   # print(normalise_positive_test)
   
-  lines(timeaxis,positive_mean_naive,col=col_positive,lwd=lwd_means)
-  lines(timeaxis,negative_mean_naive,col=col_negative,lwd=lwd_means)
+  
   
   lwd_means <- 4
   lwd_ind <- 1.37
   lwd_likelihood <- lwd_means - 3
   
-  col_negative <- rgb(27/255,158/255,119/255)
-  col_positive <- rgb(217/255,95/255,2/255)
-  col_mean <- rgb(231/255,41/255,138/255)
-  col_likelihood <- rgb(117/255,112/255,179/255)
+  col_negative <- "green" #rgb(27/255,158/255,119/255)
+  col_positive <- "red" #rgb(217/255,95/255,2/255)
+  col_mean <- "blue" # rgb(231/255,41/255,138/255)
+  col_likelihood <- "purple" #rgb(117/255,112/255,179/255)
   col_dotted <- rgb(3/7,3/7,3/7) #color for dotted lines
+  
+  lines(timeaxis,positive_mean_naive,col=col_positive,lwd=lwd_means)
+  lines(timeaxis,negative_mean_naive,col=col_negative,lwd=lwd_means)
   
   # col_negative <- 'green'
   # col_positive <- 'red'
@@ -216,8 +218,8 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
   ## frame the dottedness as posteriors
   ## OR frame is as a direct probability statment
   
-  scale_t1 = 5    #High scale causes slower swap
-  shape_t1 = 5    #high shape causes quicker and steeper swap
+  scale_t1= 4
+  shape_t1 = 1.73
   
   mean_delay_t1 = 12
   sd_size_t1 = 3
@@ -250,17 +252,17 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
   
   
   
-  title(xlab="Time", line=1.5, cex.lab=1.2)
-  title(ylab=expression('Probability of test result'), line=2, cex.lab=1.05)
+  #title(xlab="Time", line=1.5, cex.lab=1.2)
+  title(ylab=expression("Joint Likelihood of Test Results"), line=2, cex.lab=1.05)
+  #expression(atop("Histogram of "*hat(mu), Bootstrap~samples*','~Allianz))
   
-  
-  yaxis_pos <- c(0,0.5,1)
-  yaxis_names <- c('0',"0.5",'1')
+  yaxis_pos <- c(0,1)
+  yaxis_names <- c('0','1')
   
   axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.037, padj=.17)
   
-  segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
-  segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+  segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=3)
+  segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=3)
   
   
   if (!plot_full_likelihood){
@@ -272,8 +274,8 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
         lines(times,set_of_positive_curves[,curve],col=col_positive, lwd=lwd_ind) #what color should the positive curves be 
         lines(times,set_of_negative_curves[,curve],col=col_negative, lwd=lwd_ind) 
       }else{
-        lines(times,set_of_positive_curves[,curve],col=col_positive,lty=2,lwd=lwd_ind) #what color should the positive curves be 
-        lines(times,set_of_negative_curves[,curve],col=col_negative,lty=2,lwd=lwd_ind)
+        lines(times,set_of_positive_curves[,curve],col=col_positive,lty=3,lwd=lwd_ind) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col=col_negative,lty=3,lwd=lwd_ind)
       }
     }}
   else if(test_of_interest=="positive"){
@@ -282,13 +284,13 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
         lines(times,set_of_positive_curves[,curve],col=col_positive,lwd=lwd_ind) #what color should the positive curves be 
         lines(times,set_of_negative_curves[,curve],col=col_negative,lwd=lwd_ind) 
       }else{
-        lines(times,set_of_positive_curves[,curve],col=col_positive,lty=2,lwd=lwd_ind) #what color should the positive curves be 
-        lines(times,set_of_negative_curves[,curve],col=col_negative,lty=2,lwd=lwd_ind)
+        lines(times,set_of_positive_curves[,curve],col=col_positive,lty=3,lwd=lwd_ind) #what color should the positive curves be 
+        lines(times,set_of_negative_curves[,curve],col=col_negative,lty=3,lwd=lwd_ind)
       }
     }
   }
   
-  points(pch=19,times[time_position],likelihood_by_DDI(set_of_positive_curves = set_of_positive_curves_background ,set_of_negative_curves = set_of_negative_curves_background,times=times)[time_position])#,lwd=lwd_likelihood,col=col_likelihood)
+  points(cex=1.5,pch=19,times[time_position],likelihood_by_DDI(set_of_positive_curves = set_of_positive_curves_background ,set_of_negative_curves = set_of_negative_curves_background,times=times)[time_position])#,lwd=lwd_likelihood,col=col_likelihood)
 
   
   
@@ -297,7 +299,7 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
  
   
   xaxis_pos <- c(time,test_time_1,test_time_2)
-  xaxis_names <- c(expression('t'['inf']),expression('t'['1(-)']),expression('t'['2(+)']))
+  xaxis_names <- c(expression('t'['Infection']),expression('t'['1(-)']),expression('t'['2(+)']))
   
   axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.35,hadj=-.037)
   # axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
@@ -310,7 +312,7 @@ simple_plot_individual_time_likelihood <- function(n,times,set_of_positive_curve
   #lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
   
   
-  segments(x0=time, y0=0, x1=time,y1=1,lty=3,col=col_dotted) }
+  segments(x0=time, y0=0, x1=time,y1=1,lty=2,lwd = 2) }
   
   else{
     
@@ -347,7 +349,7 @@ plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of
   }
   likelihood_DDI_at_time_given_both_test_results = 1/ncol(set_of_negative_curves) *cumu_likely
   #plot the curves
-  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(0,1),xlab="Hypothetical DDI (days)",ylab="Likelihood of observed test results",col='green')
+  plot(times,plotdata_negative[,1],type='c',xlim=c(times[1],times[length(times)]),ylim=c(-0.002,1.002),xlab="Hypothetical DDI (days)",ylab="Likelihood of observed test results",col='green')
   #points(plotdata[,1],plotdata[,3])
   if(test_of_interest=="negative"){
   for (curve in seq(1:ncol(set_of_negative_curves))){
@@ -399,25 +401,22 @@ plot_individual_time_likelihood = function(n,times,set_of_positive_curves,set_of
 #Scale defines interval from the last time where sample almost definitely tests negative to the first time when sample almost definitely tests positive testing positive. 
 #Shape #defines the shape of the sensitivity curve as it increases from around 0 to around 1. Also affects the amount of time this takes, though not as much as scale.
 
-
 ##                    SCRIPT
 
 
-n=3
-
-mean_delay_positive_test=25
-mean_delay_positive_test=15
-sd_size_positive = 5
-sd_size_negative = sd_size_positive
-detail = 10
-timeaxis = seq(0,100,1/detail)
-
-scale = 5
-shape = 5
-
-illustration_timestep_size = 5
-illustration_timestart = 30
-illustration_number_timesteps = 10
+# n=3
+# 
+# mean_delay_positive_test=25
+# mean_delay_positive_test=15
+# sd_size_positive = 5
+# sd_size_negative = sd_size_positive
+# detail = 10
+# timeaxis = seq(0,100,1/detail)
+# 
+# 
+# illustration_timestep_size = 5
+# illustration_timestart = 30
+# illustration_number_timesteps = 10
 
 #  Figure 1
 ################
@@ -425,7 +424,7 @@ illustration_number_timesteps = 10
 #goto_1
 
 
-n=7
+n=10
 
 # test_details
 mean_delay_t1=25
@@ -436,21 +435,29 @@ sd_size_t2 = sd_size_t1
 detail = 10 # 1/Step size
 timeaxis = seq(0,100,1/detail)
 
-scale_t1= 5
-shape_t1 = 5
+scale_t1= 3
+shape_t1 = 2
 
 
 #visuals
-col_negative <- rgb(27/255,158/255,119/255)
-col_positive <- rgb(217/255,95/255,2/255)
-col_mean <- rgb(231/255,41/255,138/255)
-col_truth <- rgb(117/255,112/255,179/255)
+# col_negative <- rgb(27/255,158/255,119/255)
+# col_positive <- rgb(217/255,95/255,2/255)
+# col_mean <- rgb(231/255,41/255,138/255)
+# col_truth <- rgb(117/255,112/255,179/255)
+# col_likelihood <- col_truth
+# col_dotted <- rgb(3/7,3/7,3/7) #color for dotted lines
 
+col_negative <- "green" #rgb(27/255,158/255,119/255)
+col_positive <- "red" #rgb(217/255,95/255,2/255)
+col_mean <- rgb(231/255,41/255,138/255)
+col_truth <- "purple"  #rgb(117/255,112/255,179/255)
+col_likelihood <- col_truth
+col_dotted <- rgb(3/7,3/7,3/7) #color for dotted lines
 
 #y-axis limits
-ylim_chosen <- c(0,1.007)
+ylim_chosen <- c(-.002,1.007)
 
-sensitivity_family_1 <-  family_sensitivity_weibul(n=n, scale=scale,shape=shape,mean_delay = mean_delay_t1 , sd_size=sd_size_t1,times=timeaxis)
+sensitivity_family_1 <-  family_sensitivity_weibul(n=n, scale=scale_t1,shape=shape_t1,mean_delay = mean_delay_t1 , sd_size=sd_size_t1,times=timeaxis)
 sensitivity_family_background <- family_sensitivity_weibul(n=n+150,scale=scale_t1,shape=shape_t1,mean_delay=mean_delay_t1,sd_size=sd_size_t1,times=timeaxis)
 
 
@@ -458,20 +465,20 @@ sensitivity_average <- generate_mean_of_family(sensitivity_family_background)
 
 pdf(file='figure_1.pdf',width=7.3,height=3.7)
 
-plot(timeaxis,sensitivity_family_1[,1],type='l',xaxt='n',xaxs='i',yaxs='i',xlim=c(mean_delay_t1-4*sd_size_t1,mean_delay_t1+shift_to_half_likelihood_weibul(shape=shape_t1,scale=scale_t1)+2*sd_size_t1),ylim=c(-.001,1),xlab="",ylab="",col='green',yaxt='n',bty='L')
+plot(timeaxis,sensitivity_family_1[,1],type='l',xaxt='n',xaxs='i',yaxs='i',xlim=c(mean_delay_t1-4*sd_size_t1,mean_delay_t1+shift_to_half_likelihood_weibul(shape=shape_t1,scale=scale_t1)+2.35*sd_size_t1),ylim=c(-.005,1.005),xlab="",ylab="",col='green',yaxt='n',bty='L')
 # todo:   title
         # label sizes
         # colors
         # line widths
         # scale
-
-title(xlab="Time since infection", line=1.5, cex.lab=1.2)
-title(ylab='Probability', line=2, cex.lab=1.05)
+#  you're right (alex) about the size of the lines rendering correctly in the pdf
+title(xlab="Time Since Infection", line=1.5, cex.lab=1.2)
+title(ylab='Probability of Detection', line=2, cex.lab=1.05)
 
 ## goto_fix
 # axis ticks, remove box, bring lower axis up to zero or thereabout
-yaxis_pos <- c(0,.5,1)
-yaxis_names <- c('0','0.5','1')
+yaxis_pos <- c(0,1)
+yaxis_names <- c('0','1')
 
 
 zero_pos <- c(0)
@@ -494,12 +501,12 @@ lines(timeaxis,sensitivity_average,col=col_truth,lwd=2.5)
 
 Arrows(x0 = mean_delay_t1-4*sd_size_t1, y0 = 0.501 ,x1= timeaxis[which.min(abs(sensitivity_average-0.5))], y1 = 0.5,code=3 ,arr.adj=1)
 
-text(x=(mean_delay_t1-4*sd_size_t1+timeaxis[which.min(abs(sensitivity_average-0.5))])/2, y=c(0.53), pos=4, labels=c('d'))
+text(x=(mean_delay_t1-4*sd_size_t1+timeaxis[which.min(abs(sensitivity_average-0.5))])/2, y=c(0.53), pos=4, labels=expression(italic("d")))
 
 #Standard deviation arrows
 
-Arrows(x1=timeaxis[which.min(abs(sensitivity_average-0.5))],y0=0.5, x0= timeaxis[which.min(abs(sensitivity_average-0.5))]+sd_size_1,y1=0.5,code=3,arr.adj=1)
-text(x=  timeaxis[which.min(abs(sensitivity_average-0.5))]+sd_size_1/2-.5,y=0.53,pos=4,labels=expression(sigma))
+Arrows(x1=timeaxis[which.min(abs(sensitivity_average-0.5))],y0=0.5, x0= timeaxis[which.min(abs(sensitivity_average-0.5))]+sd_size_t1,y1=0.5,code=3,arr.adj=1)
+text(x=  timeaxis[which.min(abs(sensitivity_average-0.5))]+sd_size_t1/2-.5,y=0.53,pos=4,labels=expression(sigma))
  # Arrows(c(0,1.7),c(1.3,-1.8),c(0.8,1.1),c(1.2,-1), lwd=2
 
 dev.off()
@@ -524,18 +531,17 @@ lwd_means <- 4
 lwd_ind <- 1.37
 lwd_likelihood <- lwd_means - 3
 
-col_negative <- rgb(27/255,158/255,119/255)
-col_positive <- rgb(217/255,95/255,2/255)
-col_mean <- rgb(231/255,41/255,138/255)
-col_likelihood <- rgb(117/255,112/255,179/255)
-col_dotted <- rgb(3/7,3/7,3/7) #color for dotted lines
 
 
-scale_t1 = 5    #High scale causes slower swap
-shape_t1 = 5    #high shape causes quicker and steeper swap
+
+    #High scale causes slower swap
+    #high shape causes quicker and steeper swap AND more symetrical swap
+
+scale_t1= 4
+shape_t1 = 1.73
 
 mean_delay_t1 = 12
-sd_size_t1 = 3
+sd_size_t1 = 5
 #   Time of negative test (relative to arbitrary t=0)
 
 test_time_1 = 28
@@ -567,16 +573,16 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=
 
 pdf(file = "figure_2a.pdf", width = 7.3, height = 3.7)
 
-plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(-.001,1),xaxt='n',yaxt='n',xaxs='i',yaxs='i',bty='l',xlab='',ylab='',col='green') #clarify label in comment
-title(xlab="Time", line=1.5, cex.lab=1.2)
-title(ylab=expression('Likelihood'), line=2, cex.lab=1.05)
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(-.002,1.002),xaxt='n',yaxt='n',xaxs='i',yaxs='i',bty='l',xlab='',ylab='',col='green') #clarify label in comment
+title(xlab="Time of Infection", line=1.5, cex.lab=1.2)
+title(ylab=expression('Likelihood of Test Result'), line=2, cex.lab=1.05)
 
 
 yaxis_pos <- c(0,0.5,1)
-yaxis_names <- c('0',"0.5",'1')
+yaxis_names <- c('0',"",'1')
 
 xaxis_pos <- c(test_time_1,test_time_2)
-xaxis_names <- c(expression('t'['1']),expression('t'['2']))
+xaxis_names <- c(expression('t'['1 (-)']),expression('t'['2 (+)']))
 
 zero_pos <- c(0)
 zero_name <- c(expression('0'['']))
@@ -607,18 +613,18 @@ segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
 # mean delay arrows (shape package)
 
 Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))],y0=0.5,x1=test_time_1,y1=0.5,code=3 ,arr.adj=1)
-text(x=(timeaxis[which.min(abs(negative_mean_background-0.5))]+test_time_1)/2-1,y=0.53,pos=4,labels='d')
+text(x=(timeaxis[which.min(abs(negative_mean_background-0.5))]+test_time_1)/2-2.4,y=0.53,pos=4,labels=expression(italic('d')['1']))
 
 Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))],y0=0.5,x1=test_time_2,y1=0.5,code=3 ,arr.adj=1)
-text(x=(timeaxis[which.min(abs(positive_mean_background-0.5))]+test_time_2)/2-1,y=0.53,pos=4,labels='d')
+text(x=(timeaxis[which.min(abs(positive_mean_background-0.5))]+test_time_2)/2-2.5,y=0.53,pos=4,labels=expression(italic('d')['2']))
 
 # Standard deviation arrows
 
-Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_1,y0=0.5,x1= timeaxis[which.min(abs(negative_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .3,arr.width = .3/2)
-text(x=timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_1/2-1,y=0.53,pos=4,labels=expression(sigma))
+Arrows(x0 = timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_t1,y0=0.5,x1= timeaxis[which.min(abs(negative_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .1,arr.width = .1/2)
+text(x=timeaxis[which.min(abs(negative_mean_background-0.5))]-sd_size_t1/2-2.4,y=0.53,pos=4,labels=expression(sigma['1']))
 
-Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_2,y0=0.5,x1= timeaxis[which.min(abs(positive_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .3,arr.width = .3/2)
-text(x=timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_2/2-1,y=0.53,pos=4,labels=expression(sigma))
+Arrows(x0 = timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_t2,y0=0.5,x1= timeaxis[which.min(abs(positive_mean_background-0.5))], y1=0.5, code=3,arr.adj=1,arr.length = .1,arr.width = .1/2)
+text(x=timeaxis[which.min(abs(positive_mean_background-0.5))]-sd_size_t2/2-2.5,y=0.53,pos=4,labels=expression(sigma['2']))
 
 dev.off()
 # segments(x0=0,y0=1.0004,x1=timeaxis[length(timeaxis)],y1=1.0004,lty=8,lwd=1.2)
@@ -682,11 +688,6 @@ lwd_means <- 4
 lwd_ind <- 1.37
 lwd_likelihood <- lwd_means - 3
 
-col_negative <- rgb(27/255,158/255,119/255)
-col_positive <- rgb(217/255,95/255,2/255)
-col_mean <- rgb(231/255,41/255,138/255)
-col_likelihood <- rgb(117/255,112/255,179/255)
-col_dotted <- rgb(3/7,3/7,3/7) #color for dotted lines
 
 # col_negative <- 'green'
 # col_positive <- 'red'
@@ -696,8 +697,8 @@ col_dotted <- rgb(3/7,3/7,3/7) #color for dotted lines
 ## frame the dottedness as posteriors
 ## OR frame is as a direct probability statment
 
-scale_t1 = 5    #High scale causes slower swap
-shape_t1 = 5    #high shape causes quicker and steeper swap
+scale_t1= 4
+shape_t1 = 1.73
 
 mean_delay_t1 = 12
 sd_size_t1 = 3
@@ -761,20 +762,34 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=
 #   dev.off()
 # }
 
-pdf(file="figure_2b_frame_1.pdf",width=7.3,height=3.7)
-simple_plot_individual_time_likelihood(n=n, time = 12, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+#goto_nos
+pdf(file="figure_3_frame_1.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 10, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+# title(xlab="Time of Infection", line=2, cex.lab=1.2)
 dev.off()
-pdf(file="figure_2b_frame_2.pdf",width=7.3,height=3.7)
-simple_plot_individual_time_likelihood(n=n, time = 18, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+pdf(file="figure_3_frame_2.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 15, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+# title(xlab="Time of Infection", line=2, cex.lab=1.2)
 dev.off()
-pdf(file="figure_2b_frame_3.pdf",width=7.3,height=3.7)
-simple_plot_individual_time_likelihood(n=n, time = 47, times=timeaxis, test_of_interest = 'positive',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+pdf(file="figure_3_frame_3.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 20, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+# title(xlab="Time of Infection", line=2, cex.lab=1.2)
 dev.off()
-pdf(file="figure_2b_frame_4.pdf",width=7.3,height=3.7)
-simple_plot_individual_time_likelihood(n=n, time = 52, times=timeaxis, test_of_interest = 'positive',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+pdf(file="figure_3_frame_4.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 30, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+# title(xlab="Time of Infection", line=2, cex.lab=1.2)
 dev.off()
-pdf(file="figure_2b_frame_5.pdf",width=7.3,height=3.7)
-simple_plot_individual_time_likelihood(n=n, time = 52, times=timeaxis, test_of_interest = 'positive',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05,plot_full_likelihood = TRUE)
+pdf(file="figure_3_frame_5.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 45, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+# title(xlab="Time of Infection", line=2, cex.lab=1.2)
+dev.off()
+pdf(file="figure_3_frame_6.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 50, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05)
+# title(xlab="Time of Infection", line=2, cex.lab=1.2)
+dev.off()
+pdf(file="figure_3_frame_7.pdf",width=7.3,height=3.7)
+simple_plot_individual_time_likelihood(n=n, time = 52, times=timeaxis, test_of_interest = 'negative',set_of_positive_curves_background = plotdata_positive_background,set_of_negative_curves_background = plotdata_negative_background, set_of_positive_curves = plotdata_positive,set_of_negative_curves = plotdata_negative, col_negative=col_negative ,col_positive=col_positive, col_likelihood = col_likelihood, lwd_means=lwd_means,lwd_likelihood = lwd_likelihood, lwd_ind = lwd_ind,curve_level_cutoff_probability = .05,plot_full_likelihood = TRUE)
+title(xlab="Time of Infection", line=2, cex.lab=1.2)
 dev.off()
 
 # dev.off()
@@ -813,8 +828,8 @@ dev.off()
 # we could fail to specify the value /// mention that it doesn't matter > I'd stick with the first ("Solid lines indicate the more likely {footnote with precise statement} sensitivity profiles.)
 
 # ref
-# somePDFPath = "C:\\temp\\some.pdf"
-# pdf(file=somePDFPath)  
+# somepdfPath = "C:\\temp\\some.pdf"
+# pdf(file=somepdfPath)  
 # 
 # for (i in seq(5,10))   
 # {   
@@ -892,8 +907,8 @@ cutoff_likelihood <- 0.05 # shades the exterior this-much (so cutoff_likelihood 
 # col_positive <- 'red'
 
 
-scale_t1 = 5    #High scale causes slower swap
-shape_t1 = 5    #high shape causes quicker and steeper swap
+scale_t1= 3
+shape_t1 = 2
 
 mean_delay_t1 = 12
 sd_size_t1 = 3
@@ -956,26 +971,26 @@ EPToi <- timeaxis[window_infection_time[1]]
 LPToi <- timeaxis[window_infection_time[2]]
 
 
-pdf(file='figure_2c.pdf',width=7.3,height=3.7)
+pdf(file='figure_4.pdf',width=7.3,height=3.7)
 
 plot(timeaxis,likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis),type='l',lwd='3.7',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=ylim_chosen,xaxs='i',yaxs='i',xaxt='n',yaxt='n',xlab='',ylab='',col=col_likelihood,bty="L") #clarify label in comment
 
-title(xlab="Time", line=2, cex.lab=1.2)
-title(ylab=expression('Likelihood'), line=2, cex.lab=1.05)
+title(xlab="Time of Infection", line=2, cex.lab=1.2)
+title(ylab=expression('Joint Likelihood of Test Results'), line=2, cex.lab=1.05)
 
 
 
-yaxis_pos <- c(0,0.5,1)
-yaxis_names <- c('0','0.5','1')
+yaxis_pos <- c(0,1)
+yaxis_names <- c('0','1')
 
 polygon(c(timeaxis[timeaxis<=EPToi],EPToi), c(likelihood_discordant_results_2c[timeaxis<=EPToi],0), col=rgb(.2,.2,.2,1/4),border=NA)
 polygon(c(timeaxis[timeaxis>=LPToi],LPToi), c(likelihood_discordant_results_2c[timeaxis>=LPToi],0), col=rgb(.2,.2,.2,1/4),border=NA)
 
 xaxis_pos <- c(test_time_1,test_time_2)
-xaxis_names <- c(expression('Test'['1(-)']),expression('Test'['2(+)']))
+xaxis_names <- c(expression('t'['1(-)']),expression('t'['2(+)']))
 
 p_pos <- c(EPToi,LPToi)
-p_labels <- c(expression('EP t'[" inf"]),expression('LP t'[" inf"]))
+p_labels <- c(expression('EP t'[" Infection"]),expression('LP t'[" Infection"]))
 
 zero_pos <- c(0)
 zero_name <- c(expression('0'['']))
@@ -985,11 +1000,11 @@ axis(side=1, at=xaxis_pos, labels= xaxis_names,padj=-.037,hadj=0)
 axis(side=1, at=p_pos, labels = p_labels, padj = -.35, hadj=.37)
 # axis(side=1, at=zero_pos, labels=zero_name,padj=-0.45,hadj=0.37)
 
-segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
-segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
+segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=3)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=3)
 
-segments(x0=EPToi, y0=0, x1=EPToi,y1=1,lty=3,col='grey')
-segments(x0=LPToi, y0=0, x1=LPToi,y1=1,lty=3,col='grey')
+segments(x0=EPToi, y0=0, x1=EPToi,y1=1,lty=2)
+segments(x0=LPToi, y0=0, x1=LPToi,y1=1,lty=2)
 
 
 
@@ -1019,14 +1034,10 @@ timeaxis=seq(0,50,1/detail)
 lwd_means <- 3
 lwd_likelihoods <- 2
 lwd_ind <- 1.5
-col_negative <- rgb(27/255,158/255,119/255)
-col_positive <- rgb(217/255,95/255,2/255)
-col_mean <- rgb(231/255,41/255,138/255)
-col_truth <- rgb(117/255,112/255,179/255)
 
 
-scale_t1 = 5    #High scale causes slower swap
-shape_t1 = 5    #high shape causes quicker and steeper swap
+scale_t1= 4
+shape_t1 = 1.73
 
 mean_delay_t1 = 24
 sd_size_t1 = 5
@@ -1045,7 +1056,7 @@ sd_size_t2 = sd_size_t1*.7
 #   Time of positive test
 test_time_2 = test_time_1
 
-pdf(file="figure_3a.pdf",width = 7.3,height=3.7)
+pdf(file="figure_5.pdf",width = 7.3,height=3.7)
 ## Generate the individual likelihood curves for the first (negative) and second (positive) test
 #Test 1
 plotdata_negative = family_negative_likelihood_weibul(n=n, scale=scale_t1, shape=shape_t1, mean_delay=mean_delay_t1, sd_size= sd_size_t1, times = timeaxis, test_time = test_time_1)
@@ -1060,16 +1071,16 @@ likelihood_discordant_3a <- likelihood_by_DDI(plotdata_negative,plotdata_positiv
 
 
 
-plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(-0.001,1),xaxt='n',yaxt='n',xlab='',ylab='',bty='l',yaxs='i',xaxs='i',col='green') #clarify label in comment
-title(xlab="Time", line=1.5, cex.lab=1.2)
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(-0.002,1.002),xaxt='n',yaxt='n',xlab='',ylab='',bty='l',yaxs='i',xaxs='i',col='green') #clarify label in comment
+title(xlab="Time of Infection", line=1.5, cex.lab=1.2)
 title(ylab=expression('Likelihood'), line=2, cex.lab=1.05)
 
 
 yaxis_pos <- c(0,0.5,1)
-yaxis_names <- c('0','0.5','1')
+yaxis_names <- c('0','','1')
 
 xaxis_pos <- c(test_time_1)
-xaxis_names <- c(expression('t'['+/-']))
+xaxis_names <- c(expression('t'['(+/-)']))
 
 
 axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.027, padj=.437)
@@ -1110,8 +1121,8 @@ print(max(difference))
 #lines(timeaxis,difference,lwd=1,col="blue")
 # lines(timeaxis,positive_mean_naive,lwd=2,col='red')
 # lines(timeaxis,negative_mean_naive,lwd=2,col='green')
-lines(timeaxis,product_of_means_naive,lwd=lwd_means,col='grey55')
-lines(timeaxis,real_likelihood,lwd=lwd_likelihoods,col=col_truth)
+lines(timeaxis,product_of_means_naive,lwd=lwd_means,lty=2,col='grey55')
+lines(timeaxis,real_likelihood,lwd=lwd_likelihoods+2,col=col_truth)
 
 dev.off()
 ######
@@ -1138,15 +1149,12 @@ timeaxis=seq(0,50,1/detail)
 
 
 lwd_means <- 3
-lwd_likelihoods <- 2
+lwd_likelihoods <- 4
 lwd_ind <- 1.5
-col_negative <- rgb(27/255,158/255,119/255)
-col_positive <- rgb(217/255,95/255,2/255)
-col_mean <- rgb(231/255,41/255,138/255)
-col_truth <- rgb(117/255,112/255,179/255)
 
-scale_t1 = 5    #High scale causes slower swap
-shape_t1 = 5    #high shape causes quicker and steeper swap
+
+scale_t1= 4
+shape_t1 = 1.73
 
 mean_delay_t1 = 24
 sd_size_t1 = 5
@@ -1177,10 +1185,10 @@ plotdata_positive = family_positive_likelihood_weibul(n=n, scale=scale_t2, shape
 plotdata_positive_background <- family_positive_likelihood_weibul(n=n+50, scale=scale_t2, shape=shape_t2, mean_delay=mean_delay_t2, sd_size= sd_size_t2, times = timeaxis, test_time = test_time_2)
 
 likelihood_discordant_3a <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
-pdf("figure_3b.pdf",width=7.3,height=3.7)
+pdf("figure_6.pdf",width=7.3,height=3.7)
 
-plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(-0.001,1),xaxt='n',yaxt='n',xlab='',ylab='',bty='l',xaxs='i',yaxs='i',col=col_negative) #clarify label in comment
-title(xlab="Time", line=1.5, cex.lab=1.2)
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(-0.002,1.002),xaxt='n',yaxt='n',xlab='',ylab='',bty='l',xaxs='i',yaxs='i',col=col_negative) #clarify label in comment
+title(xlab="Time of Infection", line=1.5, cex.lab=1.2)
 title(ylab=expression('Likelihood'), line=2, cex.lab=1.05)
 
 
@@ -1188,7 +1196,7 @@ yaxis_pos <- c(0,0.5,1)
 yaxis_names <- c('0','0.5','1')
 
 xaxis_pos <- c(test_time_1)
-xaxis_names <- c(expression('t'['+/-']))
+xaxis_names <- c(expression('t'['(+/-)']))
 
 
 axis(side=2, at=yaxis_pos, labels= yaxis_names,tck=-0.023, padj=.437)
@@ -1217,7 +1225,7 @@ difference <- product_of_means_naive - real_likelihood
 lines(timeaxis,negative_mean_background, lwd=lwd_means, col=col_negative)
 lines(timeaxis,positive_mean_background, lwd=lwd_means, col=col_positive)
 segments(x0=test_time_1,y0=0,x1=test_time_1,y1=1,lty=4)
-segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4,col=col_mean)
+segments(x0=test_time_2,y0=0,x1=test_time_2,y1=1,lty=4)
 
 segments(x0=0,y0=1.004,x1=timeaxis[length(timeaxis)],y1=1.004,lty=8,lwd=1.2)
 
@@ -1227,7 +1235,7 @@ print(max(difference))
 #lines(timeaxis,difference,lwd=1,col="blue")
 # lines(timeaxis,positive_mean_naive,lwd=2,col='red')
 # lines(timeaxis,negative_mean_naive,lwd=2,col='green')
-lines(timeaxis,product_of_means_naive,lwd=2,col='grey55',lty=1)
+lines(timeaxis,product_of_means_naive,lwd=2,col='grey55',lty=2)
 lines(timeaxis,real_likelihood,lwd=4,col=col_likelihood)
 
 
@@ -1262,9 +1270,8 @@ lwd_likelihood <- lwd_means
 # col_negative <- 'green'
 # col_positive <- 'red'
 
-
-scale_t1 = 5    #High scale causes slower swap
-shape_t1 = 5    #high shape causes quicker and steeper swap
+scale_t1= 4
+shape_t1 = 1.73
 
 mean_delay_t1 = 24
 sd_size_t1 = 5
@@ -1296,10 +1303,10 @@ plotdata_positive_background <- family_positive_likelihood_weibul(n=n+500, scale
 
 likelihood_discordant_3a <- likelihood_by_DDI(plotdata_negative,plotdata_positive,timeaxis)
 
-pdf("figure_3c.pdf",width=7.3,height=3.7)
+pdf("figure_7.pdf",width=7.3,height=3.7)
 
-plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(0,1),xaxs='i',yaxs='i',bty='l',xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
-title(xlab="Time", line=1.5, cex.lab=1.2)
+plot(timeaxis,plotdata_negative[,1],type='l',xlim=c(timeaxis[1],timeaxis[length(timeaxis)]),ylim=c(.002,1.002),xaxs='i',yaxs='i',bty='l',xaxt='n',yaxt='n',xlab='',ylab='',col='green') #clarify label in comment
+title(xlab="Time of Infection", line=1.5, cex.lab=1.2)
 title(ylab=expression('Likelihood'), line=2, cex.lab=1.05)
 
 
@@ -1307,7 +1314,7 @@ yaxis_pos <- c(0,0.5,1)
 yaxis_names <- c('0','0.5','1')
 
 xaxis_pos <- c(test_time_1)
-xaxis_names <- c(expression('t'['+/-']))
+xaxis_names <- c(expression('t'['(+/-)']))
 
 zero_pos <- c(0)
 zero_name <- c(expression('0'['']))
@@ -1351,8 +1358,8 @@ print(max(difference))
 #lines(timeaxis,difference,lwd=1,col="blue")
 # lines(timeaxis,positive_mean_naive,lwd=2,col='red')
 # lines(timeaxis,negative_mean_naive,lwd=2,col='green')
-lines(timeaxis,product_of_means_naive,lwd=lwd_means,col='grey55')
-lines(timeaxis,real_likelihood,lwd=lwd_means,col=col_likelihood)
+lines(timeaxis,product_of_means_naive,lwd=lwd_means,col='grey55',lty=2)
+lines(timeaxis,real_likelihood,lwd=4,col=col_likelihood)
 
 # Arrows(x0=1,y0=.75,x1=20,y1=.75,code=3, arr.type='triangle')
 dev.off()
