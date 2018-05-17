@@ -17,3 +17,13 @@ db_backups/
 \.#*
 volume_log.csv
 .tern-port
+
+# Mac cruft
+.DS_Store
+
+# R cruft
+*.RData
+*.Rhistory
+
+# Office cruft
+~$*
