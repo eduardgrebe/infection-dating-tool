@@ -394,7 +394,7 @@ def download_results(request, file_id=None, context=None):
     download = ResultDownload(subjects)
 
     response, writer = get_csv_response('infection_dates_%s_%s.csv' % (
-        data_file.file_name, datetime.datetime.today().strftime('%d%b%Y_%H%M')))
+        data_file.file_name, datetime.today().strftime('%d%b%Y_%H%M')))
 
     writer.writerow(download.get_headers())
 
