@@ -10,18 +10,18 @@ Copyright of code and content vests in the authors. Code is released under the [
 
 ## Contributors
 
-The tool is maintained by the [South African Centre for Epidemiological Modelling and Analysis (SACEMA)](http://www.sacema.org) at Stellenbosch University. Code was developed was collaboratively by a team at SACEMA and at [Implicit Design](http://www.impd.co.za). Current and past direct contributors include:
+The tool is maintained by the [South African Centre for Epidemiological Modelling and Analysis (SACEMA)](http://www.sacema.org) at Stellenbosch University. Code was developed collaboratively by a team at SACEMA and at [Implicit Design](http://www.impd.co.za). Current and past direct contributors include:
 
-* Alex Welte
-* Eduard Grebe
-* Shelley Facente
-* Chris Pilcher
-* Andrew Powrie
-* Jeremy Bingham
-* Jarryd Gerber
-* Keith Grootboom
-* Trust Chibawara
-* Gareth Priede
+* Alex Welte (SACEMA)
+* Eduard Grebe (SACEMA)
+* Shelley Facente (UCSF & BSRI)
+* Chris Pilcher (UCSF)
+* Andrew Powrie (Implicit Design)
+* Jeremy Bingham (SACEMA)
+* Jarryd Gerber (Implicit Design)
+* Keith Grootboom (Implicit Design)
+* Trust Chibawara (SACEMA)
+* Gareth Priede (Implicit Design)
 
 This tool was based on a system originally developed to support the [Consortium for the Evaluation and Performance of HIV Incidence Assays (CEPHIA)](http://www.incidence-estimation.org/page/cephia).
 
