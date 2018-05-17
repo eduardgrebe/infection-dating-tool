@@ -2,7 +2,7 @@
 
 This tool enables systematic interpretation of diagnostic test histories into formal plausible infection intervals, using data on "diagnostic delays" (i.e. window periods) of tests, and particular (dated) positive and negative test results. It outputs a detectable infection interval: Earliest Plausible Date of Detectable Infection (EP-DDI), Latest Plausible DDI (LP-DDI) and the midpoint of the interval as an infection time 'point estimate' or Estimated Date of Detectable Infection (EDDI). Detectable infection (for HIV) is by default defined as test conversion on a viral load assay with a detection threshold of 1 RNA copy/ml, but arbitrary reference tests or the exposure event may be used as time-zero. In addition, the tool uses these data to estimate residual risk of infectious donated blood units, using properties of the screening algorithm and incidence in the donor population.
 
-This repository contains the source code for the tool, but potential users are directed to the publicly-available hosted version available at [https://tools.incidence-estimation.org/idt/](https://tools.incidence-estimation.org/idt/).
+This repository contains the source code for the tool, but potential users are directed to the public hosted version available at [https://tools.incidence-estimation.org/idt/](https://tools.incidence-estimation.org/idt/).
 
 ## License
 
