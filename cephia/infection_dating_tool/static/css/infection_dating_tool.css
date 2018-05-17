@@ -477,3 +477,11 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
 .mapping--value {
     text-align:center;
 }
+
+.help__container {
+    margin-bottom: 30px;
+}
+
+.help__index {
+    line-height: 10px;
+}

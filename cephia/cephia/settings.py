@@ -176,8 +176,8 @@ USE_TZ = True
 
 
 STATICFILES_DIRS = (
-  os.path.join(BASE_DIR, 'cephia/static/'),
-  BASE_DIR
+    os.path.join(BASE_DIR, 'cephia/static/'),
+    BASE_DIR
 )
 STATIC_URL = '/static/'+REVISION+'/'
 STATIC_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'static_collected', REVISION)
@@ -188,10 +188,11 @@ MEDIA_ROOT = os.path.join(PROJECT_HOME, '..', '..', 'media')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(LOG_FOLDER, "email")
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'noreply.cephia.eddi.tool@gmail.com'
-EMAIL_HOST_PASSWORD = 'cephiaimpd'
+EMAIL_HOST = '<email smtp host>'
+EMAIL_HOST_USER = '<email username>'
+EMAIL_HOST_PASSWORD = '<email password>'
 EMAIL_PORT = 587
+
 EMAIL_USE_TLS = True
 FROM_EMAIL = 'noreply.cephia.eddi.tool@gmail.com'
 MAIL_ADMINS = ['andrew@impd.co.za']

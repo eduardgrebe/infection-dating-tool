@@ -4,24 +4,114 @@
 
 {% block content %}
   <div class="container_nav">
-    <h1 id="top">Coming soon</h1>
-    {% comment %}
-    <h1 id="top">Welcome to the Cephia Infection Dating Tool help page</h1>
-    <h2>Index:</h2>
-    <p><a href="#start">Getting Started</a></p>
-    <p><a href="#files">Data Files</a></p>
-    <p><a href="#mapping">Mapping</a></p>
-    <p><a href="#tests">Tests</a></p>
-    <p><a href="#results">Results</a></p>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <h1 id="top">Help File</h1>
 
-    <h2 id="start">Getting Started</h2>
-    <h2 id="files">Data Files</h2>
-    <h2 id="mapping">Mapping</h2>
-    <h2 id="tests">Tests</h2>
-    <h2 id="results">Results</h2>
+    <div class="help__container" >
+      <h2>Index:</h2>
+      <p class="help__index"><a href="#introduction">Introduction</a></p>
+      <p class="help__index"><a href="#using">Using the Tool</a></p>
+      <p class="help__index"><a href="#testing">Testing Histories</a></p>
+      <p class="help__index"><a href="#mapping">Mapping</a></p>
+      <p class="help__index"><a href="#tests">Tests</a></p>
+      <p class="help__index"><a href="#results">Results</a></p>
+    </div>
+
+    <div class="help__container" >
+      <h2 id="introduction">Introduction</h2>
+      <p>This tool implements an infection timing algorithm, which is a generalisation of the Fiebig approach to infection dating. It accommodates positive and negative diagnostic results generated on the same or different dates for individual subjects, as well as arbitrary current or future tests – as long as the test sensitivity is known.</p>
+      <p>For this purpose, test sensitivity is conceptualised as the probability that a specimen will produce a positive result, expressed as a function of time since infection. In this tool, it is summarised as a median ‘diagnostic delay’ parameter together with a measure of inter-subject variability (σ). More detail on the framework and methods implemented in this tool are available at bioRxiv link.
+      </p>
+    </div>
+
+    <div class="help__container" >
+      <h2 id="using">Using the Tool</h2>
+      <p>The top navigation bar on the main page offers four tabs with various functionality, as described below:</p>
+    </div>
+
+    <div class="help__container" >
+      <h2 id="testing">Testing Histories</h2>
+      <p>This tab allows users to locate, view and delete previously uploaded ‘testing histories’, and to upload new ones. It is also where users trigger the action of processing the uploaded testing histories into ‘infection dating estimates’, which can then be viewed and downloaded.</p>
+      <p>A single uploaded data file is expected to contain a ‘batch’ of multiple subjects’ diagnostic testing histories. In order to facilitate automated processing, the tool demands a list of column names as the first row in any input file. While extraneous columns are allowed without producing an error, there must be columns named Subject, Date, Test and Result (not case sensitive). Data in the subject column is expected to be an arbitrary string that uniquely identifies each subject. Dates must be in the standard ISO format (YYYY-MM-DD).</p>
+      <p>It is fundamental to the simplicity of the algorithm that assay results be either ‘positive’ or ‘negative’. There are a small number of tests, notably Western blot and Geenius, which sometimes produce ‘indeterminate’ results (partially, but not fully, developed band structure). We now briefly reconsider Table 1 by adding the minor twist that the Western blot on subject Jill be reported as indeterminate. In this case, the data must be recorded as results on either one or both of two separate tests:</p>
+      <p>1. a ‘Test-Indeterminate’ version of the test – which notes whether a subject will be classified either as negative, or ‘at least’ as indeterminate; and</p>
+      <p>2. a ‘Test-Full’ version of the test, which determines whether a subject is fully positive or not.</p>
+      <p>There is then no longer any use for an un-suffixed version of the original test.</p>
+      <p>Conceptually, this is a table like the fictitious example in the table below, which records that:</p>
+      <p>One subject (John) was seen on 10 January 2017, at which point he had a detectable vial load on an unspecified qualitative viral load assay, and a negative Western blot result (discordant tests); and
+        another subject (Jill) was screened negative on a point-of-care (PoC) rapid test (RT) on 13 September 2016, and then, on 4 February 2017, tested indeterminate on a Western blot, having also tested positive that day on the PoC RT.</p>
+    </div>
+
+    <div class="help__container" >
+      <table class="table table-condensed table-striped">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Date</th>
+            <th>Test</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>John</td>
+	          <td>2017-01-10</td>
+            <td>Qualitative VL</td>
+            <td>Positive</td>
+          </tr>
+          <tr>
+            <td>John</td>
+	          <td>2017-01-10</td>
+            <td>Western blot Indeterminate</td>
+            <td>Negative</td>
+          </tr>
+          <tr>
+            <td>Jill</td>
+            <td>2016-09-13</td>
+            <td>POC RT</td>
+            <td>Negative</td>
+          </tr>
+          <tr>
+            <td>Jill</td>
+            <td>2017-02-04</td>
+            <td>POC RT</td>
+            <td>Positive</td>
+          </tr>
+          <tr>
+            <td>Jill</td>
+            <td>2017-02-04</td>
+            <td>Western blot Indeterminate</td>
+            <td>Positive</td>
+          </tr>
+          <tr>
+            <td>Jill</td>
+            <td>2017-02-04</td>
+            <td>Western blot Full</td>
+            <td>Negative</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Note that only tests used for diagnostic (and not treatment monitoring) purposes should be included in these data files. For example, inclusion of undetectable viral load assay results obtained post-treatment initiation would produce an erroneous infection dating calculation.</p>
+    </div>
+
+    <div class="help__container" >
+      <h2 id="mapping">Mapping</h2>
+      <p>The mapping tab allows users to link strings (alphanumeric codes) in their data files to tests in the online database, hence linking records in uploaded files to the applicable diagnostic delays.</p>
+    </div>
+
+    <div class="help__container" >
+      <h2 id="tests">Tests</h2>
+      <p>The tests tab allows users to view the existing database of diagnostic tests, and to add new ones if desired. Note that each user sees only the shared developer-maintained list of tests, plus his/her own – not those added by other users. This page further allows each user to set a viral load growth rate and to select a multiple of the variability parameter (). However, default data are already available for all assays pre-existing in the database; values for  are populated when published estimates are available.</p>
+    </div>
+
+    <div class="help__container" >
+      <h2 id="results">Results</h2>
+      <p>The command button ‘process’ becomes available when an uploaded testing history has no unmapped test codes. Each file that has been uploaded on the “Testing Histories” tab has a “Mapping” link, and once mapping has been completed, a “Process” link appears. Pressing the button leads to values, per subject, for EP-DDI, LP-DDI, EDDI, and DDI interval, which can be previewed on-screen and downloaded as a comma-delimited file.</p>
+      <p>By default, the system employs simply the ‘average’ diagnostic delay parameter, in effect placing the EP-DDI and LP-DDI bounds on the DDI interval where the underlying sensitivity curve evaluates to a probability of detection of 0.5. When the size of the inter-test interval () is greater than about 20 times the diagnostic delay standard deviation (), this encompasses more than 95% of the posterior probability.</p>
+      <p>As an additional option, when values for both  and  are available, and under the parametric assumptions outlined earlier, users may specify a significance level (), and the system will calculate the bounds of a corresponding credibility interval. The bounds of the central 95% (in the case of ) of the posterior are labelled the EP-DDI and LP-DDI.</p>
+    </div>
 
     <a href="#top" style="float:right;">Top of page</a>
-    {% endcomment %}
   </div>
 {% endblock %}
