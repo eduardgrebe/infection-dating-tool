@@ -120,12 +120,12 @@ class IDTFileInfo(models.Model):
         db_table = "idt_file_info"
 
     STATE_CHOICES = (
-        ('pending','Pending'),
-        ('imported','Imported'),
-        ('validated','Validated'),
-        ('needs_mapping','Needs Mapping'),
-        ('mapped','Mapped'),
-        ('error','Error')
+        ('pending', 'Pending'),
+        ('imported', 'Imported'),
+        ('validated', 'Validated'),
+        ('needs_mapping', 'Needs Mapping'),
+        ('mapped', 'Mapped'),
+        ('error', 'Error')
     )
 
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
