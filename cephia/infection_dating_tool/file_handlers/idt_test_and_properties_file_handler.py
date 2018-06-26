@@ -8,7 +8,7 @@ from django.core.management import call_command
 
 from infection_dating_tool.models import IDTSubject, IDTDiagnosticTest, IDTTestPropertyEstimate, TestPropertyMapping, IDTDiagnosticTestHistory, GrowthRateEstimate
 from django.db.models import Q
-        
+
 logger = logging.getLogger(__name__)
 
 CATEGORIES = {
@@ -54,7 +54,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
 
     def import_data(self):
         errors = []
-        
+
         from infection_dating_tool.models import IDTDiagnosticTest, IDTTestPropertyEstimate
         for row_num in range(self.num_rows):
             try:
@@ -68,10 +68,10 @@ class TestsAndPropertiesFileHandler(FileHandler):
                         continue
 
                     try:
-                        test=IDTDiagnosticTest.objects.get(pk=row_dict['test_id'], user__isnull=True)
+                        test = IDTDiagnosticTest.objects.get(pk=row_dict['test_id'], user__isnull=True)
                         test.name = row_dict['test_name']
                     except IDTDiagnosticTest.DoesNotExist:
-                        test=IDTDiagnosticTest.objects.create(pk=row_dict['test_id'], name=row_dict['test_name'])
+                        test = IDTDiagnosticTest.objects.create(pk=row_dict['test_id'], name=row_dict['test_name'])
 
                     test.category = CATEGORIES[row_dict['test_category']]
                     test.save()
@@ -79,7 +79,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
 
                     diagnostic_delay = None
                     if row_dict['diagnostic_delay']:
-                        diagnostic_delay=float(row_dict['diagnostic_delay'])
+                        diagnostic_delay = float(row_dict['diagnostic_delay'])
 
                     if properties:
                         test_property = properties.first()
@@ -89,7 +89,7 @@ class TestsAndPropertiesFileHandler(FileHandler):
                         test_property.global_default = True
                         test_property.save()
                     else:
-                        test_property=IDTTestPropertyEstimate.objects.create(
+                        test_property = IDTTestPropertyEstimate.objects.create(
                             estimate_label=row_dict['estimate_label'],
                             diagnostic_delay=float(row_dict['diagnostic_delay']),
                             comment=row_dict['comment'],

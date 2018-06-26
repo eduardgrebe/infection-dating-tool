@@ -12,16 +12,22 @@ class FileHandler(object):
         self.upload_file = upload_file
         try:
             extension = self.upload_file.get_extension()
-            
-            if extension in ['csv','CSV']:
+
+            if extension in ['csv', 'CSV']:
                 self.file_rows = self.open_csv(upload_file.data_file.url)
             else:
                 raise Exception("Invalid file type. Only .csv are supported.")
         except AttributeError:
             self.file_rows = self.open_test_csv(upload_file)
 
-            
-        self.header = self.file_rows[0]
+
+        header = self.file_rows[0]
+        self.header = []
+        for x in header:
+            if x == u'\ufeffSubject':
+                self.header.append('Subject')
+            else:
+                self.header.append(x)
         self.num_rows = len(self.file_rows)
 
         self.registered_columns = []
@@ -79,9 +85,9 @@ class FileHandler(object):
 
 
     def open_csv(self, to_read):
-        def unicode_csv_reader(unicode_csv_data, dialect = csv.excel, **kwargs):
+        def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
             csv_reader = csv.reader(unicode_csv_data,
-                                    dialect = dialect, **kwargs)
+                                    dialect=dialect, **kwargs)
             for row in csv_reader:
                 yield [unicode(cell.strip(), 'utf-8') for cell in row]
 
@@ -94,9 +100,9 @@ class FileHandler(object):
 
 
     def open_test_csv(self, to_read):
-        def unicode_csv_reader(unicode_csv_data, dialect = csv.excel, **kwargs):
+        def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
             csv_reader = csv.reader(unicode_csv_data,
-                                    dialect = dialect, **kwargs)
+                                    dialect=dialect, **kwargs)
             for row in csv_reader:
                 yield [unicode(cell.strip(), 'utf-8') for cell in row]
 

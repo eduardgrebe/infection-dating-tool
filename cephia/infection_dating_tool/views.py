@@ -150,7 +150,13 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
             uploaded_file.save()
 
             errors = []
-            errors = IDTFileHandler(uploaded_file).validate()
+            extension = uploaded_file.get_extension()
+
+            if extension in ['csv', 'CSV']:
+                errors = IDTFileHandler(uploaded_file).validate()
+            else:
+                errors = ['Invalid file type. Only .csv are supported.']
+
             if not errors:
                 uploaded_file.user = user
                 uploaded_file.save()
@@ -168,7 +174,7 @@ def data_files(request, file_id=None, template="infection_dating_tool/data_files
                 elif uploaded_file.state == 'needs_mapping' or uploaded_file.state == 'mapped':
                     if uploaded_file.state == 'needs_mapping':
                         messages.info(request, 'Please provide mapping for your file')
-                    messages.info(request, u"Your file was uploaded successfully" )
+                    messages.info(request, u"Your file was uploaded successfully")
 
             else:
                 uploaded_file.delete()
