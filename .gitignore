@@ -17,3 +17,5 @@ db_backups/
 \.#*
 volume_log.csv
 .tern-port
+
+db_backup
