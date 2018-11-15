@@ -6,7 +6,7 @@ from django.forms import modelformset_factory, BaseModelFormSet
 from models import (
     TestPropertyMapping, IDTDiagnosticTest, IDTTestPropertyEstimate,
     IDTFileInfo, SelectedCategory, GrowthRateEstimate, ResidualRisk,
-    VariabilityAdjustment)
+    CredibilityInterval)
 from django.db.models import Q
 import math
 from itertools import groupby
@@ -364,21 +364,33 @@ class GroupedModelMultiChoiceField(Grouped, ModelMultipleChoiceField):
 
 
 class GlobalParametersForm(forms.Form):
-    growth_rate = forms.FloatField(required=True, label='Viral load growth rate estimate')
-    adjustment_factor = forms.FloatField(required=True, label='Intersubject variability adjustment factor')
 
-    def __init__(self, growth_rate, adjustment_factor, *args, **kwargs):
+    CALCULATE_CHOICES = (
+        (False, 'Using Median diagnostic delays'),
+        (True, 'As Credibility Intervals using posterior probability density')
+    )
+
+    growth_rate = forms.FloatField(required=True, label='Viral load growth rate estimate')
+    alpha = forms.FloatField(required=True, label='Significance level (alpha) for credibility intervals')
+    calculate_ci = forms.ChoiceField(choices=CALCULATE_CHOICES, required=True)
+
+    def __init__(self, growth_rate, credibility_interval, *args, **kwargs):
         super(GlobalParametersForm, self).__init__(*args, **kwargs)
         self.fields['growth_rate'].initial = growth_rate.growth_rate
-        self.fields['adjustment_factor'].initial = adjustment_factor.adjustment_factor
+        self.fields['alpha'].initial = credibility_interval.alpha
+        self.fields['calculate_ci'].initial = credibility_interval.calculate_ci
 
     def save(self, user):
         gre = GrowthRateEstimate.objects.get(user=user)
         gre.growth_rate = self.cleaned_data['growth_rate']
         gre.save()
-        adj_factor = VariabilityAdjustment.objects.get(user=user)
-        adj_factor.adjustment_factor = self.cleaned_data['adjustment_factor']
-        adj_factor.save()
+        credibility_interval = CredibilityInterval.objects.get(user=user)
+        credibility_interval.alpha = self.cleaned_data['alpha']
+        if self.cleaned_data['calculate_ci'] == 'False':
+            credibility_interval.calculate_ci = False
+        else:
+            credibility_interval.calculate_ci = True
+        credibility_interval.save()
 
 
 class SpecifyInfectiousPeriodForm(BaseModelForm):
