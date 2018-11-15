@@ -19,3 +19,6 @@ volume_log.csv
 .tern-port
 
 db_backup
+
+# Mac cruft
+.DS_Store
