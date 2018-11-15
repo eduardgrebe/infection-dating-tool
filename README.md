@@ -36,3 +36,7 @@ The tool was originally developed as part of the CEPHIA data management system. 
 Contributions (by forking the repository and generating pull requests) are encouraged.
 
 For further information, contact [Eduard Grebe](mailto:eduardgrebe@sun.ac.za).
+
+## Deployment
+
+The current supported version is maintained on the `release` branch. You can also obtain supported releases via the Github "Releases" tab or at the following stable URL: [doi:10.5281/zenodo.1488117](https://doi.org/10.5281/zenodo.1488117).
