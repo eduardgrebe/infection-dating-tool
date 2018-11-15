@@ -412,9 +412,13 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
     margin-top:-10px;
 }
 
+.tests--form_field_row {
+    margin: 1rem;
+}
+
 .tests--form_field {
-    width:50%;
     float:left;
+    width: 50%;
 }
 
 .tests--input {

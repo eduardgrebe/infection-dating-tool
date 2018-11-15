@@ -20,7 +20,7 @@ cd -
 
 echo "Running management command update_cephia_infection_dating_tool_tests_and_properties"
 cd ${SITE_PATH}
-python manage.py update_cephia_infection_dating_tool_tests_and_properties
+python manage.py update_infection_dating_tool_tests_and_properties
 cd -
 
 echo "Done"
