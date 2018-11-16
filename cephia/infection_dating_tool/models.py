@@ -1,12 +1,13 @@
 from __future__ import unicode_literals
-import os
+from datetime import timedelta
 from django.conf import settings
 from django.db import models
-from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
-from django.db.models import QuerySet
-from datetime import timedelta
 from django.db.models import Q
+from django.db.models import QuerySet
+from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
+from scipy.integrate import trapz
 import math
+import os
 
 class IDTDiagnosticTestHistory(models.Model):
     class Meta:
@@ -220,6 +221,22 @@ class IDTSubject(models.Model):
 
         ci, created = CredibilityInterval.objects.get_or_create(user=user)
         # we will check for ci.calculate_ci and then run new calculation else the bellow code
+
+        # def f(t, alpha=2):
+        #     return exp(t*alpha)
+
+        # auc = integrate(f([lower=-100, upper=100], alpha=2), lower=-100, upper=100, alpha=2)
+
+        # def f_left(t, alpha, delta):
+        #     return (1 - (1 - math.exp(alpha*t)) / (1 - math.exp(-alpha*delta)) / 2)
+
+        # def f(t, alpha, delta):
+        #     if t < delta:
+        #         return 0
+        #     elif t > delta:
+        #         return 1
+        #     elif t == 0:
+        #         return f_left(t, aplha, delta)
 
         if ep_ddi_dict is None or lp_ddi_dict is None:
             eddi = None

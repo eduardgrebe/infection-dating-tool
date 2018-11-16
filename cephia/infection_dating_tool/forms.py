@@ -366,8 +366,8 @@ class GroupedModelMultiChoiceField(Grouped, ModelMultipleChoiceField):
 class GlobalParametersForm(forms.Form):
 
     CALCULATE_CHOICES = (
-        (False, 'Using Median diagnostic delays'),
-        (True, 'As Credibility Intervals using posterior probability density')
+        (True, 'Using Median diagnostic delays'),
+        (False, 'As Credibility Intervals using posterior probability density')
     )
 
     growth_rate = forms.FloatField(required=True, label='Viral load growth rate estimate')
