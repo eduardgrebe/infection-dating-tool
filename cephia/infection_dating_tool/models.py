@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.db.models import QuerySet
 from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
 from scipy.integrate import trapz
+from scipy.optimize import brentq
 import math
 import os
 
@@ -19,6 +20,7 @@ class IDTDiagnosticTestHistory(models.Model):
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
     test_result = models.CharField(max_length=15, null=True, blank=False)
+    diagnostic_delay = models.FloatField(null=True, blank=True)
     sigma = models.FloatField(null=True, blank=True)
     warning = models.CharField(max_length=255, null=True, blank=True)
 
@@ -221,22 +223,43 @@ class IDTSubject(models.Model):
 
         ci, created = CredibilityInterval.objects.get_or_create(user=user)
         # we will check for ci.calculate_ci and then run new calculation else the bellow code
-
-        # def f(t, alpha=2):
-        #     return exp(t*alpha)
-
         # auc = integrate(f([lower=-100, upper=100], alpha=2), lower=-100, upper=100, alpha=2)
 
-        # def f_left(t, alpha, delta):
-        #     return (1 - (1 - math.exp(alpha*t)) / (1 - math.exp(-alpha*delta)) / 2)
+        def f_left(t, alpha, delta):
+            return (1 - (1 - math.exp(alpha*t)) / (1 - math.exp(-alpha*delta))) / 2
 
-        # def f(t, alpha, delta):
-        #     if t < delta:
-        #         return 0
-        #     elif t > delta:
-        #         return 1
-        #     elif t == 0:
-        #         return f_left(t, aplha, delta)
+        def f(t, alpha, delta):
+            if t < -delta:
+                return 0
+            elif t > delta:
+                return 1
+            elif t <= 0:
+                return f_left(t, alpha, delta)
+            elif t > 0:
+                return 1 - f_left(-t, alpha, delta)
+
+        def signma_tree(alpha, sigma, diagnostic_delay):
+            delta = min(3*sigma, diagnostic_delay)
+            variance = sigma ** 2
+            return (2 + (-2 - alpha * delta * (2 + alpha * delta)) * math.exp(-alpha * delta)) / (alpha ** 2 * (1 - math.exp(-alpha * delta))) - variance
+
+        # d = diagnostic_delay
+        # alpha = uniroot(f = sigma_tree, lower = 1/(10*sigma), upper = 5*(1/sigma), sigma = sigma, d = d)$root
+
+        calculate_ci = ci.calculate_ci
+        neg_adjusted_date = ep_ddi_dict['date']
+        pos_adjusted_date = lp_ddi_dict['date']
+        neg_diagnostic_delay = ep_ddi_dict['diagnostic_delay']
+        # pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
+        neg_sigma = ep_ddi_dict['sigma']
+        big_delta = (pos_adjusted_date - neg_adjusted_date).days
+        ep_ddi = None
+        lp_ddi = None
+
+        value = brentq(f=signma_tree, a=1/(10*neg_sigma), b=5*(1/neg_sigma), args=(neg_sigma, neg_diagnostic_delay))
+
+        if (big_delta and big_delta <= 0) or not big_delta:
+            calculate_ci = False
 
         if ep_ddi_dict is None or lp_ddi_dict is None:
             eddi = None
@@ -249,13 +272,9 @@ class IDTSubject(models.Model):
                 # check that this is true
                 flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
 
-        elif ci.calculate_ci:
-            neg_adjusted_date = ep_ddi_dict['date']
-            pos_adjusted_date = lp_ddi_dict['date']
-
-            delta = (pos_adjusted_date - neg_adjusted_date).days
+        elif calculate_ci:
             lower_median = 0
-            upper_median = delta
+            upper_median = big_delta
             # we are going to have to define something like weibull_negative and weibull_positive and likelyhood/ posterior
             # define ep_ddi date as t = 0
             # center the negative and positive likelihood curves on lower and upper median
@@ -266,20 +285,18 @@ class IDTSubject(models.Model):
             # ?? the min of the two x values (t1 & t2) is ep_ddi and max is lp_ddi
 
             t1 = 0
-            t2 = delta
+            t2 = big_delta
             ep_ddi = neg_adjusted_date + timedelta(days=round(t1))
             lp_ddi = neg_adjusted_date + timedelta(days=round(t2))
-            flag += self.check_for_discordant_dates(data_file)
-            interval_size = (lp_ddi - ep_ddi).days
-            eddi = ep_ddi + timedelta(days=(interval_size / 2))
 
         else:
             ep_ddi = ep_ddi_dict['date']
             lp_ddi = lp_ddi_dict['date']
+
+        if ep_ddi and lp_ddi:
             flag += self.check_for_discordant_dates(data_file)
             interval_size = (lp_ddi - ep_ddi).days
-            eddi = ep_ddi_dict['date'] + timedelta(days=(interval_size / 2))
-
+            eddi = ep_ddi + timedelta(days=(interval_size / 2))
 
         absolute_interval_size = None
         if interval_size or interval_size == 0:
