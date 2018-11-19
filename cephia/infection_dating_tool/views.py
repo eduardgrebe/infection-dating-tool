@@ -222,6 +222,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     context['global_tests'] = global_tests_dict
     context['form'] = form
     context['confidence_level'] = (1 - credibility_interval.alpha) * 100
+    context['credibility_interval'] = credibility_interval
 
     return render(request, template, context)
 
@@ -966,7 +967,7 @@ def reset_defaults_calculation_params(request):
 
     credibility_interval, created = CredibilityInterval.objects.get_or_create(user=user)
     credibility_interval.alpha = 0.05
-    credibility_interval.calculate_ci = False
+    credibility_interval.calculate_ci = True
     credibility_interval.save()
 
     return redirect("tests")
