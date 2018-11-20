@@ -5,37 +5,67 @@
 {% block content %}
   <div class="container_nav">
 
-    <h2>Calculation parameters</h2>
-    <div class="tests--form">
-      <form method="post">{% csrf_token %}
-        <div class="tests--form_field">
-          <div class="tests--form_label">
-            Viral load growth rate estimate
-          </div>
-          <div class="tests--input">
-            {% bootstrap_field form.growth_rate show_label=False %}
-          </div>
-          <div class="tests--form_text">
-            <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
-          </div>
+    <div class="panel panel-info">
+
+      <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
+        <h3 class="panel-title">Calculation parameters: <i>EP- & LP-DDI will {% if credibility_interval.calculate_ci %}represent {{ confidence_level }}% Credibility Intervals{% else %}be based on Median diagnostic delays{% endif %}</i></h3>
+      </div>
+
+
+
+      <div id="panel" class="panel-collapse {% if not data_form_error %}collapse{% endif %}">
+
+        <div class="panel-body infectious_period--radio_selection">
+          <form method="post">{% csrf_token %}
+
+            <div class="row tests--form_field_row" >
+              <div class="col-12" >
+                <div class="tests--form_field">
+                  <div class="tests--form_label">
+                    Viral load growth rate estimate
+                  </div>
+                  <div class="tests--input">
+                    {% bootstrap_field form.growth_rate show_label=False %}
+                  </div>
+                  <div class="tests--form_text">
+                    <i>Fiebig et al. (AIDS 2003): 0.35 log<sub>10</sub> copies/ml/day</i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row tests--form_field_row" >
+              <div class="col-6">
+                <div class="tests--form_field">
+                  <div class="tests--form_label">
+                    Calculate DDI bounds:
+                  </div>
+                  <div class="tests--input">
+                    {% bootstrap_field form.calculate_ci show_label=False %}
+                  </div>
+                </div>
+              </div>
+
+              <div id="alpha-input" class="col-6">
+                <div class="tests--form_field">
+                  <div class="tests--form_label">
+                    Significance level (alpha) for credibility intervals
+                  </div>
+                  <div class="tests--input">
+                    {% bootstrap_field form.alpha show_label=False %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <input type="submit" class="btn btn-primary tests--submit" value="Submit" />
+            <a href="{% url 'reset_defaults_calculation_params' %}" class="btn btn-danger tests--reset">
+              Reset to defaults
+            </a>
+          </form>
         </div>
 
-        <div class="tests--form_field">
-          <div class="tests--form_label">
-            Intersubject variability adjustment factor
-          </div>
-          <div class="tests--input">
-            {% bootstrap_field form.adjustment_factor show_label=False %}
-          </div>
-          <div class="tests--form_text">
-            <i>standard deviations</i>
-          </div>
-        </div>
-        <input type="submit" class="btn btn-primary tests--submit" value="Submit" />
-        <a href="{% url 'reset_defaults_calculation_params' %}" class="btn btn-danger tests--reset">
-          Reset to defaults
-        </a>
-      </form>
+      </div>
     </div>
     <br>
 
@@ -131,6 +161,25 @@
              }
          })
      })
+
+     $('#id_calculate_ci').change(function(event) {
+         var value = $(this).val();
+         if (value == 'False') {
+             $('#alpha-input').hide()
+         } else {
+             $('#alpha-input').show()
+         }
+     })
+
+     function set_alpha_display() {
+         var value = $('#id_calculate_ci').val();
+         if (value == 'False') {
+             $('#alpha-input').hide()
+         } else {
+             $('#alpha-input').show()
+         }
+     }
+     set_alpha_display();
     </script>
 
   </div>

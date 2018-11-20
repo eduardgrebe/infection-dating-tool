@@ -1,12 +1,16 @@
 from __future__ import unicode_literals
-import os
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db import models
-from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
-from django.db.models import QuerySet
-from datetime import timedelta
 from django.db.models import Q
+from django.db.models import QuerySet
 import math
+import os
+
+from . import calculations
+from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
+
 
 class IDTDiagnosticTestHistory(models.Model):
     class Meta:
@@ -18,6 +22,9 @@ class IDTDiagnosticTestHistory(models.Model):
     test_date = models.DateField(null=True, blank=False)
     adjusted_date = models.DateField(null=True, blank=False)
     test_result = models.CharField(max_length=15, null=True, blank=False)
+    diagnostic_delay = models.FloatField(null=True, blank=True)
+    sigma = models.FloatField(null=True, blank=True)
+    warning = models.CharField(max_length=255, null=True, blank=True)
 
     def __unicode__(self):
         return u'%s - %s' % (self.test_date, self.test_result)
@@ -187,12 +194,9 @@ class IDTSubject(models.Model):
 
     subject_label = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, related_name='subjects')
-    edsc_reported  = models.DateField(null=True, blank=True, default=None)
-
     ep_ddi = models.DateField(null=True, blank=True)
     lp_ddi = models.DateField(null=True, blank=True)
     interval_size = models.IntegerField(null=True, blank=True)
-    edsc_days_difference = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
     flag = models.CharField(max_length=255, null=True, blank=False)
 
@@ -216,39 +220,95 @@ class IDTSubject(models.Model):
         else:
             return ''
 
-    def calculate_eddi(self, user, data_file, lp_ddi, ep_ddi):
-        edsc_days_diff = None
+    def calculate_eddi(self, user, data_file, lp_ddi_dict, ep_ddi_dict):
         flag = self.check_for_identical_dates(data_file)
 
-        if ep_ddi is None or lp_ddi is None:
+        ci, created = CredibilityInterval.objects.get_or_create(user=user)
+
+        neg_adjusted_date = ep_ddi_dict['date']
+        neg_sigma = ep_ddi_dict['sigma']
+        neg_diagnostic_delay = ep_ddi_dict['diagnostic_delay']
+
+        pos_adjusted_date = lp_ddi_dict['date']
+        pos_sigma = lp_ddi_dict['sigma']
+        pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
+
+        big_delta = (pos_adjusted_date - neg_adjusted_date).days
+        ep_ddi = None
+        lp_ddi = None
+
+        ci_failed = False
+        calculate_ci = ci.calculate_ci
+        if (big_delta and big_delta <= 0):
+            calculate_ci = False
+            flag += 'Credibility interval cannot be calculated if results are in unexpexted order\n'
+        elif not big_delta:
+            calculate_ci = False
+            flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
+
+        if ep_ddi_dict is None or lp_ddi_dict is None:
             eddi = None
             interval_size = None
-            if not lp_ddi:
+            if not lp_ddi_dict:
                 flag += 'Only negative tests reported\n'
-            if not ep_ddi:
+            if not ep_ddi_dict:
                 flag += 'Only positive tests reported\n'
+            if ci.calculate_ci:
+                flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
+
+        elif calculate_ci:
+            t1 = 0
+            d1 = neg_diagnostic_delay
+            sigma1 = neg_sigma
+            delta1, scale1 = calculations.find_delta_scale(d1, sigma1)
+
+            t2 = big_delta
+            d2 = pos_diagnostic_delay
+            sigma2 = pos_sigma
+            delta2, scale2 = calculations.find_delta_scale(d2, sigma2)
+
+            alpha = ci.alpha
+
+            ep_ddi_t, lp_ddi_t, error = calculations.find_ci_limits(t1, t2, scale1, delta1, scale2, delta2, alpha)
+
+            ep_ddi = ep_ddi_dict['date'] + relativedelta(days=ep_ddi_t)
+            lp_ddi = ep_ddi_dict['date'] + relativedelta(days=lp_ddi_t)
+
+            if error:
+                ci_failed = True
+            else:
+                flag += 'EP-DDI & LP-DDI represent {}% Credibility Interval\n'.format(int(round((1 - alpha) * 100)))
+
         else:
+            ep_ddi = ep_ddi_dict['date']
+            lp_ddi = lp_ddi_dict['date']
+            flag += 'EP-DDI & LP-DDI based on median diagnostic delays\n'
+
+        if ci_failed:
+            ep_ddi = ep_ddi_dict['date']
+            lp_ddi = lp_ddi_dict['date']
+            flag += 'Credibility interval could not be calculated. EP-DDI & LP-DDI based on median diagnostic delays\n'
+
+        if ep_ddi and lp_ddi:
             flag += self.check_for_discordant_dates(data_file)
-            eddi = ep_ddi + timedelta(days=((lp_ddi - ep_ddi).days / 2))
             interval_size = (lp_ddi - ep_ddi).days
+            eddi = ep_ddi + timedelta(days=(interval_size / 2))
+
+        absolute_interval_size = None
+        if interval_size or interval_size == 0:
             absolute_interval_size = abs(interval_size)
 
-            if interval_size < 0:
-                flag += 'Unexpected ordering of EPDDI and LPDDI\n'
-            if absolute_interval_size < 10:
-                flag += 'EPDDI and LPDDI less than 10 days apart\n'
-
+        if (interval_size or interval_size == 0) and interval_size < 0:
+            flag += 'Unexpected ordering of EPDDI and LPDDI\n'
+        if (absolute_interval_size or absolute_interval_size == 0) and absolute_interval_size < 10:
+            flag += 'EPDDI and LPDDI less than 10 days apart\n'
 
         if flag:
             self.flag = flag
 
-        if self.edsc_reported and eddi:
-            edsc_days_diff = timedelta(days=(eddi - self.edsc_reported).days).days
-
-        self.ep_ddi=ep_ddi
-        self.lp_ddi=lp_ddi
-        self.interval_size=interval_size
-        self.edsc_days_difference=edsc_days_diff
+        self.ep_ddi = ep_ddi
+        self.lp_ddi = lp_ddi
+        self.interval_size = interval_size
         self.eddi = eddi
         self.save()
 
@@ -337,12 +397,10 @@ class ResidualRisk(models.Model):
     upper_limit = models.FloatField(null=False, default=0)
 
 
-class VariabilityAdjustment(models.Model):
-    adjustment_factor = models.FloatField(null=False, blank=False, default=0.0, verbose_name='Intersubject variability adjustment factor (SDs)')
-    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True)
-
-    class Meta:
-        unique_together = ('user', 'adjustment_factor')
+class CredibilityInterval(models.Model):
+    calculate_ci = models.BooleanField(blank=False, default=False)
+    alpha = models.FloatField(null=False, blank=False, default=0.05, verbose_name='Significance level (alpha) for credibility intervals')
+    user = ProtectedForeignKey('cephia.CephiaUser', null=True, blank=True, unique=True)
 
 
 def get_user_growth_rate(user):

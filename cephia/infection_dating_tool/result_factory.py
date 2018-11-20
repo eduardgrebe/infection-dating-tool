@@ -1,6 +1,3 @@
-from itertools import chain
-from django.conf import settings
-
 class ResultDownload(object):
 
     def __init__(self, results):
@@ -25,5 +22,5 @@ class ResultDownload(object):
     def prepare_content(self):
         columns = ['subject_label', 'ep_ddi', 'lp_ddi', 'interval_size', 'eddi', 'flag']
         for result in self.results:
-            row = [ self.getattr_or_none(result, c) for c in columns ]
+            row = [self.getattr_or_none(result, c) for c in columns]
             self.content.append(row)

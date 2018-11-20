@@ -6,9 +6,9 @@ SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
 
 class ApiSession(object):
     def __init__(self, username, password, ui_login=True):
-        response = api.post_with_token(None, "users/login", { 
+        response = api.post_with_token(None, "users/login", {
             'username': username,
-            'password': password 
+            'password': password
         })
 
         if response['status'] == 'ok':
@@ -19,7 +19,7 @@ class ApiSession(object):
                 session = requests.Session()
                 session.get(settings.BASE_URL + settings.LOGIN_URL)
                 post_data = {
-                    'username': username, 
+                    'username': username,
                     'password': password,
                     'csrfmiddlewaretoken': session.cookies['csrftoken']
                 }
@@ -47,5 +47,3 @@ class ApiSession(object):
                 url = '/' + url
             url = settings.BASE_URL + url
         return self._session.post(url, *args, **kwargs)
-    
-

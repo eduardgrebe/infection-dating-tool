@@ -23,7 +23,7 @@ from user_management.forms import UserPasswordForm
 from models import (
     IDTDiagnosticTest, IDTTestPropertyEstimate, TestPropertyMapping,
     IDTFileInfo, IDTDiagnosticTestHistory, IDTSubject, SelectedCategory,
-    GrowthRateEstimate, ResidualRisk, VariabilityAdjustment
+    GrowthRateEstimate, ResidualRisk, CredibilityInterval
 )
 from graph_image_generator import heat_map_graph
 from cephia.models import CephiaUser
@@ -203,9 +203,9 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     global_tests = IDTDiagnosticTest.objects.filter(user__isnull=True).order_by('category', 'name')
     global_tests_dict = OrderedDict()
     gre = get_user_growth_rate(user)
-    adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
+    credibility_interval, created = CredibilityInterval.objects.get_or_create(user=user)
 
-    form = GlobalParametersForm(gre, adj_factor, request.POST or None)
+    form = GlobalParametersForm(gre, credibility_interval, request.POST or None)
 
     for category in CATEGORIES:
         if category[0] != 'No category':
@@ -216,10 +216,13 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
 
     if request.method == 'POST' and form.is_valid():
         form.save(user)
+        credibility_interval, created = CredibilityInterval.objects.get_or_create(user=user)
 
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests_dict
     context['form'] = form
+    context['confidence_level'] = int(round((1 - credibility_interval.alpha) * 100))
+    context['credibility_interval'] = credibility_interval
 
     return render(request, template, context)
 
@@ -690,45 +693,47 @@ def process_data_file(request, file_id, context=None):
         subject_pks = list(data_file.test_history.all().values_list('subject', flat=True).distinct())
         subjects = IDTSubject.objects.filter(pk__in=subject_pks)
         update_adjusted_dates(user, data_file)
+
         lp_ddis = IDTDiagnosticTestHistory.objects.filter(
             data_file=data_file,
             test_result='Positive'
         )
         lp_ddis_dict = {}
-        # lp_ddis = lp_ddis.values('subject')
-        for subject in subjects:
-            subject_rows = lp_ddis.filter(subject=subject)
-            if not subject_rows:
-                lp_ddis_dict[subject] = None
-            else:
-                subject_dates = subject_rows.values_list('adjusted_date', flat=True)
-                lp_ddis_dict[subject] = min(subject_dates)
-
-
-        # lp_ddis = lp_ddis.annotate(earliest_positive=Min('adjusted_date'))
-        # lp_ddis = dict((v['subject'], v['earliest_positive']) for v in lp_ddis)
 
         ep_ddis = IDTDiagnosticTestHistory.objects.filter(
             data_file=data_file,
             test_result='Negative'
         )
         ep_ddis_dict = {}
+
         for subject in subjects:
-            subject_rows = ep_ddis.filter(subject=subject)
-            if not subject_rows:
+            lp_subject_rows = lp_ddis.filter(subject=subject).order_by('adjusted_date')
+            if not lp_subject_rows:
+                lp_ddis_dict[subject] = None
+            else:
+                lp_ddis_dict[subject] = {
+                    'date': lp_subject_rows.first().adjusted_date,
+                    'diagnostic_delay': lp_subject_rows.first().diagnostic_delay,
+                    'sigma': lp_subject_rows.first().sigma,
+                    'warning': lp_subject_rows.first().warning
+                }
+
+            ep_subject_rows = ep_ddis.filter(subject=subject).order_by('adjusted_date')
+            if not ep_subject_rows:
                 ep_ddis_dict[subject] = None
             else:
-                subject_dates = subject_rows.values_list('adjusted_date', flat=True)
-                ep_ddis_dict[subject] = max(subject_dates)
+                ep_ddis_dict[subject] = {
+                    'date': ep_subject_rows.first().adjusted_date,
+                    'diagnostic_delay': ep_subject_rows.first().diagnostic_delay,
+                    'sigma': ep_subject_rows.first().sigma,
+                    'warning': ep_subject_rows.first().warning
+                }
 
-        # ep_ddis = ep_ddis.values('subject')
-        # ep_ddis = ep_ddis.annotate(latest_negative=Max('adjusted_date'))
-        # ep_ddis = dict((v['subject'], v['latest_negative']) for v in ep_ddis)
 
         with transaction.atomic():
             for subject in subjects:
                 subject.calculate_eddi(user, data_file, lp_ddis_dict[subject], ep_ddis_dict[subject])
-                # subject.calculate_eddi(user, data_file, lp_ddis.get(subject.pk), ep_ddis.get(subject.pk))
+
         data_file.state = 'processed'
         data_file.save()
         messages.info(request, 'Data Processed')
@@ -962,9 +967,10 @@ def reset_defaults_calculation_params(request):
     growth_rate.growth_rate = global_rate.growth_rate
     growth_rate.save()
 
-    adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
-    adj_factor.adjustment_factor = 0.0
-    adj_factor.save()
+    credibility_interval, created = CredibilityInterval.objects.get_or_create(user=user)
+    credibility_interval.alpha = 0.05
+    credibility_interval.calculate_ci = True
+    credibility_interval.save()
 
     return redirect("tests")
 
@@ -1107,21 +1113,34 @@ def update_adjusted_dates(user, data_file):
 
         dates_means = dict( (v[2], (v[1], map_property_means[v[0]])) for v in test_history_dates )
 
-        adj_factor, created = VariabilityAdjustment.objects.get_or_create(user=user)
-        adj_factor = adj_factor.adjustment_factor
+        # credibility_interval, created = CredibilityInterval.objects.get_or_create(user=user)
+        # ci = credibility_interval
 
         for test_history in file_test_history:
             dict_values = dates_means[test_history.id]
             test_date = dict_values[0]
             diagnostic_delay = dict_values[1][0]
+
+            test_history.warning = ''
             sigma = dict_values[1][1]
             if not sigma:
                 sigma = 0.2 * diagnostic_delay
+                test_history.warning = 'Sigma unknown. RSE of 20% used (d={}, sigma-{})'.format(diagnostic_delay, sigma)
+            test_history.sigma = sigma
+            test_history.diagnostic_delay = diagnostic_delay
 
             if test_history.test_result.lower() == 'positive':
-                adj_diagnostic_delay = int(round(diagnostic_delay - (adj_factor * sigma)))
+                adj_diagnostic_delay = int(round(diagnostic_delay))
             elif test_history.test_result.lower() == 'negative':
-                adj_diagnostic_delay = int(round(diagnostic_delay + (adj_factor * sigma)))
+                adj_diagnostic_delay = int(round(diagnostic_delay))
+
+            # if ci.calculate_ci:
+            #     adj_diagnostic_delay = int(round(diagnostic_delay))
+            # else:
+            #     if test_history.test_result.lower() == 'positive':
+            #         adj_diagnostic_delay = int(round(diagnostic_delay))
+            #     elif test_history.test_result.lower() == 'negative':
+            #         adj_diagnostic_delay = int(round(diagnostic_delay))
 
             test_history.adjusted_date = test_date - relativedelta(days=adj_diagnostic_delay)
             test_history.save()
