@@ -4,11 +4,13 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models import QuerySet
-from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
-from scipy.integrate import trapz
 from scipy.optimize import brentq
 import math
 import os
+
+from . import calculations
+from lib.fields import ProtectedForeignKey, OneToOneOrNoneField
+
 
 class IDTDiagnosticTestHistory(models.Model):
     class Meta:
@@ -225,39 +227,24 @@ class IDTSubject(models.Model):
         # we will check for ci.calculate_ci and then run new calculation else the bellow code
         # auc = integrate(f([lower=-100, upper=100], alpha=2), lower=-100, upper=100, alpha=2)
 
-        def f_left(t, alpha, delta):
-            return (1 - (1 - math.exp(alpha*t)) / (1 - math.exp(-alpha*delta))) / 2
-
-        def f(t, alpha, delta):
-            if t < -delta:
-                return 0
-            elif t > delta:
-                return 1
-            elif t <= 0:
-                return f_left(t, alpha, delta)
-            elif t > 0:
-                return 1 - f_left(-t, alpha, delta)
-
-        def signma_tree(alpha, sigma, diagnostic_delay):
-            delta = min(3*sigma, diagnostic_delay)
-            variance = sigma ** 2
-            return (2 + (-2 - alpha * delta * (2 + alpha * delta)) * math.exp(-alpha * delta)) / (alpha ** 2 * (1 - math.exp(-alpha * delta))) - variance
-
         # d = diagnostic_delay
         # alpha = uniroot(f = sigma_tree, lower = 1/(10*sigma), upper = 5*(1/sigma), sigma = sigma, d = d)$root
 
-        calculate_ci = ci.calculate_ci
         neg_adjusted_date = ep_ddi_dict['date']
-        pos_adjusted_date = lp_ddi_dict['date']
-        neg_diagnostic_delay = ep_ddi_dict['diagnostic_delay']
-        # pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
         neg_sigma = ep_ddi_dict['sigma']
+        neg_diagnostic_delay = ep_ddi_dict['diagnostic_delay']
+
+        pos_adjusted_date = lp_ddi_dict['date']
+        # pos_sigma = lp_ddi_dict['sigma']
+        # pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
+
         big_delta = (pos_adjusted_date - neg_adjusted_date).days
         ep_ddi = None
         lp_ddi = None
 
-        value = brentq(f=signma_tree, a=1/(10*neg_sigma), b=5*(1/neg_sigma), args=(neg_sigma, neg_diagnostic_delay))
+        value = brentq(f=calculations.signma_tree, a=1/(10*neg_sigma), b=5*(1/neg_sigma), args=(neg_sigma, neg_diagnostic_delay))
 
+        calculate_ci = ci.calculate_ci
         if (big_delta and big_delta <= 0) or not big_delta:
             calculate_ci = False
 
