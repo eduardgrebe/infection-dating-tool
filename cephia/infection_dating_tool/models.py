@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models import QuerySet
-from scipy.optimize import brentq
 import math
 import os
 
@@ -224,29 +224,27 @@ class IDTSubject(models.Model):
         flag = self.check_for_identical_dates(data_file)
 
         ci, created = CredibilityInterval.objects.get_or_create(user=user)
-        # we will check for ci.calculate_ci and then run new calculation else the bellow code
-        # auc = integrate(f([lower=-100, upper=100], alpha=2), lower=-100, upper=100, alpha=2)
-
-        # d = diagnostic_delay
-        # alpha = uniroot(f = sigma_tree, lower = 1/(10*sigma), upper = 5*(1/sigma), sigma = sigma, d = d)$root
 
         neg_adjusted_date = ep_ddi_dict['date']
         neg_sigma = ep_ddi_dict['sigma']
         neg_diagnostic_delay = ep_ddi_dict['diagnostic_delay']
 
         pos_adjusted_date = lp_ddi_dict['date']
-        # pos_sigma = lp_ddi_dict['sigma']
-        # pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
+        pos_sigma = lp_ddi_dict['sigma']
+        pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
 
         big_delta = (pos_adjusted_date - neg_adjusted_date).days
         ep_ddi = None
         lp_ddi = None
 
-        value = brentq(f=calculations.signma_tree, a=1/(10*neg_sigma), b=5*(1/neg_sigma), args=(neg_sigma, neg_diagnostic_delay))
-
+        ci_failed = False
         calculate_ci = ci.calculate_ci
-        if (big_delta and big_delta <= 0) or not big_delta:
+        if (big_delta and big_delta <= 0):
             calculate_ci = False
+            flag += 'Credibility interval cannot be calculated if results are in unexpexted order\n'
+        elif not big_delta:
+            calculate_ci = False
+            flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
 
         if ep_ddi_dict is None or lp_ddi_dict is None:
             eddi = None
@@ -256,29 +254,40 @@ class IDTSubject(models.Model):
             if not ep_ddi_dict:
                 flag += 'Only positive tests reported\n'
             if ci.calculate_ci:
-                # check that this is true
                 flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
 
         elif calculate_ci:
-            lower_median = 0
-            upper_median = big_delta
-            # we are going to have to define something like weibull_negative and weibull_positive and likelyhood/ posterior
-            # define ep_ddi date as t = 0
-            # center the negative and positive likelihood curves on lower and upper median
-            # ?? define full likelihood
-            # ?? define function for integral of full likelihood
-            # ?? find y value of integral function where area above y is equal to 1 - alpha
-            # ?? lookup the two x values that yield that y value
-            # ?? the min of the two x values (t1 & t2) is ep_ddi and max is lp_ddi
-
             t1 = 0
+            d1 = neg_diagnostic_delay
+            sigma1 = neg_sigma
+            delta1, scale1 = calculations.find_delta_scale(d1, sigma1)
+
             t2 = big_delta
-            ep_ddi = neg_adjusted_date + timedelta(days=round(t1))
-            lp_ddi = neg_adjusted_date + timedelta(days=round(t2))
+            d2 = pos_diagnostic_delay
+            sigma2 = pos_sigma
+            delta2, scale2 = calculations.find_delta_scale(d2, sigma2)
+
+            alpha = ci.alpha
+
+            ep_ddi_t, lp_ddi_t, error = calculations.find_ci_limits(t1, t2, scale1, delta1, scale2, delta2, alpha)
+
+            ep_ddi = ep_ddi_dict['date'] + relativedelta(days=ep_ddi_t)
+            lp_ddi = ep_ddi_dict['date'] + relativedelta(days=lp_ddi_t)
+
+            if error:
+                ci_failed = True
+            else:
+                flag += 'EP-DDI & LP-DDI represent {}% Credibility Interval\n'.format(int(round((1 - alpha) * 100)))
 
         else:
             ep_ddi = ep_ddi_dict['date']
             lp_ddi = lp_ddi_dict['date']
+            flag += 'EP-DDI & LP-DDI based on median diagnostic delays\n'
+
+        if ci_failed:
+            ep_ddi = ep_ddi_dict['date']
+            lp_ddi = lp_ddi_dict['date']
+            flag += 'Credibility interval could not be calculated. EP-DDI & LP-DDI based on median diagnostic delays\n'
 
         if ep_ddi and lp_ddi:
             flag += self.check_for_discordant_dates(data_file)
