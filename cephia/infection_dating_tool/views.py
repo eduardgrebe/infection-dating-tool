@@ -221,7 +221,7 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests_dict
     context['form'] = form
-    context['confidence_level'] = (1 - credibility_interval.alpha) * 100
+    context['confidence_level'] = int(round((1 - credibility_interval.alpha) * 100))
     context['credibility_interval'] = credibility_interval
 
     return render(request, template, context)
