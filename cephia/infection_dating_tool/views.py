@@ -713,6 +713,7 @@ def process_data_file(request, file_id, context=None):
             else:
                 lp_ddis_dict[subject] = {
                     'date': lp_subject_rows.first().adjusted_date,
+                    'diagnostic_delay': lp_subject_rows.first().diagnostic_delay,
                     'sigma': lp_subject_rows.first().sigma,
                     'warning': lp_subject_rows.first().warning
                 }
@@ -723,6 +724,7 @@ def process_data_file(request, file_id, context=None):
             else:
                 ep_ddis_dict[subject] = {
                     'date': ep_subject_rows.first().adjusted_date,
+                    'diagnostic_delay': ep_subject_rows.first().diagnostic_delay,
                     'sigma': ep_subject_rows.first().sigma,
                     'warning': ep_subject_rows.first().warning
                 }
@@ -1125,6 +1127,7 @@ def update_adjusted_dates(user, data_file):
                 sigma = 0.2 * diagnostic_delay
                 test_history.warning = 'Sigma unknown. RSE of 20% used (d={}, sigma-{})'.format(diagnostic_delay, sigma)
             test_history.sigma = sigma
+            test_history.diagnostic_delay = diagnostic_delay
 
             if test_history.test_result.lower() == 'positive':
                 adj_diagnostic_delay = int(round(diagnostic_delay))
