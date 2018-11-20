@@ -20,8 +20,6 @@ ipython
 kombu==3.0.35
 matplotlib==1.5.1
 numpy==1.13.0
-paramiko==1.15.2
-pycrypto==2.6.1
 python-dateutil==2.4.2
 pytz==2015.4
 raven==5.13.0
