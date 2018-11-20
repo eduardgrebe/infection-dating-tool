@@ -31,11 +31,6 @@ likelihood <- function(t, t1 = 0, t2, scale1, delta1, scale2, delta2) {
   f(t = t, t_centre = t1, scale = scale1, delta = delta1) * g(t = t, t_centre = t2, scale = scale2, delta = delta2)
 }
 
-
-# testing
-d <- 15
-sigma <- 0.5
-
 find_scale_delta <- function(d, sigma) {
   if ((delta <- 3*sigma) < d) {
     #delta <- 3*sigma
@@ -47,21 +42,18 @@ find_scale_delta <- function(d, sigma) {
   return(c(delta = delta, scale = scale))
 }
 
-scale_delta <- find_scale_delta(d = 15, sigma =1)
-
-
 
 t1 <- 0
 d1 <- 15
-sigma1 <- 2
-delta1 <- min(3*sigma1,d1)
-scale1 <- uniroot(f = sigma_tree, lower = 1/(10*sigma1), upper = 5*(1/sigma1), sigma = sigma1, d = d1)$root
+sigma1 <- 0.2*d1
+delta1 <- find_scale_delta(d = d1, sigma = sigma1)[[1]]
+scale1 <- find_scale_delta(d = d1, sigma = sigma1)[[2]]
 
 t2 <- 25
 d2 <- 13
-sigma2 <- 2
-delta2 <- min(3*sigma2,d2)
-scale2 <- uniroot(f = sigma_tree, lower = 1/(10*sigma2), upper = 5*(1/sigma2), sigma = sigma2, d = d2)$root
+sigma2 <- 0.2*d2
+delta2 <- find_scale_delta(d = d2, sigma = sigma2)[[1]]
+scale2 <- find_scale_delta(d = d2, sigma = sigma2)[[2]]
 
 plot(x = seq(-20,50,0.1), 
      y = likelihood(t = seq(-20,50,0.1), t1 = t1, t2 = t2, 
