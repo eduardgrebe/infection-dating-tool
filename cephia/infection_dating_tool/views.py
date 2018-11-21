@@ -221,7 +221,8 @@ def tests(request, file_id=None, template="infection_dating_tool/tests.html"):
     context['user_tests'] = user_tests
     context['global_tests'] = global_tests_dict
     context['form'] = form
-    context['confidence_level'] = (1 - credibility_interval.alpha) * 100
+    context['confidence_level'] = int(round((1 - credibility_interval.alpha) * 100))
+    context['credibility_interval'] = credibility_interval
 
     return render(request, template, context)
 
@@ -712,6 +713,7 @@ def process_data_file(request, file_id, context=None):
             else:
                 lp_ddis_dict[subject] = {
                     'date': lp_subject_rows.first().adjusted_date,
+                    'diagnostic_delay': lp_subject_rows.first().diagnostic_delay,
                     'sigma': lp_subject_rows.first().sigma,
                     'warning': lp_subject_rows.first().warning
                 }
@@ -721,9 +723,10 @@ def process_data_file(request, file_id, context=None):
                 ep_ddis_dict[subject] = None
             else:
                 ep_ddis_dict[subject] = {
-                    'date': ep_subject_rows.first().adjusted_date,
-                    'sigma': ep_subject_rows.first().sigma,
-                    'warning': ep_subject_rows.first().warning
+                    'date': ep_subject_rows.last().adjusted_date,
+                    'diagnostic_delay': ep_subject_rows.last().diagnostic_delay,
+                    'sigma': ep_subject_rows.last().sigma,
+                    'warning': ep_subject_rows.last().warning
                 }
 
 
@@ -966,7 +969,7 @@ def reset_defaults_calculation_params(request):
 
     credibility_interval, created = CredibilityInterval.objects.get_or_create(user=user)
     credibility_interval.alpha = 0.05
-    credibility_interval.calculate_ci = False
+    credibility_interval.calculate_ci = True
     credibility_interval.save()
 
     return redirect("tests")
@@ -1124,6 +1127,7 @@ def update_adjusted_dates(user, data_file):
                 sigma = 0.2 * diagnostic_delay
                 test_history.warning = 'Sigma unknown. RSE of 20% used (d={}, sigma-{})'.format(diagnostic_delay, sigma)
             test_history.sigma = sigma
+            test_history.diagnostic_delay = diagnostic_delay
 
             if test_history.test_result.lower() == 'positive':
                 adj_diagnostic_delay = int(round(diagnostic_delay))

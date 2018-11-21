@@ -8,8 +8,10 @@
     <div class="panel panel-info">
 
       <div data-toggle="collapse" href="#panel" class="panel-heading infectious_period--header">
-        <h3 class="panel-title">Calculation parameters: <i>EP- & LP-DDI will represent {{ confidence_level }}% Credibility Intervals</i></h3>
+        <h3 class="panel-title">Calculation parameters: <i>EP- & LP-DDI will {% if credibility_interval.calculate_ci %}represent {{ confidence_level }}% Credibility Intervals{% else %}be based on Median diagnostic delays{% endif %}</i></h3>
       </div>
+
+
 
       <div id="panel" class="panel-collapse {% if not data_form_error %}collapse{% endif %}">
 
@@ -162,7 +164,7 @@
 
      $('#id_calculate_ci').change(function(event) {
          var value = $(this).val();
-         if (value == 'True') {
+         if (value == 'False') {
              $('#alpha-input').hide()
          } else {
              $('#alpha-input').show()
@@ -171,7 +173,7 @@
 
      function set_alpha_display() {
          var value = $('#id_calculate_ci').val();
-         if (value == 'True') {
+         if (value == 'False') {
              $('#alpha-input').hide()
          } else {
              $('#alpha-input').show()
