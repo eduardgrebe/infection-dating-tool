@@ -723,10 +723,10 @@ def process_data_file(request, file_id, context=None):
                 ep_ddis_dict[subject] = None
             else:
                 ep_ddis_dict[subject] = {
-                    'date': ep_subject_rows.first().adjusted_date,
-                    'diagnostic_delay': ep_subject_rows.first().diagnostic_delay,
-                    'sigma': ep_subject_rows.first().sigma,
-                    'warning': ep_subject_rows.first().warning
+                    'date': ep_subject_rows.last().adjusted_date,
+                    'diagnostic_delay': ep_subject_rows.last().diagnostic_delay,
+                    'sigma': ep_subject_rows.last().sigma,
+                    'warning': ep_subject_rows.last().warning
                 }
 
 
