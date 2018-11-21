@@ -198,7 +198,7 @@ class IDTSubject(models.Model):
     lp_ddi = models.DateField(null=True, blank=True)
     interval_size = models.IntegerField(null=True, blank=True)
     eddi = models.DateField(null=True, blank=True)
-    flag = models.CharField(max_length=255, null=True, blank=False)
+    flag = models.CharField(max_length=512, null=True, blank=False)
 
     def __unicode__(self):
         return self.subject_label

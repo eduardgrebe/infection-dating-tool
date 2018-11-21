@@ -38,7 +38,7 @@ def find_delta_scale(diagnostic_delay, sigma):
         try:
             scale = brentq(f=sigma_tree, a=1/(10*sigma), b=10*(1/sigma), args=(sigma, diagnostic_delay))
         except Exception:
-            error = 'Scale parameters that satisfies specified sigma could not be found\n'
+            error = 'Under the test sensitivity model in use, the sigma specified could not be attained\n'
             return delta, scale, error
 
     return delta, scale, error

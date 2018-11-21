@@ -489,3 +489,11 @@ ul.eddi-menu li li li.eddiHover ul { left:10em; top:0; }
 .help__index {
     line-height: 10px;
 }
+
+.results-table__flag-cell {
+    width: 50rem;
+}
+
+.results-table__flag {
+    width: 50rem;
+}
