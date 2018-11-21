@@ -4,12 +4,6 @@ This tool enables systematic interpretation of diagnostic test histories into fo
 
 This repository contains the source code for the tool, but potential users are directed to the public hosted version available at [https://tools.incidence-estimation.org/idt/](https://tools.incidence-estimation.org/idt/).
 
-## Theoretical framework
-
-Described in the following article:
-
-* Grebe E,<sup>§</sup> Facente SN,<sup>§</sup> Bingham J, Pilcher CD, Powrie A, Gerber J, Priede G, Chibawara T, Busch MP, Murphy G, Kassanjee R, Welte A.<sup>§</sup> Interpreting Diagnostic Histories into HIV Infection Time Estimates: Framework and Online Tool. bioRxiv. 2018. [doi:10.1101/323808](https://doi.org/10.1101/323808). <sup>§</sup>Contributed equally.
-
 ## License
 
 Copyright of code and content vests in the authors. Code is released under the [GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.en.html), and content under the Creative Commons [Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) license.
@@ -55,7 +49,6 @@ Contributions (by forking the repository and generating pull requests) are encou
 The current supported version is maintained on the `release` branch. Active development takes place on the `development` branch. You can also obtain supported releases via the Github "Releases" tab or at the following stable URL: [doi:10.5281/zenodo.1488117](https://doi.org/10.5281/zenodo.1488117).
 
 For further information, contact [Eduard Grebe](mailto:eduardgrebe@sun.ac.za).
-
 
 ## Funding
 
