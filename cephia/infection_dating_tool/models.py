@@ -260,22 +260,24 @@ class IDTSubject(models.Model):
             t1 = 0
             d1 = neg_diagnostic_delay
             sigma1 = neg_sigma
-            delta1, scale1 = calculations.find_delta_scale(d1, sigma1)
+            delta1, scale1, error = calculations.find_delta_scale(d1, sigma1)
 
             t2 = big_delta
             d2 = pos_diagnostic_delay
             sigma2 = pos_sigma
-            delta2, scale2 = calculations.find_delta_scale(d2, sigma2)
+            delta2, scale2, error = calculations.find_delta_scale(d2, sigma2)
 
-            alpha = ci.alpha
-
-            ep_ddi_t, lp_ddi_t, error = calculations.find_ci_limits(t1, t2, scale1, delta1, scale2, delta2, alpha)
-
-            ep_ddi = ep_ddi_dict['date'] + relativedelta(days=ep_ddi_t)
-            lp_ddi = ep_ddi_dict['date'] + relativedelta(days=lp_ddi_t)
+            if not error:
+                alpha = ci.alpha
+                ep_ddi_t, lp_ddi_t, error = calculations.find_ci_limits(
+                    t1, t2, scale1, delta1, scale2, delta2, alpha
+                )
+                ep_ddi = ep_ddi_dict['date'] + relativedelta(days=ep_ddi_t)
+                lp_ddi = ep_ddi_dict['date'] + relativedelta(days=lp_ddi_t)
 
             if error:
                 ci_failed = True
+                flag += error
             else:
                 flag += 'EP-DDI & LP-DDI represent {}% Credibility Interval\n'.format(int(round((1 - alpha) * 100)))
 
