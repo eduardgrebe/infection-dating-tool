@@ -240,10 +240,10 @@ class IDTSubject(models.Model):
 
         ci_failed = False
         calculate_ci = ci.calculate_ci
-        if (big_delta and big_delta <= 0):
+        if (big_delta and big_delta <= 0) and calculate_ci:
             calculate_ci = False
             flag += 'Credibility interval cannot be calculated if results are in unexpexted order\n'
-        elif not big_delta:
+        elif not big_delta and calculate_ci:
             calculate_ci = False
             flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
 
@@ -254,8 +254,8 @@ class IDTSubject(models.Model):
                 flag += 'Only negative tests reported\n'
             if not ep_ddi_dict:
                 flag += 'Only positive tests reported\n'
-            if ci.calculate_ci:
-                flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
+            ep_ddi = ep_ddi_dict.get('date')
+            lp_ddi = lp_ddi_dict.get('date')
 
         elif calculate_ci:
             t1 = 0
@@ -283,13 +283,13 @@ class IDTSubject(models.Model):
                 flag += 'EP-DDI & LP-DDI represent {}% Credibility Interval\n'.format(int(round((1 - alpha) * 100)))
 
         else:
-            ep_ddi = ep_ddi_dict['date']
-            lp_ddi = lp_ddi_dict['date']
+            ep_ddi = ep_ddi_dict.get('date')
+            lp_ddi = lp_ddi_dict.get('date')
             flag += 'EP-DDI & LP-DDI based on median diagnostic delays\n'
 
         if ci_failed:
-            ep_ddi = ep_ddi_dict['date']
-            lp_ddi = lp_ddi_dict['date']
+            ep_ddi = ep_ddi_dict.get('date')
+            lp_ddi = lp_ddi_dict.get('date')
             flag += 'Credibility interval could not be calculated. EP-DDI & LP-DDI based on median diagnostic delays\n'
 
         if ep_ddi and lp_ddi:
