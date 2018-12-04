@@ -38,7 +38,7 @@ def find_delta_scale(diagnostic_delay, sigma):
         try:
             scale = brentq(f=sigma_tree, a=1/(10*sigma), b=10*(1/sigma), args=(sigma, diagnostic_delay))
         except Exception:
-            error = 'Under the test sensitivity model in use, the sigma specified could not be attained\n'
+            error = 'Under the test sensitivity model in use, the sigma specified could not be attained. '
             return delta, scale, error
 
     return delta, scale, error
@@ -75,7 +75,7 @@ def find_ci_limits(t1, t2, scale1, delta1, scale2, delta2, alpha=0.05):
     if const:
         const = const[0]
     else:
-        error = 'Integral of likelihood function could not be obtained\n'
+        error = 'Integral of likelihood function could not be obtained. '
         return ci_lb, ci_ub, error
 
     ci_lb = brentq(f=posterior_tree, a=t1-3*delta1, b=t2+3*delta2, args=(

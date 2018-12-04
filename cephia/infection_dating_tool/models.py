@@ -206,7 +206,7 @@ class IDTSubject(models.Model):
     def check_for_identical_dates(self, data_file):
         dates = data_file.test_history.filter(subject=self).values_list('test_date', flat=True)
         if len(set(dates)) == 1:
-            return 'All tests reported are on same date\n'
+            return 'All tests reported are on same date. '
         else:
             return ''
 
@@ -216,7 +216,7 @@ class IDTSubject(models.Model):
         duplicates = set(pos_dates).intersection(neg_dates)
 
         if duplicates:
-            return 'Subject has a discordant test date\n'
+            return 'Subject has a discordant test date. '
         else:
             return ''
 
@@ -242,18 +242,18 @@ class IDTSubject(models.Model):
         calculate_ci = ci.calculate_ci
         if (big_delta and big_delta <= 0) and calculate_ci:
             calculate_ci = False
-            flag += 'Credibility interval cannot be calculated if results are in unexpexted order\n'
+            flag += 'Credibility interval cannot be calculated if results are in unexpexted order. '
         elif not big_delta and calculate_ci:
             calculate_ci = False
-            flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
+            flag += 'Credibility interval cannot be calculated without both negative and positive results. '
 
         if not ep_ddi_dict or not lp_ddi_dict:
             eddi = None
             interval_size = None
             if not lp_ddi_dict:
-                flag += 'Only negative tests reported\n'
+                flag += 'Only negative tests reported. '
             if not ep_ddi_dict:
-                flag += 'Only positive tests reported\n'
+                flag += 'Only positive tests reported. '
             ep_ddi = ep_ddi_dict.get('date')
             lp_ddi = lp_ddi_dict.get('date')
 
@@ -280,17 +280,17 @@ class IDTSubject(models.Model):
                 ci_failed = True
                 flag += error
             else:
-                flag += 'EP-DDI & LP-DDI represent {}% Credibility Interval\n'.format(int(round((1 - alpha) * 100)))
+                flag += 'EP-DDI & LP-DDI represent {}% Credibility Interval. '.format(int(round((1 - alpha) * 100)))
 
         else:
             ep_ddi = ep_ddi_dict.get('date')
             lp_ddi = lp_ddi_dict.get('date')
-            flag += 'EP-DDI & LP-DDI based on median diagnostic delays\n'
+            flag += 'EP-DDI & LP-DDI based on median diagnostic delays. '
 
         if ci_failed:
             ep_ddi = ep_ddi_dict.get('date')
             lp_ddi = lp_ddi_dict.get('date')
-            flag += 'Credibility interval could not be calculated. EP-DDI & LP-DDI based on median diagnostic delays\n'
+            flag += 'Credibility interval could not be calculated. EP-DDI & LP-DDI based on median diagnostic delays. '
 
         if ep_ddi and lp_ddi:
             flag += self.check_for_discordant_dates(data_file)
@@ -302,9 +302,9 @@ class IDTSubject(models.Model):
             absolute_interval_size = abs(interval_size)
 
         if (interval_size or interval_size == 0) and interval_size < 0:
-            flag += 'Unexpected ordering of EPDDI and LPDDI\n'
+            flag += 'Unexpected ordering of EPDDI and LPDDI. '
         if (absolute_interval_size or absolute_interval_size == 0) and absolute_interval_size < 10:
-            flag += 'EPDDI and LPDDI less than 10 days apart\n'
+            flag += 'EPDDI and LPDDI less than 10 days apart. '
 
         if flag:
             self.flag = flag
