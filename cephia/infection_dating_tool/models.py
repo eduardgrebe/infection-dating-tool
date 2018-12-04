@@ -224,16 +224,17 @@ class IDTSubject(models.Model):
         flag = self.check_for_identical_dates(data_file)
 
         ci, created = CredibilityInterval.objects.get_or_create(user=user)
+        neg_adjusted_date = ep_ddi_dict.get('date')
+        neg_sigma = ep_ddi_dict.get('sigma')
+        neg_diagnostic_delay = ep_ddi_dict.get('diagnostic_delay')
 
-        neg_adjusted_date = ep_ddi_dict['date']
-        neg_sigma = ep_ddi_dict['sigma']
-        neg_diagnostic_delay = ep_ddi_dict['diagnostic_delay']
+        pos_adjusted_date = lp_ddi_dict.get('date')
+        pos_sigma = lp_ddi_dict.get('sigma')
+        pos_diagnostic_delay = lp_ddi_dict.get('diagnostic_delay')
 
-        pos_adjusted_date = lp_ddi_dict['date']
-        pos_sigma = lp_ddi_dict['sigma']
-        pos_diagnostic_delay = lp_ddi_dict['diagnostic_delay']
-
-        big_delta = (pos_adjusted_date - neg_adjusted_date).days
+        big_delta = None
+        if pos_adjusted_date and neg_adjusted_date:
+            big_delta = (pos_adjusted_date - neg_adjusted_date).days
         ep_ddi = None
         lp_ddi = None
 
@@ -246,7 +247,7 @@ class IDTSubject(models.Model):
             calculate_ci = False
             flag += 'Credibility interval cannot be calculated without both negative and positive results\n'
 
-        if ep_ddi_dict is None or lp_ddi_dict is None:
+        if not ep_ddi_dict or not lp_ddi_dict:
             eddi = None
             interval_size = None
             if not lp_ddi_dict:

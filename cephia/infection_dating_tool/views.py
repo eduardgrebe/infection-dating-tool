@@ -709,7 +709,7 @@ def process_data_file(request, file_id, context=None):
         for subject in subjects:
             lp_subject_rows = lp_ddis.filter(subject=subject).order_by('adjusted_date')
             if not lp_subject_rows:
-                lp_ddis_dict[subject] = None
+                lp_ddis_dict[subject] = {}
             else:
                 lp_ddis_dict[subject] = {
                     'date': lp_subject_rows.first().adjusted_date,
@@ -720,7 +720,7 @@ def process_data_file(request, file_id, context=None):
 
             ep_subject_rows = ep_ddis.filter(subject=subject).order_by('adjusted_date')
             if not ep_subject_rows:
-                ep_ddis_dict[subject] = None
+                ep_ddis_dict[subject] = {}
             else:
                 ep_ddis_dict[subject] = {
                     'date': ep_subject_rows.last().adjusted_date,
