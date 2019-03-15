@@ -72,3 +72,4 @@ test_id,test_name,test_category,estimate_label,diagnostic_delay,diagnostic_delay
 84,Unspecified 3rd Gen Rapid Test,3rd Gen Rapid Test,CEPHIA Estimate,22.4,,,Average delay of tests in this category,,,,,,,,,,
 85,Unspecified 2nd Gen Lab Assay,2nd Gen Lab Assay (Recombinant IgG sensitive Antibody),CEPHIA Estimate,25.9,,,Average delay of tests in this category,,,,,,,,,,
 86,Unspecified 1st Gen Lab Assay,1st Gen Lab Assay (Viral Lysate IgG sensitive Antibody),CEPHIA Estimate,32.6,,,Average delay of tests in this category,,,,,,,,,,
+87,Abbott PRISM,3rd Gen Lab Assay (IgM sensitive Antibody),CEPHIA Estimate,15.7,0.88,,Grebe E et al. - 2019 HIV Diagnostics Conference,15.68749,,,,14.03493,17.48784,,,,
