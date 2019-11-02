@@ -14,7 +14,7 @@ django-el-pagination==2.1.2
 django-simple-history==1.8.1
 django-world-regions==0.1.1
 django_js_reverse
-ecdsa==0.13
+ecdsa==0.13.3
 gitdb==0.6.4
 ipython
 kombu==3.0.35

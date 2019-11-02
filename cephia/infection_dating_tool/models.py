@@ -309,6 +309,9 @@ class IDTSubject(models.Model):
         if flag:
             self.flag = flag
 
+        if interval_size:
+            interval_size = abs(interval_size)
+
         self.ep_ddi = ep_ddi
         self.lp_ddi = lp_ddi
         self.interval_size = interval_size
