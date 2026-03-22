@@ -1,4 +1,4 @@
-Django==1.9.6
+Django==4.2.29
 Fabric==1.10.1
 GitPython==1.0.1
 MySQL-python==1.2.5
