@@ -24,6 +24,14 @@ drawn primarily from Delaney et al. (2017) *Clinical Infectious Diseases* 64(1):
 viral load assays, the diagnostic delay is derived from the assay detection threshold and an
 assumed viral load growth rate (default: 0.35 log₁₀ copies/ml/day; Fiebig et al. 2003).
 
+The method is documented in 
+> Grebe E, Facente SN, Bingham J, Pilcher CD, Powrie A, Gerber J, 
+> Priede G, Chibawara T, Busch MP, Murphy G, Kassanjee R, Welte A; Consortium for the Evaluation 
+> and Performance of HIV Incidence Assays (CEPHIA). Interpreting HIV diagnostic histories into 
+> infection time estimates: analytical framework and online tool. BMC Infect Dis. 2019 Oct 
+> 26;19(1):894. doi: [10.1186/s12879-019-4543-9](https://doi.org/10.1186/s12879-019-4543-9). 
+> PMID: 31655566; PMCID: PMC6815418.
+
 ## Usage
 
 ### Running the app
@@ -63,9 +71,9 @@ An example input file is available for download within the app, or directly at
 ## License
 
 Copyright of code derived or ported from the original Infection Dating Tool vests jointly in
-Stellenbosch University and Eduard Grebe Consulting (Pty) Ltd. Copyright of new code written
-for this rewrite vests in Eduard Grebe Consulting (Pty) Ltd. Content copyright vests in the
-authors.
+[Stellenbosch University](https://www.sun.ac.za) and [Eduard Grebe Consulting (Pty) Ltd](https://grebe.consulting) and 
+any other existing copyright holders. Copyright of new code written for this rewrite vests in Eduard Grebe Consulting (Pty) Ltd. 
+Content copyright vests in the authors.
 
 Code is released under the
 [GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.en.html)
@@ -76,21 +84,23 @@ license.
 ## Credits
 
 This application is a rewrite of the original Infection Dating Tool, performed using
-[Claude Code](https://claude.ai/claude-code) under the direction of Eduard Grebe. The core
+[Claude Code](https://claude.ai/claude-code) under the direction of [Eduard Grebe](https://grebe.consulting). The core
 statistical logic — in particular the Bayesian posterior probability density method for
 credibility interval estimation — is ported directly from that earlier work. All contributors
 to the original tool are acknowledged below.
 
-The tool is associated with the
+The original tool was associated with the
 [South African Centre for Epidemiological Modelling and Analysis (SACEMA)](http://www.sacema.org)
 at Stellenbosch University. The original codebase was developed collaboratively by a team at
 SACEMA and [Implicit Design](http://www.impd.co.za).
 
 ### Conceptualisation, design, code & data curatorship
 
-* Alex Welte (SACEMA)
-* Eduard Grebe (SACEMA & Vitalant Research Institute)
-* Shelley Facente (Vitalant Research Institute & Facente Consulting)
+* Alex Welte (SACEMA, University of KwaZulu-Natal)
+* Eduard Grebe (SACEMA, Vitalant Research Institute, Eduard Grebe Consulting)
+* Shelley Facente (Vitalant Research Institute, Facente Consulting)
+
+The person who originally developed the conceptual framework is Alex Welte.
 
 ### Design & code
 
@@ -106,7 +116,7 @@ SACEMA and [Implicit Design](http://www.impd.co.za).
 
 ### Conceptualisation
 
-* Reshma Kassanjee (University of Cape Town)
+* Reshma Kassanjee (SACEMA, University of Cape Town)
 * Christopher D. Pilcher (University of California San Francisco)
 * Gary Murphy (Public Health England)
 * Michael P. Busch (Vitalant Research Institute)
@@ -161,3 +171,5 @@ Research Program (RN07-SD-702); Brazilian Program for STD and AIDS, Ministry of 
 (914/BRA/3014-UNESCO); and the São Paulo City Health Department (2004-0.168.922–7). M.A.P.
 and selected samples from IAVI-supported cohorts are funded by IAVI with the generous support
 of USAID and other donors; a full list of IAVI donors is available at www.iavi.org.
+
+The rewrite was sponsored by [Eduard Grebe Consulting](https://grebe.consulting).
