@@ -1,3 +1,10 @@
+# Copyright (C) Stellenbosch University
+# Copyright (C) 2026 Eduard Grebe Consulting (Pty) Ltd
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# This file is derived from the original Infection Dating Tool
+# (https://github.com/eduardgrebe/infection-dating-tool).
+
 """
 Bayesian posterior probability density functions for HIV infection date estimation.
 

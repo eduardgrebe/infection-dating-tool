@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Eduard Grebe Consulting (Pty) Ltd
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 Infection Dating Tool — Streamlit app (Phase 1: EDDI Calculator)
 

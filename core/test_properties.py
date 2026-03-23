@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Eduard Grebe Consulting (Pty) Ltd
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 Load and query the bundled HIV diagnostic test properties.
 

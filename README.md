@@ -62,18 +62,24 @@ An example input file is available for download within the app, or directly at
 
 ## License
 
-Copyright of code and content vests in the authors. Code is released under the
-[GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.en.html),
-and content under the Creative Commons
+Copyright of code derived or ported from the original Infection Dating Tool vests jointly in
+Stellenbosch University and Eduard Grebe Consulting (Pty) Ltd. Copyright of new code written
+for this rewrite vests in Eduard Grebe Consulting (Pty) Ltd. Content copyright vests in the
+authors.
+
+Code is released under the
+[GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+or any later version. Content is released under the Creative Commons
 [Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
 license.
 
 ## Credits
 
-This application is a rewrite of the original Infection Dating Tool, which was developed as
-part of the CEPHIA data management system. The core statistical logic — in particular the
-Bayesian posterior probability density method for credibility interval estimation — is ported
-directly from that earlier work. All contributors to the original tool are acknowledged below.
+This application is a rewrite of the original Infection Dating Tool, performed using
+[Claude Code](https://claude.ai/claude-code) under the direction of Eduard Grebe. The core
+statistical logic — in particular the Bayesian posterior probability density method for
+credibility interval estimation — is ported directly from that earlier work. All contributors
+to the original tool are acknowledged below.
 
 The tool is associated with the
 [South African Centre for Epidemiological Modelling and Analysis (SACEMA)](http://www.sacema.org)

@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Eduard Grebe Consulting (Pty) Ltd
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 Unit tests for core/calculations.py.
 
