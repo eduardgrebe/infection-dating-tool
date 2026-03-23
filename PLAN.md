@@ -251,7 +251,7 @@ infectious_period = log10(viral_load / origin_viral_load) / viral_growth_rate
 
 **Step 1.5 — Requirements and smoke test**
 - Write `requirements.txt`
-- End-to-end test with `ExampleData.csv` from repo root
+- End-to-end test with `data/ExampleData.csv`
 
 ### Phase 2: Residual Risk Calculator
 
@@ -276,7 +276,7 @@ infectious_period = log10(viral_load / origin_viral_load) / viral_growth_rate
   data source — no seeding step needed.
 - The original app loaded this via a management command into MySQL. Here it is read directly
   by `core/test_properties.py` at startup.
-- `ExampleData.csv` in the repo root can serve as integration test input.
+- `ExampleData.csv` in `data/` serves as the integration test input and can be offered as a download in the UI.
 
 ---
 
