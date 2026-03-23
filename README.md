@@ -12,7 +12,7 @@ arbitrary reference tests or the exposure event may be used as time-zero.
 ## Method
 
 EP-DDI and LP-DDI are computed using a Bayesian posterior probability density approach. For
-each subject, test dates are adjusted by the diagnostic delay of the relevant assay. The
+each participant, test dates are adjusted by the diagnostic delay of the relevant assay. The
 posterior distribution of the infection date is then derived from the joint likelihood of the
 observed negative and positive test results. By default, EP-DDI and LP-DDI are the bounds of
 a 95% credibility interval of this posterior. Alternatively, they may be set to the adjusted
@@ -52,7 +52,7 @@ Upload a CSV file with the following four columns:
 
 | Column | Description |
 |--------|-------------|
-| `Subject` | Subject identifier |
+| `Participant` | Participant identifier |
 | `Date` | Test date in `YYYY-MM-DD` format |
 | `Test` | Test code (any string; mapped to a known assay in Step 2) |
 | `Result` | `positive`, `pos`, or `+` / `negative`, `neg`, or `-` |
@@ -66,7 +66,7 @@ An example input file is available for download within the app, or directly at
 2. **Map tests** — assign each test code in the file to a known diagnostic assay
 3. **Parameters** — optionally adjust the viral load growth rate and credibility interval settings
 4. **Calculate** — run the EDDI estimation
-5. **Results** — view and download the results table (Subject, EP-DDI, LP-DDI, Interval Size, EDDI, Flags)
+5. **Results** — view and download the results table (Participant, EP-DDI, LP-DDI, Interval Size, EDDI, Flags)
 
 ## License
 

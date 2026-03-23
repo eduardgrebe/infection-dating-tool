@@ -16,7 +16,7 @@ Expected adjusted dates (median/non-CI mode)
 --------------------------------------------
 All delays are rounded to the nearest integer (matching adjust_test_dates).
 
-Subject A
+Participant A
   ApitmaQualNAT       → Aptima VL, DT=30,   delay = log10(30)/0.35 = 4.2203 → 4 days
   GeeniusIndeterminate → Geenius Indet., delay = 24.8 → 25 days
 
@@ -24,7 +24,7 @@ Subject A
   LP anchor (earliest pos adj): 2017-01-10 −  4 = 2017-01-06
   Interval: 21 days  →  EDDI = 2016-12-16 + 10 = 2016-12-26
 
-Subject B
+Participant B
   UnigoldRT  → Unigold, delay = 25.1 → 25 days
   GeeniusFull → Geenius Full, delay = 28.8 → 29 days
 
@@ -32,7 +32,7 @@ Subject B
   LP anchor: earliest of {2017-02-04−25=2017-01-10, 2017-02-04−29=2017-01-06} = 2017-01-06
   Interval: 140 days  →  EDDI = 2016-08-19 + 70 = 2016-10-28
 
-Subject C
+Participant C
   AmplicorPooledx10 (VL, DT=4000): delay = log10(4000)/0.35 = 10.2916 → 10 days
   BioRadWesternBlotIndeterminate: delay = 14.8 → 15 days  (appears as both pos and neg)
 
@@ -125,12 +125,12 @@ class TestFileParsing:
         # 14 data rows in the file (excluding header and trailing blank line)
         assert len(parsed_df) == 14
 
-    def test_subjects(self, parsed_df):
-        assert set(parsed_df["Subject"]) == {"Subject A", "Subject B", "Subject C"}
+    def test_participants(self, parsed_df):
+        assert set(parsed_df["Participant"]) == {"Participant A", "Participant B", "Participant C"}
 
-    def test_subject_order_preserved(self, parsed_df):
-        assert list(dict.fromkeys(parsed_df["Subject"])) == [
-            "Subject A", "Subject B", "Subject C"
+    def test_participant_order_preserved(self, parsed_df):
+        assert list(dict.fromkeys(parsed_df["Participant"])) == [
+            "Participant A", "Participant B", "Participant C"
         ]
 
     def test_result_normalisation(self, parsed_df):
@@ -156,25 +156,25 @@ class TestFileParsing:
 # ---------------------------------------------------------------------------
 
 class TestOutputStructure:
-    def test_one_row_per_subject(self, results_median):
+    def test_one_row_per_participant(self, results_median):
         assert len(results_median) == 3
 
-    def test_subject_order(self, results_median):
-        assert list(results_median["Subject"]) == ["Subject A", "Subject B", "Subject C"]
+    def test_participant_order(self, results_median):
+        assert list(results_median["Participant"]) == ["Participant A", "Participant B", "Participant C"]
 
     def test_required_columns(self, results_median):
-        for col in ("Subject", "EP_DDI", "LP_DDI", "Interval_Size", "EDDI", "Flag"):
+        for col in ("Participant", "EP_DDI", "LP_DDI", "Interval_Size", "EDDI", "Flag"):
             assert col in results_median.columns
 
 
 # ---------------------------------------------------------------------------
-# 3. Subject A — median mode (exact dates)
+# 3. Participant A — median mode (exact dates)
 # ---------------------------------------------------------------------------
 
-class TestSubjectAMedian:
+class TestParticipantAMedian:
     @pytest.fixture(autouse=True)
     def row(self, results_median):
-        self.row = results_median[results_median["Subject"] == "Subject A"].iloc[0]
+        self.row = results_median[results_median["Participant"] == "Participant A"].iloc[0]
 
     def test_ep_ddi(self):
         assert self.row["EP_DDI"] == date(2016, 12, 16)
@@ -190,13 +190,13 @@ class TestSubjectAMedian:
 
 
 # ---------------------------------------------------------------------------
-# 4. Subject B — median mode (exact dates)
+# 4. Participant B — median mode (exact dates)
 # ---------------------------------------------------------------------------
 
-class TestSubjectBMedian:
+class TestParticipantBMedian:
     @pytest.fixture(autouse=True)
     def row(self, results_median):
-        self.row = results_median[results_median["Subject"] == "Subject B"].iloc[0]
+        self.row = results_median[results_median["Participant"] == "Participant B"].iloc[0]
 
     def test_ep_ddi(self):
         assert self.row["EP_DDI"] == date(2016, 8, 19)
@@ -213,13 +213,13 @@ class TestSubjectBMedian:
 
 
 # ---------------------------------------------------------------------------
-# 5. Subject C — median mode (exact dates + flags)
+# 5. Participant C — median mode (exact dates + flags)
 # ---------------------------------------------------------------------------
 
-class TestSubjectCMedian:
+class TestParticipantCMedian:
     @pytest.fixture(autouse=True)
     def row(self, results_median):
-        self.row = results_median[results_median["Subject"] == "Subject C"].iloc[0]
+        self.row = results_median[results_median["Participant"] == "Participant C"].iloc[0]
 
     def test_ep_ddi(self):
         # Latest negative adjusted: BioRadWesternBlotIndeterminate neg on 2014-09-12 − 15
@@ -253,59 +253,59 @@ class TestCIMode:
         for _, row in results_ci.iterrows():
             if row["EP_DDI"] and row["LP_DDI"] and row["EDDI"]:
                 assert row["EP_DDI"] <= row["EDDI"] <= row["LP_DDI"], (
-                    f"Subject {row['Subject']}: EDDI {row['EDDI']} not in "
+                    f"Participant {row['Participant']}: EDDI {row['EDDI']} not in "
                     f"[{row['EP_DDI']}, {row['LP_DDI']}]"
                 )
 
-    def test_ci_flag_present_for_subject_a(self, results_ci):
-        row = results_ci[results_ci["Subject"] == "Subject A"].iloc[0]
+    def test_ci_flag_present_for_participant_a(self, results_ci):
+        row = results_ci[results_ci["Participant"] == "Participant A"].iloc[0]
         assert "credibility interval" in row["Flag"].lower()
 
-    def test_ci_flag_present_for_subject_b(self, results_ci):
-        row = results_ci[results_ci["Subject"] == "Subject B"].iloc[0]
+    def test_ci_flag_present_for_participant_b(self, results_ci):
+        row = results_ci[results_ci["Participant"] == "Participant B"].iloc[0]
         assert "credibility interval" in row["Flag"].lower()
 
-    def test_subject_c_discordant_flag_preserved_under_ci(self, results_ci):
-        row = results_ci[results_ci["Subject"] == "Subject C"].iloc[0]
+    def test_participant_c_discordant_flag_preserved_under_ci(self, results_ci):
+        row = results_ci[results_ci["Participant"] == "Participant C"].iloc[0]
         assert "discordant" in row["Flag"].lower()
 
-    def test_subject_c_ci_widens_narrow_window(self, results_median, results_ci):
-        """For Subject C (big_delta = 5 days) CI should produce a wider interval
+    def test_participant_c_ci_widens_narrow_window(self, results_median, results_ci):
+        """For Participant C (big_delta = 5 days) CI should produce a wider interval
         than the raw median anchors, because sigma is large relative to the window."""
-        med = results_median[results_median["Subject"] == "Subject C"].iloc[0]
-        ci  = results_ci[results_ci["Subject"] == "Subject C"].iloc[0]
+        med = results_median[results_median["Participant"] == "Participant C"].iloc[0]
+        ci  = results_ci[results_ci["Participant"] == "Participant C"].iloc[0]
         assert ci["Interval_Size"] > med["Interval_Size"], (
             f"CI interval ({ci['Interval_Size']}) should be wider than "
             f"median interval ({med['Interval_Size']}) for the 5-day window"
         )
 
-    def test_subject_b_ci_narrows_wide_window(self, results_median, results_ci):
-        """For Subject B (big_delta = 140 days) the likelihood peaks well inside
+    def test_participant_b_ci_narrows_wide_window(self, results_median, results_ci):
+        """For Participant B (big_delta = 140 days) the likelihood peaks well inside
         the window, so the 95% CI should be narrower than the full test-date span."""
-        med = results_median[results_median["Subject"] == "Subject B"].iloc[0]
-        ci  = results_ci[results_ci["Subject"] == "Subject B"].iloc[0]
+        med = results_median[results_median["Participant"] == "Participant B"].iloc[0]
+        ci  = results_ci[results_ci["Participant"] == "Participant B"].iloc[0]
         assert ci["Interval_Size"] < med["Interval_Size"], (
             f"CI interval ({ci['Interval_Size']}) should be narrower than "
             f"median interval ({med['Interval_Size']}) for the 140-day window"
         )
 
-    def test_ci_regression_subject_a(self, results_ci):
-        """Regression: exact 95% CI dates for Subject A."""
-        row = results_ci[results_ci["Subject"] == "Subject A"].iloc[0]
+    def test_ci_regression_participant_a(self, results_ci):
+        """Regression: exact 95% CI dates for Participant A."""
+        row = results_ci[results_ci["Participant"] == "Participant A"].iloc[0]
         assert row["EP_DDI"] == date(2016, 12, 12)
         assert row["LP_DDI"] == date(2017, 1, 6)
         assert row["Interval_Size"] == 25
 
-    def test_ci_regression_subject_b(self, results_ci):
-        """Regression: exact 95% CI dates for Subject B."""
-        row = results_ci[results_ci["Subject"] == "Subject B"].iloc[0]
+    def test_ci_regression_participant_b(self, results_ci):
+        """Regression: exact 95% CI dates for Participant B."""
+        row = results_ci[results_ci["Participant"] == "Participant B"].iloc[0]
         assert row["EP_DDI"] == date(2016, 8, 22)
         assert row["LP_DDI"] == date(2017, 1, 4)
         assert row["Interval_Size"] == 135
 
-    def test_ci_regression_subject_c(self, results_ci):
-        """Regression: exact 95% CI dates for Subject C."""
-        row = results_ci[results_ci["Subject"] == "Subject C"].iloc[0]
+    def test_ci_regression_participant_c(self, results_ci):
+        """Regression: exact 95% CI dates for Participant C."""
+        row = results_ci[results_ci["Participant"] == "Participant C"].iloc[0]
         assert row["EP_DDI"] == date(2014, 8, 24)
         assert row["LP_DDI"] == date(2014, 9, 5)
         assert row["Interval_Size"] == 12

@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Parse and validate subject test history CSV files.
+Parse and validate participant test history CSV files.
 
 Expected columns (case-insensitive, order-independent):
-    Subject, Date, Test, Result
+    Participant, Date, Test, Result
 
 Date format: YYYY-MM-DD
 Result values: positive / pos / +  →  'Positive'
@@ -19,7 +19,7 @@ from datetime import date, datetime
 
 import pandas as pd
 
-REQUIRED_COLUMNS = {"Subject", "Date", "Test", "Result"}
+REQUIRED_COLUMNS = {"Participant", "Date", "Test", "Result"}
 
 POSITIVE_VALUES = {"positive", "pos", "+"}
 NEGATIVE_VALUES = {"negative", "neg", "-"}
@@ -45,7 +45,7 @@ def parse_file(
     file_obj: io.BytesIO | io.StringIO | str,
 ) -> tuple[pd.DataFrame | None, list[str]]:
     """
-    Parse an uploaded subject test history file.
+    Parse an uploaded participant test history file.
 
     Parameters
     ----------
@@ -54,7 +54,7 @@ def parse_file(
     Returns
     -------
     (df, errors)
-        df     : DataFrame with columns Subject (str), Date (datetime.date),
+        df     : DataFrame with columns Participant (str), Date (datetime.date),
                  Test (str), Result ('Positive'|'Negative') — or None on failure.
         errors : list of human-readable error strings (empty on full success).
     """
@@ -74,7 +74,7 @@ def parse_file(
     if missing:
         return None, [
             f"Missing required column(s): {', '.join(sorted(missing))}. "
-            f"File must contain: Subject, Date, Test, Result."
+            f"File must contain: Participant, Date, Test, Result."
         ]
 
     # Drop rows that are entirely empty
@@ -84,7 +84,7 @@ def parse_file(
         return None, ["File contains no data rows."]
 
     # --- Validate and transform row by row ---
-    subjects = []
+    participants = []
     dates = []
     tests = []
     results = []
@@ -112,7 +112,7 @@ def parse_file(
                 f"expected positive/pos/+ or negative/neg/-."
             )
 
-        subjects.append(str(row["Subject"]).strip())
+        participants.append(str(row["Participant"]).strip())
         dates.append(date_val)
         tests.append(str(row["Test"]).strip())
         results.append(result_val)
@@ -121,7 +121,7 @@ def parse_file(
         return None, errors
 
     df = pd.DataFrame({
-        "Subject": subjects,
+        "Participant": participants,
         "Date": dates,
         "Test": tests,
         "Result": results,

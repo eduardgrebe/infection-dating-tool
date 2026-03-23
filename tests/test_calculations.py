@@ -106,7 +106,7 @@ class TestFindDeltaScale:
 class TestFindCiLimits:
     @pytest.fixture
     def typical_params(self):
-        """Parameters for a subject with a 30-day gap between neg and pos tests."""
+        """Parameters for a participant with a 30-day gap between neg and pos tests."""
         d_neg, s_neg = 18.1, 3.62   # 3rd gen antibody test
         d_pos, s_pos = 18.1, 3.62
 

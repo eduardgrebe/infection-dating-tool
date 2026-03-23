@@ -13,14 +13,14 @@ Supporting code referenced: `old/cephia/cephia/` (csv_helper, excel_helper, lib/
 ## Current scope: EDDI Calculator
 
 The EDDI Calculator is the core module of this rewrite. It estimates the date of HIV infection
-for each subject in an uploaded dataset.
+for each participant in an uploaded dataset.
 
 **Workflow:**
-1. User uploads a CSV (columns: Subject, Date, Test, Result)
+1. User uploads a CSV (columns: Participant, Date, Test, Result)
 2. Unique test codes in the file are mapped to diagnostic test properties
    (diagnostic delay, sigma, detection threshold)
 3. Global parameters are optionally adjusted (viral load growth rate, credibility interval alpha)
-4. Per-subject EDDI is calculated via Bayesian credibility intervals
+4. Per-participant EDDI is calculated via Bayesian credibility intervals
 5. Results (EP-DDI, LP-DDI, EDDI, interval size, flags) are displayed and downloadable as CSV
 
 The residual risk module is out of scope for this rewrite; it is being developed separately.
@@ -74,7 +74,7 @@ No database. No task queue. No authentication.
 
 | Old | New | Reason |
 |---|---|---|
-| Django models (IDTSubject, TestHistory, etc.) | Pandas DataFrames in `st.session_state` | No persistence needed across sessions |
+| Django models (IDTParticipant, TestHistory, etc.) | Pandas DataFrames in `st.session_state` | No persistence needed across sessions |
 | Django file upload + IDTFileInfo state machine | `st.file_uploader` + session state | Simpler, synchronous |
 | TestPropertyMapping (database) | Dict in session state, built from selectboxes | Per-session config is sufficient |
 | Django auth + CephiaUser | Removed entirely | Single-user tool, no auth needed |
@@ -97,7 +97,7 @@ No database. No task queue. No authentication.
 adjusted_date = test_date - timedelta(days=round(diagnostic_delay))
 # For viral load tests: diagnostic_delay = log10(detection_threshold) / growth_rate
 
-# Per subject: latest negative adjusted → EP anchor; earliest positive adjusted → LP anchor
+# Per participant: latest negative adjusted → EP anchor; earliest positive adjusted → LP anchor
 big_delta = (lp_anchor - ep_anchor).days
 
 find_delta_scale(d_neg, sigma_neg)  ->  delta1, scale1

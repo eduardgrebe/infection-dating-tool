@@ -5,7 +5,7 @@
 Infection Dating Tool — Streamlit app (Phase 1: EDDI Calculator)
 
 Five-step workflow:
-  1. Upload subject test history CSV
+  1. Upload participant test history CSV
   2. Map test codes → diagnostic test properties
   3. Set calculation parameters
   4. Run EDDI calculation
@@ -114,9 +114,9 @@ def _render_step_indicator() -> None:
 # ---------------------------------------------------------------------------
 
 def _step_upload() -> None:
-    st.subheader("Upload subject test history")
+    st.subheader("Upload participant test history")
     st.markdown(
-        "Provide a CSV with four columns: **Subject**, **Date** (YYYY-MM-DD), "
+        "Provide a CSV with four columns: **Participant**, **Date** (YYYY-MM-DD), "
         "**Test** (test code), **Result** (positive / negative)."
     )
 
@@ -138,11 +138,11 @@ def _step_upload() -> None:
             st.error(err)
         return
 
-    n_sub = df["Subject"].nunique()
+    n_part = df["Participant"].nunique()
     n_cod = df["Test"].nunique()
     st.success(
         f"{len(df)} rows · "
-        f"{n_sub} subject{'s' if n_sub != 1 else ''} · "
+        f"{n_part} participant{'s' if n_part != 1 else ''} · "
         f"{n_cod} unique test code{'s' if n_cod != 1 else ''}"
     )
     st.dataframe(df, width="stretch", hide_index=True)
@@ -277,7 +277,7 @@ def _step_params() -> None:
 def _step_calculate() -> None:
     df: pd.DataFrame = st.session_state.df
     codes = get_test_codes(df)
-    n_sub = df["Subject"].nunique()
+    n_part = df["Participant"].nunique()
 
     ci_label = (
         f"{int(round((1 - st.session_state.alpha) * 100))}% credibility intervals"
@@ -287,7 +287,7 @@ def _step_calculate() -> None:
 
     st.subheader("Ready to calculate")
     st.markdown(
-        f"**{n_sub}** subject{'s' if n_sub != 1 else ''} · "
+        f"**{n_part}** participant{'s' if n_part != 1 else ''} · "
         f"EP-DDI / LP-DDI via **{ci_label}**"
     )
 

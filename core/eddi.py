@@ -10,8 +10,8 @@ EDDI (Estimated Date of Detectable Infection) calculation pipeline.
 
 The pipeline has three stages:
   1. adjust_test_dates  — apply diagnostic delays to raw test dates
-  2. _calculate_subject_eddi — compute EP-DDI/LP-DDI/EDDI for one subject
-  3. calculate_eddis    — run the full pipeline over all subjects in a DataFrame
+  2. _calculate_participant_eddi — compute EP-DDI/LP-DDI/EDDI for one participant
+  3. calculate_eddis    — run the full pipeline over all participants in a DataFrame
 
 Mappings dict structure (one entry per test code found in the uploaded file):
     {
@@ -110,40 +110,40 @@ def adjust_test_dates(
 
 
 # ---------------------------------------------------------------------------
-# Stage 2: per-subject EDDI
+# Stage 2: per-participant EDDI
 # ---------------------------------------------------------------------------
 
-def _check_identical_dates(subject_df: pd.DataFrame) -> str:
-    if subject_df["Date"].nunique() == 1:
+def _check_identical_dates(participant_df: pd.DataFrame) -> str:
+    if participant_df["Date"].nunique() == 1:
         return "All tests reported are on same date. "
     return ""
 
 
-def _check_discordant_dates(subject_df: pd.DataFrame) -> str:
-    pos_dates = set(subject_df.loc[subject_df["Result"] == "Positive", "Date"])
-    neg_dates = set(subject_df.loc[subject_df["Result"] == "Negative", "Date"])
+def _check_discordant_dates(participant_df: pd.DataFrame) -> str:
+    pos_dates = set(participant_df.loc[participant_df["Result"] == "Positive", "Date"])
+    neg_dates = set(participant_df.loc[participant_df["Result"] == "Negative", "Date"])
     if pos_dates & neg_dates:
-        return "Subject has a discordant test date. "
+        return "Participant has a discordant test date. "
     return ""
 
 
-def _calculate_subject_eddi(
-    subject_df: pd.DataFrame,
+def _calculate_participant_eddi(
+    participant_df: pd.DataFrame,
     calculate_ci: bool = True,
     alpha: float = DEFAULT_ALPHA,
 ) -> dict:
     """
-    Compute EP-DDI, LP-DDI, EDDI and diagnostic flags for a single subject.
+    Compute EP-DDI, LP-DDI, EDDI and diagnostic flags for a single participant.
 
-    subject_df must already have adjusted_date, diagnostic_delay, sigma columns
-    (i.e. the output of adjust_test_dates filtered to one subject).
+    participant_df must already have adjusted_date, diagnostic_delay, sigma columns
+    (i.e. the output of adjust_test_dates filtered to one participant).
 
     Returns a dict with keys: ep_ddi, lp_ddi, eddi, interval_size, flag.
     """
-    flag = _check_identical_dates(subject_df)
+    flag = _check_identical_dates(participant_df)
 
-    positives = subject_df[subject_df["Result"] == "Positive"].sort_values("adjusted_date")
-    negatives = subject_df[subject_df["Result"] == "Negative"].sort_values("adjusted_date")
+    positives = participant_df[participant_df["Result"] == "Positive"].sort_values("adjusted_date")
+    negatives = participant_df[participant_df["Result"] == "Negative"].sort_values("adjusted_date")
 
     has_pos = not positives.empty
     has_neg = not negatives.empty
@@ -226,7 +226,7 @@ def _calculate_subject_eddi(
 
     # --- Derive EDDI from the interval ---
     if ep_ddi is not None and lp_ddi is not None:
-        flag += _check_discordant_dates(subject_df)
+        flag += _check_discordant_dates(participant_df)
         interval_size = (lp_ddi - ep_ddi).days
 
         if interval_size < 0:
@@ -258,11 +258,11 @@ def calculate_eddis(
     alpha: float = DEFAULT_ALPHA,
 ) -> pd.DataFrame:
     """
-    Run the full EDDI calculation pipeline over all subjects.
+    Run the full EDDI calculation pipeline over all participants.
 
     Parameters
     ----------
-    df : parsed test history DataFrame (columns: Subject, Date, Test, Result)
+    df : parsed test history DataFrame (columns: Participant, Date, Test, Result)
     mappings : {test_code: properties_dict} — see module docstring for structure
     growth_rate : viral load growth rate in log10 copies/ml/day
     calculate_ci : use Bayesian credibility intervals when True; medians when False
@@ -271,20 +271,20 @@ def calculate_eddis(
     Returns
     -------
     DataFrame with columns:
-        Subject, EP_DDI, LP_DDI, Interval_Size, EDDI, Flag
-    Subjects are returned in order of first appearance in the input.
+        Participant, EP_DDI, LP_DDI, Interval_Size, EDDI, Flag
+    Participants are returned in order of first appearance in the input.
     """
     adjusted = adjust_test_dates(df, mappings, growth_rate)
 
-    # Preserve subject order from the input file
-    subject_order = list(dict.fromkeys(df["Subject"]))
+    # Preserve participant order from the input file
+    participant_order = list(dict.fromkeys(df["Participant"]))
 
     rows = []
-    for subject in subject_order:
-        group = adjusted[adjusted["Subject"] == subject]
-        result = _calculate_subject_eddi(group, calculate_ci, alpha)
+    for participant in participant_order:
+        group = adjusted[adjusted["Participant"] == participant]
+        result = _calculate_participant_eddi(group, calculate_ci, alpha)
         rows.append({
-            "Subject": subject,
+            "Participant": participant,
             "EP_DDI": result["ep_ddi"],
             "LP_DDI": result["lp_ddi"],
             "Interval_Size": result["interval_size"],
