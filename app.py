@@ -144,7 +144,7 @@ def _step_upload() -> None:
         f"{n_sub} subject{'s' if n_sub != 1 else ''} · "
         f"{n_cod} unique test code{'s' if n_cod != 1 else ''}"
     )
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
     # Clear any mapping keys left over from a previous upload
     for key in [k for k in st.session_state if k.startswith("sel_")]:
@@ -227,19 +227,19 @@ def _step_map() -> None:
 def _step_params() -> None:
     st.subheader("Calculation parameters")
 
-    st.number_input(
+    st.session_state.growth_rate = st.number_input(
         "Viral load growth rate (log₁₀ copies/ml/day)",
         min_value=0.01,
         max_value=2.0,
+        value=st.session_state.growth_rate,
         step=0.01,
         format="%.3f",
-        key="growth_rate",
         help="Default: 0.35 (Fiebig et al. 2003). Used only for viral load assays.",
     )
 
-    st.checkbox(
+    st.session_state.calculate_ci = st.checkbox(
         "Use Bayesian credibility intervals for EP-DDI / LP-DDI",
-        key="calculate_ci",
+        value=st.session_state.calculate_ci,
         help=(
             "When enabled, EP-DDI and LP-DDI are the bounds of a posterior credibility "
             "interval for the infection date. When disabled, they are the adjusted dates "
@@ -248,13 +248,13 @@ def _step_params() -> None:
     )
 
     if st.session_state.calculate_ci:
-        st.number_input(
+        st.session_state.alpha = st.number_input(
             "Significance level (α)",
             min_value=0.01,
             max_value=0.50,
+            value=st.session_state.alpha,
             step=0.01,
             format="%.2f",
-            key="alpha",
             help="α = 0.05 → 95% credibility interval (default).",
         )
 
@@ -319,7 +319,7 @@ def _step_results() -> None:
     results: pd.DataFrame = st.session_state.results
 
     st.subheader("Results")
-    st.dataframe(results, use_container_width=True, hide_index=True)
+    st.dataframe(results, width="stretch", hide_index=True)
 
     stem = Path(st.session_state.filename).stem
     st.download_button(

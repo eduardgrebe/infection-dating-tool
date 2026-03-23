@@ -284,6 +284,11 @@ dev = [
     { name = "pytest-cov" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "watchdog" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "matplotlib", specifier = ">=3.10" },
@@ -297,6 +302,9 @@ requires-dist = [
     { name = "streamlit", specifier = ">=1.55" },
 ]
 provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "watchdog", specifier = ">=6.0.0" }]
 
 [[package]]
 name = "iniconfig"

@@ -13,6 +13,8 @@ authors = [
     { name = "Eduard Grebe" },
     { name = "Alex Welte" },
     { name = "Shelley Facente" },
+    { name = "Andrew Powrie" },
+    { name = "Gareth Priede" },
 ]
 
 dependencies = [
@@ -36,3 +38,8 @@ packages = ["core"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "watchdog>=6.0.0",
+]
