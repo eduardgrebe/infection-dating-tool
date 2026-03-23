@@ -85,15 +85,7 @@ infection-dating-tool/
 
 ## Dependencies
 
-```
-streamlit>=1.35
-pandas>=2.0
-scipy>=1.13
-numpy>=1.26
-matplotlib>=3.9
-python-dateutil>=2.9
-openpyxl>=3.1
-```
+Managed via `pyproject.toml` and locked with `uv.lock`. No separate `requirements.txt` needed.
 
 No database. No task queue. No authentication.
 
@@ -249,8 +241,7 @@ infectious_period = log10(viral_load / origin_viral_load) / viral_growth_rate
 - Write `app.py` as a single-page Streamlit app with 5-step workflow (see EDDI Workflow Design)
 - Step navigation via `st.session_state.step`
 
-**Step 1.5 — Requirements and smoke test**
-- Write `requirements.txt`
+**Step 1.5 — Smoke test**
 - End-to-end test with `data/ExampleData.csv`
 
 ### Phase 2: Residual Risk Calculator
