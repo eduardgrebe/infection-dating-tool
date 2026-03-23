@@ -45,6 +45,7 @@ def _init_state() -> None:
         "step": 1,
         "df": None,
         "filename": "",
+        "mappings": {},
         "growth_rate": get_default_growth_rate(),
         "calculate_ci": True,
         "alpha": 0.05,
@@ -217,6 +218,7 @@ def _step_map() -> None:
         if not _all_mapped(codes):
             st.warning("All test codes must be mapped before continuing.")
         elif st.button("Next →", type="primary"):
+            st.session_state.mappings = _build_mappings(codes)
             _go(3)
 
 
@@ -295,7 +297,7 @@ def _step_calculate() -> None:
             _go(3)
     with right:
         if st.button("Calculate →", type="primary"):
-            mappings = _build_mappings(codes)
+            mappings = st.session_state.mappings
             with st.spinner("Calculating…"):
                 try:
                     results = calculate_eddis(
