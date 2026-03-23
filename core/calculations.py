@@ -102,6 +102,7 @@ def posterior_density_prop(t, t1, t2, scale1, delta1, scale2, delta2, const):
         a=t1 - delta1,
         b=t,
         args=(t1, t2, scale1, delta1, scale2, delta2),
+        limit=200,
     )[0] / const
 
     return max(0.0, min(1.0, prop))
@@ -144,6 +145,7 @@ def find_ci_limits(t1, t2, scale1, delta1, scale2, delta2, alpha=0.05):
         a=t1 - 3 * delta1,
         b=t2 + 3 * delta2,
         args=(t1, t2, scale1, delta1, scale2, delta2),
+        limit=200,
     )
 
     if not const_result:
