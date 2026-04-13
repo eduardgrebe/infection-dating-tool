@@ -50,7 +50,7 @@ WORKDIR ${APP_HOME}
 COPY --chown=appuser:appuser pyproject.toml uv.lock ./
 
 # Install Python dependencies using uv
-RUN uv sync --frozen
+RUN uv sync --frozen --no-install-project
 
 # Copy application code
 COPY --chown=appuser:appuser app.py ./
