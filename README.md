@@ -77,7 +77,7 @@ Content copyright vests in the authors.
 
 Code is released under the
 [GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.en.html)
-or any later version. Content is released under the Creative Commons
+or any later version (see the [LICENSE](LICENSE) file for the full text). Content is released under the Creative Commons
 [Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
 license.
 
