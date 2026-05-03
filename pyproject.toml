@@ -18,7 +18,7 @@ authors = [
 ]
 
 dependencies = [
-    "streamlit>=1.56",
+    "streamlit>=1.57.0",
     "pandas>=2.3",
     "scipy>=1.17",
     "numpy>=2.4",
