@@ -317,6 +317,21 @@ def _step_calculate() -> None:
 # Step 5: Results
 # ---------------------------------------------------------------------------
 
+_FORMULA_CHARS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _sanitize_csv_field(value: object) -> object:
+    """Prefix string values that start with spreadsheet formula characters with a tab,
+    preventing formula injection when the CSV is opened in Excel or LibreOffice."""
+    if isinstance(value, str) and value.startswith(_FORMULA_CHARS):
+        return "\t" + value
+    return value
+
+
+def _sanitize_for_csv(df: pd.DataFrame) -> pd.DataFrame:
+    return df.apply(lambda col: col.map(_sanitize_csv_field) if col.dtype == object else col)
+
+
 def _step_results() -> None:
     results: pd.DataFrame = st.session_state.results
 
@@ -326,7 +341,7 @@ def _step_results() -> None:
     stem = Path(st.session_state.filename).stem
     st.download_button(
         "Download results (CSV)",
-        data=results.to_csv(index=False).encode(),
+        data=_sanitize_for_csv(results).to_csv(index=False).encode(),
         file_name=f"{stem}_eddi_results.csv",
         mime="text/csv",
         type="primary",
