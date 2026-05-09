@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "infection-dating-tool"
-version = "2.0.4"
+version = "2.0.5"
 description = "Estimates plausible HIV infection intervals (EP-DDI, LP-DDI, EDDI) from diagnostic test histories"
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
