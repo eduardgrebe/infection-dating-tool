@@ -56,8 +56,8 @@ clinical data, and it is not intended to inform individual patient care.
   memory, and only for as long as necessary to process them and produce
   infection date estimates. Data are not written to disk and are discarded
   when your session ends. This is not guaranteed.
-- **Alternative to using this service:** This app is open source software. You 
-  can run it on your own hardware or in a validated environment. Obtain the 
+- **Alternative to using this service:** This app is open source software. You
+  can run it on your own hardware or in a validated environment. Obtain the
   software from [Github](https://github.com/eduardgrebe/infection-dating-tool).
 - The software is provided "as is", without warranty of any kind. The authors
   of the software and the providers of this service accept no responsibility
@@ -65,6 +65,13 @@ clinical data, and it is not intended to inform individual patient care.
   legal liability arising from use of the tool.
 
 **Do you accept these terms?**
+"""
+
+FOOTER_MD = """\
+This tool is supported and hosted by [Facente Consulting](https://www.facenteconsulting.com).
+Developed by [Eduard Grebe Consulting](https://grebe.consulting). Copyright © 2026.
+Free and open source software licensed under the GPLv3.
+[Source code](https://github.com/eduardgrebe/infection-dating-tool).
 """
 
 
@@ -465,3 +472,6 @@ except Exception as exc:  # noqa: BLE001 — deliberate catch-all; see below
     )
     if st.button("← Start over", key="error_start_over"):
         _reset_session()
+
+with st.bottom:
+    st.markdown(FOOTER_MD)
